@@ -155,6 +155,9 @@ MixerThreholdMod is built with a focus on reliability, user experience, and main
 - **Respect for Community & Collaboration:**  
   We recognize that developers have different styles and preferences. Our choices reflect the needs of this project and our commitment to maintainability, configurability, and user experience. We welcome constructive feedback and encourage open discussion to continually improve the mod.
 
+- **Open Source Commitment:**  
+  MixerThreholdMod is open source. The full codebase is available for review, learning, and contribution. We encourage community involvement and transparency in all aspects of development.
+
 ## Credits 👏
 
 - **Author**: mooleshacat
