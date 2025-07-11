@@ -74,22 +74,40 @@ namespace MixerThreholdMod_0_0_1
 
         private static IEnumerator BackupSaveFolder(string _saveRoot)
         {
+            Main.logger.Msg(3, $"BackupSaveFolder started for: {_saveRoot}");
+            yield return new WaitForSeconds(1.5f); // Ensure save completes
+
+            // Perform backup operation with error handling
+            var backupResult = PerformBackupOperation(_saveRoot);
+            if (!backupResult.Success)
+            {
+                Main.logger.Err($"BackupSaveFolder: {backupResult.ErrorMessage}");
+                yield break;
+            }
+
+            yield return new WaitForSeconds(0.5f); // Allow file system to settle
+
+            // Keep only the latest MaxBackups
+            yield return MelonCoroutines.Start(CleanupOldBackups(backupResult.BackupRoot, backupResult.SaveRootPrefix));
+            
+            Main.logger.Msg(3, $"BackupSaveFolder: Backup operation completed successfully");
+        }
+
+        private static BackupResult PerformBackupOperation(string _saveRoot)
+        {
             try
             {
-                Main.logger.Msg(3, $"BackupSaveFolder started for: {_saveRoot}");
-                yield return new WaitForSeconds(1.5f); // Ensure save completes
-
                 if (string.IsNullOrEmpty(_saveRoot))
                 {
                     Main.logger.Warn(1, "Save root is null or empty, cannot proceed with backup");
-                    yield break;
+                    return BackupResult.CreateFailure("Save root is null or empty");
                 }
 
                 var parentDir = Directory.GetParent(_saveRoot);
                 if (parentDir == null)
                 {
                     Main.logger.Warn(1, $"Could not get parent directory of save root: {_saveRoot}");
-                    yield break;
+                    return BackupResult.CreateFailure($"Could not get parent directory of save root: {_saveRoot}");
                 }
 
                 var _backupRoot = Path.Combine(parentDir.FullName, "MixerThreholdMod_backup").Replace('/', '\\') + "\\";
@@ -101,7 +119,7 @@ namespace MixerThreholdMod_0_0_1
                 if (!Directory.Exists(_saveRoot))
                 {
                     Main.logger.Warn(1, $"Save directory not found at {_saveRoot}");
-                    yield break;
+                    return BackupResult.CreateFailure($"Save directory not found at {_saveRoot}");
                 }
 
                 if (!Directory.Exists(_backupRoot))
@@ -114,7 +132,7 @@ namespace MixerThreholdMod_0_0_1
                     catch (Exception createEx)
                     {
                         Main.logger.Err($"Failed to create backup directory {_backupRoot}: {createEx.Message}");
-                        yield break;
+                        return BackupResult.CreateFailure($"Failed to create backup directory: {createEx.Message}");
                     }
                 }
 
@@ -134,43 +152,112 @@ namespace MixerThreholdMod_0_0_1
                 catch (Exception copyEx)
                 {
                     Main.logger.Err($"Failed to copy directory during backup: {copyEx.Message}\n{copyEx.StackTrace}");
-                    yield break;
+                    return BackupResult.CreateFailure($"Failed to copy directory during backup: {copyEx.Message}");
                 }
 
-                yield return new WaitForSeconds(0.5f); // Allow file system to settle
-
-                // Keep only the latest MaxBackups
-                yield return MelonCoroutines.Start(CleanupOldBackups(_backupRoot, _saveRootPrefix));
-                
-                Main.logger.Msg(3, $"BackupSaveFolder: Backup operation completed successfully");
+                return BackupResult.CreateSuccess(_backupRoot, _saveRootPrefix);
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"BackupSaveFolder: Critical error during backup: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Err($"PerformBackupOperation: Critical error during backup: {ex.Message}\n{ex.StackTrace}");
+                return BackupResult.CreateFailure($"Critical error during backup: {ex.Message}");
             }
-            finally
+        }
+
+        private class BackupResult
+        {
+            public bool Success { get; set; }
+            public string ErrorMessage { get; set; }
+            public string BackupRoot { get; set; }
+            public string SaveRootPrefix { get; set; }
+
+            public static BackupResult CreateSuccess(string backupRoot, string saveRootPrefix)
             {
-                Main.logger.Msg(3, $"BackupSaveFolder: Method completed for {_saveRoot}");
+                return new BackupResult { Success = true, BackupRoot = backupRoot, SaveRootPrefix = saveRootPrefix };
+            }
+
+            public static BackupResult CreateFailure(string errorMessage)
+            {
+                return new BackupResult { Success = false, ErrorMessage = errorMessage };
             }
         }
 
         private static IEnumerator CleanupOldBackups(string backupRoot, string saveRootPrefix)
         {
+            Main.logger.Msg(3, $"Starting backup cleanup process for: {backupRoot}");
+            
+            // Perform initial validation and get backup directories
+            var cleanupData = GetBackupDirectoriesForCleanup(backupRoot, saveRootPrefix);
+            if (!cleanupData.Success)
+            {
+                Main.logger.Warn(1, cleanupData.ErrorMessage);
+                yield break;
+            }
+
+            if (cleanupData.BackupDirs == null || cleanupData.BackupDirs.Count == 0)
+            {
+                Main.logger.Msg(3, $"No backup directories found matching pattern: {saveRootPrefix}_backup_*");
+                yield break;
+            }
+
+            Main.logger.Msg(3, $"Found {cleanupData.BackupDirs.Count} backup directories, keeping latest {MaxBackups}");
+            
+            int deletionCount = 0;
+            var backupDirs = cleanupData.BackupDirs;
+            
+            while (backupDirs.Count > MaxBackups && deletionCount < 10) // Safety limit
+            {
+                var dirToDelete = backupDirs.LastOrDefault();
+                if (dirToDelete == null || !dirToDelete.Exists)
+                {
+                    Main.logger.Warn(1, $"Directory to delete is null or doesn't exist, breaking cleanup loop");
+                    break;
+                }
+
+                string dirPath = dirToDelete.FullName;
+                
+                // Perform the deletion and get the result
+                var deletionResult = DeleteBackupDirectory(dirPath);
+                if (deletionResult.Success)
+                {
+                    Main.logger.Msg(1, $"Successfully deleted oldest backup ({deletionCount + 1}/{backupDirs.Count - MaxBackups}): {dirPath}");
+                    backupDirs.RemoveAt(backupDirs.Count - 1);
+                    deletionCount++;
+                    
+                    // Add small delay to prevent potential filesystem issues
+                    yield return new WaitForSeconds(0.1f);
+                }
+                else if (deletionResult.ShouldContinue)
+                {
+                    // Directory was already deleted or similar non-fatal error
+                    Main.logger.Warn(1, deletionResult.ErrorMessage);
+                    backupDirs.RemoveAt(backupDirs.Count - 1);
+                    continue;
+                }
+                else
+                {
+                    // Fatal error, stop cleanup
+                    Main.logger.Err(deletionResult.ErrorMessage);
+                    break;
+                }
+            }
+            
+            Main.logger.Msg(3, $"Backup cleanup completed. Deleted {deletionCount} old directories.");
+        }
+
+        private static CleanupData GetBackupDirectoriesForCleanup(string backupRoot, string saveRootPrefix)
+        {
             try
             {
-                Main.logger.Msg(3, $"Starting backup cleanup process for: {backupRoot}");
-                
                 if (!Directory.Exists(backupRoot))
                 {
-                    Main.logger.Warn(1, $"Backup root directory does not exist: {backupRoot}");
-                    yield break;
+                    return CleanupData.CreateFailure($"Backup root directory does not exist: {backupRoot}");
                 }
 
                 var backupRootDir = new DirectoryInfo(backupRoot);
                 if (backupRootDir == null)
                 {
-                    Main.logger.Warn(1, $"Could not access backup root directory: {backupRoot}");
-                    yield break;
+                    return CleanupData.CreateFailure($"Could not access backup root directory: {backupRoot}");
                 }
 
                 var backupDirs = backupRootDir
@@ -179,75 +266,84 @@ namespace MixerThreholdMod_0_0_1
                     ?.OrderByDescending(d => d.Name)
                     ?.ToList();
 
-                if (backupDirs == null || backupDirs.Count == 0)
-                {
-                    Main.logger.Msg(3, $"No backup directories found matching pattern: {saveRootPrefix}_backup_*");
-                    yield break;
-                }
-
-                Main.logger.Msg(3, $"Found {backupDirs.Count} backup directories, keeping latest {MaxBackups}");
-                
-                int deletionCount = 0;
-                while (backupDirs.Count > MaxBackups && deletionCount < 10) // Safety limit
-                {
-                    var dirToDelete = backupDirs.LastOrDefault();
-                    if (dirToDelete == null || !dirToDelete.Exists)
-                    {
-                        Main.logger.Warn(1, $"Directory to delete is null or doesn't exist, breaking cleanup loop");
-                        break;
-                    }
-
-                    string dirPath = dirToDelete.FullName;
-                    Main.logger.Msg(2, $"Attempting to delete backup directory: {dirPath}");
-                    
-                    // Add additional safety checks before deletion
-                    if (string.IsNullOrEmpty(dirPath) || !dirPath.Contains("backup"))
-                    {
-                        Main.logger.Err($"Safety check failed: Invalid directory path for deletion: {dirPath}");
-                        break;
-                    }
-
-                    try
-                    {
-                        Directory.Delete(dirPath, true);
-                        Main.logger.Msg(1, $"Successfully deleted oldest backup ({deletionCount + 1}/{backupDirs.Count - MaxBackups}): {dirPath}");
-                        
-                        backupDirs.RemoveAt(backupDirs.Count - 1);
-                        deletionCount++;
-                        
-                        // Add small delay to prevent potential filesystem issues
-                        yield return new WaitForSeconds(0.1f);
-                    }
-                    catch (UnauthorizedAccessException ex)
-                    {
-                        Main.logger.Err($"Access denied while deleting backup directory: {ex.Message}");
-                        break;
-                    }
-                    catch (DirectoryNotFoundException ex)
-                    {
-                        Main.logger.Warn(1, $"Directory not found during deletion (already deleted?): {ex.Message}");
-                        backupDirs.RemoveAt(backupDirs.Count - 1);
-                        continue;
-                    }
-                    catch (IOException ex)
-                    {
-                        Main.logger.Err($"I/O error while deleting backup directory: {ex.Message}");
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        Main.logger.Err($"Unexpected error during backup cleanup: {ex.Message}\n{ex.StackTrace}");
-                        break;
-                    }
-                }
-                Main.logger.Msg(3, $"Backup cleanup completed. Deleted {deletionCount} old directories.");
+                return CleanupData.CreateSuccess(backupDirs);
             }
             catch (Exception ex)
             {
-                // catchall at backup code, where the suspected crash is
-                // hopefully should catch errors
-                Main.logger.Err($"CleanupOldBackups: Failed during backup cleanup process");
-                Main.logger.Err($"CleanupOldBackups: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Err($"GetBackupDirectoriesForCleanup: Failed during backup cleanup process: {ex.Message}\n{ex.StackTrace}");
+                return CleanupData.CreateFailure($"Exception during backup directory enumeration: {ex.Message}");
+            }
+        }
+
+        private static DeletionResult DeleteBackupDirectory(string dirPath)
+        {
+            try
+            {
+                Main.logger.Msg(2, $"Attempting to delete backup directory: {dirPath}");
+                
+                // Add additional safety checks before deletion
+                if (string.IsNullOrEmpty(dirPath) || !dirPath.Contains("backup"))
+                {
+                    return DeletionResult.CreateFatal($"Safety check failed: Invalid directory path for deletion: {dirPath}");
+                }
+
+                Directory.Delete(dirPath, true);
+                return DeletionResult.CreateSuccess();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return DeletionResult.CreateFatal($"Access denied while deleting backup directory: {ex.Message}");
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                return DeletionResult.CreateContinue($"Directory not found during deletion (already deleted?): {ex.Message}");
+            }
+            catch (IOException ex)
+            {
+                return DeletionResult.CreateFatal($"I/O error while deleting backup directory: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return DeletionResult.CreateFatal($"Unexpected error during backup cleanup: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
+        private class CleanupData
+        {
+            public bool Success { get; set; }
+            public string ErrorMessage { get; set; }
+            public List<DirectoryInfo> BackupDirs { get; set; }
+
+            public static CleanupData CreateSuccess(List<DirectoryInfo> backupDirs)
+            {
+                return new CleanupData { Success = true, BackupDirs = backupDirs };
+            }
+
+            public static CleanupData CreateFailure(string errorMessage)
+            {
+                return new CleanupData { Success = false, ErrorMessage = errorMessage };
+            }
+        }
+
+        private class DeletionResult
+        {
+            public bool Success { get; set; }
+            public bool ShouldContinue { get; set; }
+            public string ErrorMessage { get; set; }
+
+            public static DeletionResult CreateSuccess()
+            {
+                return new DeletionResult { Success = true };
+            }
+
+            public static DeletionResult CreateContinue(string errorMessage)
+            {
+                return new DeletionResult { Success = false, ShouldContinue = true, ErrorMessage = errorMessage };
+            }
+
+            public static DeletionResult CreateFatal(string errorMessage)
+            {
+                return new DeletionResult { Success = false, ShouldContinue = false, ErrorMessage = errorMessage };
             }
         }
 
