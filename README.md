@@ -1,4 +1,4 @@
-# MixerThresholdMod 🧪
+# MixerThreholdMod 🧪
 
 A comprehensive mod for **Schedule 1** that enhances the mixer system with increased capacity, intelligent threshold control, and automatic save backup protection.
 
