@@ -870,6 +870,49 @@ namespace MixerThreholdMod_0_0_1
                                 logger.Err($"OnSceneWasLoaded: Failed to copy mixer save file: {copyEx.Message}");
                             }
                         }
+                        MixerIDManager.ResetStableIDCounter();
+
+                        // Clear previous mixer values
+                        if (savedMixerValues != null)
+                        {
+                            savedMixerValues.Clear();
+                        }
+                        
+                        logger.Msg(3, "Current Save Path at scene load: " + (Main.CurrentSavePath ?? "[not available yet]"));
+
+                        // Start coroutine to wait for save path
+                        try
+                        {
+                            StartLoadCoroutine();
+                        }
+                        catch (Exception coroutineEx)
+                        {
+                            logger.Err($"OnSceneWasLoaded: Failed to start load coroutine: {coroutineEx.Message}");
+                        }
+                        
+                        // Force-refresh file copy to save folder
+                        if (!string.IsNullOrEmpty(Main.CurrentSavePath))
+                        {
+                            try
+                            {
+                                string persistentPath = MelonEnvironment.UserDataDirectory;
+                                if (!string.IsNullOrEmpty(persistentPath))
+                                {
+                                    string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
+                                    string targetFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
+                                    
+                                    if (File.Exists(sourceFile))
+                                    {
+                                        FileOperations.SafeCopy(sourceFile, targetFile, overwrite: true);
+                                        logger.Msg(3, "Copied MixerThresholdSave.json from persistent to save folder");
+                                    }
+                                }
+                            }
+                            catch (Exception copyEx)
+                            {
+                                logger.Err($"OnSceneWasLoaded: Failed to copy mixer save file: {copyEx.Message}");
+                            }
+                        }
 =======
                             try
                             {
@@ -888,6 +931,10 @@ namespace MixerThreholdMod_0_0_1
                             }
                         });
 >>>>>>> aa94715 (performance optimizations, cache manager)
+                    }
+                    catch (Exception mainEx)
+                    {
+                        Main.logger.Err($"OnSceneWasLoaded: Error in Main scene processing: {mainEx.Message}\n{mainEx.StackTrace}");
                     }
                     catch (Exception mainEx)
                     {
