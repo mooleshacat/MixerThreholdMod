@@ -80,22 +80,49 @@ namespace MixerThreholdMod_0_0_1
         public override void OnInitializeMelon()
         {
             base.OnInitializeMelon();
-            
-            // Initialize exception handler here too ?
-
-            // Initialize game logging bridge for exception monitoring
-            Core.GameLoggerBridge.InitializeLoggingBridge();
-
-            // Critical: Add unhandled exception handler for crash prevention
-            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-
-            // Initialize game error handling integration (dnSpy feature)
-            IntegrateWithGameErrorHandling();
-
-            logger.Msg(1, "[MAIN] MixerThresholdMod initializing - focused on save crash prevention");
-            logger.Msg(1, string.Format("[MAIN] Debug levels - Msg: {0}, Warn: {1}", logger.CurrentMsgLogLevel, logger.CurrentWarnLogLevel));
-
-            Exception initError = null;
+            // Global unhandled exception handler
+            UnhandledExceptionEventHandler value = (sender, args) =>
+            {
+                Exception ex = args.ExceptionObject as Exception;
+                if (ex != null)
+                {
+                    Main.logger.Err($"[GLOBAL] Unhandled exception: {ex.Message}\n{ex.StackTrace}");
+                }
+                else
+                {
+                    Main.logger.Err($"[GLOBAL] Unhandled exception: {args.ExceptionObject}");
+                }
+            };
+            AppDomain.CurrentDomain.UnhandledException += value;            // Test log
+            Logger logger = new Logger();
+            logger.Msg(1, "MixerThreholdMod initializing...");
+            logger.Msg(1, $"currentMsgLogLevel: {logger.CurrentMsgLogLevel}");
+            logger.Msg(1, $"currentWarnLogLevel: {logger.CurrentWarnLogLevel}");
+            // Patch constructor to queue instance
+            var constructor = typeof(MixingStationConfiguration).GetConstructor(
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                new[] {
+                    typeof(ConfigurationReplicator),
+                    typeof(IConfigurable),
+                    typeof(MixingStation)
+                },
+                null
+            );
+            if (constructor == null)
+            {
+                logger.Err("Target constructor NOT found!");
+                return;
+            }
+            HarmonyInstance.Patch(
+                constructor,
+                prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
+            );
+            logger.Msg(2, "Patched constructor");
+            Console.RegisterConsoleCommandViaReflection();
+        }
+        private static void QueueInstance(MixingStationConfiguration __instance)
+        {
             try
             {
 <<<<<<< HEAD
