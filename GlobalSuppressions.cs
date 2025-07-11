@@ -5,4 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Style", "IDE0350:Use implicitly typed lambda", Justification = "<Pending>", Scope = "member", Target = "~M:MixerThreholdMod_1_0_0.ModConfig.HookRealtimeUpdates")]
+[assembly: SuppressMessage("Style", "IDE0350:Use implicitly typed lambda", Justification = "<Pending>", Scope = "member", Target = "~M:MixerThreholdMod_0_0_1.ModConfig.HookRealtimeUpdates")]
