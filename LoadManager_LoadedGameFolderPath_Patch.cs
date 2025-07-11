@@ -15,18 +15,22 @@ namespace MixerThreholdMod_0_0_1
     [HarmonyPatch(typeof(LoadManager), "StartGame")]
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
-        public static void Postfix(ref string __result)
+        public static void Postfix(LoadManager __instance, SaveInfo info, bool allowLoadStacking)
         {
+            if (info == null || string.IsNullOrEmpty(info.SavePath))
+                return;
+
+            string __savePath = info?.SavePath;
 
             try
             {
-                Main.logger.Msg(3, $"LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {__result ?? "null"}");
+                Main.logger.Msg(3, $"LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {__savePath ?? "null"}");
 
-                if (!string.IsNullOrEmpty(__result))
+                if (!string.IsNullOrEmpty(__savePath))
                 {
-                    Main.CurrentSavePath = __result;
+                    Main.CurrentSavePath = __savePath;
 
-                    string path = Utils.NormalizePath(Path.Combine(__result, "MixerThresholdSave.json"));
+                    string path = Utils.NormalizePath(Path.Combine(__savePath, "MixerThresholdSave.json"));
                     
                     int _mixerCount = 0;
                     try
@@ -55,7 +59,7 @@ namespace MixerThreholdMod_0_0_1
                         try
                         {
                             Main.logger.Warn(1, "MixerThresholdSave.json missing on load — creating it now.");
-                            Utils.CoroutineHelper.RunCoroutine(SaveThresholdsCoroutine(__result));
+                            Utils.CoroutineHelper.RunCoroutine(SaveThresholdsCoroutine(__savePath));
                         }
                         catch (Exception coroutineEx)
                         {
