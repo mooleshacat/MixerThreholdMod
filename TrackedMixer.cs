@@ -25,53 +25,22 @@ namespace MixerThreholdMod_0_0_1
         // Read-only async snapshot
         public static async Task<IReadOnlyList<TrackedMixer>> GetAllAsync()
         {
-            try
+            using (await _locker.LockAsync().ConfigureAwait(false))
             {
-                using (await _locker.LockAsync().ConfigureAwait(false))
-                {
-                    if (_mixers == null)
-                    {
-                        Main.logger.Warn(1, "TrackedMixers.GetAllAsync: _mixers is null, returning empty list");
-                        return new List<TrackedMixer>().AsReadOnly();
-                    }
-
-                    return _mixers
-                        .Where(tm => tm != null)
-                        .ToList()
-                        .AsReadOnly();
-                }
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"TrackedMixers.GetAllAsync: Error: {ex.Message}");
-                return new List<TrackedMixer>().AsReadOnly();
+                return _mixers
+                    .Where(tm => tm != null)
+                    .ToList()
+                    .AsReadOnly();
             }
         }
 
         // Add
         public static async Task AddAsync(TrackedMixer mixer)
         {
-            try
+            if (mixer == null) return;
+            using (await _locker.LockAsync().ConfigureAwait(false))
             {
-                if (mixer == null) 
-                {
-                    Main.logger.Warn(1, "TrackedMixers.AddAsync: Mixer is null");
-                    return;
-                }
-                
-                using (await _locker.LockAsync().ConfigureAwait(false))
-                {
-                    if (_mixers == null)
-                    {
-                        Main.logger.Warn(1, "TrackedMixers.AddAsync: _mixers is null, initializing");
-                        _mixers = new List<TrackedMixer>();
-                    }
-                    _mixers.Add(mixer);
-                }
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"TrackedMixers.AddAsync: Error adding mixer {mixer?.MixerInstanceID ?? -1}: {ex.Message}");
+                _mixers.Add(mixer);
             }
         }
 
@@ -90,54 +59,10 @@ namespace MixerThreholdMod_0_0_1
         // Remove by predicate
         public static async Task RemoveAllAsync(Func<TrackedMixer, bool> predicate)
         {
-            try
+            if (predicate == null) return;
+            using (await _locker.LockAsync().ConfigureAwait(false))
             {
-                if (predicate == null) 
-                {
-                    Main.logger.Warn(1, "TrackedMixers.RemoveAllAsync: Predicate is null");
-                    return;
-                }
-                
-                using (await _locker.LockAsync().ConfigureAwait(false))
-                {
-                    if (_mixers == null)
-                    {
-                        Main.logger.Warn(1, "TrackedMixers.RemoveAllAsync: _mixers is null");
-                        return;
-                    }
-
-                    var toRemove = new List<TrackedMixer>();
-                    foreach (var tm in _mixers)
-                    {
-                        try
-                        {
-                            if (tm != null && predicate(tm))
-                            {
-                                toRemove.Add(tm);
-                            }
-                        }
-                        catch (Exception predEx)
-                        {
-                            Main.logger.Err($"TrackedMixers.RemoveAllAsync: Error in predicate for mixer {tm?.MixerInstanceID ?? -1}: {predEx.Message}");
-                        }
-                    }
-
-                    foreach (var tm in toRemove)
-                    {
-                        try
-                        {
-                            _mixers.Remove(tm);
-                        }
-                        catch (Exception removeEx)
-                        {
-                            Main.logger.Err($"TrackedMixers.RemoveAllAsync: Error removing mixer {tm?.MixerInstanceID ?? -1}: {removeEx.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"TrackedMixers.RemoveAllAsync: Critical error: {ex.Message}\n{ex.StackTrace}");
+                _mixers.RemoveAll(tm => tm != null && predicate(tm));
             }
         }
 

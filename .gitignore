@@ -1,6 +1,5 @@
 *~
 *.dll
 *.log
-bin/*
-obj/*
-.vs/*
+bin\*
+obj\*
