@@ -147,6 +147,7 @@ This is the author's first mod, created with AI assistance (GitHub Copilot). The
 - **Development**: Created with GitHub Copilot & Brave Leo's assistance
 - **Game**: Schedule 1 by TVGS
 - **Framework**: MelonLoader community
+- **Anthropic**: For Claude Sonnet 3.5 (Leo is based off this model)
 - **Brave & Leo AI**: for help getting the original source together
 - **Github CoPilot**: for doing far more than Leo ever could
 
