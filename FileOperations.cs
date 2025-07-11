@@ -198,13 +198,11 @@ namespace MixerThreholdMod_0_0_1
         /// <summary>
         /// Copies a file with shared lock on source.
         /// </summary>
-        /// <summary>
-        /// Copies a file with shared lock on source.
-        /// </summary>
         public static void SafeCopy(string sourceFile, string targetFile, bool overwrite)
         {
             try
             {
+<<<<<<< HEAD
                 if (string.IsNullOrEmpty(sourceFile) || string.IsNullOrEmpty(targetFile))
                 {
                     Main.logger.Warn(1, $"FileOperations.SafeCopy: Invalid file paths - source: {sourceFile}, target: {targetFile}");
@@ -241,6 +239,36 @@ namespace MixerThreholdMod_0_0_1
 
                     File.Copy(sourceFile, targetFile, overwrite);
                     Main.logger.Msg(3, $"FileOperations.SafeCopy: Successfully copied {sourceFile} to {targetFile}");
+=======
+                if (string.IsNullOrEmpty(sourceFile))
+                {
+                    Main.logger.Warn(1, "SafeCopy: sourceFile is null or empty");
+                    return;
+                }
+                
+                if (string.IsNullOrEmpty(targetFile))
+                {
+                    Main.logger.Warn(1, "SafeCopy: targetFile is null or empty");
+                    return;
+                }
+
+                using (var locker = new FileLockHelper(sourceFile + ".lock"))
+                {
+                    if (!locker.AcquireSharedLock())
+                    {
+                        Main.logger.Warn(1, $"FileOperations.SafeCopy: Could not acquire shared lock on [{sourceFile}] for copying.");
+                        return;
+                    }
+
+                    // Ensure target directory exists
+                    var targetDir = Path.GetDirectoryName(targetFile);
+                    if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
+                    {
+                        Directory.CreateDirectory(targetDir);
+                    }
+
+                    File.Copy(sourceFile, targetFile, overwrite);
+>>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
                 }
             }
             catch (Exception ex)

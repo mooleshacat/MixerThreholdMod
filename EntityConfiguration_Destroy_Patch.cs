@@ -15,6 +15,7 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
+<<<<<<< HEAD
                 if (__instance == null)
                 {
                     Main.logger.Warn(1, "EntityConfiguration_Destroy_Patch: __instance is null");
@@ -35,12 +36,24 @@ namespace MixerThreholdMod_0_0_1
                             Main.logger.Warn(1, "EntityConfiguration_Destroy_Patch: trackedMixers is null");
                             return;
                         }
+=======
+                Main.logger.Msg(2, $"EntityConfiguration.Destroy() called mixer");
+
+                // Use async helper to properly handle the removal without blocking
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Get a snapshot of tracked mixers
+                        var trackedMixers = await TrackedMixers.ToListAsync().ConfigureAwait(false);
+>>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
 
                         // Find if this instance is tracked
                         var mixerData = trackedMixers.FirstOrDefault(tm => tm != null && tm.ConfigInstance == __instance);
                         if (mixerData != null)
                         {
                             // Remove from shared tracked list
+<<<<<<< HEAD
                             await TrackedMixers.RemoveAsync(mixerData.ConfigInstance);
                             Main.logger.Msg(2, $"Removed mixer {mixerData.MixerInstanceID} from tracked list (via EntityConfiguration.Destroy)");
                         }
@@ -52,6 +65,16 @@ namespace MixerThreholdMod_0_0_1
                     catch (Exception asyncEx)
                     {
                         Main.logger.Err($"EntityConfiguration_Destroy_Patch: Error in async cleanup: {asyncEx.Message}\n{asyncEx.StackTrace}");
+=======
+                            await TrackedMixers.RemoveAsync(mixerData.ConfigInstance).ConfigureAwait(false);
+
+                            Main.logger.Msg(2, $"Removed mixer from tracked list (via EntityConfiguration.Destroy)");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger.Err($"Error in async cleanup for EntityConfiguration.Destroy: {ex}");
+>>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
                     }
                 });
             }

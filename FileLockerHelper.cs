@@ -35,6 +35,7 @@ public class FileLockHelper : IDisposable
                 4096,
                 FileOptions.None
             );
+            _isLocked = true;
 
             // Simulate timeout via Task + Wait
             if (Task.Run(() => true).Wait(timeoutMs))
@@ -43,9 +44,16 @@ public class FileLockHelper : IDisposable
             ReleaseLock();
             return false;
         }
-        catch
+        catch (Exception ex)
         {
-            ReleaseLock();
+            try
+            {
+                ReleaseLock();
+            }
+            catch
+            {
+                // Ignore disposal errors
+            }
             return false;
         }
     }
@@ -67,6 +75,7 @@ public class FileLockHelper : IDisposable
                 4096,
                 FileOptions.None
             );
+            _isLocked = true;
 
             if (Task.Run(() => true).Wait(timeoutMs))
                 return true;
@@ -74,9 +83,16 @@ public class FileLockHelper : IDisposable
             ReleaseLock();
             return false;
         }
-        catch
+        catch (Exception ex)
         {
-            ReleaseLock();
+            try
+            {
+                ReleaseLock();
+            }
+            catch
+            {
+                // Ignore disposal errors
+            }
             return false;
         }
     }
@@ -106,26 +122,28 @@ public class FileLockHelper : IDisposable
                             4096,
                             FileOptions.None
                         );
+                        _isLocked = true;
                         timer.Dispose();
                         tcs.TrySetResult(true);
                         return;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        await Task.Delay(100, ct);
+                        await Task.Delay(100, ct).ConfigureAwait(false);
                     }
                 }
                 timer.Dispose();
                 tcs.TrySetCanceled();
-            }, ct);
+            }, ct).ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
             timer.Dispose();
             return false;
         }
-        return await tcs.Task;
+        return await tcs.Task.ConfigureAwait(false);
     }
+    
     /// <summary>
     /// Asynchronously acquires an exclusive (write) lock with timeout.
     /// </summary>
@@ -150,25 +168,26 @@ public class FileLockHelper : IDisposable
                             4096,
                             FileOptions.None
                         );
+                        _isLocked = true;
                         timer.Dispose();
                         tcs.TrySetResult(true);
                         return;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        await Task.Delay(100, ct);
+                        await Task.Delay(100, ct).ConfigureAwait(false);
                     }
                 }
                 timer.Dispose();
                 tcs.TrySetCanceled();
-            }, ct);
+            }, ct).ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
             timer.Dispose();
             return false;
         }
-        return await tcs.Task;
+        return await tcs.Task.ConfigureAwait(false);
     }
     /// <summary>
     /// Releases the current lock.
@@ -186,6 +205,7 @@ public class FileLockHelper : IDisposable
         }
         catch (Exception ex)
         {
+<<<<<<< HEAD
             // Log if Main.logger is available, otherwise silently handle
             try
             {
@@ -195,8 +215,14 @@ public class FileLockHelper : IDisposable
             {
                 // Ignore logging errors during cleanup
             }
+=======
+            // Log the error but don't throw - we're in cleanup
+            _isLocked = false;
+            _lockStream = null;
+>>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
         }
     }
+    
     public void Dispose()
     {
         try

@@ -35,6 +35,7 @@ namespace MixerThreholdMod_0_0_1
             {
                 if (instance == null)
                 {
+<<<<<<< HEAD
                     Main.logger.Err("GetMixerID: Cannot assign ID to null MixingStationConfiguration");
                     throw new ArgumentNullException(nameof(instance), "Cannot assign ID to null MixingStationConfiguration");
                 }
@@ -45,6 +46,12 @@ namespace MixerThreholdMod_0_0_1
                     throw new InvalidOperationException("MixerInstanceMap is not initialized");
                 }
 
+=======
+                    Main.logger.Err("Cannot assign ID to null MixingStationConfiguration");
+                    throw new ArgumentNullException(nameof(instance), "Cannot assign ID to null MixingStationConfiguration");
+                }
+
+>>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
                 if (MixerInstanceMap.TryGetValue(instance, out int id))
                 {
                     Main.logger.Warn(2, $"Instance already has ID {id}: {instance}");
@@ -52,6 +59,7 @@ namespace MixerThreholdMod_0_0_1
                 }
 
                 id = Interlocked.Increment(ref _nextStableID);
+<<<<<<< HEAD
                 bool added = MixerInstanceMap.TryAdd(instance, id);
                 
                 if (added)
@@ -73,6 +81,16 @@ namespace MixerThreholdMod_0_0_1
             {
                 Main.logger.Err($"GetMixerID: Unexpected error: {ex.Message}\n{ex.StackTrace}");
                 throw; // Re-throw to maintain expected behavior
+=======
+                MixerInstanceMap.TryAdd(instance, id);
+                Main.logger.Msg(3, $"Assigned new ID {id} to instance: {instance}");
+                return id;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"Error in GetMixerID: {ex}");
+                throw;
+>>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
             }
         }
     }
