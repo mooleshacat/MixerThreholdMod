@@ -141,7 +141,7 @@ This is the author's first mod, created with AI assistance (GitHub Copilot). The
 - **Non-intrusive design** - minimal impact on game performance
 - **Open source** - full source code available for review and contribution
 
-## Design Philosophy & Logging Approach
+## Design Philosophy & Logging Approach 🤖
 
 MixerThreholdMod is built with a focus on reliability, user experience, and maintainability. Throughout development, we made several intentional design choices to address common modding challenges and provide a robust experience for both users and developers:
 
