@@ -141,6 +141,34 @@ This is the author's first mod, created with AI assistance (GitHub Copilot). The
 - **Non-intrusive design** - minimal impact on game performance
 - **Open source** - full source code available for review and contribution
 
+## Design Philosophy & Logging Approach
+
+MixerThreholdMod is built with a focus on reliability, user experience, and maintainability. Throughout development, we made several intentional design choices to address common modding challenges and provide a robust experience for both users and developers:
+
+### Custom Logger for Configurable Verbosity
+
+Instead of using the default logging provided by MelonLoader, we implemented a custom `Logger` class. This allows for fine-grained control over log output, letting users and developers adjust verbosity levels dynamically. For example, detailed logs can be enabled during debugging, while release builds can suppress non-critical messages to avoid log spam. All log-level logic is centralized in the logger, so code remains clean and maintainable.
+
+### Defensive Programming & Error Handling
+
+The mod uses extensive try/catch blocks and a global unhandled exception handler to ensure that unexpected errors are logged and do not crash the game. This is especially important in a modding context, where interactions with game code and other mods can introduce unpredictable behavior.
+
+### Async & Non-Blocking Operations
+
+File operations and save/load routines are implemented using async patterns and coroutines. This ensures that disk IO and other potentially slow operations do not block the main game thread, maintaining smooth gameplay and responsiveness.
+
+### User-Centric Features
+
+We enforce user settings (such as mixer thresholds) even when the base game attempts to override them. This guarantees that user preferences are respected, improving the overall experience.
+
+### Responsible Use of AI in Development
+
+AI tools (such as GitHub Copilot and Claude Sonnet) have been used to assist with code generation, refactoring, and troubleshooting. However, all AI-generated code and suggestions are carefully reviewed, tested, and validated by a human developer. Context and instructions are communicated clearly and iteratively, ensuring that both the AI and the developer are aligned throughout the process. The development workflow is a true collaboration, with human oversight guiding every decision and verifying that the final implementation meets project standards and goals.
+
+### Respect for Community & Collaboration
+
+We recognize that developers have different styles and preferences. Our choices reflect the needs of this project and our commitment to maintainability, configurability, and user experience. We welcome constructive feedback and encourage open discussion to continually improve the mod.
+
 ## Credits 👏
 
 - **Author**: mooleshacat
