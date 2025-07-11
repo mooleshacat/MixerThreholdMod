@@ -85,64 +85,62 @@ namespace MixerThreholdMod_0_0_1
                     yield break;
                 }
 
-                try
+                var parentDir = Directory.GetParent(_saveRoot);
+                if (parentDir == null)
                 {
-                    var parentDir = Directory.GetParent(_saveRoot);
-                    if (parentDir == null)
-                    {
-                        Main.logger.Warn(1, $"Could not get parent directory of save root: {_saveRoot}");
-                        yield break;
-                    }
+                    Main.logger.Warn(1, $"Could not get parent directory of save root: {_saveRoot}");
+                    yield break;
+                }
 
-                    var _backupRoot = Path.Combine(parentDir.FullName, "MixerThreholdMod_backup").Replace('/', '\\') + "\\";
-                    _saveRoot = _saveRoot.TrimEnd('\\') + "\\";
+                var _backupRoot = Path.Combine(parentDir.FullName, "MixerThreholdMod_backup").Replace('/', '\\') + "\\";
+                _saveRoot = _saveRoot.TrimEnd('\\') + "\\";
                     
-                    Main.logger.Msg(2, $"BACKUP ROOT: {_backupRoot}");
-                    Main.logger.Msg(2, $"SAVE ROOT: {_saveRoot}");
+                Main.logger.Msg(2, $"BACKUP ROOT: {_backupRoot}");
+                Main.logger.Msg(2, $"SAVE ROOT: {_saveRoot}");
 
-                    if (!Directory.Exists(_saveRoot))
-                    {
-                        Main.logger.Warn(1, $"Save directory not found at {_saveRoot}");
-                        yield break;
-                    }
+                if (!Directory.Exists(_saveRoot))
+                {
+                    Main.logger.Warn(1, $"Save directory not found at {_saveRoot}");
+                    yield break;
+                }
 
-                    if (!Directory.Exists(_backupRoot))
-                    {
-                        try
-                        {
-                            Directory.CreateDirectory(_backupRoot);
-                            Main.logger.Msg(2, $"Created backup directory: {_backupRoot}");
-                        }
-                        catch (Exception createEx)
-                        {
-                            Main.logger.Err($"Failed to create backup directory {_backupRoot}: {createEx.Message}");
-                            yield break;
-                        }
-                    }
-
-                    string _timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-                    string _backupDirName = $"SaveGame_2_backup_{_timestamp}";
-                    string _backupPath = Path.Combine(_backupRoot, _backupDirName);
-                    string _saveRootPrefix = Path.GetFileName(_saveRoot.TrimEnd('\\'));
-
-                    Main.logger.Msg(2, $"SAVE ROOT PREFIX: {_saveRootPrefix}");
-
+                if (!Directory.Exists(_backupRoot))
+                {
                     try
                     {
-                        // Copy the SaveGame_2 folder to backup location
-                        CopyDirectory(_saveRoot, _backupPath);
-                        Main.logger.Msg(2, $"Saved backup to: {_backupPath}");
+                        Directory.CreateDirectory(_backupRoot);
+                        Main.logger.Msg(2, $"Created backup directory: {_backupRoot}");
                     }
-                    catch (Exception copyEx)
+                    catch (Exception createEx)
                     {
-                        Main.logger.Err($"Failed to copy directory during backup: {copyEx.Message}\n{copyEx.StackTrace}");
+                        Main.logger.Err($"Failed to create backup directory {_backupRoot}: {createEx.Message}");
                         yield break;
                     }
+                }
 
-                    yield return new WaitForSeconds(0.5f); // Allow file system to settle
+                string _timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                string _backupDirName = $"SaveGame_2_backup_{_timestamp}";
+                string _backupPath = Path.Combine(_backupRoot, _backupDirName);
+                string _saveRootPrefix = Path.GetFileName(_saveRoot.TrimEnd('\\'));
 
-                    // Keep only the latest MaxBackups
-                    yield return MelonCoroutines.Start(CleanupOldBackups(_backupRoot, _saveRootPrefix));
+                Main.logger.Msg(2, $"SAVE ROOT PREFIX: {_saveRootPrefix}");
+
+                try
+                {
+                    // Copy the SaveGame_2 folder to backup location
+                    CopyDirectory(_saveRoot, _backupPath);
+                    Main.logger.Msg(2, $"Saved backup to: {_backupPath}");
+                }
+                catch (Exception copyEx)
+                {
+                    Main.logger.Err($"Failed to copy directory during backup: {copyEx.Message}\n{copyEx.StackTrace}");
+                    yield break;
+                }
+
+                yield return new WaitForSeconds(0.5f); // Allow file system to settle
+
+                // Keep only the latest MaxBackups
+                yield return MelonCoroutines.Start(CleanupOldBackups(_backupRoot, _saveRootPrefix));
                 
                 Main.logger.Msg(3, $"BackupSaveFolder: Backup operation completed successfully");
             }
