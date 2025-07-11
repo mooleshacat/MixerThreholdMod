@@ -31,7 +31,7 @@ namespace MixerThreholdMod_0_0_1
                 {
                     Main.CurrentSavePath = __result;
 
-                    string path = Path.Combine(__result, "MixerThresholdSave.json").Replace('/', '\\');
+                    string path = Utils.NormalizePath(Path.Combine(__result, "MixerThresholdSave.json"));
                     
                     int _mixerCount = 0;
                     try

@@ -218,9 +218,9 @@ namespace MixerThreholdMod_0_0_1
                     }
 
                     string targetDir = Path.GetDirectoryName(targetFile);
-                    if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
+                    if (!string.IsNullOrEmpty(targetDir))
                     {
-                        Directory.CreateDirectory(targetDir);
+                        Utils.EnsureDirectoryExists(targetDir, "SafeCopy target directory");
                     }
 
                     File.Copy(sourceFile, targetFile, overwrite);

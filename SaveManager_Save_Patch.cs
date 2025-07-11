@@ -33,7 +33,7 @@ namespace MixerThreholdMod_0_0_1
                     return;
                 }
 
-                string normalizedPath = _savePath.Replace('/', '\\');
+                string normalizedPath = Utils.NormalizePath(_savePath);
                 Main.CurrentSavePath = normalizedPath;
                 Main.logger.Msg(2, $"Captured Save Folder Path: {normalizedPath}");
 
@@ -110,7 +110,7 @@ namespace MixerThreholdMod_0_0_1
                     return BackupResult.CreateFailure($"Could not get parent directory of save root: {_saveRoot}");
                 }
 
-                var _backupRoot = Path.Combine(parentDir.FullName, "MixerThreholdMod_backup").Replace('/', '\\') + "\\";
+                var _backupRoot = Utils.NormalizePath(Path.Combine(parentDir.FullName, "MixerThreholdMod_backup")) + "\\";
                 _saveRoot = _saveRoot.TrimEnd('\\') + "\\";
                     
                 Main.logger.Msg(2, $"BACKUP ROOT: {_backupRoot}");
@@ -122,17 +122,10 @@ namespace MixerThreholdMod_0_0_1
                     return BackupResult.CreateFailure($"Save directory not found at {_saveRoot}");
                 }
 
-                if (!Directory.Exists(_backupRoot))
+                if (!Utils.EnsureDirectoryExists(_backupRoot, "backup directory creation"))
                 {
-                    try
-                    {
-                        Directory.CreateDirectory(_backupRoot);
-                        Main.logger.Msg(2, $"Created backup directory: {_backupRoot}");
-                    }
-                    catch (Exception createEx)
-                    {
-                        Main.logger.Err($"Failed to create backup directory {_backupRoot}: {createEx.Message}");
-                        return BackupResult.CreateFailure($"Failed to create backup directory: {createEx.Message}");
+                    return BackupResult.CreateFailure("Failed to create backup directory");
+                }
                     }
                 }
 
@@ -363,8 +356,7 @@ namespace MixerThreholdMod_0_0_1
                     return;
                 }
 
-                Directory.CreateDirectory(targetDir);
-                Main.logger.Msg(3, $"CopyDirectory: Created target directory: {targetDir}");
+                Utils.EnsureDirectoryExists(targetDir, "CopyDirectory target directory");
 
                 var sourceFiles = Directory.GetFiles(sourceDir);
                 foreach (var file in sourceFiles)

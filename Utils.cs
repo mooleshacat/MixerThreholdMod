@@ -12,6 +12,90 @@ namespace MixerThreholdMod_0_0_1
 {
     public class Utils
     {
+        /// <summary>
+        /// Normalizes a path by replacing forward slashes with backslashes (Windows-style)
+        /// </summary>
+        public static string NormalizePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return path;
+            
+            return path.Replace('/', '\\');
+        }
+
+        /// <summary>
+        /// Safely executes an action with error logging
+        /// </summary>
+        public static void SafeExecute(Action action, string operationName = "operation")
+        {
+            try
+            {
+                action?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"{operationName}: Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Safely executes an async action with error logging
+        /// </summary>
+        public static async Task SafeExecuteAsync(Func<Task> asyncAction, string operationName = "async operation")
+        {
+            try
+            {
+                if (asyncAction != null)
+                    await asyncAction();
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"{operationName}: Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Safely gets a value with null checking and error handling
+        /// </summary>
+        public static T SafeGet<T>(Func<T> getter, T defaultValue = default(T), string operationName = "get operation")
+        {
+            try
+            {
+                return getter != null ? getter() : defaultValue;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"{operationName}: Error: {ex.Message}");
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Validates that a directory exists and creates it if it doesn't
+        /// </summary>
+        public static bool EnsureDirectoryExists(string path, string operationName = "directory operation")
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    Main.logger.Warn(1, $"{operationName}: Path is null or empty");
+                    return false;
+                }
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                    Main.logger.Msg(3, $"{operationName}: Created directory: {path}");
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"{operationName}: Failed to ensure directory exists at {path}: {ex.Message}");
+                return false;
+            }
+        }
         public class CoroutineHelper : MonoBehaviour
         {
             private static CoroutineHelper _instance;
@@ -100,7 +184,7 @@ namespace MixerThreholdMod_0_0_1
                     return;
                 }
 
-                string path = Path.Combine(saveDir, "MixerThresholdSave.json").Replace('/', '\\');
+                string path = NormalizePath(Path.Combine(saveDir, "MixerThresholdSave.json"));
                 bool exists = File.Exists(path);
                 Main.logger.Msg(3, $"File exists at '{path}': {exists}");
             }

@@ -34,14 +34,9 @@ namespace MixerThreholdMod_0_0_1
             }
             private void Update()
             {
-                try
-                {
+                Utils.SafeExecute(() => {
                     // Optional: handle key input for console if needed
-                }
-                catch (Exception ex)
-                {
-                    Main.logger.Err($"MixerConsoleHook.Update: Error: {ex.Message}");
-                }
+                }, "MixerConsoleHook.Update");
             }
             public void OnConsoleCommand(string command)
             {
