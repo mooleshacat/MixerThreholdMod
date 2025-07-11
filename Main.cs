@@ -43,7 +43,20 @@ namespace MixerThreholdMod_0_0_1
         public override void OnInitializeMelon()
         {
             base.OnInitializeMelon();
-            // Test log
+            // Global unhandled exception handler
+            UnhandledExceptionEventHandler value = (sender, args) =>
+            {
+                Exception ex = args.ExceptionObject as Exception;
+                if (ex != null)
+                {
+                    Main.logger.Err($"[GLOBAL] Unhandled exception: {ex.Message}\n{ex.StackTrace}");
+                }
+                else
+                {
+                    Main.logger.Err($"[GLOBAL] Unhandled exception: {args.ExceptionObject}");
+                }
+            };
+            AppDomain.CurrentDomain.UnhandledException += value;            // Test log
             Logger logger = new Logger();
             logger.Msg(1, "MixerThreholdMod initializing...");
             logger.Msg(1, $"currentMsgLogLevel: {logger.CurrentMsgLogLevel}");
