@@ -15,26 +15,51 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
-                Main.logger.Msg(2, $"EntityConfiguration.Destroy() called mixer");
-
-                // Get a snapshot of tracked mixers
-                var trackedMixers = TrackedMixers.ToListAsync().Result;
-
-                // Find if this instance is tracked
-                var mixerData = trackedMixers.FirstOrDefault(tm => tm != null && tm.ConfigInstance == __instance);
-                if (mixerData != null)
+                if (__instance == null)
                 {
-                    // Remove from shared tracked list
-                    TrackedMixers.RemoveAsync(mixerData.ConfigInstance).Wait();
-
-                    Main.logger.Msg(2, $"Removed mixer from tracked list (via EntityConfiguration.Destroy)");
+                    Main.logger.Warn(1, "EntityConfiguration_Destroy_Patch: __instance is null");
+                    return;
                 }
+
+                Main.logger.Msg(2, $"EntityConfiguration.Destroy() called for mixer");
+
+                // Use fire-and-forget async to avoid blocking the game thread
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Get a snapshot of tracked mixers
+                        var trackedMixers = await TrackedMixers.ToListAsync();
+                        if (trackedMixers == null)
+                        {
+                            Main.logger.Warn(1, "EntityConfiguration_Destroy_Patch: trackedMixers is null");
+                            return;
+                        }
+
+                        // Find if this instance is tracked
+                        var mixerData = trackedMixers.FirstOrDefault(tm => tm != null && tm.ConfigInstance == __instance);
+                        if (mixerData != null)
+                        {
+                            // Remove from shared tracked list
+                            await TrackedMixers.RemoveAsync(mixerData.ConfigInstance);
+                            Main.logger.Msg(2, $"Removed mixer {mixerData.MixerInstanceID} from tracked list (via EntityConfiguration.Destroy)");
+                        }
+                        else
+                        {
+                            Main.logger.Msg(3, "EntityConfiguration_Destroy_Patch: No matching mixer found in tracked list");
+                        }
+                    }
+                    catch (Exception asyncEx)
+                    {
+                        Main.logger.Err($"EntityConfiguration_Destroy_Patch: Error in async cleanup: {asyncEx.Message}\n{asyncEx.StackTrace}");
+                    }
+                });
             }
             catch (Exception ex)
             {
                 // catchall at patch level, where my DLL interacts with the game and it's engine
                 // hopefully should catch errors in entire project?
-                Main.logger.Err($"EntityConfiguration_Destroy_Patch: Failed to save game and/or preferences and/or backup");
+                Main.logger.Err($"EntityConfiguration_Destroy_Patch: Failed during mixer cleanup");
                 Main.logger.Err($"EntityConfiguration_Destroy_Patch: Caught exception: {ex.Message}\n{ex.StackTrace}");
             }
         }

@@ -25,17 +25,27 @@ namespace MixerThreholdMod_0_0_1
             try
             {
                 isHandlingGetter = true;
+                Main.logger.Msg(3, $"LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {__result ?? "null"}");
 
                 if (!string.IsNullOrEmpty(__result))
                 {
                     Main.CurrentSavePath = __result;
 
                     string path = Path.Combine(__result, "MixerThresholdSave.json").Replace('/', '\\');
-                    int _mixerCount = TrackedMixers.Count(tm => true);
+                    
+                    int _mixerCount = 0;
+                    try
+                    {
+                        _mixerCount = TrackedMixers.Count(tm => tm != null);
+                    }
+                    catch (Exception countEx)
+                    {
+                        Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Error counting mixers: {countEx.Message}");
+                    }
 
                     if (_mixerCount == 0)
                     {
-                        // Use the same flag, so when one triggers it supresses the other :)
+                        // Use the same flag, so when one triggers it suppresses the other :)
                         if (!MixerSaveManager._hasLoggedZeroMixers)
                         {
                             Main.logger.Msg(2, "No mixers tracked (maybe you have none?) — skipping mixer threshold prefs save/create.");
@@ -45,10 +55,17 @@ namespace MixerThreholdMod_0_0_1
                         return;
                     }
 
-                    if (!File.Exists(path))
+                    if (!string.IsNullOrEmpty(path) && !File.Exists(path))
                     {
-                        Main.logger.Warn(1, "MixerThresholdSave.json missing on load — creating it now.");
-                        Utils.CoroutineHelper.RunCoroutine(SaveThresholdsCoroutine(__result));
+                        try
+                        {
+                            Main.logger.Warn(1, "MixerThresholdSave.json missing on load — creating it now.");
+                            Utils.CoroutineHelper.RunCoroutine(SaveThresholdsCoroutine(__result));
+                        }
+                        catch (Exception coroutineEx)
+                        {
+                            Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Error starting save coroutine: {coroutineEx.Message}");
+                        }
                     }
                 }
                 else
@@ -60,7 +77,7 @@ namespace MixerThreholdMod_0_0_1
             {
                 // catchall at patch level, where my DLL interacts with the game and it's engine
                 // hopefully should catch errors in entire project?
-                Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Failed to save game and/or preferences and/or backup");
+                Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
                 Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Caught exception: {ex.Message}\n{ex.StackTrace}");
             }
             finally
@@ -71,9 +88,22 @@ namespace MixerThreholdMod_0_0_1
 
         private static IEnumerator SaveThresholdsCoroutine(string savePath)
         {
-            // This will run the async save logic safely
-            MixerSaveManager.SaveMixerThresholds(savePath);
-            yield return null; // Done
+            try
+            {
+                if (string.IsNullOrEmpty(savePath))
+                {
+                    Main.logger.Warn(1, "SaveThresholdsCoroutine: savePath is null or empty");
+                    yield break;
+                }
+
+                // This will run the async save logic safely
+                MixerSaveManager.SaveMixerThresholds(savePath);
+                yield return null; // Done
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"SaveThresholdsCoroutine: Error: {ex.Message}\n{ex.StackTrace}");
+            }
         }
     }
 }
