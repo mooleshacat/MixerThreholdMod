@@ -19,95 +19,33 @@ namespace MixerThreholdMod_0_0_1
             {
                 get
                 {
-                    try
+                    if (_instance == null)
                     {
-                        if (_instance == null)
-                        {
-                            var go = new GameObject("CoroutineHelper");
-                            if (go != null)
-                            {
-                                _instance = go.AddComponent<CoroutineHelper>();
-                                if (_instance != null)
-                                {
-                                    DontDestroyOnLoad(go);
-                                }
-                            }
-                        }
-                        return _instance;
+                        var go = new GameObject("CoroutineHelper");
+                        _instance = go.AddComponent<CoroutineHelper>();
+                        DontDestroyOnLoad(go);
                     }
-                    catch (Exception ex)
-                    {
-                        Main.logger.Err($"CoroutineHelper.Instance: Error creating instance: {ex.Message}");
-                        return null;
-                    }
+                    return _instance;
                 }
             }
             // Static wrapper to safely start coroutines from anywhere
             public static void RunCoroutine(System.Collections.IEnumerator routine)
             {
-                try
-                {
-                    if (routine == null)
-                    {
-                        Main.logger.Warn(1, "CoroutineHelper.RunCoroutine: Routine is null");
-                        return;
-                    }
-
-                    var instance = Instance;
-                    if (instance != null)
-                    {
-                        instance.StartCoroutine(routine);
-                    }
-                    else
-                    {
-                        Main.logger.Warn(1, "CoroutineHelper.RunCoroutine: Instance is null, cannot start coroutine");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Main.logger.Err($"CoroutineHelper.RunCoroutine: Error starting coroutine: {ex.Message}");
-                }
+                Instance.StartCoroutine(routine);
             }
         }
         public static void RunCoroutine(System.Collections.IEnumerator routine)
         {
-            try
-            {
-                if (routine == null)
-                {
-                    Main.logger.Warn(1, "Utils.RunCoroutine: Routine is null");
-                    return;
-                }
-
-                CoroutineHelper.Instance?.StartCoroutine(routine);
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"Utils.RunCoroutine: Error: {ex.Message}");
-            }
+            CoroutineHelper.Instance.StartCoroutine(routine);
         }
         public static void PrintFileExistsStatus()
         {
-            try
-            {
-                string saveDir = !string.IsNullOrEmpty(Main.CurrentSavePath)
-                    ? Path.GetFullPath(Main.CurrentSavePath)
-                    : MelonEnvironment.UserDataDirectory;
-                    
-                if (string.IsNullOrEmpty(saveDir))
-                {
-                    Main.logger.Warn(1, "PrintFileExistsStatus: Save directory is null or empty");
-                    return;
-                }
-
-                string path = Path.Combine(saveDir, "MixerThresholdSave.json").Replace('/', '\\');
-                bool exists = File.Exists(path);
-                Main.logger.Msg(3, $"File exists at '{path}': {exists}");
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"PrintFileExistsStatus: Error checking file status: {ex.Message}");
-            }
+            string saveDir = !string.IsNullOrEmpty(Main.CurrentSavePath)
+                ? Path.GetFullPath(Main.CurrentSavePath)
+                : MelonEnvironment.UserDataDirectory;
+            string path = Path.Combine(saveDir, "MixerThresholdSave.json").Replace('/', '\\');
+            bool exists = File.Exists(path);
+            Main.logger.Msg(3, $"File exists at '{path}': {exists}");
         }
         public string GetFullTimestamp()
         {

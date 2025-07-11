@@ -189,47 +189,23 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
-                if (string.IsNullOrEmpty(sourceFile) || string.IsNullOrEmpty(targetFile))
+                using (var locker = new FileLockHelper(sourceFile + ".lock"))
                 {
-                    Main.logger.Warn(1, $"FileOperations.SafeCopy: Invalid file paths - source: {sourceFile}, target: {targetFile}");
-                    return;
-                }
-
-                if (!File.Exists(sourceFile))
-                {
-                    Main.logger.Warn(1, $"FileOperations.SafeCopy: Source file does not exist: {sourceFile}");
-                    return;
-                }
-
-                string lockFile = sourceFile + ".lock";
-                using (var locker = new FileLockHelper(lockFile))
-                {
-                    bool lockAcquired = locker.AcquireSharedLock();
-                    if (!lockAcquired)
+                    if (!locker.AcquireSharedLock())
                     {
-                        // Try once more
-                        lockAcquired = locker.AcquireSharedLock();
-                    }
+                        if (!locker.AcquireSharedLock())
+                        {
+                            Main.logger.Warn(1, $"FileOperations.SafeCopy: Could not acquire shared lock on [{sourceFile}] for copying.");
+                            return;
+                        }
 
-                    if (!lockAcquired)
-                    {
-                        Main.logger.Warn(1, $"FileOperations.SafeCopy: Could not acquire shared lock on [{sourceFile}] for copying.");
-                        return;
+                        File.Copy(sourceFile, targetFile, overwrite);
                     }
-
-                    string targetDir = Path.GetDirectoryName(targetFile);
-                    if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
-                    {
-                        Directory.CreateDirectory(targetDir);
-                    }
-
-                    File.Copy(sourceFile, targetFile, overwrite);
-                    Main.logger.Msg(3, $"FileOperations.SafeCopy: Successfully copied {sourceFile} to {targetFile}");
                 }
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, $"Caught exception while copying [{sourceFile} → {targetFile}] in FileOperations.SafeCopy: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Warn(1, $"Caught exception while copying [{sourceFile} → {targetFile}] in FileOperations.SafeCopy: {ex}");
             }
         }
 
