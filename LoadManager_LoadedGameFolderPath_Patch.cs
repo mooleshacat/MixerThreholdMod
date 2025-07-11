@@ -12,19 +12,14 @@ using UnityEngine;
 
 namespace MixerThreholdMod_0_0_1
 {
-    [HarmonyPatch(typeof(LoadManager), "LoadedGameFolderPath", MethodType.Getter)]
+    [HarmonyPatch(typeof(LoadManager), "StartGame")]
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
-        private static bool isHandlingGetter = false;
-
         public static void Postfix(ref string __result)
         {
-            if (isHandlingGetter)
-                return;
 
             try
             {
-                isHandlingGetter = true;
                 Main.logger.Msg(3, $"LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {__result ?? "null"}");
 
                 if (!string.IsNullOrEmpty(__result))
@@ -79,10 +74,6 @@ namespace MixerThreholdMod_0_0_1
                 // hopefully should catch errors in entire project?
                 Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
                 Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Caught exception: {ex.Message}\n{ex.StackTrace}");
-            }
-            finally
-            {
-                isHandlingGetter = false;
             }
         }
 
