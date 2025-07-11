@@ -40,47 +40,51 @@ namespace MixerThreholdMod_0_0_1
             }
             public void OnConsoleCommand(string command)
             {
-                try
+                if (string.IsNullOrEmpty(command))
+                    return;
+                    
+                // Convert to lowercase for case-insensitive comparison
+                string lowerCommand = command.ToLowerInvariant();
+                
+                switch (lowerCommand)
                 {
-                    if (string.IsNullOrEmpty(command))
-                        return;
-                        
-                    if (command.StartsWith("resetmixervalues", System.StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (Main.userSetValues != null)
-                        {
-                            Main.userSetValues.Clear();
-                        }
-                        
-                        if (Main.savedMixerValues != null)
-                        {
-                            Main.savedMixerValues.Clear();
-                        }
-                        
-                        // Optional: Reset the saved JSON file
+                    case "resetmixervalues":
                         try
                         {
+                            Main.userSetValues.Clear();
+                            Main.savedMixerValues.Clear();
+                            // Optional: Reset the saved JSON file
                             string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
                             if (File.Exists(path))
                                 File.Delete(path);
+                            // msgLogLevel = 1 because user initiated something, user wants to see results
+                            Main.logger.Msg(1, "MixerThreholdMod: All mixer values reset and ID counter restarted.");
                         }
-                        catch (Exception fileEx)
+                        catch (Exception ex)
                         {
-                            Main.logger.Err($"OnConsoleCommand: Error deleting save file: {fileEx.Message}");
+                            Main.logger.Err($"Error resetting mixer values: {ex}");
                         }
+                        break;
                         
-                        // msgLogLevel = 1 because user initiated something, user wants to see results
-                        Main.logger.Msg(1, "MixerThreholdMod: All mixer values reset and ID counter restarted.");
-                    }
-                    else if (command == "printsavepath")
-                    {
-                        // msgLogLevel = 1 because user initiated something, user wants to see results
-                        Main.logger.Msg(1, "Current Save Path: " + (Main.CurrentSavePath ?? "[null]"));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Main.logger.Err($"OnConsoleCommand: Error processing command '{command}': {ex.Message}");
+                    case "printsavepath":
+                        try
+                        {
+                            // msgLogLevel = 1 because user initiated something, user wants to see results
+                            Main.logger.Msg(1, "Current Save Path: " + (Main.CurrentSavePath ?? "[null]"));
+                        }
+                        catch (Exception ex)
+                        {
+                            Main.logger.Err($"Error printing save path: {ex}");
+                        }
+                        break;
+                        
+                    default:
+                        // Handle commands that start with specific prefixes
+                        if (lowerCommand.StartsWith("resetmixervalues"))
+                        {
+                            goto case "resetmixervalues";
+                        }
+                        break;
                 }
             }
         }

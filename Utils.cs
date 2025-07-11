@@ -108,6 +108,7 @@ namespace MixerThreholdMod_0_0_1
                         if (_instance == null)
                         {
                             var go = new GameObject("CoroutineHelper");
+<<<<<<< HEAD
                             if (go != null)
                             {
                                 _instance = go.AddComponent<CoroutineHelper>();
@@ -116,12 +117,20 @@ namespace MixerThreholdMod_0_0_1
                                     DontDestroyOnLoad(go);
                                 }
                             }
+=======
+                            _instance = go.AddComponent<CoroutineHelper>();
+                            DontDestroyOnLoad(go);
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                         }
                         return _instance;
                     }
                     catch (Exception ex)
                     {
+<<<<<<< HEAD
                         Main.logger.Err($"CoroutineHelper.Instance: Error creating instance: {ex.Message}");
+=======
+                        Main.logger.Err($"Error creating CoroutineHelper instance: {ex}");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                         return null;
                     }
                 }
@@ -133,23 +142,62 @@ namespace MixerThreholdMod_0_0_1
                 {
                     if (routine == null)
                     {
+<<<<<<< HEAD
                         Main.logger.Warn(1, "CoroutineHelper.RunCoroutine: Routine is null");
+=======
+                        Main.logger.Warn(1, "RunCoroutine: routine is null");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                         return;
                     }
 
                     var instance = Instance;
                     if (instance != null)
                     {
+<<<<<<< HEAD
                         instance.StartCoroutine(routine);
                     }
                     else
                     {
                         Main.logger.Warn(1, "CoroutineHelper.RunCoroutine: Instance is null, cannot start coroutine");
+=======
+                        instance.StartCoroutine(SafeCoroutineWrapper(routine));
+                    }
+                    else
+                    {
+                        Main.logger.Err("CoroutineHelper instance is null, cannot start coroutine");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                     }
                 }
                 catch (Exception ex)
                 {
+<<<<<<< HEAD
                     Main.logger.Err($"CoroutineHelper.RunCoroutine: Error starting coroutine: {ex.Message}");
+=======
+                    Main.logger.Err($"Error in RunCoroutine: {ex}");
+                }
+            }
+
+            private static System.Collections.IEnumerator SafeCoroutineWrapper(System.Collections.IEnumerator routine)
+            {
+                if (routine == null) yield break;
+
+                bool hasMore = true;
+                while (hasMore)
+                {
+                    try
+                    {
+                        hasMore = routine.MoveNext();
+                        if (hasMore)
+                        {
+                            yield return routine.Current;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger.Err($"Coroutine continue failure in SafeCoroutineWrapper: {ex}");
+                        hasMore = false;
+                    }
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                 }
             }
         }
@@ -157,6 +205,7 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
+<<<<<<< HEAD
                 if (routine == null)
                 {
                     Main.logger.Warn(1, "Utils.RunCoroutine: Routine is null");
@@ -168,6 +217,13 @@ namespace MixerThreholdMod_0_0_1
             catch (Exception ex)
             {
                 Main.logger.Err($"Utils.RunCoroutine: Error: {ex.Message}");
+=======
+                CoroutineHelper.Instance.StartCoroutine(routine);
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"Error in Utils.RunCoroutine: {ex}");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
             }
         }
         public static void PrintFileExistsStatus()

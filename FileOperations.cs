@@ -114,7 +114,15 @@ namespace MixerThreholdMod_0_0_1
         /// </summary>
         public static void SafeWriteAllText(string path, string output)
         {
-            SafeWriteAllTextAsync(path, output).GetAwaiter().GetResult();
+            try
+            {
+                SafeWriteAllTextAsync(path, output).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"Error in SafeWriteAllText sync wrapper: {ex}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -122,7 +130,15 @@ namespace MixerThreholdMod_0_0_1
         /// </summary>
         public static string SafeReadAllText(string path)
         {
-            return SafeReadAllTextAsync(path).GetAwaiter().GetResult();
+            try
+            {
+                return SafeReadAllTextAsync(path).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"Error in SafeReadAllText sync wrapper: {ex}");
+                throw;
+            }
         }
 
         /// <summary>
