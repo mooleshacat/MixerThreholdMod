@@ -48,20 +48,30 @@ After each save operation, the mod automatically:
 3. Keeps the 5 most recent backups and removes older ones
 
 ### Backup Location
-Your backups are stored in:
+Your saves are stored every time you save game in:
 ```
-[Your Save Game Directory]/../MixerThresholdMod_backup/
+C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\
 ```
-
-For example, if your saves are in:
-```
-C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\SaveGame_2\
-```
-
+Where each 'n' is a number. Structure is like so:
+- nnnnnnnnnnnnnnnnn\
+  - SaveGame_1\
+  - SaveGame_2\
+  - SaveGame_3\
+  - SaveGame_4\
+  - SaveGame_5\
 Your backups will be in:
 ```
-C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\MixerThresholdMod_backup\
+C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\MixerThreholdMod_backup\
 ```
+Structure is like so:
+- MixerThreholdMod_backup
+  - SaveGame_2_backup_2025-07-10_18-22-48
+  - SaveGame_2_backup_2025-07-10_18-26-12
+  - SaveGame_2_backup_2025-07-10_18-29-16
+  - SaveGame_2_backup_2025-07-10_18-36-51
+  - SaveGame_2_backup_2025-07-10_18-50-19
+
+There will be 5 backups for each savegame (5x5=25 max saves)
 
 ### Restoring from Backup 🔄
 
@@ -72,9 +82,9 @@ If you need to restore a backup:
    ```
    SaveGame_2_backup_2024-01-15_14-30-22
    ```
-3. **Navigate to your main save directory** (usually `SaveGame_2`)
-4. **Backup your current save** (copy the folder somewhere safe)
-5. **Delete or rename your current save folder**
+3. **Navigate to your main save directory** (usually `C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\`)
+4. **Backup your current save** (copy SaveGame_2 somewhere safe)
+5. **Delete or rename SaveGame_2 folder**
 6. **Copy the backup folder** to the save location
 7. **Rename it** to `SaveGame_2` (or whatever your original save folder was named)
 
@@ -134,9 +144,11 @@ This is the author's first mod, created with AI assistance (GitHub Copilot). The
 ## Credits 👏
 
 - **Author**: mooleshacat
-- **Development**: Created with GitHub Copilot assistance
+- **Development**: Created with GitHub Copilot & Brave Leo's assistance
 - **Game**: Schedule 1 by TVGS
 - **Framework**: MelonLoader community
+- **Brave & Leo AI**: for help getting the original source together
+- **Github CoPilot**: for doing far more than Leo ever could
 
 ## License 📄
 
@@ -144,8 +156,8 @@ Open source - see LICENSE.md for details.
 
 ## Contributing 🤝
 
-Issues, suggestions, and pull requests are welcome! This mod is open source and community contributions are encouraged.
+Issues, suggestions, and pull requests are welcome! This mod is open source and community contributions are encouraged. AI is welcomed :)
 
 ---
 
-*Note: The mod name "MixerThreholdMod" intentionally preserves the original typo found in the game's code through reverse engineering.*
+*Note: The mod name "MixerThreholdMod" intentionally preserves the original typo found in the game's code through dnSpy reverse engineering.*
