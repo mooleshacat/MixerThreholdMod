@@ -88,22 +88,23 @@ namespace MixerThreholdMod_0_0_1
 
         private static IEnumerator SaveThresholdsCoroutine(string savePath)
         {
+            if (string.IsNullOrEmpty(savePath))
+            {
+                Main.logger.Warn(1, "SaveThresholdsCoroutine: savePath is null or empty");
+                yield break;
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(savePath))
-                {
-                    Main.logger.Warn(1, "SaveThresholdsCoroutine: savePath is null or empty");
-                    yield break;
-                }
-
                 // This will run the async save logic safely
                 MixerSaveManager.SaveMixerThresholds(savePath);
-                yield return null; // Done
             }
             catch (Exception ex)
             {
                 Main.logger.Err($"SaveThresholdsCoroutine: Error: {ex.Message}\n{ex.StackTrace}");
             }
+            
+            yield return null; // Done
         }
     }
 }

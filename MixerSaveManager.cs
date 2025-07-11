@@ -32,40 +32,46 @@ namespace MixerThreholdMod_0_0_1
         public static ConcurrentDictionary<int, float> SavedMixerValues = new ConcurrentDictionary<int, float>();
         public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration instance, int uniqueID)
         {
+            Main.logger.Msg(3, $"AttachListenerWhenReady started for Mixer {uniqueID}");
+            
+            // Safety check: bail if instance is null
+            if (instance == null)
+            {
+                Main.logger.Warn(1, $"Instance is null — cannot attach listener for Mixer {uniqueID}");
+                yield break;
+            }
+
+            // Wait for StartThrehold to become available, but only while instance exists
+            int waitAttempts = 0;
+            const int maxWaitAttempts = 100; // Prevent infinite loop
+            
+            while (instance != null && instance.StartThrehold == null && waitAttempts < maxWaitAttempts)
+            {
+                waitAttempts++;
+                yield return null;
+            }
+
+            // Double-check instance still exists after waiting
+            if (instance == null)
+            {
+                Main.logger.Warn(1, $"Instance destroyed before threshold became available — Mixer {uniqueID}");
+                yield break;
+            }
+
+            if (instance.StartThrehold == null)
+            {
+                Main.logger.Warn(1, $"StartThrehold never became available after {maxWaitAttempts} attempts — Mixer {uniqueID}");
+                yield break;
+            }
+
+            // Now handle the operations that might throw exceptions
+            ProcessMixerSetupSafely(instance, uniqueID);
+        }
+
+        private static void ProcessMixerSetupSafely(MixingStationConfiguration instance, int uniqueID)
+        {
             try
             {
-                Main.logger.Msg(3, $"AttachListenerWhenReady started for Mixer {uniqueID}");
-                
-                // Safety check: bail if instance is null
-                if (instance == null)
-                {
-                    Main.logger.Warn(1, $"Instance is null — cannot attach listener for Mixer {uniqueID}");
-                    yield break;
-                }
-
-                // Wait for StartThrehold to become available, but only while instance exists
-                int waitAttempts = 0;
-                const int maxWaitAttempts = 100; // Prevent infinite loop
-                
-                while (instance != null && instance.StartThrehold == null && waitAttempts < maxWaitAttempts)
-                {
-                    waitAttempts++;
-                    yield return null;
-                }
-
-                // Double-check instance still exists after waiting
-                if (instance == null)
-                {
-                    Main.logger.Warn(1, $"Instance destroyed before threshold became available — Mixer {uniqueID}");
-                    yield break;
-                }
-
-                if (instance.StartThrehold == null)
-                {
-                    Main.logger.Warn(1, $"StartThrehold never became available after {maxWaitAttempts} attempts — Mixer {uniqueID}");
-                    yield break;
-                }
-
                 // Restore saved value if exists
                 if (Main.savedMixerValues != null && Main.savedMixerValues.TryGetValue(uniqueID, out float savedValue))
                 {
@@ -111,7 +117,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"AttachListenerWhenReady: Critical error for Mixer {uniqueID}: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Err($"ProcessMixerSetupSafely: Critical error for Mixer {uniqueID}: {ex.Message}\n{ex.StackTrace}");
             }
         }
         public static IEnumerator WriteMixerValuesAsync(string saveFolderPath)
@@ -415,32 +421,38 @@ namespace MixerThreholdMod_0_0_1
 
         public static IEnumerator LoadMixerValuesWhenReady()
         {
+            Main.logger.Msg(3, "LoadMixerValuesWhenReady: Starting");
+            
+            // Check the flag at the very start
+            lock (_loadLock)
+            {
+                if (_hasLoaded)
+                {
+                    Main.logger.Msg(3, "LoadMixerValuesWhenReady: Already loaded, skipping");
+                    yield break;
+                }
+
+                // First one in, mark as loading
+                _hasLoaded = true;
+            }
+
+            int attempts = 0;
+            const int maxAttempts = 50;
+            
+            while (string.IsNullOrEmpty(Main.CurrentSavePath) && attempts < maxAttempts)
+            {
+                attempts++;
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            // Handle the loading operation
+            HandleMixerLoadingSafely();
+        }
+
+        private static void HandleMixerLoadingSafely()
+        {
             try
             {
-                Main.logger.Msg(3, "LoadMixerValuesWhenReady: Starting");
-                
-                // 👇 Check the flag at the very start
-                lock (_loadLock)
-                {
-                    if (_hasLoaded)
-                    {
-                        Main.logger.Msg(3, "LoadMixerValuesWhenReady: Already loaded, skipping");
-                        yield break;
-                    }
-
-                    // First one in, mark as loading
-                    _hasLoaded = true;
-                }
-
-                int attempts = 0;
-                const int maxAttempts = 50;
-                
-                while (string.IsNullOrEmpty(Main.CurrentSavePath) && attempts < maxAttempts)
-                {
-                    attempts++;
-                    yield return new WaitForSeconds(0.1f);
-                }
-
                 if (!string.IsNullOrEmpty(Main.CurrentSavePath))
                 {
                     try
@@ -455,12 +467,12 @@ namespace MixerThreholdMod_0_0_1
                 }
                 else
                 {
-                    logger.Warn(1, $"Save path never became available after {maxAttempts} attempts. Using empty/default mixer values.");
+                    logger.Warn(1, $"Save path never became available after attempts. Using empty/default mixer values.");
                 }
             }
             catch (Exception ex)
             {
-                logger.Err($"LoadMixerValuesWhenReady: Critical error: {ex.Message}\n{ex.StackTrace}");
+                logger.Err($"HandleMixerLoadingSafely: Critical error: {ex.Message}\n{ex.StackTrace}");
             }
         }
 

@@ -19,7 +19,7 @@ namespace MixerThreholdMod_0_0_1
 
     internal static class TrackedMixers
     {
-        private static readonly List<TrackedMixer> _mixers = new List<TrackedMixer>();
+        private static List<TrackedMixer> _mixers = new List<TrackedMixer>();
         private static readonly AsyncLocker _locker = new AsyncLocker();
 
         // Read-only async snapshot
@@ -61,11 +61,6 @@ namespace MixerThreholdMod_0_0_1
                 
                 using (await _locker.LockAsync().ConfigureAwait(false))
                 {
-                    if (_mixers == null)
-                    {
-                        Main.logger.Warn(1, "TrackedMixers.AddAsync: _mixers is null, initializing");
-                        _mixers = new List<TrackedMixer>();
-                    }
                     _mixers.Add(mixer);
                 }
             }
