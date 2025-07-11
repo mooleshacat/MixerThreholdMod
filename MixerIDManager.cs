@@ -18,25 +18,62 @@ namespace MixerThreholdMod_0_0_1
 
         public static void ResetStableIDCounter()
         {
-            _nextStableID = 0;
-            MelonLogger.Msg("Stable ID counter reset.");
+            try
+            {
+                _nextStableID = 0;
+                MelonLogger.Msg("Stable ID counter reset.");
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"ResetStableIDCounter: Error resetting counter: {ex.Message}");
+            }
         }
 
         public static int GetMixerID(MixingStationConfiguration instance)
         {
-            if (instance == null)
-                throw new ArgumentNullException(nameof(instance), "Cannot assign ID to null MixingStationConfiguration");
-
-            if (MixerInstanceMap.TryGetValue(instance, out int id))
+            try
             {
-                Main.logger.Warn(2, $"Instance already has ID {id}: {instance}");
+                if (instance == null)
+                {
+                    Main.logger.Err("GetMixerID: Cannot assign ID to null MixingStationConfiguration");
+                    throw new ArgumentNullException(nameof(instance), "Cannot assign ID to null MixingStationConfiguration");
+                }
+
+                if (MixerInstanceMap == null)
+                {
+                    Main.logger.Err("GetMixerID: MixerInstanceMap is null");
+                    throw new InvalidOperationException("MixerInstanceMap is not initialized");
+                }
+
+                if (MixerInstanceMap.TryGetValue(instance, out int id))
+                {
+                    Main.logger.Warn(2, $"Instance already has ID {id}: {instance}");
+                    return id;
+                }
+
+                id = Interlocked.Increment(ref _nextStableID);
+                bool added = MixerInstanceMap.TryAdd(instance, id);
+                
+                if (added)
+                {
+                    Main.logger.Msg(3, $"Assigned new ID {id} to instance: {instance}");
+                }
+                else
+                {
+                    Main.logger.Warn(1, $"Failed to add instance {id} to MixerInstanceMap, returning ID anyway");
+                }
+                
                 return id;
             }
-
-            id = Interlocked.Increment(ref _nextStableID);
-            MixerInstanceMap.TryAdd(instance, id);
-            Main.logger.Msg(3, $"Assigned new ID {id} to instance: {instance}");
-            return id;
+            catch (ArgumentNullException)
+            {
+                throw; // Re-throw argument null exceptions
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"GetMixerID: Unexpected error: {ex.Message}\n{ex.StackTrace}");
+                throw; // Re-throw to maintain expected behavior
+            }
         }
     }
 }

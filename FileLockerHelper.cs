@@ -175,14 +175,45 @@ public class FileLockHelper : IDisposable
     /// </summary>
     public void ReleaseLock()
     {
-        if (_isLocked)
+        try
         {
-            _lockStream.Dispose();
-            _isLocked = false;
+            if (_isLocked && _lockStream != null)
+            {
+                _lockStream.Dispose();
+                _lockStream = null;
+                _isLocked = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log if Main.logger is available, otherwise silently handle
+            try
+            {
+                MixerThreholdMod_0_0_1.Main.logger.Warn(1, $"FileLockHelper.ReleaseLock: Error releasing lock: {ex.Message}");
+            }
+            catch
+            {
+                // Ignore logging errors during cleanup
+            }
         }
     }
     public void Dispose()
     {
-        ReleaseLock();
+        try
+        {
+            ReleaseLock();
+        }
+        catch (Exception ex)
+        {
+            // Log if Main.logger is available, otherwise silently handle
+            try
+            {
+                MixerThreholdMod_0_0_1.Main.logger.Warn(1, $"FileLockHelper.Dispose: Error during disposal: {ex.Message}");
+            }
+            catch
+            {
+                // Ignore logging errors during cleanup
+            }
+        }
     }
 }

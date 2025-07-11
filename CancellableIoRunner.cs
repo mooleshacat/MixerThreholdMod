@@ -16,37 +16,55 @@ public static class CancellableIoRunner
         CancellationToken ct,
         Action<int, string> logger = null)
     {
-        var tcs = new TaskCompletionSource<bool>();
-
-        // Register cancellation
-        ct.Register(() => tcs.TrySetCanceled());
-
-        // Run the operation on a background thread
-        await Task.Run(async () =>
+        try
         {
+            if (ioOperation == null)
+            {
+                logger?.Invoke(1, "CancellableIoRunner.Run: ioOperation is null");
+                return false;
+            }
+
+            var tcs = new TaskCompletionSource<bool>();
+
+            // Register cancellation
+            ct.Register(() => tcs.TrySetCanceled());
+
+            // Run the operation on a background thread
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    await ioOperation(ct);
+                    tcs.TrySetResult(true);
+                }
+                catch (OperationCanceledException)
+                {
+                    tcs.TrySetCanceled();
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            }, ct);
+
             try
             {
-                await ioOperation(ct);
-                tcs.TrySetResult(true);
+                return await tcs.Task;
+            }
+            catch (OperationCanceledException)
+            {
+                logger?.Invoke(1, "Cancellable I/O operation was canceled.");
+                return false;
             }
             catch (Exception ex)
             {
-                tcs.TrySetException(ex);
+                logger?.Invoke(1, $"Error during cancellable I/O operation: {ex.Message}");
+                return false;
             }
-        }, ct);
-
-        try
-        {
-            return await tcs.Task;
-        }
-        catch (OperationCanceledException)
-        {
-            logger?.Invoke(1, "Cancellable I/O operation was canceled.");
-            return false;
         }
         catch (Exception ex)
         {
-            logger?.Invoke(1, $"Error during cancellable I/O operation: {ex}");
+            logger?.Invoke(1, $"CancellableIoRunner.Run: Critical error: {ex.Message}");
             return false;
         }
     }

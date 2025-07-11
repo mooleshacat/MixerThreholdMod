@@ -73,65 +73,133 @@ namespace MixerThreholdMod_0_0_1
         }
         private static void QueueInstance(MixingStationConfiguration __instance)
         {
-            queuedInstances.Add(__instance);
-            logger.Msg(3, "Queued new MixingStationConfiguration");
+            try
+            {
+                if (__instance == null)
+                {
+                    logger.Warn(1, "QueueInstance: Attempting to queue null MixingStationConfiguration");
+                    return;
+                }
+
+                if (queuedInstances == null)
+                {
+                    logger.Warn(1, "QueueInstance: queuedInstances is null, initializing");
+                    queuedInstances = new List<MixingStationConfiguration>();
+                }
+
+                queuedInstances.Add(__instance);
+                logger.Msg(3, "Queued new MixingStationConfiguration");
+            }
+            catch (Exception ex)
+            {
+                logger.Err($"QueueInstance: Error queuing instance: {ex.Message}\n{ex.StackTrace}");
+            }
         }
         public async override void OnUpdate()
         {
-            // 🔁 Clean up tracked mixers at the start of each update
-            await TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
-            if (queuedInstances.Count == 0) return;
-            var toProcess = queuedInstances.ToList();
-            foreach (var instance in toProcess)
+            try
             {
-                // Prevent duplicate processing of the same instance
-                if (await TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
+                // 🔁 Clean up tracked mixers at the start of each update
+                try
                 {
-                    logger.Warn(1, $"Instance already tracked — skipping duplicate: {instance}");
-                    continue;
+                    await TrackedMixers.RemoveAllAsync(tm => tm?.ConfigInstance == null);
                 }
-                if (instance.StartThrehold == null)
+                catch (Exception cleanupEx)
                 {
-                    logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
-                    continue;
+                    logger.Err($"OnUpdate: Error during mixer cleanup: {cleanupEx.Message}");
                 }
-                var mixerData = await TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
-                if (mixerData == null)
+
+                if (queuedInstances == null || queuedInstances.Count == 0) return;
+
+                var toProcess = queuedInstances?.ToList() ?? new List<MixingStationConfiguration>();
+                foreach (var instance in toProcess)
                 {
                     try
                     {
-                        // Configure threshold
-                        instance.StartThrehold.Configure(1f, 20f, true);
-
-                        var newTrackedMixer = new TrackedMixer
+                        if (instance == null)
                         {
-                            ConfigInstance = instance,
-                            MixerInstanceID = MixerIDManager.GetMixerID(instance)
-                        };
-                        await TrackedMixers.AddAsync(newTrackedMixer);
-                        logger.Msg(3, $"Created mixer with Stable ID: {newTrackedMixer.MixerInstanceID}");
-
-                        // Now safely add listener
-                        if (!mixerData.ListenerAdded)
-                        {
-                            logger.Msg(3, $"Attaching listener for Mixer {newTrackedMixer.MixerInstanceID}");
-                            Utils.CoroutineHelper.RunCoroutine(MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
-                            newTrackedMixer.ListenerAdded = true;
+                            logger.Warn(1, "OnUpdate: Skipping null instance in queuedInstances");
+                            continue;
                         }
-                        // Restore saved value if exists
-                        if (savedMixerValues.TryGetValue(mixerData.MixerInstanceID, out float savedValue))
+
+                        // Prevent duplicate processing of the same instance
+                        bool alreadyTracked = await TrackedMixers.AnyAsync(tm => tm?.ConfigInstance == instance);
+                        if (alreadyTracked)
                         {
-                            logger.Msg(2, $"Restoring Mixer {mixerData.MixerInstanceID} to {savedValue}");
-                            instance.StartThrehold.SetValue(savedValue, true);
+                            logger.Warn(1, $"Instance already tracked — skipping duplicate: {instance}");
+                            continue;
+                        }
+
+                        if (instance.StartThrehold == null)
+                        {
+                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
+                            continue;
+                        }
+
+                        var existingMixerData = await TrackedMixers.FirstOrDefaultAsync(tm => tm?.ConfigInstance == instance);
+                        if (existingMixerData == null)
+                        {
+                            try
+                            {
+                                // Configure threshold
+                                instance.StartThrehold.Configure(1f, 20f, true);
+
+                                var newTrackedMixer = new TrackedMixer
+                                {
+                                    ConfigInstance = instance,
+                                    MixerInstanceID = MixerIDManager.GetMixerID(instance)
+                                };
+                                
+                                await TrackedMixers.AddAsync(newTrackedMixer);
+                                logger.Msg(3, $"Created mixer with Stable ID: {newTrackedMixer.MixerInstanceID}");
+
+                                // Now safely add listener
+                                if (!newTrackedMixer.ListenerAdded)
+                                {
+                                    logger.Msg(3, $"Attaching listener for Mixer {newTrackedMixer.MixerInstanceID}");
+                                    try
+                                    {
+                                        Utils.CoroutineHelper.RunCoroutine(MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
+                                        newTrackedMixer.ListenerAdded = true;
+                                    }
+                                    catch (Exception listenerEx)
+                                    {
+                                        logger.Err($"OnUpdate: Failed to start listener attachment coroutine: {listenerEx.Message}");
+                                    }
+                                }
+                                
+                                // Restore saved value if exists
+                                if (savedMixerValues != null && savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out float savedValue))
+                                {
+                                    try
+                                    {
+                                        logger.Msg(2, $"Restoring Mixer {newTrackedMixer.MixerInstanceID} to {savedValue}");
+                                        instance.StartThrehold.SetValue(savedValue, true);
+                                    }
+                                    catch (Exception restoreEx)
+                                    {
+                                        logger.Err($"OnUpdate: Failed to restore saved value: {restoreEx.Message}");
+                                    }
+                                }
+                            }
+                            catch (Exception configEx)
+                            {
+                                Main.logger.Err("Error configuring mixer: " + configEx.Message + "\n" + configEx.StackTrace);
+                            }
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception instanceEx)
                     {
-                        Main.logger.Err("Error configuring mixer: " + ex);
+                        logger.Err($"OnUpdate: Error processing mixer instance: {instanceEx.Message}\n{instanceEx.StackTrace}");
                     }
                 }
+                
+                queuedInstances?.Clear();
             }
-            queuedInstances.Clear();
+            catch (Exception ex)
+            {
+                logger.Err($"OnUpdate: Critical error in main update loop: {ex.Message}\n{ex.StackTrace}");
+            }
         }
 
 
@@ -143,49 +211,96 @@ namespace MixerThreholdMod_0_0_1
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            base.OnSceneWasLoaded(buildIndex, sceneName);
-            logger.Msg(2, "Scene loaded: " + sceneName);
-            if (sceneName == "Main")
+            try
             {
-                try
+                base.OnSceneWasLoaded(buildIndex, sceneName);
+                logger.Msg(2, "Scene loaded: " + sceneName);
+                
+                if (sceneName == "Main")
                 {
-                    // Reset mixer IDs
-                    MixerIDManager.MixerInstanceMap.Clear();
-                    MixerIDManager.ResetStableIDCounter();
-
-                    // Clear previous mixer values
-                    savedMixerValues.Clear();
-                    logger.Msg(3, "Current Save Path at scene load: " + (Main.CurrentSavePath ?? "[not available yet]"));
-
-                    // Start coroutine to wait for save path
-                    StartLoadCoroutine();
-                    // Force-refresh file copy to save folder
-                    if (!string.IsNullOrEmpty(Main.CurrentSavePath))
+                    try
                     {
-                        string persistentPath = MelonEnvironment.UserDataDirectory;
-                        string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
-                        string targetFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
-                        if (File.Exists(sourceFile))
+                        // Reset mixer IDs
+                        if (MixerIDManager.MixerInstanceMap != null)
                         {
-                            FileOperations.SafeCopy(sourceFile, targetFile, overwrite: true);
-                            logger.Msg(3, "Copied MixerThresholdSave.json from persistent to save folder");
+                            MixerIDManager.MixerInstanceMap.Clear();
+                        }
+                        MixerIDManager.ResetStableIDCounter();
+
+                        // Clear previous mixer values
+                        if (savedMixerValues != null)
+                        {
+                            savedMixerValues.Clear();
+                        }
+                        
+                        logger.Msg(3, "Current Save Path at scene load: " + (Main.CurrentSavePath ?? "[not available yet]"));
+
+                        // Start coroutine to wait for save path
+                        try
+                        {
+                            StartLoadCoroutine();
+                        }
+                        catch (Exception coroutineEx)
+                        {
+                            logger.Err($"OnSceneWasLoaded: Failed to start load coroutine: {coroutineEx.Message}");
+                        }
+                        
+                        // Force-refresh file copy to save folder
+                        if (!string.IsNullOrEmpty(Main.CurrentSavePath))
+                        {
+                            try
+                            {
+                                string persistentPath = MelonEnvironment.UserDataDirectory;
+                                if (!string.IsNullOrEmpty(persistentPath))
+                                {
+                                    string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
+                                    string targetFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
+                                    
+                                    if (File.Exists(sourceFile))
+                                    {
+                                        FileOperations.SafeCopy(sourceFile, targetFile, overwrite: true);
+                                        logger.Msg(3, "Copied MixerThresholdSave.json from persistent to save folder");
+                                    }
+                                }
+                            }
+                            catch (Exception copyEx)
+                            {
+                                logger.Err($"OnSceneWasLoaded: Failed to copy mixer save file: {copyEx.Message}");
+                            }
                         }
                     }
+                    catch (Exception mainEx)
+                    {
+                        Main.logger.Err($"OnSceneWasLoaded: Error in Main scene processing: {mainEx.Message}\n{mainEx.StackTrace}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Main.logger.Err($"OnSceneWasLoaded: Caught exception: {ex.Message}\n{ex.StackTrace}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"OnSceneWasLoaded: Critical error: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
         private static bool _coroutineStarted = false;
         private static void StartLoadCoroutine()
         {
-            if (_coroutineStarted) return;
-            _coroutineStarted = true;
-
-            MelonCoroutines.Start(MixerSaveManager.LoadMixerValuesWhenReady());
+            try
+            {
+                if (_coroutineStarted) 
+                {
+                    logger.Msg(3, "StartLoadCoroutine: Already started, skipping");
+                    return;
+                }
+                
+                _coroutineStarted = true;
+                logger.Msg(3, "StartLoadCoroutine: Starting MixerSaveManager.LoadMixerValuesWhenReady");
+                MelonCoroutines.Start(MixerSaveManager.LoadMixerValuesWhenReady());
+            }
+            catch (Exception ex)
+            {
+                logger.Err($"StartLoadCoroutine: Error starting coroutine: {ex.Message}\n{ex.StackTrace}");
+                _coroutineStarted = false; // Reset flag on error
+            }
         }
 
 
