@@ -126,8 +126,6 @@ namespace MixerThreholdMod_0_0_1
                 {
                     return BackupResult.CreateFailure("Failed to create backup directory");
                 }
-                    }
-                }
 
                 string _timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
                 string _backupDirName = $"SaveGame_2_backup_{_timestamp}";
