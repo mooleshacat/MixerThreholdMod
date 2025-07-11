@@ -59,7 +59,6 @@ Where each 'n' is a number. Structure is like so:
   - SaveGame_3\
   - SaveGame_4\
   - SaveGame_5\
- 
 Your backups will be in:
 ```
 C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\MixerThreholdMod_backup\
