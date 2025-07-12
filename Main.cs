@@ -180,12 +180,12 @@ namespace MixerThreholdMod_0_0_1
                     Core.GameExceptionMonitor.InitializeLoggingBridge();
                     logger.Msg(1, "Phase 7: Game exception monitoring initialized");
                     
-                    // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
-                    logger.Msg(1, "Phase 6: Initializing advanced system monitoring with memory leak detection...");
+                    // Initialize system hardware monitoring for debugging (DEBUG mode only)
+                    logger.Msg(1, "Phase 6: Initializing system monitoring...");
                     Core.SystemMonitor.Initialize();
-                    logger.Msg(1, "Phase 6: Advanced system monitoring with memory leak detection initialized");
+                    logger.Msg(1, "Phase 6: System monitoring initialized");
                     
-                    logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
+                    logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
                 {
@@ -544,7 +544,7 @@ namespace MixerThreholdMod_0_0_1
             logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
             
             // Log initial system state
-            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_START");
+            SystemMonitor.LogCurrentPerformance("STRESS_TEST_START");
             
             var startTime = DateTime.Now;
             int successCount = 0;
@@ -561,7 +561,7 @@ namespace MixerThreholdMod_0_0_1
                 // Log system state before critical operation (every 5th iteration to avoid spam)
                 if (i % 5 == 1 || iterations <= 5)
                 {
-                    AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
+                    SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
                 }
                 
                 // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
@@ -575,7 +575,7 @@ namespace MixerThreholdMod_0_0_1
                     // Log system state after critical operation (every 5th iteration)
                     if (i % 5 == 0 || i == iterations || iterations <= 5)
                     {
-                        AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
+                        SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
                     }
                     
                     successCount++;
@@ -584,7 +584,7 @@ namespace MixerThreholdMod_0_0_1
                 catch (Exception ex)
                 {
                     logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
-                    AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_FAILED", i));
+                    SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_FAILED", i));
                     failureCount++;
                 }
                 
@@ -599,7 +599,7 @@ namespace MixerThreholdMod_0_0_1
             var totalTime = (DateTime.Now - startTime).TotalSeconds;
             
             // Log final system state after stress test
-            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
+            SystemMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
             
             logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
             logger.Msg(1, string.Format("[MONITOR] Average time per operation: {0:F1}ms", (totalTime * 1000) / iterations));
@@ -612,7 +612,7 @@ namespace MixerThreholdMod_0_0_1
             logger.Msg(2, "[TRANSACTION] Performing save operation...");
             
             // Log system state before transaction
-            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_START");
+            SystemMonitor.LogCurrentPerformance("TRANSACTION_START");
             
             var saveStart = DateTime.Now;
             
@@ -624,7 +624,7 @@ namespace MixerThreholdMod_0_0_1
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
                 
                 // Log system state after successful transaction
-                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
+                SystemMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
                 
                 logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
                 logger.Msg(2, string.Format("[TRANSACTION] Performance: {0:F3} saves/second", 1000.0 / saveTime));
@@ -632,7 +632,7 @@ namespace MixerThreholdMod_0_0_1
             catch (Exception ex)
             {
                 // Log system state after failed transaction
-                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_FAILED");
+                SystemMonitor.LogCurrentPerformance("TRANSACTION_FAILED");
                 
                 logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
                 logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
@@ -646,7 +646,7 @@ namespace MixerThreholdMod_0_0_1
             var profileStart = DateTime.Now;
             
             // Initial system state capture
-            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_START");
+            SystemMonitor.LogCurrentPerformance("PROFILE_START");
             
             // Phase 1: Pre-save diagnostics
             logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
@@ -664,7 +664,7 @@ namespace MixerThreholdMod_0_0_1
                 logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
                 
                 // Enhanced system diagnostics
-                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE1");
+                SystemMonitor.LogCurrentPerformance("PROFILE_PHASE1");
                 
                 phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
@@ -679,7 +679,7 @@ namespace MixerThreholdMod_0_0_1
             var phase2Start = DateTime.Now;
             
             // System state before save operation
-            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
+            SystemMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
             
             yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
             
@@ -689,7 +689,7 @@ namespace MixerThreholdMod_0_0_1
                 logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
                 
                 // System state after save operation
-                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_AFTER_SAVE");
+                SystemMonitor.LogCurrentPerformance("PROFILE_AFTER_SAVE");
                 
                 // Phase 3: Post-save diagnostics
                 logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
@@ -699,7 +699,7 @@ namespace MixerThreholdMod_0_0_1
                 logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
                 
                 // Final system state capture
-                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE3");
+                SystemMonitor.LogCurrentPerformance("PROFILE_PHASE3");
                 
                 phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
@@ -715,12 +715,12 @@ namespace MixerThreholdMod_0_0_1
                     ((phase1Time + phase3Time) / phase2Time) * 100));
                 
                 // Final system state
-                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_COMPLETE");
+                SystemMonitor.LogCurrentPerformance("PROFILE_COMPLETE");
             }
             catch (Exception ex)
             {
                 // System state on error
-                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_ERROR");
+                SystemMonitor.LogCurrentPerformance("PROFILE_ERROR");
                 
                 if (profileError != null)
                 {
@@ -743,7 +743,7 @@ namespace MixerThreholdMod_0_0_1
                 logger?.Msg(2, "[MAIN] Application shutting down - cleaning up resources");
                 
                 // Cleanup system monitoring resources
-                AdvancedSystemPerformanceMonitor.Cleanup();
+                SystemMonitor.Cleanup();
                 
                 logger?.Msg(1, "[MAIN] Cleanup completed successfully");
             }
@@ -753,6 +753,5 @@ namespace MixerThreholdMod_0_0_1
                 // Don't throw here - we're shutting down anyway
             }
         }
->>>>>>> aa94715 (performance optimizations, cache manager)
     }
 } // End of namespace

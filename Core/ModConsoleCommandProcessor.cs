@@ -120,32 +120,12 @@ namespace MixerThreholdMod_1_0_0.Core
 
             /// <summary>
             /// Handle console command input
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
             /// ⚠️ COMPREHENSIVE LOGGING: Logs full command details including all parameters, system context, and error information
             /// Enhanced with system monitoring integration and complete command breakdown
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
-            /// ⚠️ COMPREHENSIVE LOGGING: Logs full command details including all parameters, system context, and error information
-            /// Enhanced with system monitoring integration and complete command breakdown
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
             /// </summary>
             public void OnConsoleCommand(string command)
             {
                 Exception commandError = null;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-                try
-                {
-                    if (string.IsNullOrEmpty(command)) return;
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 var commandStartTime = DateTime.UtcNow;
                 
                 try
@@ -160,16 +140,6 @@ namespace MixerThreholdMod_1_0_0.Core
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
-=======
-                try
-                {
-                    if (string.IsNullOrEmpty(command)) return;
-
-<<<<<<<< HEAD:Core/Console.cs
-                    Main.logger?.Msg(2, string.Format("[CONSOLE] Processing command: {0}", command));
-                    ProcessCommand(command.ToLower().Trim());
-========
->>>>>>> aa94715 (performance optimizations, cache manager)
                     // Enhanced comprehensive command logging with system context
                     Main.logger?.Msg(2, string.Format("[CONSOLE] === COMMAND RECEIVED ==="));
                     Main.logger?.Msg(2, string.Format("[CONSOLE] Timestamp: {0:yyyy-MM-dd HH:mm:ss.fff} UTC", commandStartTime));
@@ -178,7 +148,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(2, string.Format("[CONSOLE] Command hash: {0}", command.GetHashCode()));
                     
                     // Log system context during command processing (DEBUG mode only)
-                    AdvancedSystemPerformanceMonitor.LogCurrentPerformance("CONSOLE_COMMAND");
+                    SystemMonitor.LogCurrentPerformance("CONSOLE_COMMAND");
                     
                     // Parse and log command components with enhanced analysis
                     var originalParts = command.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -262,7 +232,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     }
                     
                     // Process command with performance monitoring
-                    AdvancedSystemPerformanceMonitor.MonitorOperation(string.Format("Console Command: {0}", parts[0]), () => {
+                    SystemMonitor.MonitorOperation(string.Format("Console Command: {0}", parts[0]), () => {
                         ProcessCommand(command.ToLower().Trim());
                     });
                     
@@ -284,9 +254,8 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (commandError != null)
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] OnConsoleCommand error: {0}\n{1}", commandError.Message, commandError.StackTrace));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+                    Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? "[null]"));
+                    Main.logger?.Err(string.Format("[CONSOLE] Command processing failed after {0:F3}ms", (DateTime.UtcNow - commandStartTime).TotalMilliseconds));
                 }
             }
 
