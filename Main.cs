@@ -535,7 +535,9 @@ namespace MixerThreholdMod_1_0_0
                 }
 
                 // Configure threshold on main thread (Unity requirement)
+                logger.Msg(1, string.Format("[MAIN] CONFIGURING THRESHOLD: Setting range 1.0f to 20.0f for Mixer Instance"));
                 instance.StartThrehold.Configure(1f, 20f, true);
+                logger.Msg(1, string.Format("[MAIN] THRESHOLD CONFIGURED: Mixer should now support 1-20 range"));
 
                 // Create tracked mixer
                 newTrackedMixer = new TrackedMixer
@@ -544,8 +546,8 @@ namespace MixerThreholdMod_1_0_0
                     MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
                 };
 
-                // Add to tracking collection using coroutine
-                yield return AddTrackedMixerAsync(newTrackedMixer);
+                // Add to tracking collection (thread-safe) - use synchronous version
+                Core.TrackedMixers.Add(newTrackedMixer);
                 logger.Msg(1, string.Format("[MAIN] ✓ MIXER PROCESSED: Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
             }
             catch (Exception ex)
@@ -590,12 +592,13 @@ namespace MixerThreholdMod_1_0_0
             if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
             {
                 logger.Msg(2, string.Format("[MAIN] Restoring Mixer {0} to saved value: {1}", newTrackedMixer.MixerInstanceID, savedValue));
+                logger.Msg(1, string.Format("[MAIN] RESTORING VALUE: Setting Mixer {0} StartThreshold to {1}", newTrackedMixer.MixerInstanceID, savedValue));
 
                 Exception restoreError = null;
                 try
                 {
                     instance.StartThrehold.SetValue(savedValue, true);
-                    logger.Msg(2, string.Format("[MAIN] Successfully restored Mixer {0}", newTrackedMixer.MixerInstanceID));
+                    logger.Msg(1, string.Format("[MAIN] VALUE RESTORED: Successfully set Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
                 }
                 catch (Exception ex)
                 {
@@ -652,44 +655,6 @@ namespace MixerThreholdMod_1_0_0
             }
 
             callback(result);
-        }
-
-        /// <summary>
-        /// Add tracked mixer using coroutine
-        /// </summary>
-        private IEnumerator AddTrackedMixerAsync(TrackedMixer mixer)
-        {
-            Exception addError = null;
-
-            try
-            {
-                var task = Core.TrackedMixers.AddAsync(mixer);
-                
-                // Wait for async task with timeout
-                float startTime = Time.time;
-                while (!task.IsCompleted && (Time.time - startTime) < 1f)
-                {
-                    yield return new WaitForSeconds(0.1f);
-                }
-
-                if (task.IsFaulted)
-                {
-                    logger.Err(string.Format("[MAIN] AddTrackedMixerAsync: Task faulted: {0}", task.Exception?.Message));
-                }
-                else if (!task.IsCompleted)
-                {
-                    logger.Warn(1, "[MAIN] AddTrackedMixerAsync: Task timed out");
-                }
-            }
-            catch (Exception ex)
-            {
-                addError = ex;
-            }
-
-            if (addError != null)
-            {
-                logger.Err(string.Format("[MAIN] AddTrackedMixerAsync: Error: {0}", addError.Message));
-            }
         }
 
         /// <summary>
