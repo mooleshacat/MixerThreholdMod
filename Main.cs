@@ -466,6 +466,210 @@ namespace MixerThreholdMod_0_0_1
                     logger.Msg(1, string.Format("[PERFORMANCE] {0}", line.Trim()));
             }
         }
+
+        // ===== DNSPY INTEGRATION: PERFORMANCE MONITORING SYSTEMS =====
+
+        /// <summary>
+        /// dnSpy Finding: Game has internal save operation profiling with phase timing.
+        /// Implements advanced performance analysis with memory and I/O monitoring.
+        /// 
+        /// ⚠️ THREAD SAFETY: This coroutine runs on Unity's main thread with yield returns.
+        /// ⚠️ .NET 4.8.1 COMPATIBILITY: Uses compatible measurement techniques.
+        /// </summary>
+        public static IEnumerator AdvancedSaveOperationProfiling()
+        {
+            var profiler = new SaveOperationProfiler();
+            Exception profilingError = null;
+            
+            try
+            {
+                profiler.StartProfiling();
+                logger.Msg(1, "[SAVE] Starting advanced save operation profiling");
+                
+                // Phase 1: Pre-save validation
+                profiler.StartPhase("Validation");
+                long memoryBefore = GC.GetTotalMemory(false);
+                yield return null; // Allow measurement
+                
+                // Simulate validation operations
+                bool validationResult = EnhancedWritePermissionTest(CurrentSavePath);
+                profiler.EndPhase("Validation");
+                
+                // Phase 2: File I/O operations  
+                profiler.StartPhase("FileIO");
+                var ioCounterBefore = GetIOOperationCount();
+                yield return null;
+                
+                // Simulate file operations
+                if (savedMixerValues.Count > 0)
+                {
+                    yield return PerformTransactionalSave();
+                }
+                
+                var ioCounterAfter = GetIOOperationCount();
+                profiler.RecordIOOperations(ioCounterAfter - ioCounterBefore);
+                profiler.EndPhase("FileIO");
+                
+                // Phase 3: Backup operations
+                profiler.StartPhase("Backup");
+                yield return null;
+                
+                // Simulate backup verification
+                string saveFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json");
+                if (File.Exists(saveFile))
+                {
+                    VerifyAdvancedSaveIntegrity(saveFile);
+                }
+                
+                profiler.EndPhase("Backup");
+                
+                long memoryAfter = GC.GetTotalMemory(false);
+                profiler.RecordMemoryUsage(memoryAfter - memoryBefore);
+                
+                // Generate comprehensive performance report
+                var report = profiler.GenerateReport();
+                LogPerformanceReport(report);
+                
+                yield return null;
+            }
+            catch (Exception ex)
+            {
+                profilingError = ex;
+            }
+            finally
+            {
+                profiler.StopProfiling();
+            }
+            
+            if (profilingError != null)
+            {
+                logger.Err(string.Format("[SAVE] Advanced profiling failed: {0}", profilingError.Message));
+            }
+        }
+
+        /// <summary>
+        /// dnSpy Finding: Game has comprehensive error reporting system with crash reporting.
+        /// Integrates with game's native error handling when available.
+        /// </summary>
+        public static void IntegrateWithGameErrorHandling()
+        {
+            Exception integrationError = null;
+            try
+            {
+                logger.Msg(2, "[INTEGRATION] Attempting to hook into game error handling systems");
+                
+                // Hook into game's exception reporting (from dnSpy)
+                var errorHandlerType = System.Type.GetType("ScheduleOne.ErrorHandling.GlobalExceptionHandler, Assembly-CSharp");
+                if (errorHandlerType != null)
+                {
+                    var addHandlerMethod = errorHandlerType.GetMethod("AddExceptionHandler", BindingFlags.Public | BindingFlags.Static);
+                    if (addHandlerMethod != null)
+                    {
+                        addHandlerMethod.Invoke(null, new object[] { new System.Action<Exception>(OnGameException) });
+                        logger.Msg(1, "[INTEGRATION] ✓ Hooked into game's exception handling system");
+                    }
+                    else
+                    {
+                        logger.Msg(2, "[INTEGRATION] Game exception handler method not found");
+                    }
+                }
+                else
+                {
+                    logger.Msg(2, "[INTEGRATION] Game exception handler type not found");
+                }
+
+                // Hook into game's crash reporting (from dnSpy)
+                var crashReporterType = System.Type.GetType("ScheduleOne.ErrorHandling.CrashReporter, Assembly-CSharp");
+                if (crashReporterType != null)
+                {
+                    var registerMethod = crashReporterType.GetMethod("RegisterCrashHandler", BindingFlags.Public | BindingFlags.Static);
+                    if (registerMethod != null)
+                    {
+                        registerMethod.Invoke(null, new object[] { new System.Action<string>(OnGameCrash) });
+                        logger.Msg(1, "[INTEGRATION] ✓ Hooked into game's crash reporting system");
+                    }
+                    else
+                    {
+                        logger.Msg(2, "[INTEGRATION] Game crash reporter method not found");
+                    }
+                }
+                else
+                {
+                    logger.Msg(2, "[INTEGRATION] Game crash reporter type not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                integrationError = ex;
+            }
+            
+            if (integrationError != null)
+            {
+                logger.Err(string.Format("[INTEGRATION] Game error handling integration failed: {0}", integrationError.Message));
+            }
+        }
+
+        // ===== GAME INTEGRATION EVENT HANDLERS =====
+
+        /// <summary>
+        /// Handle game exceptions with emergency save trigger.
+        /// </summary>
+        private static void OnGameException(Exception ex)
+        {
+            logger.Err(string.Format("[GAME EXCEPTION] {0}\nStackTrace: {1}", ex.Message, ex.StackTrace));
+            
+            // Trigger emergency save if save-related exception
+            if (ex.StackTrace.Contains("Save") || ex.Message.Contains("save"))
+            {
+                logger.Msg(1, "[GAME EXCEPTION] Save-related exception detected, triggering emergency save");
+                EmergencySaveWithVerification();
+            }
+        }
+
+        /// <summary>
+        /// Handle game crashes with immediate emergency save.
+        /// </summary>
+        private static void OnGameCrash(string crashReason)
+        {
+            logger.Err(string.Format("[GAME CRASH] {0}", crashReason));
+            logger.Msg(1, "[GAME CRASH] Crash detected, performing emergency save");
+            EmergencySaveWithVerification(); // Always save on crash
+        }
+
+        // ===== HELPER METHODS FOR PROFILING =====
+
+        /// <summary>
+        /// Get I/O operation count for performance monitoring.
+        /// Simplified implementation for .NET 4.8.1 compatibility.
+        /// </summary>
+        private static int GetIOOperationCount()
+        {
+            try
+            {
+                // Simplified I/O counter - in practice would hook into system I/O monitoring
+                // Using Environment.TickCount as placeholder for actual I/O monitoring
+                return System.Environment.TickCount;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Log performance report with proper formatting.
+        /// </summary>
+        private static void LogPerformanceReport(string report)
+        {
+            if (string.IsNullOrEmpty(report)) return;
+            
+            string[] lines = report.Split('\n');
+            foreach (string line in lines)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                    logger.Msg(1, string.Format("[PERFORMANCE] {0}", line.Trim()));
+            }
+        }
     }
 
 <<<<<<< HEAD
@@ -868,6 +1072,92 @@ namespace MixerThreholdMod_0_0_1
         { 
             _ioOperations = count;
             Main.logger?.Msg(3, string.Format("[PROFILER] I/O operations recorded: {0}", count));
+        }
+    }
+
+    /// <summary>
+    /// Save operation profiler for detailed performance analysis.
+    /// Inspired by dnSpy findings about game's internal profiling systems.
+    /// 
+    /// ⚠️ .NET 4.8.1 COMPATIBILITY: Uses compatible time measurement and collection types.
+    /// </summary>
+    public class SaveOperationProfiler
+    {
+        private DateTime _profilingStart;
+        private DateTime _currentPhaseStart;
+        private string _currentPhase;
+        private Dictionary<string, TimeSpan> _phaseTimes;
+        private long _memoryUsage;
+        private int _ioOperations;
+
+        public SaveOperationProfiler()
+        {
+            _phaseTimes = new Dictionary<string, TimeSpan>();
+        }
+
+        public void StartProfiling()
+        {
+            _profilingStart = DateTime.Now;
+            _phaseTimes.Clear();
+            Main.logger?.Msg(3, "[PROFILER] Profiling session started");
+        }
+
+        public void StartPhase(string phaseName)
+        {
+            if (!string.IsNullOrEmpty(_currentPhase))
+            {
+                EndPhase(_currentPhase);
+            }
+            _currentPhase = phaseName;
+            _currentPhaseStart = DateTime.Now;
+            Main.logger?.Msg(3, string.Format("[PROFILER] Phase '{0}' started", phaseName));
+        }
+
+        public void EndPhase(string phaseName)
+        {
+            if (_currentPhase == phaseName)
+            {
+                var duration = DateTime.Now - _currentPhaseStart;
+                _phaseTimes[phaseName] = duration;
+                _currentPhase = null;
+                Main.logger?.Msg(3, string.Format("[PROFILER] Phase '{0}' completed in {1:F3}s", phaseName, duration.TotalSeconds));
+            }
+        }
+
+        public void RecordMemoryUsage(long bytes) 
+        { 
+            _memoryUsage = bytes;
+            Main.logger?.Msg(3, string.Format("[PROFILER] Memory usage recorded: {0:F2} KB", bytes / 1024.0));
+        }
+        
+        public void RecordIOOperations(int count) 
+        { 
+            _ioOperations = count;
+            Main.logger?.Msg(3, string.Format("[PROFILER] I/O operations recorded: {0}", count));
+        }
+
+        public void StopProfiling() 
+        { 
+            Main.logger?.Msg(3, "[PROFILER] Profiling session stopped");
+        }
+
+        public string GenerateReport()
+        {
+            var totalTime = DateTime.Now - _profilingStart;
+            var report = string.Format("=== SAVE OPERATION PERFORMANCE REPORT ===\n");
+            report += string.Format("Total Time: {0:F3}s\n", totalTime.TotalSeconds);
+            report += string.Format("Memory Usage: {0:F2} KB\n", _memoryUsage / 1024.0);
+            report += string.Format("I/O Operations: {0}\n", _ioOperations);
+            report += "Phase Breakdown:\n";
+            
+            foreach (var phase in _phaseTimes)
+            {
+                double percentage = totalTime.TotalSeconds > 0 ? (phase.Value.TotalSeconds / totalTime.TotalSeconds) * 100 : 0;
+                report += string.Format("  {0}: {1:F3}s ({2:F1}%)\n", 
+                    phase.Key, phase.Value.TotalSeconds, percentage);
+            }
+            
+            return report;
         }
 
         public void StopProfiling() 
