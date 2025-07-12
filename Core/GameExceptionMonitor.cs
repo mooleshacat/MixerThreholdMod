@@ -43,74 +43,7 @@ namespace MixerThreholdMod_1_0_0.Core
 <<<<<<< HEAD
                     var harmony = Main.Instance.HarmonyInstance;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-                    // ✅ ULTRA-SAFE: Patch ScheduleOne.Console.Log with comprehensive null checking
-                    try
-                    {
-                        var logMethod = AccessTools.Method(typeof(ScheduleOne.Console), "Log", new Type[] { typeof(object), typeof(UnityEngine.Object) });
-                        if (logMethod != null)
-                        {
-                            harmony.Patch(logMethod, prefix: new HarmonyMethod(typeof(GameLoggerBridge), nameof(LogPrefix)));
-                            Main.logger?.Msg(2, "[BRIDGE] Successfully patched ScheduleOne.Console.Log");
-                        }
-                        else
-                        {
-                            Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.Log method for patching");
-                        }
-                    }
-                    catch (Exception logPatchEx)
-                    {
-                        Main.logger?.Err(string.Format("[BRIDGE] Failed to patch Console.Log: {0}", logPatchEx.Message));
-                        // Continue with other patches even if this one fails
-                    }
-
-                    // ✅ ULTRA-SAFE: Patch ScheduleOne.Console.LogWarning
-                    try
-                    {
-                        var logWarningMethod = AccessTools.Method(typeof(ScheduleOne.Console), "LogWarning", new Type[] { typeof(object), typeof(UnityEngine.Object) });
-                        if (logWarningMethod != null)
-                        {
-                            harmony.Patch(logWarningMethod, prefix: new HarmonyMethod(typeof(GameLoggerBridge), nameof(LogWarningPrefix)));
-                            Main.logger?.Msg(2, "[BRIDGE] Successfully patched ScheduleOne.Console.LogWarning");
-                        }
-                        else
-                        {
-                            Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.LogWarning method for patching");
-                        }
-                    }
-                    catch (Exception warningPatchEx)
-                    {
-                        Main.logger?.Err(string.Format("[BRIDGE] Failed to patch Console.LogWarning: {0}", warningPatchEx.Message));
-                        // Continue with other patches even if this one fails
-                    }
-
-                    // ✅ ULTRA-SAFE: Patch ScheduleOne.Console.LogError  
-                    try
-                    {
-                        var logErrorMethod = AccessTools.Method(typeof(ScheduleOne.Console), "LogError", new Type[] { typeof(object), typeof(UnityEngine.Object) });
-                        if (logErrorMethod != null)
-                        {
-                            harmony.Patch(logErrorMethod, prefix: new HarmonyMethod(typeof(GameLoggerBridge), nameof(LogErrorPrefix)));
-                            Main.logger?.Msg(2, "[BRIDGE] Successfully patched ScheduleOne.Console.LogError");
-                        }
-                        else
-                        {
-                            Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.LogError method for patching");
-                        }
-                    }
-                    catch (Exception errorPatchEx)
-                    {
-                        Main.logger?.Err(string.Format("[BRIDGE] Failed to patch Console.LogError: {0}", errorPatchEx.Message));
-                        // Continue even if this patch fails
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     // dnSpy Verified: ScheduleOne.Console class and method signatures verified via comprehensive dnSpy analysis
-=======
-                    var harmony = Main.HarmonyInstance;
-
->>>>>>> aa94715 (performance optimizations, cache manager)
                     // Patch ScheduleOne.Console.Log
                     var logMethod = AccessTools.Method(typeof(ScheduleOne.Console), "Log", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logMethod != null)
@@ -123,10 +56,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.Log method for patching");
                     }
 
-<<<<<<< HEAD
                     // dnSpy Verified: ScheduleOne.Console.LogWarning method signature verified
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
                     // Patch ScheduleOne.Console.LogWarning
                     var logWarningMethod = AccessTools.Method(typeof(ScheduleOne.Console), "LogWarning", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logWarningMethod != null)
@@ -139,10 +69,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.LogWarning method for patching");
                     }
 
-<<<<<<< HEAD
                     // dnSpy Verified: ScheduleOne.Console.LogError method signature verified  
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
                     // Patch ScheduleOne.Console.LogError
                     var logErrorMethod = AccessTools.Method(typeof(ScheduleOne.Console), "LogError", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logErrorMethod != null)
