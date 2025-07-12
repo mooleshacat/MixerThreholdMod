@@ -483,9 +483,33 @@ namespace MixerThreholdMod_1_0_0.Save
             Main.logger.Msg(2, "[SAVE] PerformCrashResistantSave: Starting save operation");
 
             // Validate preconditions
-            if (string.IsNullOrEmpty(Main.CurrentSavePath) || Main.savedMixerValues.Count == 0)
+            if (string.IsNullOrEmpty(Main.CurrentSavePath))
             {
-                Main.logger.Msg(3, "[SAVE] PerformCrashResistantSave: No data to save or invalid path");
+                Main.logger.Warn(1, "[SAVE] PerformCrashResistantSave: No save path available");
+                yield break;
+            }
+            
+            if (Main.savedMixerValues.Count == 0)
+            {
+                // Provide detailed diagnostics
+                int trackedMixersCount = Core.TrackedMixers.Count(tm => tm != null);
+                int queuedInstancesCount = Main.queuedInstances.Count;
+                
+                Main.logger.Warn(1, string.Format("[SAVE] PerformCrashResistantSave: No mixer data to save. Diagnostics:"));
+                Main.logger.Warn(1, string.Format("[SAVE] - SavedMixerValues: {0}", Main.savedMixerValues.Count));
+                Main.logger.Warn(1, string.Format("[SAVE] - TrackedMixers: {0}", trackedMixersCount));
+                Main.logger.Warn(1, string.Format("[SAVE] - QueuedInstances: {0}", queuedInstancesCount));
+                Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? "[null]"));
+                
+                if (trackedMixersCount == 0 && queuedInstancesCount == 0)
+                {
+                    Main.logger.Err("[SAVE] DIAGNOSIS: No mixers detected at all - constructor patching or runtime scanning may have failed");
+                }
+                else if (trackedMixersCount > 0)
+                {
+                    Main.logger.Warn(1, "[SAVE] DIAGNOSIS: Mixers are tracked but no values captured - event attachment may have failed");
+                }
+                
                 yield break;
             }
 
