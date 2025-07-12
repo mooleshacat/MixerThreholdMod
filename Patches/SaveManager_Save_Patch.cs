@@ -64,6 +64,7 @@ namespace MixerThreholdMod_0_0_1
                     Main.logger.Err(string.Format("Failed to start BackupSaveFolder coroutine: {0}\n{1}", backupEx.Message, backupEx.StackTrace));
                 }
             }
+            }
             catch (Exception ex)
             {
                 // catchall at patch level, where my DLL interacts with the game and it's engine
