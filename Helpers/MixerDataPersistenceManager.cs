@@ -99,9 +99,9 @@ namespace MixerThreholdMod_1_0_0.Utils
 
                 if (File.Exists(saveFile))
                 {
-                    Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
+                    Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
 
-                    string json = await Helpers.ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
+                    string json = await FileOperations.SafeReadAllTextAsync(saveFile);
                     if (!string.IsNullOrEmpty(json))
                     {
                         var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
@@ -121,7 +121,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                 }
                 else
                 {
-                    Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "LoadMixerValuesFromFileAsync: No save file found, starting fresh");
+                    Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: No save file found, starting fresh");
                 }
             }
             catch (Exception ex)
@@ -130,23 +130,8 @@ namespace MixerThreholdMod_1_0_0.Utils
                 throw;
             }
         }
-        private static bool HasValidStartThreshold(object config)
-        {
-            try
-            {
-                if (config == null) return false;
-                var startThresholdProperty = config.GetType().GetProperty("StartThrehold");
-                if (startThresholdProperty == null) return false;
-                var startThreshold = startThresholdProperty.GetValue(config, null);
-                return startThreshold != null;
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
-        public static IEnumerator AttachListenerWhenReady(object config, int mixerID)
+        public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
         {
             Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Started for Mixer {0}", mixerID));
 
@@ -198,21 +183,11 @@ namespace MixerThreholdMod_1_0_0.Utils
             Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Finished for Mixer {0}", mixerID));
         }
 
-        private static bool TryAttachEventListener(object config, int mixerID)
+        private static bool TryAttachEventListener(MixingStationConfiguration config, int mixerID)
         {
             try
             {
-                // IL2CPP COMPATIBLE: Safe type checking
-                if (config == null) return false;
-
-                // IL2CPP COMPATIBLE: Use reflection to access StartThrehold
-                var startThresholdProperty = config.GetType().GetProperty("StartThrehold");
-                if (startThresholdProperty == null) return false;
-
-                var startThreshold = startThresholdProperty.GetValue(config, null);
-                if (startThreshold == null) return false;
-
-                var numberFieldType = startThreshold.GetType();
+                var numberFieldType = config.StartThrehold.GetType();
                 Main.logger.Msg(3, string.Format("TryAttachEventListener: NumberField type: {0}", numberFieldType.Name));
 
                 // Look for common event names
@@ -228,7 +203,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                         var handler = CreateEventHandler(eventInfo.EventHandlerType, mixerID);
                         if (handler != null)
                         {
-                            eventInfo.AddEventHandler(startThreshold, handler);
+                            eventInfo.AddEventHandler(config.StartThrehold, handler);
                             Main.logger.Msg(2, string.Format("TryAttachEventListener: Successfully attached to {0} event for Mixer {1}", eventName, mixerID));
                             return true;
                         }
@@ -343,13 +318,7 @@ namespace MixerThreholdMod_1_0_0.Utils
 
                 try
                 {
-                    // IL2CPP COMPATIBLE: Use reflection to get StartThreshold
-                    var startThresholdProperty = config.GetType().GetProperty("StartThrehold");
-                    if (startThresholdProperty != null)
-                    {
-                        var startThreshold = startThresholdProperty.GetValue(config, null);
-                        currentValue = GetCurrentValue(startThreshold);
-                    }
+                    currentValue = GetCurrentValue(config.StartThrehold);
                 }
                 catch (Exception ex)
                 {
@@ -501,20 +470,8 @@ namespace MixerThreholdMod_1_0_0.Utils
                 }
                 catch (Exception ex)
                 {
-                    ["MixerValues"] = mixerValuesDict,
-                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    ["Version"] = "1.0.0"
-                };
-
-                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
-
-                // Write to temp file first, then rename for atomic operation
-                string tempFile = saveFile + ".tmp";
-                File.WriteAllText(tempFile, json);
-
-                if (File.Exists(saveFile))
-                {
-                    File.Delete(saveFile);
+                    saveError = ex;
+                    saveCompleted = true;
                 }
             });
 
@@ -570,6 +527,48 @@ namespace MixerThreholdMod_1_0_0.Utils
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
                     await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
+                    Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
+                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("SaveMixerValuesToFileAsync error: {0}", ex));
+                throw;
+            }
+        }
+
+        private static async Task SaveMixerValuesToFileAsync()
+        {
+            try
+            {
+                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+
+                // Convert to regular dictionary for JSON serialization
+                var mixerValuesDict = new Dictionary<int, float>();
+                foreach (var kvp in Main.savedMixerValues)
+                {
+                    mixerValuesDict[kvp.Key] = kvp.Value;
+                }
+
+                var saveData = new Dictionary<string, object>
+                {
+                    ["MixerValues"] = mixerValuesDict,
+                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    ["Version"] = "1.0.0"
+                };
+
+                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+                await FileOperations.SafeWriteAllTextAsync(saveFile, json);
+
+                Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
+
+                // Also save to persistent location
+                string persistentPath = MelonEnvironment.UserDataDirectory;
+                if (!string.IsNullOrEmpty(persistentPath))
+                {
+                    string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
+                    await FileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
             }
@@ -647,7 +646,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                 Main.logger.Err(string.Format("BackupSaveFolder error: {0}", backupError));
             }
 
-            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "BackupSaveFolder: Finished and cleanup completed");
+            Main.logger.Msg(3, "BackupSaveFolder: Finished and cleanup completed");
         }
 
         private static void PerformBackupOperations()
@@ -657,14 +656,14 @@ namespace MixerThreholdMod_1_0_0.Utils
 
             if (!File.Exists(sourceFile))
             {
-                Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "PerformBackupOperations: Source file doesn't exist, no backup needed");
+                Main.logger.Msg(2, "PerformBackupOperations: Source file doesn't exist, no backup needed");
                 return;
             }
 
             if (!Directory.Exists(backupDir))
             {
                 Directory.CreateDirectory(backupDir);
-                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "PerformBackupOperations: Created backup directory");
+                Main.logger.Msg(3, "PerformBackupOperations: Created backup directory");
             }
 
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
