@@ -96,16 +96,41 @@ namespace MixerThreholdMod_1_0_0.Core
 
             /// <summary>
             /// Handle console command input
+            /// ⚠️ COMPREHENSIVE LOGGING: Logs full command details including all parameters and error context
             /// </summary>
             public void OnConsoleCommand(string command)
             {
                 Exception commandError = null;
                 try
                 {
-                    if (string.IsNullOrEmpty(command)) return;
+                    if (string.IsNullOrEmpty(command)) 
+                    {
+                        Main.logger?.Warn(1, "[CONSOLE] Empty command received - no action taken");
+                        return;
+                    }
 
-                    Main.logger?.Msg(2, string.Format("[CONSOLE] Processing command: {0}", command));
+                    // Log complete command details for debugging
+                    Main.logger?.Msg(2, string.Format("[CONSOLE] === COMMAND RECEIVED ==="));
+                    Main.logger?.Msg(2, string.Format("[CONSOLE] Full command: '{0}'", command));
+                    Main.logger?.Msg(2, string.Format("[CONSOLE] Command length: {0} characters", command.Length));
+                    
+                    // Parse and log command components
+                    var parts = command.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 0)
+                    {
+                        Main.logger?.Msg(2, string.Format("[CONSOLE] Base command: '{0}'", parts[0]));
+                        if (parts.Length > 1)
+                        {
+                            Main.logger?.Msg(2, string.Format("[CONSOLE] Parameters ({0}): [{1}]", parts.Length - 1, string.Join(", ", parts, 1, parts.Length - 1)));
+                        }
+                        else
+                        {
+                            Main.logger?.Msg(3, "[CONSOLE] No parameters provided");
+                        }
+                    }
+                    
                     ProcessCommand(command.ToLower().Trim());
+                    Main.logger?.Msg(2, "[CONSOLE] === COMMAND COMPLETED ===");
                 }
                 catch (Exception ex)
                 {
@@ -115,6 +140,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (commandError != null)
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] OnConsoleCommand error: {0}\n{1}", commandError.Message, commandError.StackTrace));
+                    Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? "[null]"));
                 }
             }
 
@@ -143,15 +169,39 @@ namespace MixerThreholdMod_1_0_0.Core
                             break;
                         case "mixer_saveprefstress":
                         case "saveprefstress":
-                            HandleStressSavePrefCommand(parts);
+                            if (parts.Length < 2)
+                            {
+                                Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: count");
+                                ShowCommandHelp("saveprefstress");
+                            }
+                            else
+                            {
+                                HandleStressSavePrefCommand(parts);
+                            }
                             break;
                         case "mixer_savegamestress":
                         case "savegamestress":
-                            HandleStressSaveGameCommand(parts);
+                            if (parts.Length < 2)
+                            {
+                                Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: count");
+                                ShowCommandHelp("savegamestress");
+                            }
+                            else
+                            {
+                                HandleStressSaveGameCommand(parts);
+                            }
                             break;
                         case "mixer_savemonitor":
                         case "savemonitor":
-                            HandleComprehensiveSaveMonitoringCommand(parts);
+                            if (parts.Length < 2)
+                            {
+                                Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: count");
+                                ShowCommandHelp("savemonitor");
+                            }
+                            else
+                            {
+                                HandleComprehensiveSaveMonitoringCommand(parts);
+                            }
                             break;
                         case "transactionalsave":
                         case "mixer_transactional":
@@ -162,16 +212,52 @@ namespace MixerThreholdMod_1_0_0.Core
                             HandleProfileCommand();
                             break;
                         case "msg":
-                            HandleSingleLogCommand("msg", parts, lowerCommand);
+                            if (parts.Length < 2)
+                            {
+                                Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: message");
+                                ShowCommandHelp("msg");
+                            }
+                            else
+                            {
+                                HandleSingleLogCommand("msg", parts, lowerCommand);
+                            }
                             break;
                         case "warn":
-                            HandleSingleLogCommand("warn", parts, lowerCommand);
+                            if (parts.Length < 2)
+                            {
+                                Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: message");
+                                ShowCommandHelp("warn");
+                            }
+                            else
+                            {
+                                HandleSingleLogCommand("warn", parts, lowerCommand);
+                            }
                             break;
                         case "err":
-                            HandleSingleLogCommand("err", parts, lowerCommand);
+                            if (parts.Length < 2)
+                            {
+                                Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: message");
+                                ShowCommandHelp("err");
+                            }
+                            else
+                            {
+                                HandleSingleLogCommand("err", parts, lowerCommand);
+                            }
+                            break;
+                        case "help":
+                        case "?":
+                            ShowHelpMessage();
                             break;
                         default:
-                            ShowHelpMessage();
+                            if (baseCommand == "help" || baseCommand == "?")
+                            {
+                                ShowHelpMessage();
+                            }
+                            else
+                            {
+                                Main.logger?.Warn(1, string.Format("[CONSOLE] Unknown command: '{0}'", baseCommand));
+                                Main.logger?.Msg(1, "[CONSOLE] Type 'help' to see available commands");
+                            }
                             break;
                     }
                 }
@@ -183,6 +269,131 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (processError != null)
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] ProcessCommand error: {0}\n{1}", processError.Message, processError.StackTrace));
+                }
+            }
+
+            /// <summary>
+            /// Show help for specific command when parameters are missing
+            /// ⚠️ THREAD SAFETY: Safe logging operations with comprehensive error handling
+            /// </summary>
+            private void ShowCommandHelp(string commandName)
+            {
+                Exception helpError = null;
+                try
+                {
+                    switch (commandName.ToLower())
+                    {
+                        case "saveprefstress":
+                            Main.logger?.Msg(1, "[CONSOLE] === SAVEPREFSTRESS HELP ===");
+                            Main.logger?.Msg(1, "[CONSOLE] Usage: saveprefstress <count> [delay_seconds] [bypass_cooldown]");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Required:");
+                            Main.logger?.Msg(1, "[CONSOLE]   count - Number of save iterations (positive integer)");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Optional (auto-detected order):");
+                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number ≥ 0, default: 0)");
+                            Main.logger?.Msg(1, "[CONSOLE]   bypass_cooldown - Skip save cooldown (true/false, default: true)");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Examples:");
+                            Main.logger?.Msg(1, "[CONSOLE]   saveprefstress 10");
+                            Main.logger?.Msg(1, "[CONSOLE]   saveprefstress 5 2.0");
+                            Main.logger?.Msg(1, "[CONSOLE]   saveprefstress 20 false");
+                            Main.logger?.Msg(1, "[CONSOLE]   saveprefstress 10 0.1 false");
+                            break;
+
+                        case "savegamestress":
+                            Main.logger?.Msg(1, "[CONSOLE] === SAVEGAMESTRESS HELP ===");
+                            Main.logger?.Msg(1, "[CONSOLE] Usage: savegamestress <count> [delay_seconds] [bypass_cooldown]");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Required:");
+                            Main.logger?.Msg(1, "[CONSOLE]   count - Number of save iterations (positive integer)");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Optional (auto-detected order):");
+                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number ≥ 0, default: 0)");
+                            Main.logger?.Msg(1, "[CONSOLE]   bypass_cooldown - Skip save cooldown (true/false, default: true)");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Examples:");
+                            Main.logger?.Msg(1, "[CONSOLE]   savegamestress 10");
+                            Main.logger?.Msg(1, "[CONSOLE]   savegamestress 5 3.0");
+                            Main.logger?.Msg(1, "[CONSOLE]   savegamestress 3 false");
+                            Main.logger?.Msg(1, "[CONSOLE]   savegamestress 5 2.0 false");
+                            break;
+
+                        case "savemonitor":
+                            Main.logger?.Msg(1, "[CONSOLE] === SAVEMONITOR HELP ===");
+                            Main.logger?.Msg(1, "[CONSOLE] Usage: savemonitor <count> [delay_seconds] [bypass_cooldown]");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Required:");
+                            Main.logger?.Msg(1, "[CONSOLE]   count - Number of save iterations (positive integer)");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Optional (auto-detected order):");
+                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number ≥ 0, default: 0)");
+                            Main.logger?.Msg(1, "[CONSOLE]   bypass_cooldown - Skip save cooldown (true/false, default: true)");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Features: Multi-method validation, comprehensive monitoring");
+                            Main.logger?.Msg(1, "[CONSOLE] Examples:");
+                            Main.logger?.Msg(1, "[CONSOLE]   savemonitor 5");
+                            Main.logger?.Msg(1, "[CONSOLE]   savemonitor 3 2.0");
+                            Main.logger?.Msg(1, "[CONSOLE]   savemonitor 10 false");
+                            Main.logger?.Msg(1, "[CONSOLE]   savemonitor 5 1.5 false");
+                            break;
+
+                        case "msg":
+                            Main.logger?.Msg(1, "[CONSOLE] === MSG HELP ===");
+                            Main.logger?.Msg(1, "[CONSOLE] Usage: msg <message>");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Required:");
+                            Main.logger?.Msg(1, "[CONSOLE]   message - Text to log as info message");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Examples:");
+                            Main.logger?.Msg(1, "[CONSOLE]   msg Testing mixer behavior at threshold 0.8");
+                            Main.logger?.Msg(1, "[CONSOLE]   msg Save operation completed successfully");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Note: Message preserves all spaces and formatting");
+                            break;
+
+                        case "warn":
+                            Main.logger?.Msg(1, "[CONSOLE] === WARN HELP ===");
+                            Main.logger?.Msg(1, "[CONSOLE] Usage: warn <message>");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Required:");
+                            Main.logger?.Msg(1, "[CONSOLE]   message - Text to log as warning message");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Examples:");
+                            Main.logger?.Msg(1, "[CONSOLE]   warn Performance degradation detected");
+                            Main.logger?.Msg(1, "[CONSOLE]   warn Memory usage approaching critical levels");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Note: Message preserves all spaces and formatting");
+                            break;
+
+                        case "err":
+                            Main.logger?.Msg(1, "[CONSOLE] === ERR HELP ===");
+                            Main.logger?.Msg(1, "[CONSOLE] Usage: err <message>");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Required:");
+                            Main.logger?.Msg(1, "[CONSOLE]   message - Text to log as error message");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Examples:");
+                            Main.logger?.Msg(1, "[CONSOLE]   err Critical save failure - investigating corruption");
+                            Main.logger?.Msg(1, "[CONSOLE]   err Mixer threshold validation failed");
+                            Main.logger?.Msg(1, "[CONSOLE] ");
+                            Main.logger?.Msg(1, "[CONSOLE] Note: Message preserves all spaces and formatting");
+                            break;
+
+                        default:
+                            Main.logger?.Msg(1, string.Format("[CONSOLE] No specific help available for command: {0}", commandName));
+                            Main.logger?.Msg(1, "[CONSOLE] Type 'help' to see all available commands");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    helpError = ex;
+                }
+
+                if (helpError != null)
+                {
+                    Main.logger?.Err(string.Format("[CONSOLE] ShowCommandHelp error: {0}\n{1}", helpError.Message, helpError.StackTrace));
                 }
             }
 

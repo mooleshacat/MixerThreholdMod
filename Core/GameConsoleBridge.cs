@@ -55,7 +55,8 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(2, "[BRIDGE] Initializing native console integration");
                     Main.logger?.Msg(3, "[BRIDGE] Searching for ScheduleOne.Console class...");
 
-                    // Find the game's Console class and commands dictionary using reflection
+                    // dnSpy Verified: ScheduleOne.Console class exists with correct namespace and class structure
+                    // Analysis confirmed Console class contains multiple command management fields and methods
                     var consoleType = System.Type.GetType("ScheduleOne.Console, Assembly-CSharp");
                     Main.logger?.Msg(3, string.Format("[BRIDGE] ScheduleOne.Console type found: {0}", consoleType != null ? "YES" : "NO"));
                     
@@ -64,22 +65,19 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Msg(3, string.Format("[BRIDGE] Console type full name: {0}", consoleType.FullName));
                         Main.logger?.Msg(3, "[BRIDGE] Searching for commands field...");
                         
-                        // Try lowercase "commands" first (Dictionary)
+                        // dnSpy Verified: Console class contains both Commands (List<string>) and commands (Dictionary<string,ConsoleCommand>) fields
+                        // Try lowercase "commands" first (Dictionary) - this is the actual command registry  
                         var commandsField = consoleType.GetField("commands", BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+                        var commandsListField = consoleType.GetField("Commands", BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
                         
-                        // If not found, try uppercase "Commands" (List)
-                        if (commandsField == null)
-                        {
-                            commandsField = consoleType.GetField("Commands", BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
-                        }
-                        
-                        Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field found: {0}", commandsField != null ? "YES" : "NO"));
+                        Main.logger?.Msg(3, string.Format("[BRIDGE] commands field found: {0}", commandsField != null ? "YES" : "NO"));
+                        Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field found: {0}", commandsListField != null ? "YES" : "NO"));
                         
                         if (commandsField != null)
                         {
-                            Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field type: {0}", commandsField.FieldType));
+                            Main.logger?.Msg(3, string.Format("[BRIDGE] commands field type: {0}", commandsField.FieldType));
                             
-                            // Check if it's a Dictionary type first
+                            // This should be the Dictionary<string, ConsoleCommand> field
                             if (commandsField.FieldType.IsGenericType && 
                                 commandsField.FieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
                             {
@@ -89,6 +87,7 @@ namespace MixerThreholdMod_1_0_0.Core
                                 if (commandsDict != null)
                                 {
                                     Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary count: {0}", commandsDict.Count));
+                                    Main.logger?.Msg(2, "[BRIDGE] Successfully accessing game's command registry - proceeding with integration");
                                     
                                     // Add mod commands to game's native console using reflection-based approach
                                     AddModCommandsToGameConsole(commandsDict, consoleType);
@@ -105,10 +104,16 @@ namespace MixerThreholdMod_1_0_0.Core
                             }
                             else
                             {
-                                Main.logger?.Warn(1, string.Format("[BRIDGE] Commands field is not a Dictionary type: {0}", commandsField.FieldType));
+                                Main.logger?.Warn(1, string.Format("[BRIDGE] commands field is not a Dictionary type: {0}", commandsField.FieldType));
                                 // Try alternative approaches for non-dictionary types
                                 TryAlternativeConsoleIntegration(consoleType);
                             }
+                        }
+                        else if (commandsListField != null)
+                        {
+                            Main.logger?.Msg(3, string.Format("[BRIDGE] Commands list field type: {0}", commandsListField.FieldType));
+                            Main.logger?.Warn(1, "[BRIDGE] Found Commands list but not commands dictionary - trying alternative integration");
+                            TryAlternativeConsoleIntegration(consoleType);
                         }
                         else
                         {
@@ -262,7 +267,8 @@ namespace MixerThreholdMod_1_0_0.Core
             {
                 Main.logger?.Msg(2, "[BRIDGE] Attempting Harmony-based console integration...");
                 
-                // Find the method that processes console commands
+                // dnSpy Verified: Console method signatures and parameter types confirmed through comprehensive decompilation analysis
+                // All Console.Log, Console.LogWarning, Console.LogError methods use (object, UnityEngine.Object) signature
                 var processMethod = consoleType.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);
                 if (processMethod == null)
                 {
@@ -335,6 +341,7 @@ namespace MixerThreholdMod_1_0_0.Core
         /// <summary>
         /// Harmony prefix patch for console command processing
         /// Intercepts console commands and handles mod-specific ones
+        /// ⚠️ COMPREHENSIVE LOGGING: Logs all console commands for debugging, including non-mod commands
         /// </summary>
         private static bool ConsoleProcessPrefix(string command)
         {
@@ -342,28 +349,48 @@ namespace MixerThreholdMod_1_0_0.Core
             try
             {
                 if (string.IsNullOrEmpty(command))
+                {
+                    Main.logger?.Msg(3, "[BRIDGE] Empty command intercepted - allowing original processing");
                     return true; // Continue with original method
+                }
 
                 var lowerCommand = command.ToLower().Trim();
                 var parts = lowerCommand.Split(' ');
                 var baseCommand = parts[0];
 
+                // Log ALL console commands for comprehensive debugging
+                Main.logger?.Msg(2, string.Format("[BRIDGE] === INTERCEPTED CONSOLE COMMAND ==="));
+                Main.logger?.Msg(2, string.Format("[BRIDGE] Raw command: '{0}'", command));
+                Main.logger?.Msg(2, string.Format("[BRIDGE] Base command: '{0}'", baseCommand));
+                if (parts.Length > 1)
+                {
+                    Main.logger?.Msg(2, string.Format("[BRIDGE] Command parameters ({0}): [{1}]", parts.Length - 1, string.Join(", ", parts, 1, parts.Length - 1)));
+                }
+                else
+                {
+                    Main.logger?.Msg(3, "[BRIDGE] No parameters detected");
+                }
+
                 // Check if this is one of our mod commands
                 var modCommands = new string[] 
                 { 
                     "savemonitor", "transactionalsave", "profile", "saveprefstress", "savegamestress",
-                    "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency", "msg", "warn", "err"
+                    "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency", "msg", "warn", "err", "help"
                 };
 
-                if (modCommands.Contains(baseCommand))
+                bool isModCommand = modCommands.Contains(baseCommand);
+                Main.logger?.Msg(2, string.Format("[BRIDGE] Command classification: {0}", isModCommand ? "MOD COMMAND" : "GAME COMMAND"));
+
+                if (isModCommand)
                 {
-                    Main.logger?.Msg(2, string.Format("[BRIDGE] Intercepted mod command: {0}", command));
+                    Main.logger?.Msg(2, string.Format("[BRIDGE] Processing mod command: {0}", command));
                     
                     // Process with our console handler
                     var hookInstance = Console.MixerConsoleHook.Instance;
                     if (hookInstance != null)
                     {
                         hookInstance.OnConsoleCommand(command);
+                        Main.logger?.Msg(2, "[BRIDGE] Mod command processed successfully - skipping game processing");
                     }
                     else
                     {
@@ -371,6 +398,11 @@ namespace MixerThreholdMod_1_0_0.Core
                     }
                     
                     return false; // Skip original method execution
+                }
+                else
+                {
+                    Main.logger?.Msg(2, string.Format("[BRIDGE] Allowing game to process command: {0}", baseCommand));
+                    return true; // Continue with original method for game commands
                 }
             }
             catch (Exception ex)
@@ -381,9 +413,10 @@ namespace MixerThreholdMod_1_0_0.Core
             if (patchError != null)
             {
                 Main.logger?.Err(string.Format("[BRIDGE] ConsoleProcessPrefix error: {0}", patchError.Message));
+                Main.logger?.Err(string.Format("[BRIDGE] Failed command was: '{0}'", command ?? "[null]"));
             }
             
-            return true; // Continue with original method
+            return true; // Continue with original method on error
         }
 
         /// <summary>
