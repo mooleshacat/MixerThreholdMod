@@ -13,15 +13,74 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 
+// Assembly attributes must come first, before namespace
+[assembly: MelonInfo(typeof(MixerThreholdMod_0_0_1.Main), "MixerThreholdMod", "0.0.1", "mooleshacat")]
+[assembly: MelonGame("TVGS", "Schedule I")]
+
 namespace MixerThreholdMod_0_0_1
 {
-    [assembly: MelonInfo(typeof(MixerThreholdMod_0_0_1.Main), "MixerThreholdMod", "0.0.1", "mooleshacat")]
-    [assembly: MelonGame("TVGS", "Schedule I")]
+    // Thread-safe list implementation for .NET 4.8.1 - only this class stays in Main.cs
+    public class ThreadSafeList<T>
+    {
+        private readonly List<T> _list = new List<T>();
+        private readonly object _lock = new object();
+
+        public void Add(T item)
+        {
+            lock (_lock)
+            {
+                _list.Add(item);
+            }
+        }
+
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _list.Clear();
+            }
+        }
+
+        public List<T> ToList()
+        {
+            lock (_lock)
+            {
+                return new List<T>(_list);
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _list.Count;
+                }
+            }
+        }
+
+        public void RemoveAll(Predicate<T> match)
+        {
+            lock (_lock)
+            {
+                _list.RemoveAll(match);
+            }
+        }
+
+        public bool Any(Func<T, bool> predicate)
+        {
+            lock (_lock)
+            {
+                return _list.Any(predicate);
+            }
+        }
+    }
 
     public class Main : MelonMod
     {
         public static readonly Logger logger = new Logger();
-        public static HarmonyLib.Harmony HarmonyInstance = new HarmonyLib.Harmony("com.mooleshacat.mixerthreholdmod");
+        public static new HarmonyLib.Harmony HarmonyInstance = new HarmonyLib.Harmony("com.mooleshacat.mixerthreholdmod"); // Fixed: added 'new' keyword
 
         // Thread-safe collections for .NET 4.8.1
         public static readonly ThreadSafeList<MixingStationConfiguration> queuedInstances = new ThreadSafeList<MixingStationConfiguration>();
@@ -31,7 +90,7 @@ namespace MixerThreholdMod_0_0_1
             new System.Collections.Concurrent.ConcurrentDictionary<int, float>();
 
         public static string CurrentSavePath = null;
-        private Coroutine updateCoroutine;
+        private Coroutine mainUpdateCoroutine; // Renamed to avoid any potential conflicts
         private static bool isShuttingDown = false;
 
         public override void OnInitializeMelon()
@@ -74,8 +133,9 @@ namespace MixerThreholdMod_0_0_1
                 logger.Msg(2, "Patched constructor");
                 Console.RegisterConsoleCommandViaReflection();
 
-                // Start the update coroutine
-                updateCoroutine = MelonCoroutines.Start(UpdateCoroutine());
+                // Start the update coroutine - explicit cast to Coroutine
+                var coroutineObj = MelonCoroutines.Start(UpdateCoroutine());
+                mainUpdateCoroutine = coroutineObj as Coroutine;
                 logger.Msg(3, "Update coroutine started successfully");
             }
             catch (Exception ex)
@@ -101,7 +161,7 @@ namespace MixerThreholdMod_0_0_1
                 Exception saveError = null;
                 try
                 {
-                    MixerSaveManager.EmergencySave();
+                    Utils.MixerSaveManager.EmergencySave();
                 }
                 catch (Exception saveEx)
                 {
@@ -149,10 +209,10 @@ namespace MixerThreholdMod_0_0_1
         public override void OnUpdate()
         {
             // Keep OnUpdate minimal for .NET 4.8.1 compatibility
-            if (isShuttingDown && updateCoroutine != null)
+            if (isShuttingDown && mainUpdateCoroutine != null)
             {
-                MelonCoroutines.Stop(updateCoroutine);
-                updateCoroutine = null;
+                MelonCoroutines.Stop(mainUpdateCoroutine);
+                mainUpdateCoroutine = null;
             }
         }
 
@@ -252,7 +312,7 @@ namespace MixerThreholdMod_0_0_1
                 Exception listenerError = null;
                 try
                 {
-                    MelonCoroutines.Start(MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
+                    MelonCoroutines.Start(Utils.MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
                     newTrackedMixer.ListenerAdded = true;
                 }
                 catch (Exception listenerEx)
@@ -376,7 +436,7 @@ namespace MixerThreholdMod_0_0_1
             try
             {
                 _coroutineStarted = true;
-                MelonCoroutines.Start(MixerSaveManager.LoadMixerValuesWhenReady());
+                MelonCoroutines.Start(Utils.MixerSaveManager.LoadMixerValuesWhenReady());
                 logger.Msg(3, "Load coroutine started successfully");
             }
             catch (Exception ex)
@@ -400,17 +460,17 @@ namespace MixerThreholdMod_0_0_1
             {
                 logger.Msg(2, "Application shutting down - cleaning up resources");
 
-                if (updateCoroutine != null)
+                if (mainUpdateCoroutine != null)
                 {
-                    MelonCoroutines.Stop(updateCoroutine);
-                    updateCoroutine = null;
+                    MelonCoroutines.Stop(mainUpdateCoroutine);
+                    mainUpdateCoroutine = null;
                     logger.Msg(2, "Update coroutine stopped");
                 }
 
                 // Try to save current state
                 if (savedMixerValues.Count > 0)
                 {
-                    MixerSaveManager.EmergencySave();
+                    Utils.MixerSaveManager.EmergencySave();
                     logger.Msg(2, "Emergency save completed");
                 }
             }

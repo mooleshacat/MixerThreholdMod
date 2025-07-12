@@ -149,7 +149,7 @@ namespace MixerThreholdMod_0_0_1
                     if (Main.savedMixerValues != null)
                         Main.savedMixerValues.Clear();
 
-                    // Reset MixerIDManager
+                    // Reset MixerIDManager - no namespace needed since it's in the same namespace
                     MixerIDManager.ResetStableIDCounter();
 
                     // Optional: Reset the saved JSON file

@@ -3,28 +3,37 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_0_0_1.Helpers
 {
+    /// <summary>
+    /// Thread-safe file locking helper for .NET 4.8.1 compatibility
+    /// </summary>
     public class FileLockHelper : IDisposable
     {
-        private readonly string _lockFilePath;
-        private FileStream _lockStream;
-        private volatile bool _isLocked;
-        private readonly object _lockObject = new object();
+        private readonly string lockFilePath;
+        private FileStream lockStream;
+        private volatile bool isLocked;
+        private readonly object lockObject = new object();
+        private bool disposed = false;
         private const int DefaultTimeoutMs = 5000;
+        private const int RetryDelayMs = 50;
 
         public FileLockHelper(string lockFilePath)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(lockFilePath))
-                    throw new ArgumentException("Lock file path cannot be null or empty", nameof(lockFilePath));
+                {
+                    Main.logger?.Err("FileLockHelper constructor: lockFilePath is null or empty");
+                    throw new ArgumentException("Lock file path cannot be null or empty", "lockFilePath");
+                }
 
-                _lockFilePath = lockFilePath;
+                this.lockFilePath = lockFilePath;
+                Main.logger?.Msg(3, string.Format("FileLockHelper created for: {0}", lockFilePath));
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"FileLockHelper constructor failed: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("FileLockHelper constructor failed: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -36,42 +45,67 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
-                lock (_lockObject)
+                if (disposed)
                 {
-                    if (_isLocked)
+                    Main.logger?.Warn(1, "FileLockHelper.AcquireSharedLock: Object is disposed");
+                    return false;
+                }
+
+                lock (lockObject)
+                {
+                    if (isLocked)
                     {
-                        Main.logger?.Warn(2, "Lock already acquired");
+                        Main.logger?.Warn(2, "FileLockHelper.AcquireSharedLock: Lock already acquired");
                         return true;
                     }
 
-                    _lockStream = new FileStream(
-                        _lockFilePath,
-                        FileMode.OpenOrCreate,
-                        FileAccess.Read,
-                        FileShare.Read,
-                        4096,
-                        FileOptions.None
-                    );
-                    _isLocked = true;
+                    Main.logger?.Msg(3, string.Format("FileLockHelper.AcquireSharedLock: Attempting shared lock on {0}", lockFilePath));
 
-                    // Simulate timeout via Task + Wait
-                    if (Task.Run(() => true).Wait(timeoutMs))
-                        return true;
+                    var startTime = DateTime.Now;
+                    var timeout = TimeSpan.FromMilliseconds(timeoutMs);
 
-                    ReleaseLock();
+                    while (DateTime.Now - startTime < timeout)
+                    {
+                        try
+                        {
+                            lockStream = new FileStream(
+                                lockFilePath,
+                                FileMode.OpenOrCreate,
+                                FileAccess.Read,
+                                FileShare.Read,
+                                4096,
+                                FileOptions.None
+                            );
+                            isLocked = true;
+                            Main.logger?.Msg(2, string.Format("FileLockHelper.AcquireSharedLock: Successfully acquired shared lock on {0}", lockFilePath));
+                            return true;
+                        }
+                        catch (IOException)
+                        {
+                            // File is locked, wait and retry
+                            Thread.Sleep(RetryDelayMs);
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            // Permission denied, wait and retry
+                            Thread.Sleep(RetryDelayMs);
+                        }
+                    }
+
+                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireSharedLock: Timeout acquiring shared lock on {0}", lockFilePath));
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"AcquireSharedLock: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 try
                 {
                     ReleaseLock();
                 }
                 catch (Exception releaseEx)
                 {
-                    Main.logger?.Err($"Error during lock release in exception handler: {releaseEx.Message}");
+                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
                 }
                 return false;
             }
@@ -84,41 +118,67 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
-                lock (_lockObject)
+                if (disposed)
                 {
-                    if (_isLocked)
+                    Main.logger?.Warn(1, "FileLockHelper.AcquireExclusiveLock: Object is disposed");
+                    return false;
+                }
+
+                lock (lockObject)
+                {
+                    if (isLocked)
                     {
-                        Main.logger?.Warn(2, "Lock already acquired");
+                        Main.logger?.Warn(2, "FileLockHelper.AcquireExclusiveLock: Lock already acquired");
                         return true;
                     }
 
-                    _lockStream = new FileStream(
-                        _lockFilePath,
-                        FileMode.OpenOrCreate,
-                        FileAccess.ReadWrite,
-                        FileShare.None,
-                        4096,
-                        FileOptions.None
-                    );
-                    _isLocked = true;
+                    Main.logger?.Msg(3, string.Format("FileLockHelper.AcquireExclusiveLock: Attempting exclusive lock on {0}", lockFilePath));
 
-                    if (Task.Run(() => true).Wait(timeoutMs))
-                        return true;
+                    var startTime = DateTime.Now;
+                    var timeout = TimeSpan.FromMilliseconds(timeoutMs);
 
-                    ReleaseLock();
+                    while (DateTime.Now - startTime < timeout)
+                    {
+                        try
+                        {
+                            lockStream = new FileStream(
+                                lockFilePath,
+                                FileMode.OpenOrCreate,
+                                FileAccess.ReadWrite,
+                                FileShare.None,
+                                4096,
+                                FileOptions.None
+                            );
+                            isLocked = true;
+                            Main.logger?.Msg(2, string.Format("FileLockHelper.AcquireExclusiveLock: Successfully acquired exclusive lock on {0}", lockFilePath));
+                            return true;
+                        }
+                        catch (IOException)
+                        {
+                            // File is locked, wait and retry
+                            Thread.Sleep(RetryDelayMs);
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            // Permission denied, wait and retry
+                            Thread.Sleep(RetryDelayMs);
+                        }
+                    }
+
+                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireExclusiveLock: Timeout acquiring exclusive lock on {0}", lockFilePath));
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"AcquireExclusiveLock: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 try
                 {
                     ReleaseLock();
                 }
                 catch (Exception releaseEx)
                 {
-                    Main.logger?.Err($"Error during lock release in exception handler: {releaseEx.Message}");
+                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
                 }
                 return false;
             }
@@ -131,62 +191,71 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
-                if (_isLocked)
+                if (disposed)
                 {
-                    Main.logger?.Warn(2, "Lock already acquired");
+                    Main.logger?.Warn(1, "FileLockHelper.AcquireSharedLockAsync: Object is disposed");
+                    return false;
+                }
+
+                if (isLocked)
+                {
+                    Main.logger?.Warn(2, "FileLockHelper.AcquireSharedLockAsync: Lock already acquired");
                     return true;
                 }
 
-                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                Main.logger?.Msg(3, string.Format("FileLockHelper.AcquireSharedLockAsync: Attempting async shared lock on {0}", lockFilePath));
+
+                var startTime = DateTime.Now;
+                var timeout = TimeSpan.FromMilliseconds(timeoutMs);
+
+                while (DateTime.Now - startTime < timeout && !cancellationToken.IsCancellationRequested)
                 {
-                    cts.CancelAfter(timeoutMs);
-                    var ct = cts.Token;
-
-                    var tcs = new TaskCompletionSource<bool>();
-                    using (var timer = new Timer(_ => tcs.TrySetCanceled(), null, timeoutMs, Timeout.Infinite))
+                    try
                     {
-                        await Task.Run(async () =>
+                        lock (lockObject)
                         {
-                            while (!ct.IsCancellationRequested)
+                            if (!isLocked)
                             {
-                                try
-                                {
-                                    lock (_lockObject)
-                                    {
-                                        if (!_isLocked)
-                                        {
-                                            _lockStream = new FileStream(
-                                                _lockFilePath,
-                                                FileMode.OpenOrCreate,
-                                                FileAccess.Read,
-                                                FileShare.Read,
-                                                4096,
-                                                FileOptions.None
-                                            );
-                                            _isLocked = true;
-                                        }
-                                    }
-                                    timer.Dispose();
-                                    tcs.TrySetResult(true);
-                                    return;
-                                }
-                                catch (Exception ex)
-                                {
-                                    Main.logger?.Warn(3, $"Retry shared lock attempt: {ex.Message}");
-                                    await Task.Delay(100, ct).ConfigureAwait(false);
-                                }
+                                lockStream = new FileStream(
+                                    lockFilePath,
+                                    FileMode.OpenOrCreate,
+                                    FileAccess.Read,
+                                    FileShare.Read,
+                                    4096,
+                                    FileOptions.None
+                                );
+                                isLocked = true;
+                                Main.logger?.Msg(2, string.Format("FileLockHelper.AcquireSharedLockAsync: Successfully acquired async shared lock on {0}", lockFilePath));
+                                return true;
                             }
-                            timer.Dispose();
-                            tcs.TrySetCanceled();
-                        }, ct).ConfigureAwait(false);
-
-                        return await tcs.Task.ConfigureAwait(false);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        // File is locked, wait and retry
+                        await Task.Delay(RetryDelayMs, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        // Permission denied, wait and retry
+                        await Task.Delay(RetryDelayMs, cancellationToken).ConfigureAwait(false);
                     }
                 }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireSharedLockAsync: Cancelled acquiring shared lock on {0}", lockFilePath));
+                }
+                else
+                {
+                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireSharedLockAsync: Timeout acquiring shared lock on {0}", lockFilePath));
+                }
+
+                return false;
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"AcquireSharedLockAsync: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLockAsync: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -198,62 +267,71 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
-                if (_isLocked)
+                if (disposed)
                 {
-                    Main.logger?.Warn(2, "Lock already acquired");
+                    Main.logger?.Warn(1, "FileLockHelper.AcquireExclusiveLockAsync: Object is disposed");
+                    return false;
+                }
+
+                if (isLocked)
+                {
+                    Main.logger?.Warn(2, "FileLockHelper.AcquireExclusiveLockAsync: Lock already acquired");
                     return true;
                 }
 
-                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+                Main.logger?.Msg(3, string.Format("FileLockHelper.AcquireExclusiveLockAsync: Attempting async exclusive lock on {0}", lockFilePath));
+
+                var startTime = DateTime.Now;
+                var timeout = TimeSpan.FromMilliseconds(timeoutMs);
+
+                while (DateTime.Now - startTime < timeout && !cancellationToken.IsCancellationRequested)
                 {
-                    cts.CancelAfter(timeoutMs);
-                    var ct = cts.Token;
-
-                    var tcs = new TaskCompletionSource<bool>();
-                    using (var timer = new Timer(_ => tcs.TrySetCanceled(), null, timeoutMs, Timeout.Infinite))
+                    try
                     {
-                        await Task.Run(async () =>
+                        lock (lockObject)
                         {
-                            while (!ct.IsCancellationRequested)
+                            if (!isLocked)
                             {
-                                try
-                                {
-                                    lock (_lockObject)
-                                    {
-                                        if (!_isLocked)
-                                        {
-                                            _lockStream = new FileStream(
-                                                _lockFilePath,
-                                                FileMode.OpenOrCreate,
-                                                FileAccess.ReadWrite,
-                                                FileShare.None,
-                                                4096,
-                                                FileOptions.None
-                                            );
-                                            _isLocked = true;
-                                        }
-                                    }
-                                    timer.Dispose();
-                                    tcs.TrySetResult(true);
-                                    return;
-                                }
-                                catch (Exception ex)
-                                {
-                                    Main.logger?.Warn(3, $"Retry exclusive lock attempt: {ex.Message}");
-                                    await Task.Delay(100, ct).ConfigureAwait(false);
-                                }
+                                lockStream = new FileStream(
+                                    lockFilePath,
+                                    FileMode.OpenOrCreate,
+                                    FileAccess.ReadWrite,
+                                    FileShare.None,
+                                    4096,
+                                    FileOptions.None
+                                );
+                                isLocked = true;
+                                Main.logger?.Msg(2, string.Format("FileLockHelper.AcquireExclusiveLockAsync: Successfully acquired async exclusive lock on {0}", lockFilePath));
+                                return true;
                             }
-                            timer.Dispose();
-                            tcs.TrySetCanceled();
-                        }, ct).ConfigureAwait(false);
-
-                        return await tcs.Task.ConfigureAwait(false);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        // File is locked, wait and retry
+                        await Task.Delay(RetryDelayMs, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        // Permission denied, wait and retry
+                        await Task.Delay(RetryDelayMs, cancellationToken).ConfigureAwait(false);
                     }
                 }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireExclusiveLockAsync: Cancelled acquiring exclusive lock on {0}", lockFilePath));
+                }
+                else
+                {
+                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireExclusiveLockAsync: Timeout acquiring exclusive lock on {0}", lockFilePath));
+                }
+
+                return false;
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"AcquireExclusiveLockAsync: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLockAsync: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -265,34 +343,57 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
-                lock (_lockObject)
+                lock (lockObject)
                 {
-                    if (_isLocked && _lockStream != null)
+                    if (isLocked && lockStream != null)
                     {
-                        _lockStream.Dispose();
-                        _lockStream = null;
-                        _isLocked = false;
+                        Main.logger?.Msg(3, string.Format("FileLockHelper.ReleaseLock: Releasing lock on {0}", lockFilePath));
+                        lockStream.Dispose();
+                        lockStream = null;
+                        isLocked = false;
+
+                        // Clean up lock file if it exists
+                        try
+                        {
+                            if (File.Exists(lockFilePath))
+                            {
+                                File.Delete(lockFilePath);
+                                Main.logger?.Msg(3, string.Format("FileLockHelper.ReleaseLock: Deleted lock file {0}", lockFilePath));
+                            }
+                        }
+                        catch (Exception deleteEx)
+                        {
+                            Main.logger?.Warn(1, string.Format("FileLockHelper.ReleaseLock: Could not delete lock file {0}: {1}", lockFilePath, deleteEx.Message));
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"ReleaseLock: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("FileLockHelper.ReleaseLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 // Force cleanup in case of catastrophic failure
-                _isLocked = false;
-                _lockStream = null;
+                isLocked = false;
+                lockStream = null;
             }
         }
 
         public void Dispose()
         {
-            try
+            if (!disposed)
             {
-                ReleaseLock();
-            }
-            catch (Exception ex)
-            {
-                Main.logger?.Err($"Dispose: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                try
+                {
+                    Main.logger?.Msg(3, string.Format("FileLockHelper.Dispose: Disposing lock helper for {0}", lockFilePath));
+                    ReleaseLock();
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err(string.Format("FileLockHelper.Dispose: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                }
+                finally
+                {
+                    disposed = true;
+                }
             }
         }
     }

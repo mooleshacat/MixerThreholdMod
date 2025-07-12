@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace MixerThreholdMod_0_0_1.Utils
@@ -81,49 +82,65 @@ namespace MixerThreholdMod_0_0_1.Utils
             Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Started for Mixer {0}", mixerID));
 
             // Wait until the StartThrehold is properly initialized - NO try-catch around yield
-            while (config?.StartThrehold?.Slider == null)
+            while (config?.StartThrehold == null)
             {
                 yield return new WaitForSeconds(0.1f);
             }
 
+            Main.logger.Msg(3, string.Format("AttachListenerWhenReady: StartThrehold found for Mixer {0}", mixerID));
+
+            // Instead of using OnValueChanged, we'll use reflection to find the correct event or polling
             Exception attachError = null;
+            bool eventAttached = false;
+
             try
             {
-                config.StartThrehold.Slider.onValueChanged.AddListener((float newValue) =>
+                // Method 1: Try to find an event using reflection
+                var numberFieldType = config.StartThrehold.GetType();
+                Main.logger.Msg(3, string.Format("AttachListenerWhenReady: NumberField type: {0}", numberFieldType.Name));
+
+                // Look for common event names
+                var eventNames = new[] { "OnValueChanged", "ValueChanged", "onValueChanged", "OnChange", "Changed" };
+
+                foreach (var eventName in eventNames)
                 {
-                    Exception listenerError = null;
-                    try
+                    var eventInfo = numberFieldType.GetEvent(eventName, BindingFlags.Public | BindingFlags.Instance);
+                    if (eventInfo != null && eventInfo.EventHandlerType != null)
                     {
-                        // .NET 4.8.1 compatible - use manual update instead of AddOrUpdate
-                        float oldValue;
-                        bool hasOldValue = Main.savedMixerValues.TryGetValue(mixerID, out oldValue);
+                        Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Found event {0} for Mixer {1}", eventName, mixerID));
 
-                        if (!hasOldValue)
+                        // Create a delegate that matches the event signature
+                        var handler = CreateEventHandler(eventInfo.EventHandlerType, mixerID);
+                        if (handler != null)
                         {
-                            Main.savedMixerValues.TryAdd(mixerID, newValue);
+                            eventInfo.AddEventHandler(config.StartThrehold, handler);
+                            eventAttached = true;
+                            Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Successfully attached to {0} event for Mixer {1}", eventName, mixerID));
+                            break;
                         }
-                        else
+                    }
+                }
+
+                // Method 2: If no event found, try to find a field/property that might have changed events
+                if (!eventAttached)
+                {
+                    var fields = numberFieldType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    foreach (var field in fields)
+                    {
+                        if (field.FieldType.Name.Contains("UnityEvent") || field.FieldType.Name.Contains("Action"))
                         {
-                            Main.savedMixerValues.TryUpdate(mixerID, newValue, oldValue);
+                            Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Found potential event field: {0} of type {1}", field.Name, field.FieldType.Name));
                         }
-
-                        Main.logger.Msg(3, string.Format("Value changed for Mixer {0}: {1}", mixerID, newValue));
-
-                        // Start save coroutine
-                        MelonCoroutines.Start(SaveMixerValues());
                     }
-                    catch (Exception ex)
-                    {
-                        listenerError = ex;
-                    }
+                }
 
-                    if (listenerError != null)
-                    {
-                        Main.logger.Err(string.Format("Slider listener error for Mixer {0}: {1}", mixerID, listenerError.Message));
-                    }
-                });
-
-                Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Listener attached for Mixer {0}", mixerID));
+                // Method 3: Fallback to polling if no events available
+                if (!eventAttached)
+                {
+                    Main.logger.Msg(2, string.Format("AttachListenerWhenReady: No events found, using polling method for Mixer {0}", mixerID));
+                    MelonCoroutines.Start(PollValueChanges(config, mixerID));
+                    eventAttached = true; // Mark as handled
+                }
             }
             catch (Exception ex)
             {
@@ -133,9 +150,204 @@ namespace MixerThreholdMod_0_0_1.Utils
             if (attachError != null)
             {
                 Main.logger.Err(string.Format("AttachListenerWhenReady error for Mixer {0}: {1}\nStackTrace: {2}", mixerID, attachError.Message, attachError.StackTrace));
+
+                // Fallback to polling on error
+                if (!eventAttached)
+                {
+                    Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Falling back to polling for Mixer {0} due to error", mixerID));
+                    MelonCoroutines.Start(PollValueChanges(config, mixerID));
+                }
             }
 
             Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Finished for Mixer {0}", mixerID));
+        }
+
+        private static Delegate CreateEventHandler(Type eventHandlerType, int mixerID)
+        {
+            try
+            {
+                // Try to create a handler for common event signatures
+                if (eventHandlerType == typeof(Action<float>))
+                {
+                    return new Action<float>((float newValue) => OnValueChanged(mixerID, newValue));
+                }
+                else if (eventHandlerType == typeof(System.EventHandler))
+                {
+                    return new System.EventHandler((object sender, EventArgs e) => OnValueChangedGeneric(mixerID, sender));
+                }
+                else if (eventHandlerType.IsGenericType && eventHandlerType.GetGenericTypeDefinition() == typeof(Action<>))
+                {
+                    var paramType = eventHandlerType.GetGenericArguments()[0];
+                    if (paramType == typeof(float))
+                    {
+                        return new Action<float>((float newValue) => OnValueChanged(mixerID, newValue));
+                    }
+                }
+
+                Main.logger.Msg(3, string.Format("CreateEventHandler: Unsupported event handler type: {0}", eventHandlerType.Name));
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("CreateEventHandler error: {0}", ex.Message));
+                return null;
+            }
+        }
+
+        private static void OnValueChanged(int mixerID, float newValue)
+        {
+            Exception listenerError = null;
+            try
+            {
+                // .NET 4.8.1 compatible - use manual update instead of AddOrUpdate
+                float oldValue;
+                bool hasOldValue = Main.savedMixerValues.TryGetValue(mixerID, out oldValue);
+
+                if (!hasOldValue)
+                {
+                    Main.savedMixerValues.TryAdd(mixerID, newValue);
+                }
+                else
+                {
+                    Main.savedMixerValues.TryUpdate(mixerID, newValue, oldValue);
+                }
+
+                Main.logger.Msg(3, string.Format("Value changed for Mixer {0}: {1}", mixerID, newValue));
+
+                // Start save coroutine
+                MelonCoroutines.Start(SaveMixerValues());
+            }
+            catch (Exception ex)
+            {
+                listenerError = ex;
+            }
+
+            if (listenerError != null)
+            {
+                Main.logger.Err(string.Format("OnValueChanged error for Mixer {0}: {1}", mixerID, listenerError.Message));
+            }
+        }
+
+        private static void OnValueChangedGeneric(int mixerID, object sender)
+        {
+            Exception listenerError = null;
+            try
+            {
+                // Try to get the current value from the sender
+                if (sender != null)
+                {
+                    var senderType = sender.GetType();
+                    var valueProperty = senderType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+
+                    if (valueProperty != null && valueProperty.PropertyType == typeof(float))
+                    {
+                        float currentValue = (float)valueProperty.GetValue(sender, null);
+                        OnValueChanged(mixerID, currentValue);
+                    }
+                    else
+                    {
+                        Main.logger.Msg(3, string.Format("OnValueChangedGeneric: Could not determine value for Mixer {0}", mixerID));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                listenerError = ex;
+            }
+
+            if (listenerError != null)
+            {
+                Main.logger.Err(string.Format("OnValueChangedGeneric error for Mixer {0}: {1}", mixerID, listenerError.Message));
+            }
+        }
+
+        private static IEnumerator PollValueChanges(MixingStationConfiguration config, int mixerID)
+        {
+            Main.logger.Msg(3, string.Format("PollValueChanges: Started polling for Mixer {0}", mixerID));
+
+            float lastKnownValue = -1f;
+            bool hasInitialValue = false;
+
+            while (config?.StartThrehold != null)
+            {
+                Exception pollError = null;
+                try
+                {
+                    // Try to get current value using reflection
+                    var currentValue = GetCurrentValue(config.StartThrehold);
+
+                    if (currentValue.HasValue)
+                    {
+                        if (!hasInitialValue)
+                        {
+                            lastKnownValue = currentValue.Value;
+                            hasInitialValue = true;
+                            Main.logger.Msg(3, string.Format("PollValueChanges: Initial value for Mixer {0}: {1}", mixerID, lastKnownValue));
+                        }
+                        else if (Math.Abs(currentValue.Value - lastKnownValue) > 0.001f) // Small threshold for float comparison
+                        {
+                            Main.logger.Msg(3, string.Format("PollValueChanges: Value changed for Mixer {0}: {1} -> {2}", mixerID, lastKnownValue, currentValue.Value));
+                            lastKnownValue = currentValue.Value;
+                            OnValueChanged(mixerID, currentValue.Value);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    pollError = ex;
+                }
+
+                if (pollError != null)
+                {
+                    Main.logger.Err(string.Format("PollValueChanges error for Mixer {0}: {1}", mixerID, pollError.Message));
+                }
+
+                // Poll every 100ms - NO try-catch around yield
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            Main.logger.Msg(3, string.Format("PollValueChanges: Stopped polling for Mixer {0}", mixerID));
+        }
+
+        private static float? GetCurrentValue(object numberField)
+        {
+            try
+            {
+                if (numberField == null) return null;
+
+                var type = numberField.GetType();
+
+                // Try common property names for getting the current value
+                var propertyNames = new[] { "Value", "CurrentValue", "GetValue", "value" };
+
+                foreach (var propName in propertyNames)
+                {
+                    var property = type.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
+                    if (property != null && property.PropertyType == typeof(float) && property.CanRead)
+                    {
+                        return (float)property.GetValue(numberField, null);
+                    }
+                }
+
+                // Try common method names
+                var methodNames = new[] { "GetValue", "getValue", "Value" };
+
+                foreach (var methodName in methodNames)
+                {
+                    var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
+                    if (method != null && method.ReturnType == typeof(float))
+                    {
+                        return (float)method.Invoke(numberField, null);
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("GetCurrentValue error: {0}", ex.Message));
+                return null;
+            }
         }
 
         public static IEnumerator SaveMixerValues()
@@ -367,51 +579,8 @@ namespace MixerThreholdMod_0_0_1.Utils
                 Main.logger.Err(string.Format("BackupSaveFolder: Backup failed: {0}", copyError.Message));
             }
 
-            // Cleanup old backups (keep only last 5) with timeout protection
-            Exception cleanupError = null;
-            try
-            {
-                var allBackupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
-                var sortedBackups = allBackupFiles.OrderByDescending(f => File.GetCreationTime(f)).ToList();
-                var oldBackups = sortedBackups.Skip(5).ToList();
-
-                foreach (var oldBackup in oldBackups)
-                {
-                    if ((Time.time - startTime) > BACKUP_TIMEOUT)
-                    {
-                        Main.logger.Warn(1, "BackupSaveFolder: Timeout during cleanup, stopping");
-                        break;
-                    }
-
-                    Exception deleteError = null;
-                    try
-                    {
-                        File.Delete(oldBackup);
-                        Main.logger.Msg(3, string.Format("BackupSaveFolder: Deleted old backup: {0}", oldBackup));
-                    }
-                    catch (Exception deleteEx)
-                    {
-                        deleteError = deleteEx;
-                    }
-
-                    if (deleteError != null)
-                    {
-                        Main.logger.Warn(1, string.Format("BackupSaveFolder: Failed to delete old backup {0}: {1}", oldBackup, deleteError.Message));
-                    }
-
-                    // Yield between file operations - NO try-catch around this
-                    yield return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                cleanupError = ex;
-            }
-
-            if (cleanupError != null)
-            {
-                Main.logger.Warn(1, string.Format("BackupSaveFolder: Cleanup error: {0}", cleanupError.Message));
-            }
+            // Perform cleanup without try-catch around yield
+            yield return PerformCleanupCoroutine(backupDir, startTime, BACKUP_TIMEOUT);
 
             // CRITICAL: Always reset the flag, even on exceptions
             lock (backupLock)
@@ -420,6 +589,72 @@ namespace MixerThreholdMod_0_0_1.Utils
             }
 
             Main.logger.Msg(3, "BackupSaveFolder: Finished and cleanup completed");
+        }
+
+        private static IEnumerator PerformCleanupCoroutine(string backupDir, float startTime, float timeoutSeconds)
+        {
+            Main.logger.Msg(3, "PerformCleanupCoroutine: Starting cleanup of old backups");
+
+            // Get list of backup files outside of try-catch
+            string[] allBackupFiles = null;
+            Exception listError = null;
+
+            try
+            {
+                allBackupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
+            }
+            catch (Exception ex)
+            {
+                listError = ex;
+            }
+
+            if (listError != null)
+            {
+                Main.logger.Warn(1, string.Format("PerformCleanupCoroutine: Error getting backup file list: {0}", listError.Message));
+                yield break;
+            }
+
+            if (allBackupFiles == null || allBackupFiles.Length <= 5)
+            {
+                Main.logger.Msg(3, "PerformCleanupCoroutine: No cleanup needed, backup count is acceptable");
+                yield break;
+            }
+
+            // Sort and identify old backups outside of try-catch
+            var sortedBackups = allBackupFiles.OrderByDescending(f => File.GetCreationTime(f)).ToList();
+            var oldBackups = sortedBackups.Skip(5).ToList();
+
+            Main.logger.Msg(3, string.Format("PerformCleanupCoroutine: Found {0} old backups to delete", oldBackups.Count));
+
+            foreach (var oldBackup in oldBackups)
+            {
+                if ((Time.time - startTime) > timeoutSeconds)
+                {
+                    Main.logger.Warn(1, "PerformCleanupCoroutine: Timeout during cleanup, stopping");
+                    break;
+                }
+
+                Exception deleteError = null;
+                try
+                {
+                    File.Delete(oldBackup);
+                    Main.logger.Msg(3, string.Format("PerformCleanupCoroutine: Deleted old backup: {0}", oldBackup));
+                }
+                catch (Exception deleteEx)
+                {
+                    deleteError = deleteEx;
+                }
+
+                if (deleteError != null)
+                {
+                    Main.logger.Warn(1, string.Format("PerformCleanupCoroutine: Failed to delete old backup {0}: {1}", oldBackup, deleteError.Message));
+                }
+
+                // Yield between file operations - NO try-catch around this
+                yield return null;
+            }
+
+            Main.logger.Msg(3, "PerformCleanupCoroutine: Cleanup completed");
         }
 
         private static bool ShouldCreateBackup()
