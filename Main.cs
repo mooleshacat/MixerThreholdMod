@@ -52,6 +52,15 @@ namespace MixerThreholdMod_0_0_1
 
         public override void OnInitializeMelon()
         {
+            base.OnInitializeMelon();
+
+            // Critical: Add unhandled exception handler for crash prevention
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+            logger.Msg(1, "[MAIN] MixerThresholdMod initializing - focused on save crash prevention");
+            logger.Msg(1, string.Format("[MAIN] Debug levels - Msg: {0}, Warn: {1}", logger.CurrentMsgLogLevel, logger.Current_warnLogLevel));
+
+            Exception initError = null;
             try
             {
                 // Test logger immediately - if this fails, we have a fundamental problem
