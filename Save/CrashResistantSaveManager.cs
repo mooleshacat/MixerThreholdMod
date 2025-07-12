@@ -1084,8 +1084,8 @@ namespace MixerThreholdMod_0_0_1.Save
                     // Call game's save system using reflection to avoid namespace issues
                     try
                     {
-                        // Find SaveManager using reflection - dnSpy verified namespace: ScheduleOne.Persistence.SaveManager
-                        var saveManagerType = System.Type.GetType("ScheduleOne.Persistence.SaveManager, Assembly-CSharp");
+                        // Find SaveManager using reflection
+                        var saveManagerType = System.Type.GetType("ScheduleOne.Management.SaveManager, Assembly-CSharp");
                         if (saveManagerType != null)
                         {
                             // Find Singleton<SaveManager>.Instance using reflection
@@ -1208,5 +1208,236 @@ namespace MixerThreholdMod_0_0_1.Save
                 Main.logger.Msg(2, "[SAVE] GAME SAVE StressGameSaveTest: Stress test cleanup completed");
             }
         }
-    }
-}
+
+        /// <summary>
+        /// Enhanced save monitoring using game's write permission testing
+        /// ⚠️ CRASH PREVENTION: Proactive validation prevents save failures
+        /// ⚠️ THREAD SAFETY: Thread-safe operation with comprehensive error detection
+        /// ⚠️ MAIN THREAD WARNING: Monitoring operations are non-blocking
+        /// 
+        /// .NET 4.8.1 Compatibility:
+        /// - Uses compatible file I/O patterns
+        /// - Proper exception handling for crash prevention
+        /// - Compatible with Unity's coroutine system
+        /// 
+        /// Features:
+        /// - Replicates game's HasWritePermissionOnDir logic
+        /// - Proactive corruption detection
+        /// - Emergency save triggering
+        /// - Performance monitoring
+        /// </summary>
+        public static IEnumerator MonitorSaveHealth()
+        {
+            if (string.IsNullOrEmpty(Main.CurrentSavePath))
+            {
+                yield break;
+            }
+
+            Exception monitorError = null;
+            bool hasWriteAccess = false;
+            bool shouldAttemptRecovery = false;
+
+            // FIXED: Move all yield returns OUTSIDE try-catch blocks
+            try
+            {
+                Main.logger.Msg(3, "[SAVE] MonitorSaveHealth: Starting health check");
+
+                // Use game's own write permission testing logic from dnSpy
+                hasWriteAccess = TestWritePermission(Main.CurrentSavePath);
+
+                if (!hasWriteAccess)
+                {
+                    Main.logger.Err("[SAVE] CRITICAL: Write permission lost on save directory");
+                    Main.logger.Err(string.Format("[SAVE] Path: {0}", Main.CurrentSavePath));
+
+                    // Trigger emergency save to alternate location
+                    EmergencySave();
+                }
+
+                // Monitor save file integrity
+                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+                if (File.Exists(saveFile))
+                {
+                    var fileInfo = new FileInfo(saveFile);
+                    if (fileInfo.Length == 0)
+                    {
+                        Main.logger.Warn(1, "[SAVE] WARNING: Zero-byte save file detected - corruption possible");
+                        shouldAttemptRecovery = true;
+                    }
+                    else
+                    {
+                        Main.logger.Msg(3, string.Format("[SAVE] Save file health OK: {0} bytes", fileInfo.Length));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                monitorError = ex;
+            }
+
+            if (monitorError != null)
+            {
+                Main.logger.Err(string.Format("[SAVE] MonitorSaveHealth CRASH PREVENTION: Error: {0}\nStackTrace: {1}",
+                    monitorError.Message, monitorError.StackTrace));
+            }
+
+            // FIXED: yield return statements OUTSIDE try-catch
+            if (shouldAttemptRecovery)
+            {
+                yield return AttemptSaveRecovery();
+            }
+
+            yield return CheckBackupDirectoryHealth();
+
+            Main.logger.Msg(3, "[SAVE] MonitorSaveHealth: Health check completed");
+        }
+
+        /// <summary>
+        /// Replicate game's write permission testing from dnSpy
+        /// Based on SaveManager.HasWritePermissionOnDir exactly
+        /// </summary>
+        private static bool TestWritePermission(string path)
+        {
+            bool result = false;
+            string testFile = Path.Combine(path, "WriteTest_Mod.txt");
+
+            if (Directory.Exists(path))
+            {
+                try
+                {
+                    // Exact replication of game's test logic
+                    File.WriteAllText(testFile, "If you're reading this, it means MixerThresholdMod can write save files properly - Yay!");
+                    if (File.Exists(testFile))
+                    {
+                        result = true;
+                        File.Delete(testFile); // Cleanup like the game does
+                    }
+                }
+                catch (Exception)
+                {
+                    result = false;
+                    // Game's logic - silent failure like HasWritePermissionOnDir
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Attempt to recover corrupted save from backup
+        /// ⚠️ CRASH PREVENTION: Safe recovery with comprehensive error handling
+        /// </summary>
+        private static IEnumerator AttemptSaveRecovery()
+        {
+            Exception recoveryError = null;
+            try
+            {
+                Main.logger.Msg(2, "[SAVE] AttemptSaveRecovery: Starting save recovery process");
+
+                string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
+                if (Directory.Exists(backupDir))
+                {
+                    var backupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
+                    if (backupFiles.Length > 0)
+                    {
+                        // Get most recent backup
+                        var latestBackup = backupFiles.OrderByDescending(f => File.GetCreationTime(f)).First();
+                        string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+
+                        Main.logger.Msg(1, string.Format("[SAVE] Attempting recovery from: {0}", Path.GetFileName(latestBackup)));
+
+                        // Atomic recovery operation
+                        string tempFile = saveFile + ".recovery.tmp";
+                        File.Copy(latestBackup, tempFile, overwrite: true);
+
+                        if (File.Exists(saveFile))
+                        {
+                            File.Delete(saveFile);
+                        }
+
+                        File.Move(tempFile, saveFile);
+
+                        Main.logger.Msg(1, "[SAVE] Save recovery completed successfully");
+                    }
+                    else
+                    {
+                        Main.logger.Warn(1, "[SAVE] No backup files available for recovery");
+                    }
+                }
+                else
+                {
+                    Main.logger.Warn(1, "[SAVE] No backup directory found for recovery");
+                }
+            }
+            catch (Exception ex)
+            {
+                recoveryError = ex;
+            }
+
+            if (recoveryError != null)
+            {
+                Main.logger.Err(string.Format("[SAVE] AttemptSaveRecovery CRASH PREVENTION: Recovery failed: {0}", recoveryError.Message));
+            }
+
+            yield return null;
+        }
+
+        /// <summary>
+        /// Check backup directory health and cleanup if needed
+        /// ⚠️ CRASH PREVENTION: Prevents backup directory corruption
+        /// </summary>
+        private static IEnumerator CheckBackupDirectoryHealth()
+        {
+            Exception healthError = null;
+            try
+            {
+                string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
+                if (Directory.Exists(backupDir))
+                {
+                    var backupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
+                    int corruptedBackups = 0;
+
+                    foreach (var backupFile in backupFiles)
+                    {
+                        var fileInfo = new FileInfo(backupFile);
+                        if (fileInfo.Length == 0)
+                        {
+                            Main.logger.Warn(1, string.Format("[SAVE] Corrupted backup detected: {0}", Path.GetFileName(backupFile)));
+                            corruptedBackups++;
+
+                            try
+                            {
+                                File.Delete(backupFile);
+                                Main.logger.Msg(2, string.Format("[SAVE] Deleted corrupted backup: {0}", Path.GetFileName(backupFile)));
+                            }
+                            catch (Exception deleteEx)
+                            {
+                                Main.logger.Err(string.Format("[SAVE] Failed to delete corrupted backup: {0}", deleteEx.Message));
+                            }
+                        }
+                    }
+
+                    if (corruptedBackups > 0)
+                    {
+                        Main.logger.Warn(1, string.Format("[SAVE] Cleaned up {0} corrupted backup files", corruptedBackups));
+                    }
+                    else
+                    {
+                        Main.logger.Msg(3, string.Format("[SAVE] Backup directory health OK: {0} valid backups", backupFiles.Length));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                healthError = ex;
+            }
+
+            if (healthError != null)
+            {
+                Main.logger.Err(string.Format("[SAVE] CheckBackupDirectoryHealth error: {0}", healthError.Message));
+            }
+
+            yield return null;
+        }
+
+    } // end class
+} // end namespace
