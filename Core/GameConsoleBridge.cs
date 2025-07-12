@@ -87,13 +87,14 @@ namespace MixerThreholdMod_1_0_0.Core
                                 if (commandsDict != null)
                                 {
                                     Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary count: {0}", commandsDict.Count));
-                                    Main.logger?.Msg(2, "[BRIDGE] Successfully accessing game's command registry - proceeding with integration");
+                                    Main.logger?.Msg(2, "[BRIDGE] Successfully accessing game's command registry");
                                     
-                                    // Add mod commands to game's native console using reflection-based approach
-                                    AddModCommandsToGameConsole(commandsDict, consoleType);
+                                    // NOTE: Direct dictionary injection causes type compatibility issues with ScheduleOne.Console+ConsoleCommand
+                                    // Using Harmony-based command interception instead for reliable console integration
+                                    Main.logger?.Msg(2, "[BRIDGE] Skipping direct command injection - using Harmony interception for mod commands");
 
                                     _isInitialized = true;
-                                    Main.logger?.Msg(1, "[BRIDGE] Successfully integrated mod commands into game console");
+                                    Main.logger?.Msg(1, "[BRIDGE] Console integration ready - commands handled via Harmony patches");
                                 }
                                 else
                                 {
@@ -278,6 +279,14 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     processMethod = consoleType.GetMethod("ExecuteCommand", BindingFlags.Public | BindingFlags.Static);
                 }
+                if (processMethod == null)
+                {
+                    processMethod = consoleType.GetMethod("Command", BindingFlags.Public | BindingFlags.Static);
+                }
+                if (processMethod == null)
+                {
+                    processMethod = consoleType.GetMethod("HandleCommand", BindingFlags.Public | BindingFlags.Static);
+                }
 
                 if (processMethod != null)
                 {
@@ -358,6 +367,15 @@ namespace MixerThreholdMod_1_0_0.Core
                 var parts = lowerCommand.Split(' ');
                 var baseCommand = parts[0];
 
+                // Check if this is one of our mod commands
+                // Updated to include all commands actually implemented in Console.cs
+                var modCommands = new string[] 
+                { 
+                    "savemonitor", "transactionalsave", "profile", "saveprefstress", "savegamestress",
+                    "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency", "mixer_status", "mixer_info",
+                    "msg", "warn", "err", "info", "warning", "error", "help", "commands"
+                };
+
                 // Log ALL console commands for comprehensive debugging
                 Main.logger?.Msg(2, string.Format("[BRIDGE] === INTERCEPTED CONSOLE COMMAND ==="));
                 Main.logger?.Msg(2, string.Format("[BRIDGE] Raw command: '{0}'", command));
@@ -371,12 +389,16 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(3, "[BRIDGE] No parameters detected");
                 }
 
-                // Check if this is one of our mod commands
-                var modCommands = new string[] 
-                { 
-                    "savemonitor", "transactionalsave", "profile", "saveprefstress", "savegamestress",
-                    "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency", "msg", "warn", "err", "help"
-                };
+                // Log the comparison for debugging
+                Main.logger?.Msg(3, string.Format("[BRIDGE] Checking if '{0}' is in mod command list...", baseCommand));
+                foreach (var modCmd in modCommands)
+                {
+                    if (baseCommand == modCmd)
+                    {
+                        Main.logger?.Msg(3, string.Format("[BRIDGE] ✓ MATCH: '{0}' == '{1}'", baseCommand, modCmd));
+                        break;
+                    }
+                }
 
                 bool isModCommand = modCommands.Contains(baseCommand);
                 Main.logger?.Msg(2, string.Format("[BRIDGE] Command classification: {0}", isModCommand ? "MOD COMMAND" : "GAME COMMAND"));
