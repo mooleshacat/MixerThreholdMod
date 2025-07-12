@@ -491,25 +491,10 @@ namespace MixerThreholdMod_1_0_0.Save
             
             if (Main.savedMixerValues.Count == 0)
             {
-                // Provide detailed diagnostics
-                int trackedMixersCount = Core.TrackedMixers.Count(tm => tm != null);
-                int queuedInstancesCount = Main.queuedInstances.Count;
+                // Provide detailed diagnostics using timeout-safe approaches
+                Main.logger.Warn(1, "[SAVE] PerformCrashResistantSave: No mixer data to save. Gathering diagnostics...");
                 
-                Main.logger.Warn(1, string.Format("[SAVE] PerformCrashResistantSave: No mixer data to save. Diagnostics:"));
-                Main.logger.Warn(1, string.Format("[SAVE] - SavedMixerValues: {0}", Main.savedMixerValues.Count));
-                Main.logger.Warn(1, string.Format("[SAVE] - TrackedMixers: {0}", trackedMixersCount));
-                Main.logger.Warn(1, string.Format("[SAVE] - QueuedInstances: {0}", queuedInstancesCount));
-                Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? "[null]"));
-                
-                if (trackedMixersCount == 0 && queuedInstancesCount == 0)
-                {
-                    Main.logger.Err("[SAVE] DIAGNOSIS: No mixers detected at all - constructor patching or runtime scanning may have failed");
-                }
-                else if (trackedMixersCount > 0)
-                {
-                    Main.logger.Warn(1, "[SAVE] DIAGNOSIS: Mixers are tracked but no values captured - event attachment may have failed");
-                }
-                
+                yield return GatherDetailedDiagnostics();
                 yield break;
             }
 
@@ -735,6 +720,90 @@ namespace MixerThreholdMod_1_0_0.Save
             catch (Exception ex)
             {
                 Main.logger.Err(string.Format("[SAVE] CleanupOldBackups: Error: {0}", ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Gather detailed diagnostics for save failures
+        /// </summary>
+        private static IEnumerator GatherDetailedDiagnostics()
+        {
+            Exception diagError = null;
+            int trackedMixersCount = 0;
+            int queuedInstancesCount = 0;
+
+            try
+            {
+                // Basic counts
+                queuedInstancesCount = Main.queuedInstances.Count;
+                
+                // Try to get tracked mixers count with timeout protection
+                var countTask = Core.TrackedMixers.CountAsync(tm => tm != null);
+                float startTime = Time.time;
+                while (!countTask.IsCompleted && (Time.time - startTime) < 2f)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+
+                if (countTask.IsCompleted && !countTask.IsFaulted)
+                {
+                    trackedMixersCount = countTask.Result;
+                }
+                else
+                {
+                    Main.logger.Warn(1, "[SAVE] DIAGNOSIS: TrackedMixers count task failed or timed out");
+                    trackedMixersCount = -1; // Indicates failure
+                }
+
+                // Output comprehensive diagnostics
+                Main.logger.Warn(1, "[SAVE] ===== COMPREHENSIVE MIXER DIAGNOSTICS =====");
+                Main.logger.Warn(1, string.Format("[SAVE] - SavedMixerValues: {0}", Main.savedMixerValues.Count));
+                Main.logger.Warn(1, string.Format("[SAVE] - TrackedMixers: {0}", trackedMixersCount >= 0 ? trackedMixersCount.ToString() : "FAILED"));
+                Main.logger.Warn(1, string.Format("[SAVE] - QueuedInstances: {0}", queuedInstancesCount));
+                Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? "[null]"));
+                Main.logger.Warn(1, string.Format("[SAVE] - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
+                Main.logger.Warn(1, string.Format("[SAVE] - Load coroutine started: {0}", Main.LoadCoroutineStarted));
+                
+                // Analysis based on results
+                if (trackedMixersCount == 0 && queuedInstancesCount == 0)
+                {
+                    Main.logger.Err("[SAVE] DIAGNOSIS: ❌ NO MIXERS DETECTED AT ALL");
+                    Main.logger.Err("[SAVE] - Constructor patching likely failed silently");
+                    Main.logger.Err("[SAVE] - Runtime scanning found no mixers");
+                    Main.logger.Err("[SAVE] - Game may not have any mixers loaded yet");
+                    Main.logger.Err("[SAVE] - Check if we're saving too early in the game");
+                }
+                else if (trackedMixersCount > 0 && Main.savedMixerValues.Count == 0)
+                {
+                    Main.logger.Err("[SAVE] DIAGNOSIS: ⚠️ MIXERS TRACKED BUT NO VALUES CAPTURED");
+                    Main.logger.Err("[SAVE] - Event attachment to mixer controls failed");
+                    Main.logger.Err("[SAVE] - Mixer value change listeners not working");
+                    Main.logger.Err("[SAVE] - Check StartThreshold.onItemChanged event availability");
+                }
+                else if (queuedInstancesCount > 0)
+                {
+                    Main.logger.Warn(1, "[SAVE] DIAGNOSIS: 🔄 MIXERS QUEUED BUT NOT PROCESSED");
+                    Main.logger.Warn(1, "[SAVE] - Processing may be blocked or slow");
+                    Main.logger.Warn(1, "[SAVE] - Check UpdateCoroutine performance");
+                }
+                else if (trackedMixersCount < 0)
+                {
+                    Main.logger.Err("[SAVE] DIAGNOSIS: 💥 TRACKING SYSTEM FAILURE");
+                    Main.logger.Err("[SAVE] - TrackedMixers async operations timing out");
+                    Main.logger.Err("[SAVE] - Threading/synchronization issues detected");
+                }
+
+                Main.logger.Warn(1, "[SAVE] ============================================");
+            }
+            catch (Exception ex)
+            {
+                diagError = ex;
+            }
+
+            if (diagError != null)
+            {
+                Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
+                    diagError.Message, diagError.StackTrace));
             }
         }
     }
