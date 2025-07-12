@@ -90,21 +90,32 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CancellableIoRunner.cs" />
-    <Compile Include="EntityConfiguration_Destroy_Patch.cs" />
-    <Compile Include="FileLockerHelper.cs" />
-    <Compile Include="FileOperations.cs" />
-    <Compile Include="LoadManager_LoadedGameFolderPath_Patch.cs" />
+    <!-- Core Components -->
+    <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\MixerIDManager.cs" />
+    <Compile Include="Core\TrackedMixer.cs" />
+    <Compile Include="Core\Console.cs" />
+    
+    <!-- Save System -->
+    <Compile Include="Save\CrashResistantSaveManager.cs" />
+    
+    <!-- Threading -->
+    <Compile Include="Threading\ThreadSafeCollections.cs" />
+    
+    <!-- Patches -->
+    <Compile Include="Patches\SaveManager_Save_Patch.cs" />
+    <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
+    <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
+    
+    <!-- Legacy helpers (to be phased out) -->
+    <Compile Include="Helpers\CancellableIoRunner.cs" />
+    <Compile Include="Helpers\FileOperations.cs" />
+    <Compile Include="Helpers\FileLockerHelper.cs" />
+    
+    <!-- Main entry point -->
     <Compile Include="Main.cs" />
-    <Compile Include="Console.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Logger.cs" />
-    <Compile Include="MixerIDManager.cs" />
-    <Compile Include="MixerSaveManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SaveManager_Save_Patch.cs" />
-    <Compile Include="TrackedMixer.cs" />
-    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />

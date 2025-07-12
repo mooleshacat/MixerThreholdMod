@@ -1,70 +1,9 @@
 ﻿using HarmonyLib;
-using MelonLoader;
-using MixerThreholdMod_1_0_0.Core;
-using MixerThreholdMod_1_0_0.Save;
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+using ScheduleOne.Persistence;
 using System;
-using System.Reflection;
 
-namespace MixerThreholdMod_1_0_0.Patches
+namespace MixerThreholdMod_0_0_1.Patches
 {
-<<<<<<< HEAD
-    [HarmonyPatch(typeof(LoadManager), "LoadedGameFolderPath", MethodType.Getter)]
-    public static class LoadManager_LoadedGameFolderPath_Patch
-    {
-        private static bool isHandlingGetter = false;
-
-        public static void Postfix(ref string __result)
-        {
-            if (isHandlingGetter)
-                return;
-
-            try
-            {
-                Main.logger.Msg(3, string.Format("LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {0}", __savePath ?? "null"));
-
-                if (!string.IsNullOrEmpty(__result))
-                {
-                    Main.CurrentSavePath = __result;
-
-                    string path = Utils.NormalizePath(Path.Combine(__savePath, "MixerThresholdSave.json"));
-                    
-                    int _mixerCount = 0;
-                    try
-                    {
-                        _mixerCount = TrackedMixers.Count(tm => tm != null);
-                    }
-                    catch (Exception countEx)
-                    {
-                        Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Error counting mixers: {0}", countEx.Message));
-                    }
-
-                    if (_mixerCount == 0)
-                    {
-                        // Use the same flag, so when one triggers it supresses the other :)
-                        if (!MixerSaveManager._hasLoggedZeroMixers)
-                        {
-                            Main.logger.Msg(2, "No mixers tracked (maybe you have none?) — skipping mixer threshold prefs save/create.");
-                            Main.logger.Warn(1, "No mixers tracked (maybe you have none?) — suppressing future logs until reload save.");
-                            MixerSaveManager._hasLoggedZeroMixers = true;
-                        }
-                        return;
-                    }
-
-                    if (!File.Exists(path))
-                    {
-                        try
-                        {
-                            Main.logger.Warn(1, "MixerThresholdSave.json missing on load — creating it now.");
-                            Utils.CoroutineHelper.RunCoroutine(SaveThresholdsCoroutine(__savePath));
-                        }
-                        catch (Exception coroutineEx)
-                        {
-                            Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Error starting save coroutine: {0}", coroutineEx.Message));
-                        }
-                    }
-=======
     /// <summary>
     /// Harmony patch for LoadManager.StartGame to capture load operations and initialize save path.
     /// 
@@ -74,101 +13,29 @@ namespace MixerThreholdMod_1_0_0.Patches
     /// ⚠️ THREAD SAFETY: All operations are designed to be thread-safe and not block the main thread.
     /// Error handling prevents patch failures from affecting game loading.
     /// 
-    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
-    /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses string.Format instead of string interpolation
     /// - Compatible exception handling patterns
     /// - Proper null checking
     /// </summary>
+    [HarmonyPatch(typeof(LoadManager), "StartGame")]
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
-        private static bool _patchInitialized = false;
-        private static MethodInfo _startGameMethod = null;
-
-        /// <summary>
-        /// Initialize the patch using IL2CPP-compatible type resolution
-        /// </summary>
-        public static void Initialize()
-        {
-            try
-            {
-                if (_patchInitialized) return;
-
-                // Get LoadManager type via reflection to avoid IL2CPP issues
-                var loadManagerType = IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Persistence.LoadManager");
-                if (loadManagerType == null)
-                {
-                    Main.logger.Warn(1, "[PATCH] LoadManager type not found - patch will not be applied");
-                    return;
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
-=======
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
-                }
-
-                // Get SaveInfo type via reflection
-                var saveInfoType = IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Persistence.SaveInfo");
-                if (saveInfoType == null)
-                {
-                    Main.logger.Warn(1, "[PATCH] SaveInfo type not found - patch will not be applied");
-                    return;
-                }
-
-                _startGameMethod = loadManagerType.GetMethod("StartGame", new[] { saveInfoType, typeof(bool) });
-                if (_startGameMethod == null)
-                {
-                    Main.logger.Warn(1, "[PATCH] LoadManager.StartGame method not found - patch will not be applied");
-                    return;
-                }
-
-                // Apply Harmony patch dynamically
-                var harmony = new Harmony("MixerThreholdMod.LoadManager_LoadedGameFolderPath_Patch");
-                var postfixMethod = typeof(LoadManager_LoadedGameFolderPath_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
-                
-                harmony.Patch(_startGameMethod, null, new HarmonyMethod(postfixMethod));
-                
-                Main.logger.Msg(1, "[PATCH] IL2CPP-compatible LoadManager.StartGame patch applied successfully");
-                _patchInitialized = true;
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("[PATCH] Failed to initialize LoadManager_LoadedGameFolderPath_Patch: {0}", ex.Message));
-            }
-        }
         /// <summary>
         /// Postfix patch that runs after LoadManager.StartGame completes
-        /// IL2CPP COMPATIBLE: Uses dynamic types to avoid TypeLoadException
         /// </summary>
-        public static void Postfix(object __instance, object info, bool allowLoadStacking)
+        public static void Postfix(LoadManager __instance, SaveInfo info, bool allowLoadStacking)
         {
             Exception patchError = null;
             try
             {
-                if (info == null)
+                if (info == null || string.IsNullOrEmpty(info.SavePath))
                 {
-                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: No save info");
+                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: No save info or path");
                     return;
                 }
 
-                // Use reflection to get SavePath property from SaveInfo object
-                var savePathProperty = info.GetType().GetProperty("SavePath");
-                if (savePathProperty == null)
-                {
-                    Main.logger.Warn(1, "[PATCH] LoadManager postfix: SavePath property not found on SaveInfo");
-                    return;
-                }
-
-                var savePath = savePathProperty.GetValue(info, null) as string;
-                if (string.IsNullOrEmpty(savePath))
-                {
-                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: Save path is empty");
-                    return;
-                }
-
+                string savePath = info.SavePath;
                 Main.logger.Msg(2, string.Format("[PATCH] LoadManager postfix: Game loading from {0}", savePath));
 
                 // Set current save path for the save system
@@ -188,12 +55,6 @@ namespace MixerThreholdMod_1_0_0.Patches
             }
             catch (Exception ex)
             {
-<<<<<<< HEAD
-                // catchall at patch level, where my DLL interacts with the game and it's engine
-                // hopefully should catch errors in entire project?
-                Main.logger.Err("LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
-                Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-=======
                 patchError = ex;
             }
 
@@ -202,7 +63,33 @@ namespace MixerThreholdMod_1_0_0.Patches
                 Main.logger.Err(string.Format("[PATCH] LoadManager_LoadedGameFolderPath_Patch CRASH PREVENTION: Patch error: {0}\nStackTrace: {1}", 
                     patchError.Message, patchError.StackTrace));
                 // CRITICAL: Never let patch failures crash the game's load process
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+            }
+        }
+
+        /// <summary>
+        /// Simple path normalization for .NET 4.8.1 compatibility
+        /// </summary>
+        private static string NormalizePath(string path)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(path)) return string.Empty;
+                
+                string normalized = path.Replace('/', '\\').Trim();
+                if (normalized.EndsWith("\\") && normalized.Length > 1)
+                {
+                    normalized = normalized.TrimEnd('\\');
+                }
+                return normalized;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
+                return path;
+            }
+        }
+    }
+}
             }
         }
 
