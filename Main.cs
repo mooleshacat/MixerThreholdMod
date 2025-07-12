@@ -264,7 +264,320 @@ namespace MixerThreholdMod_1_0_0
             }
         }
 
-        public async override void OnUpdate()
+        /// <summary>
+        /// Runtime mixer scanner as fallback detection method
+        /// ⚠️ CRASH PREVENTION: Scans for mixers in case constructor patching fails
+        /// </summary>
+        private IEnumerator RuntimeMixerScanner()
+        {
+            logger.Msg(2, "[MAIN] RuntimeMixerScanner: Starting...");
+            
+            yield return new WaitForSeconds(5f); // Wait for game to initialize
+            
+            int scanCount = 0;
+            while (!isShuttingDown)
+            {
+                Exception scanError = null;
+                scanCount++;
+                
+                try
+                {
+                    logger.Msg(3, string.Format("[MAIN] RuntimeMixerScanner: Scan #{0}", scanCount));
+                    
+                    // Method 1: Find MixingStation objects
+                    var foundMixingStations = UnityEngine.Object.FindObjectsOfType<MixingStation>();
+                    logger.Msg(2, string.Format("[MAIN] RuntimeMixerScanner: Found {0} MixingStation objects", foundMixingStations?.Length ?? 0));
+                    
+                    if (foundMixingStations != null && foundMixingStations.Length > 0)
+                    {
+                        foreach (var mixingStation in foundMixingStations)
+                        {
+                            if (isShuttingDown) break;
+                            
+                            yield return ProcessFoundMixingStation(mixingStation, scanCount);
+                        }
+                    }
+                    
+                    // Method 2: Try to find MixingStationConfiguration objects directly
+                    var foundConfigurations = UnityEngine.Object.FindObjectsOfType<MixingStationConfiguration>();
+                    logger.Msg(2, string.Format("[MAIN] RuntimeMixerScanner: Found {0} MixingStationConfiguration objects directly", foundConfigurations?.Length ?? 0));
+                    
+                    if (foundConfigurations != null && foundConfigurations.Length > 0)
+                    {
+                        foreach (var config in foundConfigurations)
+                        {
+                            if (isShuttingDown) break;
+                            
+                            if (config != null)
+                            {
+                                // Check if already tracked
+                                var alreadyTrackedResult = yield return CheckIfConfigurationTracked(config);
+                                bool alreadyTracked = false;
+                                if (alreadyTrackedResult is bool)
+                                {
+                                    alreadyTracked = (bool)alreadyTrackedResult;
+                                }
+                                
+                                if (!alreadyTracked)
+                                {
+                                    queuedInstances.Add(config);
+                                    logger.Msg(1, string.Format("[MAIN] ✓ FALLBACK DETECTION: Found MixingStationConfiguration directly: {0}", config.GetHashCode()));
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Method 3: Search in all active GameObjects for mixer-related components
+                    if (scanCount % 5 == 0) // Every 5th scan (every 50 seconds)
+                    {
+                        yield return PerformDeepMixerScan(scanCount);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    scanError = ex;
+                }
+
+                if (scanError != null)
+                {
+                    logger.Err(string.Format("[MAIN] RuntimeMixerScanner CRASH PREVENTION: Error in scan #{0}: {1}", scanCount, scanError.Message));
+                }
+
+                // Scan every 10 seconds
+                yield return new WaitForSeconds(10f);
+            }
+            
+            logger.Msg(2, "[MAIN] RuntimeMixerScanner: Stopped");
+        }
+
+        /// <summary>
+        /// Process a found MixingStation object
+        /// </summary>
+        private IEnumerator ProcessFoundMixingStation(MixingStation mixingStation, int scanCount)
+        {
+            Exception processError = null;
+            
+            try
+            {
+                logger.Msg(3, string.Format("[MAIN] ProcessFoundMixingStation: Processing station {0} (scan #{1})", mixingStation.GetHashCode(), scanCount));
+                
+                // Try multiple approaches to get the configuration
+                MixingStationConfiguration config = null;
+                
+                // Approach 1: Look for private configuration field
+                var configField = mixingStation.GetType().GetField("configuration", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (configField != null)
+                {
+                    config = configField.GetValue(mixingStation) as MixingStationConfiguration;
+                    if (config != null)
+                    {
+                        logger.Msg(2, string.Format("[MAIN] Found config via private field: {0}", config.GetHashCode()));
+                    }
+                }
+                
+                // Approach 2: Look for public properties
+                if (config == null)
+                {
+                    var properties = mixingStation.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    foreach (var prop in properties)
+                    {
+                        if (prop.PropertyType == typeof(MixingStationConfiguration) && prop.CanRead)
+                        {
+                            try
+                            {
+                                config = prop.GetValue(mixingStation, null) as MixingStationConfiguration;
+                                if (config != null)
+                                {
+                                    logger.Msg(2, string.Format("[MAIN] Found config via property {0}: {1}", prop.Name, config.GetHashCode()));
+                                    break;
+                                }
+                            }
+                            catch (Exception propEx)
+                            {
+                                logger.Warn(2, string.Format("[MAIN] Error reading property {0}: {1}", prop.Name, propEx.Message));
+                            }
+                        }
+                    }
+                }
+                
+                // Approach 3: Check if the MixingStation itself is a configuration
+                if (config == null && mixingStation is MixingStationConfiguration)
+                {
+                    config = mixingStation as MixingStationConfiguration;
+                    logger.Msg(2, string.Format("[MAIN] MixingStation is itself a configuration: {0}", config.GetHashCode()));
+                }
+                
+                if (config != null)
+                {
+                    // Check if already tracked
+                    var alreadyTrackedResult = yield return CheckIfConfigurationTracked(config);
+                    bool alreadyTracked = false;
+                    if (alreadyTrackedResult is bool)
+                    {
+                        alreadyTracked = (bool)alreadyTrackedResult;
+                    }
+                    
+                    if (!alreadyTracked)
+                    {
+                        queuedInstances.Add(config);
+                        logger.Msg(1, string.Format("[MAIN] ✓ FALLBACK DETECTION: Found mixer via station scan: {0}", config.GetHashCode()));
+                    }
+                    else
+                    {
+                        logger.Msg(3, string.Format("[MAIN] Configuration already tracked: {0}", config.GetHashCode()));
+                    }
+                }
+                else
+                {
+                    logger.Warn(2, string.Format("[MAIN] Could not extract configuration from MixingStation: {0}", mixingStation.GetHashCode()));
+                }
+            }
+            catch (Exception ex)
+            {
+                processError = ex;
+            }
+
+            if (processError != null)
+            {
+                logger.Err(string.Format("[MAIN] ProcessFoundMixingStation: Error: {0}", processError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Check if a configuration is already tracked
+        /// </summary>
+        private IEnumerator CheckIfConfigurationTracked(MixingStationConfiguration config)
+        {
+            bool result = false;
+            Exception checkError = null;
+
+            try
+            {
+                var task = Core.TrackedMixers.AnyAsync(tm => tm?.ConfigInstance == config);
+                
+                // Wait for async task with timeout
+                float startTime = Time.time;
+                while (!task.IsCompleted && (Time.time - startTime) < 1f)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+
+                if (task.IsCompleted && !task.IsFaulted)
+                {
+                    result = task.Result;
+                }
+                else if (task.IsFaulted)
+                {
+                    logger.Err(string.Format("[MAIN] CheckIfConfigurationTracked: Task faulted: {0}", task.Exception?.Message));
+                }
+            }
+            catch (Exception ex)
+            {
+                checkError = ex;
+            }
+
+            if (checkError != null)
+            {
+                logger.Err(string.Format("[MAIN] CheckIfConfigurationTracked: Error: {0}", checkError.Message));
+            }
+
+            yield return result;
+        }
+
+        /// <summary>
+        /// Perform deep scan of all GameObjects for mixer components
+        /// </summary>
+        private IEnumerator PerformDeepMixerScan(int scanCount)
+        {
+            Exception deepScanError = null;
+            
+            try
+            {
+                logger.Msg(2, string.Format("[MAIN] PerformDeepMixerScan: Starting deep scan #{0}", scanCount));
+                
+                // Find all active GameObjects
+                var allGameObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+                logger.Msg(3, string.Format("[MAIN] Deep scan: Found {0} GameObjects", allGameObjects?.Length ?? 0));
+                
+                if (allGameObjects != null)
+                {
+                    int mixerRelatedObjects = 0;
+                    foreach (var go in allGameObjects)
+                    {
+                        if (isShuttingDown) break;
+                        
+                        try
+                        {
+                            // Look for mixer-related components
+                            var components = go.GetComponents<Component>();
+                            foreach (var component in components)
+                            {
+                                if (component != null)
+                                {
+                                    var componentType = component.GetType();
+                                    var typeName = componentType.Name.ToLower();
+                                    
+                                    // Check for mixer-related type names
+                                    if (typeName.Contains("mixer") || typeName.Contains("mixing") || typeName.Contains("station"))
+                                    {
+                                        mixerRelatedObjects++;
+                                        logger.Msg(2, string.Format("[MAIN] Deep scan: Found mixer-related component: {0} on {1}", componentType.Name, go.name));
+                                        
+                                        // Try to cast to known types
+                                        if (component is MixingStationConfiguration config)
+                                        {
+                                            var alreadyTrackedResult = yield return CheckIfConfigurationTracked(config);
+                                            bool alreadyTracked = false;
+                                            if (alreadyTrackedResult is bool)
+                                            {
+                                                alreadyTracked = (bool)alreadyTrackedResult;
+                                            }
+                                            
+                                            if (!alreadyTracked)
+                                            {
+                                                queuedInstances.Add(config);
+                                                logger.Msg(1, string.Format("[MAIN] ✓ DEEP SCAN DETECTION: Found configuration: {0}", config.GetHashCode()));
+                                            }
+                                        }
+                                        else if (component is MixingStation station)
+                                        {
+                                            yield return ProcessFoundMixingStation(station, scanCount);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception goEx)
+                        {
+                            logger.Warn(3, string.Format("[MAIN] Deep scan: Error processing GameObject {0}: {1}", go.name, goEx.Message));
+                        }
+                        
+                        // Yield every 50 objects to prevent frame drops
+                        if (mixerRelatedObjects % 50 == 0)
+                        {
+                            yield return null;
+                        }
+                    }
+                    
+                    logger.Msg(2, string.Format("[MAIN] Deep scan #{0}: Found {1} mixer-related objects", scanCount, mixerRelatedObjects));
+                }
+            }
+            catch (Exception ex)
+            {
+                deepScanError = ex;
+            }
+
+            if (deepScanError != null)
+            {
+                logger.Err(string.Format("[MAIN] PerformDeepMixerScan: Error: {0}", deepScanError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Main update loop - uses coroutines to prevent blocking Unity thread
+        /// ⚠️ CRASH PREVENTION: All operations designed to not block main thread
+        /// </summary>
+        public override void OnUpdate()
         {
             // Keep OnUpdate minimal for .NET 4.8.1 compatibility
             if (isShuttingDown && mainUpdateCoroutine != null)
@@ -280,28 +593,57 @@ namespace MixerThreholdMod_1_0_0
 
             while (!isShuttingDown)
             {
-                // NO TRY-CATCH around yield returns for .NET 4.8.1 compatibility
-
-                // Clean up null/invalid mixers first - use synchronous version
-                TrackedMixers.RemoveAll(tm => tm?.ConfigInstance == null);
-
-                if (queuedInstances.Count > 0)
+                Exception updateError = null;
+                try
                 {
-                    var toProcess = queuedInstances.ToList();
-                    queuedInstances.Clear();
-
-                    logger.Msg(3, string.Format("Processing {0} queued instances", toProcess.Count));
-
-                    foreach (var instance in toProcess)
+                    // Clean up null/invalid mixers first - with better error handling
+                    try
                     {
-                        if (isShuttingDown) break;
-
-                        // Process without try-catch around yield
-                        yield return ProcessSingleInstanceCoroutine(instance);
-
-                        // Yield every few operations to prevent frame drops
-                        yield return null;
+                        yield return CleanupNullMixers();
                     }
+                    catch (Exception cleanupEx)
+                    {
+                        logger.Err(string.Format("[MAIN] UpdateCoroutine: Cleanup error: {0}", cleanupEx.Message));
+                    }
+
+                    // Process queued instances
+                    if (queuedInstances.Count > 0)
+                    {
+                        var toProcess = queuedInstances.ToList();
+                        queuedInstances.Clear();
+
+                        logger.Msg(1, string.Format("[MAIN] ✓ PROCESSING: {0} queued mixer instances", toProcess.Count));
+
+                        foreach (var instance in toProcess)
+                        {
+                            if (isShuttingDown) break;
+
+                            // Process each instance with crash protection
+                            yield return ProcessMixerInstance(instance);
+
+                            // Yield every few operations to prevent frame drops
+                            yield return null;
+                        }
+                    }
+                    else
+                    {
+                        // Log periodically if no mixers found to aid debugging
+                        frameCount++;
+                        if (frameCount % 1000 == 0) // Every ~100 seconds at 10fps
+                        {
+                            yield return LogMixerDiagnostics(frameCount);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    updateError = ex;
+                }
+
+                if (updateError != null)
+                {
+                    logger.Err(string.Format("[MAIN] UpdateCoroutine CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
+                        updateError.Message, updateError.StackTrace));
                 }
 
                 // Normal processing interval - NO try-catch around this yield
@@ -502,6 +844,166 @@ namespace MixerThreholdMod_1_0_0
         }
 
         /// <summary>
+        /// Cleanup null mixers using coroutine to prevent blocking
+        /// </summary>
+        private IEnumerator CleanupNullMixers()
+        {
+            Exception cleanupError = null;
+            try
+            {
+                var currentMixers = yield return GetAllMixersAsync();
+                if (currentMixers != null)
+                {
+                    var validMixers = new List<TrackedMixer>();
+                    foreach (var tm in currentMixers)
+                    {
+                        if (tm?.ConfigInstance != null)
+                        {
+                            validMixers.Add(tm);
+                        }
+                    }
+
+                    if (validMixers.Count != currentMixers.Count)
+                    {
+                        logger.Msg(3, string.Format("[MAIN] Cleaned up {0} null mixers", currentMixers.Count - validMixers.Count));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                cleanupError = ex;
+            }
+
+            if (cleanupError != null)
+            {
+                logger.Err(string.Format("[MAIN] CleanupNullMixers: Error: {0}", cleanupError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Get all mixers via async coroutine
+        /// </summary>
+        private IEnumerator GetAllMixersAsync()
+        {
+            var allMixers = new List<TrackedMixer>();
+            Exception asyncError = null;
+            bool taskCompleted = false;
+
+            try
+            {
+                var task = Core.TrackedMixers.GetAllAsync();
+                
+                // Wait for async task with timeout
+                float startTime = Time.time;
+                while (!task.IsCompleted && (Time.time - startTime) < 2f)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+
+                if (task.IsCompleted && !task.IsFaulted)
+                {
+                    allMixers.AddRange(task.Result);
+                    taskCompleted = true;
+                }
+                else if (task.IsFaulted)
+                {
+                    logger.Err(string.Format("[MAIN] GetAllMixersAsync: Task faulted: {0}", task.Exception?.Message));
+                }
+                else
+                {
+                    logger.Warn(1, "[MAIN] GetAllMixersAsync: Task timed out after 2 seconds");
+                }
+            }
+            catch (Exception ex)
+            {
+                asyncError = ex;
+            }
+
+            if (asyncError != null)
+            {
+                logger.Err(string.Format("[MAIN] GetAllMixersAsync: Error: {0}", asyncError.Message));
+            }
+
+            yield return allMixers;
+        }
+
+        /// <summary>
+        /// Log mixer diagnostics as a coroutine
+        /// </summary>
+        private IEnumerator LogMixerDiagnostics(int frameCount)
+        {
+            Exception diagError = null;
+            try
+            {
+                var mixerCountResult = yield return GetMixerCountAsync();
+                int trackedMixersCount = 0;
+                
+                if (mixerCountResult is int)
+                {
+                    trackedMixersCount = (int)mixerCountResult;
+                }
+
+                logger.Msg(2, string.Format("[MAIN] Diagnostic (frame {0}): Tracked mixers: {1}, Saved values: {2}, Queued: {3}", 
+                    frameCount, trackedMixersCount, savedMixerValues.Count, queuedInstances.Count));
+
+                // Enhanced diagnostics every 2000 frames (~200 seconds)
+                if (frameCount % 2000 == 0)
+                {
+                    logger.Msg(1, string.Format("[MAIN] ENHANCED DIAGNOSTICS:"));
+                    logger.Msg(1, string.Format("  - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
+                    logger.Msg(1, string.Format("  - Current save path: {0}", CurrentSavePath ?? "[none]"));
+                    logger.Msg(1, string.Format("  - Shutdown status: {0}", isShuttingDown));
+                }
+            }
+            catch (Exception ex)
+            {
+                diagError = ex;
+            }
+
+            if (diagError != null)
+            {
+                logger.Err(string.Format("[MAIN] LogMixerDiagnostics: Error: {0}", diagError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Get mixer count via async coroutine
+        /// </summary>
+        private IEnumerator GetMixerCountAsync()
+        {
+            Exception countError = null;
+            int count = 0;
+
+            try
+            {
+                var task = Core.TrackedMixers.CountAsync(tm => tm != null);
+                
+                // Wait for async task with timeout
+                float startTime = Time.time;
+                while (!task.IsCompleted && (Time.time - startTime) < 1f)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+
+                if (task.IsCompleted && !task.IsFaulted)
+                {
+                    count = task.Result;
+                }
+            }
+            catch (Exception ex)
+            {
+                countError = ex;
+            }
+
+            if (countError != null)
+            {
+                logger.Err(string.Format("[MAIN] GetMixerCountAsync: Error: {0}", countError.Message));
+            }
+
+            yield return count;
+        }
+
+        /// <summary>
         /// Process a single mixer instance with crash protection
         /// </summary>
         private IEnumerator ProcessMixerInstance(MixingStationConfiguration instance)
@@ -515,8 +1017,10 @@ namespace MixerThreholdMod_1_0_0
             // Do all error-prone work BEFORE any yield returns
             try
             {
-                // Check if already tracked (thread-safe) - use synchronous version
-                alreadyTracked = TrackedMixers.Any(tm => tm?.ConfigInstance == instance);
+                // Check if already tracked using coroutine approach
+                bool alreadyTracked = false;
+                yield return CheckIfAlreadyTracked(instance, (result) => alreadyTracked = result);
+
                 if (alreadyTracked)
                 {
                     logger.Warn(1, "Instance already tracked - skipping duplicate");
@@ -538,9 +1042,9 @@ namespace MixerThreholdMod_1_0_0
                     MixerInstanceID = MixerIDManager.GetMixerID(instance)
                 };
 
-                // Add to collection (thread-safe) - use synchronous version
-                TrackedMixers.Add(newTrackedMixer);
-                logger.Msg(3, string.Format("Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
+                // Add to tracking collection using coroutine
+                yield return AddTrackedMixerAsync(newTrackedMixer);
+                logger.Msg(1, string.Format("[MAIN] ✓ MIXER PROCESSED: Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
             }
             catch (Exception ex)
             {
@@ -601,122 +1105,111 @@ namespace MixerThreholdMod_1_0_0
                             continue;
                         }
 
-                        // Prevent duplicate processing of the same instance
-                        bool alreadyTracked = await TrackedMixers.AnyAsync(tm => tm?.ConfigInstance == instance);
-                        if (alreadyTracked)
-                        {
-                            logger.Warn(1, $"Instance already tracked — skipping duplicate: {instance}");
-                            continue;
-                        }
+        /// <summary>
+        /// Check if mixer is already tracked using coroutine
+        /// </summary>
+        private IEnumerator CheckIfAlreadyTracked(MixingStationConfiguration instance, System.Action<bool> callback)
+        {
+            bool result = false;
+            Exception checkError = null;
 
-                        if (instance.StartThrehold == null)
-                        {
-                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
-                            continue;
-                        }
-
-                        var existingMixerData = await TrackedMixers.FirstOrDefaultAsync(tm => tm?.ConfigInstance == instance);
-                        if (existingMixerData == null)
-=======
-                        // Prevent duplicate processing of the same instance
-                        if (await TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
-                        {
-                            logger.Warn(1, $"Instance already tracked — skipping duplicate: {instance}");
-                            continue;
-                        }
-                        
-                        if (instance.StartThrehold == null)
-                        {
-                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
-                            continue;
-                        }
-                        
-                        var mixerData = await TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
-                        if (mixerData == null)
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
-                        {
-                            try
-                            {
-                                // Configure threshold
-                                instance.StartThrehold.Configure(1f, 20f, true);
-
-                                var newTrackedMixer = new TrackedMixer
-                                {
-                                    ConfigInstance = instance,
-                                    MixerInstanceID = MixerIDManager.GetMixerID(instance)
-                                };
-<<<<<<< HEAD
-                                
-=======
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
-                                await TrackedMixers.AddAsync(newTrackedMixer);
-                                logger.Msg(3, $"Created mixer with Stable ID: {newTrackedMixer.MixerInstanceID}");
-
-                                // Now safely add listener
-                                if (!newTrackedMixer.ListenerAdded)
-                                {
-                                    logger.Msg(3, $"Attaching listener for Mixer {newTrackedMixer.MixerInstanceID}");
-                                    try
-                                    {
-                                        Utils.CoroutineHelper.RunCoroutine(MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
-                                        newTrackedMixer.ListenerAdded = true;
-                                    }
-<<<<<<< HEAD
-                                    catch (Exception listenerEx)
-                                    {
-                                        logger.Err($"OnUpdate: Failed to start listener attachment coroutine: {listenerEx.Message}");
-=======
-                                    catch (Exception ex)
-                                    {
-                                        logger.Err($"Error starting AttachListenerWhenReady coroutine for Mixer {newTrackedMixer.MixerInstanceID}: {ex}");
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
-                                    }
-                                }
-
-                                // Restore saved value if exists
-<<<<<<< HEAD
-                                if (savedMixerValues != null && savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out float savedValue))
-=======
-                                if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out float savedValue))
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
-                                {
-                                    try
-                                    {
-                                        logger.Msg(2, $"Restoring Mixer {newTrackedMixer.MixerInstanceID} to {savedValue}");
-                                        instance.StartThrehold.SetValue(savedValue, true);
-                                    }
-<<<<<<< HEAD
-                                    catch (Exception restoreEx)
-                                    {
-                                        logger.Err($"OnUpdate: Failed to restore saved value for Mixer {newTrackedMixer.MixerInstanceID}: {restoreEx.Message}");
-                                    }
-                                }
-                            }
-                            catch (Exception configEx)
-                            {
-                                Main.logger.Err("Error configuring mixer: " + configEx.Message + "\n" + configEx.StackTrace);
-=======
-                                    catch (Exception ex)
-                                    {
-                                        logger.Err($"Error restoring saved value for Mixer {newTrackedMixer.MixerInstanceID}: {ex}");
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Main.logger.Err("Error configuring mixer: " + ex);
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
-                            }
-                        }
-                    }
-                    catch (Exception instanceEx)
-                    {
-<<<<<<< HEAD
-                        logger.Err($"OnUpdate: Error processing mixer instance: {instanceEx.Message}\n{instanceEx.StackTrace}");
-                    }
+            try
+            {
+                var task = Core.TrackedMixers.AnyAsync(tm => tm?.ConfigInstance == instance);
+                
+                // Wait for async task with timeout
+                float startTime = Time.time;
+                while (!task.IsCompleted && (Time.time - startTime) < 1f)
+                {
+                    yield return new WaitForSeconds(0.1f);
                 }
 
-                queuedInstances?.Clear();
+                if (task.IsCompleted && !task.IsFaulted)
+                {
+                    result = task.Result;
+                }
+                else if (task.IsFaulted)
+                {
+                    logger.Err(string.Format("[MAIN] CheckIfAlreadyTracked: Task faulted: {0}", task.Exception?.Message));
+                }
+                else
+                {
+                    logger.Warn(1, "[MAIN] CheckIfAlreadyTracked: Task timed out - assuming not tracked");
+                }
+            }
+            catch (Exception ex)
+            {
+                checkError = ex;
+            }
+
+            if (checkError != null)
+            {
+                logger.Err(string.Format("[MAIN] CheckIfAlreadyTracked: Error: {0}", checkError.Message));
+            }
+
+            callback(result);
+        }
+
+        /// <summary>
+        /// Add tracked mixer using coroutine
+        /// </summary>
+        private IEnumerator AddTrackedMixerAsync(TrackedMixer mixer)
+        {
+            Exception addError = null;
+
+            try
+            {
+                var task = Core.TrackedMixers.AddAsync(mixer);
+                
+                // Wait for async task with timeout
+                float startTime = Time.time;
+                while (!task.IsCompleted && (Time.time - startTime) < 1f)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+
+                if (task.IsFaulted)
+                {
+                    logger.Err(string.Format("[MAIN] AddTrackedMixerAsync: Task faulted: {0}", task.Exception?.Message));
+                }
+                else if (!task.IsCompleted)
+                {
+                    logger.Warn(1, "[MAIN] AddTrackedMixerAsync: Task timed out");
+                }
+            }
+            catch (Exception ex)
+            {
+                addError = ex;
+            }
+
+            if (addError != null)
+            {
+                logger.Err(string.Format("[MAIN] AddTrackedMixerAsync: Error: {0}", addError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Check if a mixer exists by ID
+        /// </summary>
+        public static bool MixerExists(int mixerInstanceID)
+        {
+            try
+            {
+                // Use timeout-safe approach for checking mixer existence
+                var task = Core.TrackedMixers.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
+                
+                // Use shorter timeout for existence check
+                bool completed = task.Wait(1000); // 1 second timeout
+                
+                if (completed && !task.IsFaulted)
+                {
+                    return task.Result;
+                }
+                else
+                {
+                    logger.Warn(1, string.Format("[MAIN] MixerExists: Timeout or error checking mixer {0}", mixerInstanceID));
+                    return false;
+                }
             }
             catch (Exception ex)
             {
@@ -882,6 +1375,12 @@ namespace MixerThreholdMod_1_0_0
             }
         }
 
+        private static bool _loadCoroutineStarted = false;
+        public static bool LoadCoroutineStarted { get { return _loadCoroutineStarted; } }
+
+        /// <summary>
+        /// Start the load coroutine once per session
+        /// </summary>
         private static void StartLoadCoroutine()
         {
             if (_coroutineStarted || isShuttingDown) return;
