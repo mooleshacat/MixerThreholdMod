@@ -62,6 +62,7 @@ namespace MixerThreholdMod_1_0_0.Patches
                     // Don't re-throw - let the game continue
                 }
             }
+            }
             catch (Exception ex)
             {
                 patchError = ex;

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using MelonLoader;
 using ScheduleOne.Persistence;
 using System;
 
