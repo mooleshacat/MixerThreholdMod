@@ -7,6 +7,28 @@ using MixerThreholdMod_0_0_1.Helpers;
 
 namespace MixerThreholdMod_0_0_1
 {
+    /// <summary>
+    /// Thread-safe file operations with proper locking for .NET 4.8.1 compatibility.
+    /// 
+    /// Thread Safety: All methods use file locking to prevent concurrent access issues.
+    /// Async methods are safe to call from any thread including the main thread.
+    /// 
+    /// ⚠️ MAIN THREAD WARNING: Synchronous methods (SafeWriteAllText, SafeReadAllText, SafeCopy)
+    /// use blocking operations and should NOT be called from the main thread as they can cause
+    /// UI freezes and deadlocks. Always prefer async versions for main thread safety.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses ConfigureAwait(false) to prevent deadlocks
+    /// - Proper exception handling with detailed logging
+    /// - Cancellation token support for cooperative cancellation
+    /// - Compatible async/await patterns
+    /// 
+    /// File Locking Strategy:
+    /// - Exclusive locks for write operations (prevent all other access)
+    /// - Shared locks for read operations (allow concurrent reads, prevent writes)
+    /// - Automatic directory creation for write operations
+    /// - Atomic file operations using temporary files where appropriate
+    /// </summary>
     public static class FileOperations
     {
         private const int DefaultTimeoutMs = 5000;
@@ -14,7 +36,20 @@ namespace MixerThreholdMod_0_0_1
 
         /// <summary>
         /// Writes text to a file with exclusive lock (async version).
+        /// 
+        /// Thread Safety: This method is fully async and will not block the calling thread.
+        /// Safe to call from main thread. Uses proper file locking to prevent concurrent access.
+        /// 
+        /// .NET 4.8.1 Compatibility: Uses ConfigureAwait(false) to prevent deadlocks.
+        /// Supports cancellation tokens for cooperative cancellation.
+        /// 
+        /// File Locking: Uses exclusive file locks to ensure data integrity during writes.
+        /// Creates necessary directories automatically.
         /// </summary>
+        /// <param name="path">File path to write to</param>
+        /// <param name="output">Content to write (null treated as empty string)</param>
+        /// <param name="cancellationToken">Cancellation token for cooperative cancellation</param>
+        /// <returns>Task representing the async operation</returns>
         public static async Task SafeWriteAllTextAsync(string path, string output, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
@@ -75,7 +110,19 @@ namespace MixerThreholdMod_0_0_1
 
         /// <summary>
         /// Reads text from a file with shared lock (async version).
+        /// 
+        /// Thread Safety: This method is fully async and will not block the calling thread.
+        /// Safe to call from main thread. Uses proper file locking to allow concurrent reads.
+        /// 
+        /// .NET 4.8.1 Compatibility: Uses ConfigureAwait(false) to prevent deadlocks.
+        /// Supports cancellation tokens for cooperative cancellation.
+        /// 
+        /// File Locking: Uses shared file locks to allow multiple concurrent readers while
+        /// preventing writes during read operations.
         /// </summary>
+        /// <param name="path">File path to read from</param>
+        /// <param name="cancellationToken">Cancellation token for cooperative cancellation</param>
+        /// <returns>Task returning file content as string (empty string if file doesn't exist)</returns>
         public static async Task<string> SafeReadAllTextAsync(string path, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
@@ -127,12 +174,22 @@ namespace MixerThreholdMod_0_0_1
 
         /// <summary>
         /// Writes text to a file with exclusive lock (sync version - use sparingly).
+        /// 
+        /// ⚠️ MAIN THREAD WARNING: This method uses blocking I/O operations and should NOT be called from the main thread.
+        /// It can cause UI freezes and deadlocks. Use SafeWriteAllTextAsync() instead when possible.
+        /// 
+        /// Thread Safety: This method uses Task.Run() to avoid direct main thread blocking, but still
+        /// blocks the calling thread. For main thread safety, prefer the async version.
+        /// 
+        /// .NET 4.8.1 Compatibility: Uses ConfigureAwait(false) to prevent deadlocks.
         /// </summary>
+        /// <param name="path">File path to write to</param>
+        /// <param name="output">Content to write</param>
         public static void SafeWriteAllText(string path, string output)
         {
             try
             {
-                Main.logger?.Msg(3, string.Format("SafeWriteAllText: Sync write to [{0}]", path));
+                Main.logger?.Msg(3, string.Format("SafeWriteAllText: Sync write to [{0}] - WARNING: May block calling thread", path));
 
                 // Run on thread pool to avoid blocking main thread
                 Task.Run(async () => await SafeWriteAllTextAsync(path, output).ConfigureAwait(false))
@@ -149,12 +206,22 @@ namespace MixerThreholdMod_0_0_1
 
         /// <summary>
         /// Reads text from a file with shared lock (sync version - use sparingly).
+        /// 
+        /// ⚠️ MAIN THREAD WARNING: This method uses blocking I/O operations and should NOT be called from the main thread.
+        /// It can cause UI freezes and deadlocks. Use SafeReadAllTextAsync() instead when possible.
+        /// 
+        /// Thread Safety: This method uses Task.Run() to avoid direct main thread blocking, but still
+        /// blocks the calling thread. For main thread safety, prefer the async version.
+        /// 
+        /// .NET 4.8.1 Compatibility: Uses ConfigureAwait(false) to prevent deadlocks.
         /// </summary>
+        /// <param name="path">File path to read from</param>
+        /// <returns>File content as string</returns>
         public static string SafeReadAllText(string path)
         {
             try
             {
-                Main.logger?.Msg(3, string.Format("SafeReadAllText: Sync read from [{0}]", path));
+                Main.logger?.Msg(3, string.Format("SafeReadAllText: Sync read from [{0}] - WARNING: May block calling thread", path));
 
                 // Run on thread pool to avoid blocking main thread
                 return Task.Run(async () => await SafeReadAllTextAsync(path).ConfigureAwait(false))
@@ -257,12 +324,23 @@ namespace MixerThreholdMod_0_0_1
 
         /// <summary>
         /// Copies a file with shared lock on source (sync version).
+        /// 
+        /// ⚠️ MAIN THREAD WARNING: This method uses blocking I/O operations and should NOT be called from the main thread.
+        /// It can cause UI freezes and deadlocks. Use SafeCopyAsync() instead when possible.
+        /// 
+        /// Thread Safety: This method uses Task.Run() to avoid direct main thread blocking, but still
+        /// blocks the calling thread. For main thread safety, prefer the async version.
+        /// 
+        /// .NET 4.8.1 Compatibility: Uses ConfigureAwait(false) to prevent deadlocks.
         /// </summary>
+        /// <param name="sourceFile">Source file path</param>
+        /// <param name="targetFile">Target file path</param>
+        /// <param name="overwrite">Whether to overwrite existing target file</param>
         public static void SafeCopy(string sourceFile, string targetFile, bool overwrite)
         {
             try
             {
-                Main.logger?.Msg(3, string.Format("SafeCopy: Sync copy [{0}] to [{1}]", sourceFile, targetFile));
+                Main.logger?.Msg(3, string.Format("SafeCopy: Sync copy [{0}] to [{1}] - WARNING: May block calling thread", sourceFile, targetFile));
 
                 Task.Run(async () => await SafeCopyAsync(sourceFile, targetFile, overwrite).ConfigureAwait(false))
                     .ConfigureAwait(false)

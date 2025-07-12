@@ -58,13 +58,13 @@ public static class CancellableIoRunner
             }
             catch (Exception ex)
             {
-                logger?.Invoke(1, $"Error during cancellable I/O operation: {ex.Message}");
+                logger?.Invoke(1, string.Format("Error during cancellable I/O operation: {0}", ex.Message));
                 return false;
             }
         }
         catch (Exception ex)
         {
-            logger?.Invoke(1, $"CancellableIoRunner.Run: Critical error: {ex.Message}");
+            logger?.Invoke(1, string.Format("CancellableIoRunner.Run: Critical error: {0}", ex.Message));
             return false;
         }
     }
