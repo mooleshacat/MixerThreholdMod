@@ -144,95 +144,6 @@ namespace MixerThreholdMod_0_0_1.Utils
 
         public static IEnumerator WriteMixerValuesAsync(string saveFolderPath)
         {
-            Main.logger.Msg(3, string.Format("PollValueChanges: Started polling for Mixer {0}", mixerID));
-
-            float lastKnownValue = -1f;
-            bool hasInitialValue = false;
-
-            while (config?.StartThrehold != null)
-            {
-                Exception pollError = null;
-                try
-                {
-                    // Try to get current value using reflection
-                    var currentValue = GetCurrentValue(config.StartThrehold);
-
-                    if (currentValue.HasValue)
-                    {
-                        if (!hasInitialValue)
-                        {
-                            lastKnownValue = currentValue.Value;
-                            hasInitialValue = true;
-                            Main.logger.Msg(3, string.Format("PollValueChanges: Initial value for Mixer {0}: {1}", mixerID, lastKnownValue));
-                        }
-                        else if (Math.Abs(currentValue.Value - lastKnownValue) > 0.001f) // Small threshold for float comparison
-                        {
-                            Main.logger.Msg(3, string.Format("PollValueChanges: Value changed for Mixer {0}: {1} -> {2}", mixerID, lastKnownValue, currentValue.Value));
-                            lastKnownValue = currentValue.Value;
-                            OnValueChanged(mixerID, currentValue.Value);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    pollError = ex;
-                }
-
-                if (pollError != null)
-                {
-                    Main.logger.Err(string.Format("PollValueChanges error for Mixer {0}: {1}", mixerID, pollError.Message));
-                }
-
-                // Poll every 100ms - NO try-catch around yield
-                yield return new WaitForSeconds(0.1f);
-            }
-
-            Main.logger.Msg(3, string.Format("PollValueChanges: Stopped polling for Mixer {0}", mixerID));
-        }
-
-        private static float? GetCurrentValue(object numberField)
-        {
-            try
-            {
-                if (numberField == null) return null;
-
-                var type = numberField.GetType();
-
-                // Try common property names for getting the current value
-                var propertyNames = new[] { "Value", "CurrentValue", "GetValue", "value" };
-
-                foreach (var propName in propertyNames)
-                {
-                    var property = type.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
-                    if (property != null && property.PropertyType == typeof(float) && property.CanRead)
-                    {
-                        return (float)property.GetValue(numberField, null);
-                    }
-                }
-
-                // Try common method names
-                var methodNames = new[] { "GetValue", "getValue", "Value" };
-
-                foreach (var methodName in methodNames)
-                {
-                    var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
-                    if (method != null && method.ReturnType == typeof(float))
-                    {
-                        return (float)method.Invoke(numberField, null);
-                    }
-                }
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("GetCurrentValue error: {0}", ex.Message));
-                return null;
-            }
-        }
-
-        public static IEnumerator SaveMixerValues()
-        {
             // Check cooldown period
             if (DateTime.Now - lastSaveTime < SAVE_COOLDOWN)
             {
@@ -744,12 +655,6 @@ namespace MixerThreholdMod_0_0_1.Utils
             catch (Exception ex)
             {
                 Main.logger.Err($"LoadAndApplyMixerThresholds: Critical error: {ex.Message}\n{ex.StackTrace}");
-            }
-
-            if (allBackupFiles == null || allBackupFiles.Length <= 5)
-            {
-                Main.logger.Msg(3, "PerformCleanupCoroutine: No cleanup needed, backup count is acceptable");
-                yield break;
             }
 
             // Sort and identify old backups outside of try-catch
