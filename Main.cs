@@ -2,6 +2,7 @@ using HarmonyLib;
 using MelonLoader;
 using MelonLoader.Utils;
 using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Helpers;
 using MixerThreholdMod_1_0_0.Save;
 using MixerThreholdMod_1_0_0.Threading;
 using ScheduleOne.Management;
@@ -211,7 +212,7 @@ namespace MixerThreholdMod_1_0_0
                 Exception emergencyError = null;
                 try
                 {
-                    CrashResistantSaveManager.EmergencySave();
+                    Helpers.MixerSaveManager.EmergencySave();
                     logger.Msg(1, "[MAIN] Emergency save completed before crash");
                 }
                 catch (Exception saveEx)
@@ -535,9 +536,25 @@ namespace MixerThreholdMod_1_0_0
                 }
 
                 // Configure threshold on main thread (Unity requirement)
+                // CRITICAL: This line sets the mixer threshold range from 1 to 20
                 logger.Msg(1, string.Format("[MAIN] CONFIGURING THRESHOLD: Setting range 1.0f to 20.0f for Mixer Instance"));
                 instance.StartThrehold.Configure(1f, 20f, true);
                 logger.Msg(1, string.Format("[MAIN] THRESHOLD CONFIGURED: Mixer should now support 1-20 range"));
+                
+                // Verify the configuration took effect
+                try
+                {
+                    // Add a small delay to ensure configuration is applied
+                    yield return null;
+                    
+                    // Log the actual configured values for debugging
+                    var thresholdValue = instance.StartThrehold.Value;
+                    logger.Msg(1, string.Format("[MAIN] THRESHOLD VERIFICATION: Current value is {0}", thresholdValue));
+                }
+                catch (Exception verifyEx)
+                {
+                    logger.Warn(1, string.Format("[MAIN] Could not verify threshold value: {0}", verifyEx.Message));
+                }
 
                 // Create tracked mixer
                 newTrackedMixer = new TrackedMixer
@@ -572,7 +589,8 @@ namespace MixerThreholdMod_1_0_0
                 Exception listenerError = null;
                 try
                 {
-                    MelonCoroutines.Start(CrashResistantSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
+                    // Use the Helpers MixerSaveManager for listener attachment (proven approach)
+                    MelonCoroutines.Start(Helpers.MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
                     newTrackedMixer.ListenerAdded = true;
                     logger.Msg(2, string.Format("[MAIN] Listener attached successfully for Mixer {0}", newTrackedMixer.MixerInstanceID));
                 }
@@ -749,7 +767,7 @@ namespace MixerThreholdMod_1_0_0
             try
             {
                 _loadCoroutineStarted = true;
-                MelonCoroutines.Start(CrashResistantSaveManager.LoadMixerValuesWhenReady());
+                MelonCoroutines.Start(Helpers.MixerSaveManager.LoadMixerValuesWhenReady());
                 logger.Msg(2, "[MAIN] Load coroutine started successfully");
             }
             catch (Exception ex)
@@ -811,7 +829,7 @@ namespace MixerThreholdMod_1_0_0
                 // Emergency save if we have data
                 if (savedMixerValues.Count > 0)
                 {
-                    CrashResistantSaveManager.EmergencySave();
+                    Helpers.MixerSaveManager.EmergencySave();
                     logger.Msg(1, "[MAIN] Emergency save completed on quit");
                 }
                 else
