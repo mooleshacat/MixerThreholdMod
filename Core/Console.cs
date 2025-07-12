@@ -150,6 +150,10 @@ namespace MixerThreholdMod_1_0_0.Core
                         case "savegamestress":
                             HandleStressSaveGameCommand(parts);
                             break;
+                        case "mixer_savemonitor":
+                        case "savemonitor":
+                            HandleComprehensiveSaveMonitoringCommand(parts);
+                            break;
                         // REMOVED: case "mixer_log": and case "log":
                         case "msg":
                             HandleSingleLogCommand("msg", parts, lowerCommand);
@@ -192,8 +196,10 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(1, "[CONSOLE] === STRESS TESTING ===");
                     Main.logger?.Msg(1, "[CONSOLE]   saveprefstress <count> [delay] [bypass] - Stress test mixer prefs saves");
                     Main.logger?.Msg(1, "[CONSOLE]   savegamestress <count> [delay] [bypass] - Stress test game saves");
+                    Main.logger?.Msg(1, "[CONSOLE]   savemonitor <count> [delay] [bypass] - Comprehensive save monitoring (dnSpy)");
                     Main.logger?.Msg(1, "[CONSOLE]     Examples: saveprefstress 10 0.1 true");
                     Main.logger?.Msg(1, "[CONSOLE]               savegamestress 5 false 2.0");
+                    Main.logger?.Msg(1, "[CONSOLE]               savemonitor 3 1.0 - Multi-method validation");
                     Main.logger?.Msg(1, "[CONSOLE]     Note: Parameters after count can be in any order");
                     Main.logger?.Msg(1, "[CONSOLE] ");
                     Main.logger?.Msg(1, "[CONSOLE] === MANUAL LOGGING ===");
@@ -440,6 +446,111 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (stressError != null)
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] HandleStressSaveGameCommand error: {0}\n{1}", stressError.Message, stressError.StackTrace));
+                }
+            }
+
+            /// <summary>
+            /// Handle comprehensive save monitoring command with dnSpy multi-method validation.
+            /// ⚠️ THREAD SAFETY: Validates parameters and starts comprehensive monitoring safely.
+            /// Supports flexible parameter ordering: <count> [delay] [bypassCooldown]
+            /// </summary>
+            /// <param name="parts">Command parts: [0]=command, [1-3]=flexible parameters</param>
+            private void HandleComprehensiveSaveMonitoringCommand(string[] parts)
+            {
+                Exception monitorError = null;
+                try
+                {
+                    if (parts.Length < 2)
+                    {
+                        Main.logger?.Msg(1, "[CONSOLE] Usage: savemonitor <count> [delay_seconds] [bypass_cooldown]");
+                        Main.logger?.Msg(1, "[CONSOLE] Parameters can be in any order after count (auto-detected):");
+                        Main.logger?.Msg(1, "[CONSOLE] Examples:");
+                        Main.logger?.Msg(1, "[CONSOLE]   savemonitor 5                   (5 saves, no delay, bypass=true)");
+                        Main.logger?.Msg(1, "[CONSOLE]   savemonitor 3 2.0              (3 saves, 2s delay, bypass=true)");
+                        Main.logger?.Msg(1, "[CONSOLE]   savemonitor 10 false           (10 saves, no delay, bypass=false)");
+                        Main.logger?.Msg(1, "[CONSOLE]   savemonitor 5 1.5 false        (5 saves, 1.5s delay, bypass=false)");
+                        Main.logger?.Msg(1, "[CONSOLE] ");
+                        Main.logger?.Msg(1, "[CONSOLE] Features (dnSpy integration):");
+                        Main.logger?.Msg(1, "[CONSOLE]   • Multi-method save validation (timestamp, size, backup, permissions)");
+                        Main.logger?.Msg(1, "[CONSOLE]   • Enhanced permission testing (4-layer validation)");
+                        Main.logger?.Msg(1, "[CONSOLE]   • Comprehensive failure categorization");
+                        Main.logger?.Msg(1, "[CONSOLE]   • File system baseline monitoring");
+                        return;
+                    }
+
+                    // Parse iteration count (always first parameter)
+                    int iterations;
+                    if (!int.TryParse(parts[1], out iterations) || iterations <= 0)
+                    {
+                        Main.logger?.Err(string.Format("[CONSOLE] Invalid iteration count '{0}'. Must be a positive integer.", parts[1]));
+                        return;
+                    }
+
+                    // Parse remaining parameters flexibly
+                    float delaySeconds = 0f;
+                    bool bypassCooldown = true; // Default to true
+
+                    // Process parameters after count in any order
+                    for (int i = 2; i < parts.Length; i++)
+                    {
+                        string param = parts[i];
+                        
+                        // Check if it's a boolean parameter
+                        if (param.Equals("true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bypassCooldown = true;
+                        }
+                        else if (param.Equals("false", StringComparison.OrdinalIgnoreCase))
+                        {
+                            bypassCooldown = false;
+                        }
+                        // Check if it's a numeric parameter (delay)
+                        else
+                        {
+                            float value;
+                            if (float.TryParse(param, out value))
+                            {
+                                if (value >= 0f)
+                                {
+                                    delaySeconds = value;
+                                }
+                                else
+                                {
+                                    Main.logger?.Warn(1, string.Format("[CONSOLE] Negative delay '{0}' ignored. Using 0 seconds.", param));
+                                }
+                            }
+                            else
+                            {
+                                Main.logger?.Warn(1, string.Format("[CONSOLE] Unknown parameter '{0}' ignored.", param));
+                            }
+                        }
+                    }
+
+                    // Validate current save path
+                    if (string.IsNullOrEmpty(Main.CurrentSavePath))
+                    {
+                        Main.logger?.Err("[CONSOLE] No current save path available. Load a game first.");
+                        return;
+                    }
+
+                    // Warn about cooldown behavior
+                    if (!bypassCooldown)
+                    {
+                        Main.logger?.Warn(1, "[CONSOLE] Warning: Comprehensive monitoring respects game save cooldown behavior.");
+                    }
+
+                    // Start the comprehensive save monitoring test
+                    Main.logger?.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring (dnSpy): {0} iterations, {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
+                    MelonCoroutines.Start(Main.StressGameSaveTestWithComprehensiveMonitoring(iterations, delaySeconds, bypassCooldown));
+                }
+                catch (Exception ex)
+                {
+                    monitorError = ex;
+                }
+
+                if (monitorError != null)
+                {
+                    Main.logger?.Err(string.Format("[CONSOLE] HandleComprehensiveSaveMonitoringCommand error: {0}\n{1}", monitorError.Message, monitorError.StackTrace));
                 }
             }
 
