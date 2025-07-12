@@ -122,6 +122,8 @@
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
     <None Include="ForCopilot\25-7-12_15-55-46.log" />
+    <None Include="ForCopilot\25-7-12_16-32-58.log" />
+    <None Include="ForCopilot\25-7-12_16-33-27.log" />
     <None Include="LICENSE.md" />
     <None Include="packages.config" />
     <None Include="README.md" />

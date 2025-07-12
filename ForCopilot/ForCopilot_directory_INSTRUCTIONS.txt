@@ -7,13 +7,25 @@ DO NOT delete this file, or the folder, we need to reuse it.
 - No longer will you delete anything in this directory, human will manually confirm changes
 and remove files no longer necessary.
 
+
+I have decompiled exported the ENTIRE Assembly-CSharp.dll library. It forced me to put it inside a project
+instead of a txt file. If you need it for reference, here it is.
+
 - DO NOT reference these files contents in the code base (except comments)
+- DO NOT UNDER ANY circumstances let this DLL or it's dnSpy decompile get into the master/development branches.
+- Human will check before making draft public (and remove the ForCopilot directory temporarily for merge)
+- Try your best to NOT leak the dnSpy directory in commits, source files, comments, PR's, etc.
+- Listing methods/signatures/variables/objects in the game which we have accessed (for reference, is legal and acceptable)
+- NOTE: ALL DLL FILES PROVIDED are legally licensed to the mod developer/gamer for purchasing the game on Steam.
+- NOTE: Schedule 1 / TVGS are 100% open to the modding community doing what we do. They are planning to make modding
+        framework eventually so we do not have to reverse engineer. It's just that is something you leave until it is
+        fully working. Game was released earlier this year. We will have framework soon :)
 
 =================================================================================================================
 
 Please note the filename prefixes and possibility for multiple files.
 
-- dnSpy related code (filename prefix: "dnSpy")
+- dnSpy full decompile entire assembly (inside folder: "Assembly-CSharp.dll\")
 - filname is only a date/timestamp: logging from mod (filename has no prefix, look for date/timestamp as filename, shows melon logger logs if enabled, shows in mod log)
 - compileErrors: list of compile errors from last test. (filename prefix: compileErrors)
 

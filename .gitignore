@@ -1,7 +1,5 @@
 *~
 *.dll
-!packages/**/*.dll
-!ForCopilot/**/*
 *.log
 bin\*
 obj\*
@@ -11,3 +9,5 @@ obj\*
 /bin/x64/Debug
 /obj
 /bin
+!packages/**/*.dll
+!ForCopilot/*
