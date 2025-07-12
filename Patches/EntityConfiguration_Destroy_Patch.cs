@@ -79,6 +79,45 @@ namespace MixerThreholdMod_0_0_1
                     });
                 }
 
+                Main.logger.Msg(3, "[PATCH] EntityConfiguration.Destroy() called - checking for mixer cleanup");
+
+                // Check if this is a mixer configuration that needs cleanup
+                var mixerConfig = __instance as MixingStationConfiguration;
+                if (mixerConfig != null)
+                {
+                    // Safe cleanup using background task to not block destruction
+                    System.Threading.Tasks.Task.Run(async () =>
+                    {
+                        Exception cleanupError = null;
+                        try
+                        {
+                            // Remove from tracked mixers safely
+                            bool removed = await TrackedMixers.RemoveAsync(mixerConfig);
+                            if (removed)
+                            {
+                                Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");
+                            }
+
+                            // Remove from ID manager
+                            bool idRemoved = Core.MixerIDManager.RemoveMixerID(mixerConfig);
+                            if (idRemoved)
+                            {
+                                Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from ID manager");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            cleanupError = ex;
+                        }
+
+                        if (cleanupError != null)
+                        {
+                            Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Cleanup error: {0}", cleanupError.Message));
+                            // Don't re-throw - let cleanup fail gracefully
+                        }
+                    });
+                }
+
                 Main.logger.Msg(2, $"EntityConfiguration.Destroy() called for mixer");
 
                 // Use fire-and-forget async to avoid blocking the game thread
