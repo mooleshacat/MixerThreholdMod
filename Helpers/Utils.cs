@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_0_0_1.Helpers
 {
-    public static class Utils
+    public static class UtilityHelpers
     {
         public class CoroutineHelper : MonoBehaviour
         {
@@ -51,7 +51,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"CoroutineHelper.Instance: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        Main.logger?.Err(string.Format("CoroutineHelper.Instance: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                         return null;
                     }
                 }
@@ -80,7 +80,7 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"CoroutineHelper.RunCoroutine: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("CoroutineHelper.RunCoroutine: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
 
@@ -106,7 +106,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"SafeCoroutineWrapper: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        Main.logger?.Err(string.Format("SafeCoroutineWrapper: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                         hasMore = false;
                     }
                     if (hasMore)
@@ -123,7 +123,7 @@ namespace MixerThreholdMod_0_0_1
             {
                 if (routine == null)
                 {
-                    Main.logger?.Warn(1, "Utils.RunCoroutine: routine is null");
+                    Main.logger?.Warn(1, "UtilityHelpers.RunCoroutine: routine is null");
                     return;
                 }
 
@@ -134,12 +134,12 @@ namespace MixerThreholdMod_0_0_1
                 }
                 else
                 {
-                    Main.logger?.Err("CoroutineHelper.Instance is null in Utils.RunCoroutine");
+                    Main.logger?.Err("CoroutineHelper.Instance is null in UtilityHelpers.RunCoroutine");
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"Utils.RunCoroutine: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("UtilityHelpers.RunCoroutine: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
 
@@ -173,12 +173,12 @@ namespace MixerThreholdMod_0_0_1
                     normalized = normalized.TrimEnd('\\');
                 }
 
-                Main.logger?.Msg(3, $"NormalizePath: '{path}' -> '{normalized}'");
+                Main.logger?.Msg(3, string.Format("NormalizePath: '{0}' -> '{1}'", path, normalized));
                 return normalized;
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"NormalizePath: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("NormalizePath: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return path; // Return original path if normalization fails
             }
         }
@@ -195,36 +195,36 @@ namespace MixerThreholdMod_0_0_1
             {
                 if (string.IsNullOrEmpty(directoryPath))
                 {
-                    Main.logger?.Warn(1, $"EnsureDirectoryExists: Directory path is null or empty for operation: {operationDescription}");
+                    Main.logger?.Warn(1, string.Format("EnsureDirectoryExists: Directory path is null or empty for operation: {0}", operationDescription));
                     return false;
                 }
 
                 if (Directory.Exists(directoryPath))
                 {
-                    Main.logger?.Msg(3, $"EnsureDirectoryExists: Directory already exists for {operationDescription}: {directoryPath}");
+                    Main.logger?.Msg(3, string.Format("EnsureDirectoryExists: Directory already exists for {0}: {1}", operationDescription, directoryPath));
                     return true;
                 }
 
                 try
                 {
                     Directory.CreateDirectory(directoryPath);
-                    Main.logger?.Msg(2, $"EnsureDirectoryExists: Created directory for {operationDescription}: {directoryPath}");
+                    Main.logger?.Msg(2, string.Format("EnsureDirectoryExists: Created directory for {0}: {1}", operationDescription, directoryPath));
                     return true;
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    Main.logger?.Err($"EnsureDirectoryExists: Access denied creating directory for {operationDescription} [{directoryPath}]: {ex.Message}");
+                    Main.logger?.Err(string.Format("EnsureDirectoryExists: Access denied creating directory for {0} [{1}]: {2}", operationDescription, directoryPath, ex.Message));
                     return false;
                 }
                 catch (IOException ex)
                 {
-                    Main.logger?.Err($"EnsureDirectoryExists: IO error creating directory for {operationDescription} [{directoryPath}]: {ex.Message}");
+                    Main.logger?.Err(string.Format("EnsureDirectoryExists: IO error creating directory for {0} [{1}]: {2}", operationDescription, directoryPath, ex.Message));
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"EnsureDirectoryExists: Caught exception for {operationDescription} [{directoryPath}]: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("EnsureDirectoryExists: Caught exception for {0} [{1}]: {2}\n{3}", operationDescription, directoryPath, ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -245,11 +245,11 @@ namespace MixerThreholdMod_0_0_1
 
                 string path = Path.Combine(saveDir, "MixerThresholdSave.json").Replace('/', '\\');
                 bool exists = File.Exists(path);
-                Main.logger?.Msg(3, $"File exists at '{path}': {exists}");
+                Main.logger?.Msg(3, string.Format("File exists at '{0}': {1}", path, exists));
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"PrintFileExistsStatus: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("PrintFileExistsStatus: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
 
@@ -261,7 +261,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"GetFullTimestamp: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("GetFullTimestamp: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return "[TIMESTAMP_ERROR]";
             }
         }
@@ -278,7 +278,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeFileExists: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeFileExists: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -295,7 +295,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeDirectoryExists: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeDirectoryExists: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }

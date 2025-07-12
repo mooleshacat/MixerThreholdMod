@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MixerThreholdMod_0_0_1.Helpers;
 
 namespace MixerThreholdMod_0_0_1
 {
@@ -21,7 +22,7 @@ namespace MixerThreholdMod_0_0_1
                 if (string.IsNullOrWhiteSpace(path))
                 {
                     Main.logger?.Err("SafeWriteAllTextAsync: path is null or empty");
-                    throw new ArgumentException("Path cannot be null or empty", nameof(path));
+                    throw new ArgumentException("Path cannot be null or empty", "path"); // .NET 4.8.1 compatible
                 }
 
                 if (output == null)
@@ -30,17 +31,24 @@ namespace MixerThreholdMod_0_0_1
                     output = string.Empty;
                 }
 
+                Main.logger?.Msg(3, string.Format("SafeWriteAllTextAsync: Writing to [{0}], length: {1}", path, output.Length));
+
                 // Ensure directory exists
                 var directory = Path.GetDirectoryName(path);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
+                    Main.logger?.Msg(3, string.Format("SafeWriteAllTextAsync: Created directory [{0}]", directory));
                 }
 
                 using (var locker = new FileLockHelper(path + ".lock"))
                 {
+                    Main.logger?.Msg(3, string.Format("SafeWriteAllTextAsync: Acquiring exclusive lock for [{0}]", path));
+
                     if (await locker.AcquireExclusiveLockAsync(DefaultTimeoutMs, cancellationToken).ConfigureAwait(false))
                     {
+                        Main.logger?.Msg(3, string.Format("SafeWriteAllTextAsync: Lock acquired for [{0}]", path));
+
                         // Use async file operations to avoid blocking the main thread
                         using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, FileOptions.SequentialScan))
                         using (var writer = new StreamWriter(fileStream, Encoding.UTF8))
@@ -48,17 +56,19 @@ namespace MixerThreholdMod_0_0_1
                             await writer.WriteAsync(output).ConfigureAwait(false);
                             await writer.FlushAsync().ConfigureAwait(false);
                         }
+
+                        Main.logger?.Msg(2, string.Format("SafeWriteAllTextAsync: Successfully wrote {0} characters to [{1}]", output.Length, path));
                     }
                     else
                     {
-                        Main.logger?.Warn(1, $"FileOperations.SafeWriteAllTextAsync: Could not acquire exclusive lock on [{path}]");
-                        throw new TimeoutException($"Could not acquire exclusive lock on file: {path}");
+                        Main.logger?.Warn(1, string.Format("FileOperations.SafeWriteAllTextAsync: Could not acquire exclusive lock on [{0}]", path));
+                        throw new TimeoutException(string.Format("Could not acquire exclusive lock on file: {0}", path));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeWriteAllTextAsync: Caught exception for [{path}]: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeWriteAllTextAsync: Caught exception for [{0}]: {1}\n{2}", path, ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -73,36 +83,44 @@ namespace MixerThreholdMod_0_0_1
                 if (string.IsNullOrWhiteSpace(path))
                 {
                     Main.logger?.Err("SafeReadAllTextAsync: path is null or empty");
-                    throw new ArgumentException("Path cannot be null or empty", nameof(path));
+                    throw new ArgumentException("Path cannot be null or empty", "path"); // .NET 4.8.1 compatible
                 }
+
+                Main.logger?.Msg(3, string.Format("SafeReadAllTextAsync: Reading from [{0}]", path));
 
                 if (!File.Exists(path))
                 {
-                    Main.logger?.Warn(2, $"SafeReadAllTextAsync: File does not exist: {path}");
+                    Main.logger?.Warn(2, string.Format("SafeReadAllTextAsync: File does not exist: {0}", path));
                     return string.Empty;
                 }
 
                 using (var locker = new FileLockHelper(path + ".lock"))
                 {
+                    Main.logger?.Msg(3, string.Format("SafeReadAllTextAsync: Acquiring shared lock for [{0}]", path));
+
                     if (await locker.AcquireSharedLockAsync(DefaultTimeoutMs, cancellationToken).ConfigureAwait(false))
                     {
+                        Main.logger?.Msg(3, string.Format("SafeReadAllTextAsync: Lock acquired for [{0}]", path));
+
                         // Use async file operations to avoid blocking the main thread
                         using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.SequentialScan))
                         using (var reader = new StreamReader(fileStream, Encoding.UTF8))
                         {
-                            return await reader.ReadToEndAsync().ConfigureAwait(false);
+                            var result = await reader.ReadToEndAsync().ConfigureAwait(false);
+                            Main.logger?.Msg(2, string.Format("SafeReadAllTextAsync: Successfully read {0} characters from [{1}]", result.Length, path));
+                            return result;
                         }
                     }
                     else
                     {
-                        Main.logger?.Warn(1, $"FileOperations.SafeReadAllTextAsync: Could not acquire shared lock on [{path}]");
-                        throw new TimeoutException($"Could not acquire shared lock on file: {path}");
+                        Main.logger?.Warn(1, string.Format("FileOperations.SafeReadAllTextAsync: Could not acquire shared lock on [{0}]", path));
+                        throw new TimeoutException(string.Format("Could not acquire shared lock on file: {0}", path));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeReadAllTextAsync: Caught exception for [{path}]: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeReadAllTextAsync: Caught exception for [{0}]: {1}\n{2}", path, ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -114,6 +132,8 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
+                Main.logger?.Msg(3, string.Format("SafeWriteAllText: Sync write to [{0}]", path));
+
                 // Run on thread pool to avoid blocking main thread
                 Task.Run(async () => await SafeWriteAllTextAsync(path, output).ConfigureAwait(false))
                     .ConfigureAwait(false)
@@ -122,7 +142,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeWriteAllText: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeWriteAllText: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -134,6 +154,8 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
+                Main.logger?.Msg(3, string.Format("SafeReadAllText: Sync read from [{0}]", path));
+
                 // Run on thread pool to avoid blocking main thread
                 return Task.Run(async () => await SafeReadAllTextAsync(path).ConfigureAwait(false))
                     .ConfigureAwait(false)
@@ -142,7 +164,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeReadAllText: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeReadAllText: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -161,12 +183,12 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (OperationCanceledException)
             {
-                Main.logger?.Msg(2, $"Write operation canceled for: {path}");
+                Main.logger?.Msg(2, string.Format("Write operation canceled for: {0}", path));
                 throw;
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeWriteAllTextWithCancellationAsync: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeWriteAllTextWithCancellationAsync: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -181,45 +203,54 @@ namespace MixerThreholdMod_0_0_1
                 if (string.IsNullOrWhiteSpace(sourceFile))
                 {
                     Main.logger?.Warn(1, "SafeCopyAsync: sourceFile is null or empty");
-                    throw new ArgumentException("Source file path cannot be null or empty", nameof(sourceFile));
+                    throw new ArgumentException("Source file path cannot be null or empty", "sourceFile"); // .NET 4.8.1 compatible
                 }
 
                 if (string.IsNullOrWhiteSpace(targetFile))
                 {
                     Main.logger?.Warn(1, "SafeCopyAsync: targetFile is null or empty");
-                    throw new ArgumentException("Target file path cannot be null or empty", nameof(targetFile));
+                    throw new ArgumentException("Target file path cannot be null or empty", "targetFile"); // .NET 4.8.1 compatible
                 }
+
+                Main.logger?.Msg(3, string.Format("SafeCopyAsync: Copying [{0}] to [{1}]", sourceFile, targetFile));
 
                 if (!File.Exists(sourceFile))
                 {
-                    Main.logger?.Warn(1, $"SafeCopyAsync: Source file does not exist: {sourceFile}");
-                    throw new FileNotFoundException($"Source file not found: {sourceFile}");
+                    Main.logger?.Warn(1, string.Format("SafeCopyAsync: Source file does not exist: {0}", sourceFile));
+                    throw new FileNotFoundException(string.Format("Source file not found: {0}", sourceFile));
                 }
 
                 using (var locker = new FileLockHelper(sourceFile + ".lock"))
                 {
+                    Main.logger?.Msg(3, string.Format("SafeCopyAsync: Acquiring shared lock for source [{0}]", sourceFile));
+
                     if (await locker.AcquireSharedLockAsync(DefaultTimeoutMs, cancellationToken).ConfigureAwait(false))
                     {
+                        Main.logger?.Msg(3, string.Format("SafeCopyAsync: Lock acquired for source [{0}]", sourceFile));
+
                         // Ensure target directory exists
                         var targetDir = Path.GetDirectoryName(targetFile);
                         if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
                         {
                             Directory.CreateDirectory(targetDir);
+                            Main.logger?.Msg(3, string.Format("SafeCopyAsync: Created target directory [{0}]", targetDir));
                         }
 
                         // Perform copy operation on thread pool
                         await Task.Run(() => File.Copy(sourceFile, targetFile, overwrite), cancellationToken).ConfigureAwait(false);
+
+                        Main.logger?.Msg(2, string.Format("SafeCopyAsync: Successfully copied [{0}] to [{1}]", sourceFile, targetFile));
                     }
                     else
                     {
-                        Main.logger?.Warn(1, $"FileOperations.SafeCopyAsync: Could not acquire shared lock on [{sourceFile}] for copying.");
-                        throw new TimeoutException($"Could not acquire shared lock on source file: {sourceFile}");
+                        Main.logger?.Warn(1, string.Format("FileOperations.SafeCopyAsync: Could not acquire shared lock on [{0}] for copying.", sourceFile));
+                        throw new TimeoutException(string.Format("Could not acquire shared lock on source file: {0}", sourceFile));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeCopyAsync: Caught exception copying [{sourceFile}] to [{targetFile}]: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeCopyAsync: Caught exception copying [{0}] to [{1}]: {2}\n{3}", sourceFile, targetFile, ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -231,6 +262,8 @@ namespace MixerThreholdMod_0_0_1
         {
             try
             {
+                Main.logger?.Msg(3, string.Format("SafeCopy: Sync copy [{0}] to [{1}]", sourceFile, targetFile));
+
                 Task.Run(async () => await SafeCopyAsync(sourceFile, targetFile, overwrite).ConfigureAwait(false))
                     .ConfigureAwait(false)
                     .GetAwaiter()
@@ -238,7 +271,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeCopy: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeCopy: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
