@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -63,7 +64,15 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Msg(3, string.Format("[BRIDGE] Console type full name: {0}", consoleType.FullName));
                         Main.logger?.Msg(3, "[BRIDGE] Searching for commands field...");
                         
-                        var commandsField = consoleType.GetField("commands", BindingFlags.Public | BindingFlags.Static);
+                        // Try lowercase "commands" first (Dictionary)
+                        var commandsField = consoleType.GetField("commands", BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+                        
+                        // If not found, try uppercase "Commands" (List)
+                        if (commandsField == null)
+                        {
+                            commandsField = consoleType.GetField("Commands", BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+                        }
+                        
                         Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field found: {0}", commandsField != null ? "YES" : "NO"));
                         
                         if (commandsField != null)
@@ -190,6 +199,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
         /// <summary>
         /// Try alternative console integration approaches
+        /// Enhanced to include direct console input hooking
         /// </summary>
         private static void TryAlternativeConsoleIntegration(Type consoleType)
         {
@@ -205,6 +215,9 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     Main.logger?.Msg(3, string.Format("[BRIDGE]   - {0}", method.Name));
                 }
+
+                // Try using Harmony to patch the console input method directly
+                TryHarmonyConsoleIntegration(consoleType);
             }
             catch (Exception ex)
             {
@@ -215,6 +228,132 @@ namespace MixerThreholdMod_1_0_0.Core
             {
                 Main.logger?.Err(string.Format("[BRIDGE] TryAlternativeConsoleIntegration error: {0}", altError.Message));
             }
+        }
+
+        /// <summary>
+        /// Use Harmony to patch the console command processing directly
+        /// This ensures our commands are recognized by the game's console system
+        /// </summary>
+        private static void TryHarmonyConsoleIntegration(Type consoleType)
+        {
+            Exception harmonyError = null;
+            try
+            {
+                Main.logger?.Msg(2, "[BRIDGE] Attempting Harmony-based console integration...");
+                
+                // Find the method that processes console commands
+                var processMethod = consoleType.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);
+                if (processMethod == null)
+                {
+                    processMethod = consoleType.GetMethod("ProcessCommand", BindingFlags.Public | BindingFlags.Static);
+                }
+                if (processMethod == null)
+                {
+                    processMethod = consoleType.GetMethod("ExecuteCommand", BindingFlags.Public | BindingFlags.Static);
+                }
+
+                if (processMethod != null)
+                {
+                    Main.logger?.Msg(3, string.Format("[BRIDGE] Found console process method: {0}", processMethod.Name));
+                    
+                    // Create harmony patches to intercept console commands
+                    var harmony = Main.Instance?.HarmonyInstance;
+                    if (harmony != null)
+                    {
+                        var prefixMethod = typeof(GameConsoleBridge).GetMethod("ConsoleProcessPrefix", BindingFlags.Static | BindingFlags.NonPublic);
+                        if (prefixMethod != null)
+                        {
+                            harmony.Patch(processMethod, new HarmonyMethod(prefixMethod));
+                            Main.logger?.Msg(2, "[BRIDGE] Successfully patched console command processing with Harmony");
+                            _isInitialized = true;
+                        }
+                        else
+                        {
+                            Main.logger?.Err("[BRIDGE] ConsoleProcessPrefix method not found for Harmony patch");
+                        }
+                    }
+                    else
+                    {
+                        Main.logger?.Err("[BRIDGE] Harmony instance not available for console patching");
+                    }
+                }
+                else
+                {
+                    Main.logger?.Warn(1, "[BRIDGE] Could not find console command processing method for Harmony patching");
+                    
+                    // List all available methods for debugging
+                    var allMethods = consoleType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+                    Main.logger?.Msg(3, "[BRIDGE] All available methods in Console class:");
+                    foreach (var method in allMethods)
+                    {
+                        var paramTypes = string.Join(", ", method.GetParameters().Select(p => p.ParameterType.Name).ToArray());
+                        Main.logger?.Msg(3, string.Format("[BRIDGE]   - {0}({1})", method.Name, paramTypes));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                harmonyError = ex;
+            }
+            
+            if (harmonyError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] TryHarmonyConsoleIntegration error: {0}", harmonyError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Harmony prefix patch for console command processing
+        /// Intercepts console commands and handles mod-specific ones
+        /// </summary>
+        private static bool ConsoleProcessPrefix(string command)
+        {
+            Exception patchError = null;
+            try
+            {
+                if (string.IsNullOrEmpty(command))
+                    return true; // Continue with original method
+
+                var lowerCommand = command.ToLower().Trim();
+                var parts = lowerCommand.Split(' ');
+                var baseCommand = parts[0];
+
+                // Check if this is one of our mod commands
+                var modCommands = new string[] 
+                { 
+                    "savemonitor", "transactionalsave", "profile", "saveprefstress", "savegamestress",
+                    "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency", "msg", "warn", "err"
+                };
+
+                if (modCommands.Contains(baseCommand))
+                {
+                    Main.logger?.Msg(2, string.Format("[BRIDGE] Intercepted mod command: {0}", command));
+                    
+                    // Process with our console handler
+                    var hookInstance = Console.MixerConsoleHook.Instance;
+                    if (hookInstance != null)
+                    {
+                        hookInstance.OnConsoleCommand(command);
+                    }
+                    else
+                    {
+                        Main.logger?.Err("[BRIDGE] MixerConsoleHook instance not available for intercepted command");
+                    }
+                    
+                    return false; // Skip original method execution
+                }
+            }
+            catch (Exception ex)
+            {
+                patchError = ex;
+            }
+            
+            if (patchError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] ConsoleProcessPrefix error: {0}", patchError.Message));
+            }
+            
+            return true; // Continue with original method
         }
 
         /// <summary>
@@ -245,7 +384,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 // Add utility commands
                 AddUtilityCommands(commandsDict, consoleCommandType);
 
-                Main.logger?.Msg(2, string.Format("[BRIDGE] Added {0} mod commands to native console system", 6));
+                Main.logger?.Msg(2, string.Format("[BRIDGE] Added {0} mod commands to native console system", 9));
             }
             catch (Exception ex)
             {
@@ -276,6 +415,18 @@ namespace MixerThreholdMod_1_0_0.Core
                     "Stress test game saves", "savegamestress <count> [delay] [bypass]",
                     HandleSaveGameStressCommand);
 
+                var saveMonitorCmd = CreateReflectionBasedCommand(consoleCommandType, "savemonitor",
+                    "Comprehensive save monitoring with multi-method validation", "savemonitor <count> [delay] [bypass]",
+                    HandleSaveMonitorCommand);
+
+                var transactionalSaveCmd = CreateReflectionBasedCommand(consoleCommandType, "transactionalsave",
+                    "Perform atomic transactional save operation", "transactionalsave",
+                    HandleTransactionalSaveCommand);
+
+                var profileCmd = CreateReflectionBasedCommand(consoleCommandType, "profile",
+                    "Advanced save operation profiling with detailed performance metrics", "profile",
+                    HandleProfileCommand);
+
                 if (savePrefStressCmd != null)
                 {
                     commandsDict["saveprefstress"] = savePrefStressCmd;
@@ -286,6 +437,24 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     commandsDict["savegamestress"] = saveGameStressCmd;
                     Main.logger?.Msg(3, "[BRIDGE] Added savegamestress command to native console");
+                }
+
+                if (saveMonitorCmd != null)
+                {
+                    commandsDict["savemonitor"] = saveMonitorCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added savemonitor command to native console");
+                }
+
+                if (transactionalSaveCmd != null)
+                {
+                    commandsDict["transactionalsave"] = transactionalSaveCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added transactionalsave command to native console");
+                }
+
+                if (profileCmd != null)
+                {
+                    commandsDict["profile"] = profileCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added profile command to native console");
                 }
             }
             catch (Exception ex)
@@ -674,6 +843,124 @@ namespace MixerThreholdMod_1_0_0.Core
             if (handlerError != null)
             {
                 Main.logger?.Err(string.Format("[BRIDGE] HandleMixerPathCommand error: {0}", handlerError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Handle savemonitor command from native console
+        /// </summary>
+        private static void HandleSaveMonitorCommand(List<string> args)
+        {
+            Exception handlerError = null;
+            try
+            {
+                var parts = new string[args.Count + 1];
+                parts[0] = "savemonitor";
+                for (int i = 0; i < args.Count; i++)
+                {
+                    parts[i + 1] = args[i];
+                }
+
+                var hookInstance = Console.MixerConsoleHook.Instance;
+                if (hookInstance != null)
+                {
+                    var handlerMethod = hookInstance.GetType().GetMethod("HandleComprehensiveSaveMonitoringCommand", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (handlerMethod != null)
+                    {
+                        handlerMethod.Invoke(hookInstance, new object[] { parts });
+                    }
+                    else
+                    {
+                        Main.logger?.Err("[BRIDGE] HandleComprehensiveSaveMonitoringCommand method not found");
+                    }
+                }
+                else
+                {
+                    Main.logger?.Err("[BRIDGE] MixerConsoleHook instance not available");
+                }
+            }
+            catch (Exception ex)
+            {
+                handlerError = ex;
+            }
+
+            if (handlerError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] HandleSaveMonitorCommand error: {0}", handlerError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Handle transactionalsave command from native console
+        /// </summary>
+        private static void HandleTransactionalSaveCommand(List<string> args)
+        {
+            Exception handlerError = null;
+            try
+            {
+                var hookInstance = Console.MixerConsoleHook.Instance;
+                if (hookInstance != null)
+                {
+                    var handlerMethod = hookInstance.GetType().GetMethod("HandleTransactionalSaveCommand", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (handlerMethod != null)
+                    {
+                        handlerMethod.Invoke(hookInstance, null);
+                    }
+                    else
+                    {
+                        Main.logger?.Err("[BRIDGE] HandleTransactionalSaveCommand method not found");
+                    }
+                }
+                else
+                {
+                    Main.logger?.Err("[BRIDGE] MixerConsoleHook instance not available");
+                }
+            }
+            catch (Exception ex)
+            {
+                handlerError = ex;
+            }
+
+            if (handlerError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] HandleTransactionalSaveCommand error: {0}", handlerError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Handle profile command from native console
+        /// </summary>
+        private static void HandleProfileCommand(List<string> args)
+        {
+            Exception handlerError = null;
+            try
+            {
+                var hookInstance = Console.MixerConsoleHook.Instance;
+                if (hookInstance != null)
+                {
+                    var handlerMethod = hookInstance.GetType().GetMethod("HandleProfileCommand", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (handlerMethod != null)
+                    {
+                        handlerMethod.Invoke(hookInstance, null);
+                    }
+                    else
+                    {
+                        Main.logger?.Err("[BRIDGE] HandleProfileCommand method not found");
+                    }
+                }
+                else
+                {
+                    Main.logger?.Err("[BRIDGE] MixerConsoleHook instance not available");
+                }
+            }
+            catch (Exception ex)
+            {
+                handlerError = ex;
+            }
+
+            if (handlerError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] HandleProfileCommand error: {0}", handlerError.Message));
             }
         }
 
