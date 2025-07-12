@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0
 {
     public class Console
     {

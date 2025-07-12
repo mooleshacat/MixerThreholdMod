@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MixerThreholdMod_0_0_1.Utils
+namespace MixerThreholdMod_1_0_0.Utils
 {
     public class ThreadSafeList<T> : IEnumerable<T>
     {

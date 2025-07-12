@@ -1,6 +1,6 @@
 using MelonLoader;
 
-namespace MixerThreholdMod_0_0_1.Core
+namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
     /// Centralized logging system with configurable verbosity levels.

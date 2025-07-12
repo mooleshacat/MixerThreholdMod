@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 
-namespace MixerThreholdMod_0_0_1.Core
+namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
     /// Simplified console integration for debugging and user commands.

@@ -11,7 +11,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace MixerThreholdMod_0_0_1.Save
+namespace MixerThreholdMod_1_0_0.Save
 {
     /// <summary>
     /// Robust save management system focused on preventing crashes during save operations.
@@ -513,7 +513,7 @@ namespace MixerThreholdMod_0_0_1.Save
                 {
                     ["MixerValues"] = mixerValuesDict,
                     ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    ["Version"] = "0.0.1",
+                    ["Version"] = "1.0.0",
                     ["SessionID"] = System.Guid.NewGuid().ToString()
                 };
 

@@ -1,9 +1,9 @@
 using HarmonyLib;
 using MelonLoader;
 using MelonLoader.Utils;
-using MixerThreholdMod_0_0_1.Core;
-using MixerThreholdMod_0_0_1.Save;
-using MixerThreholdMod_0_0_1.Threading;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Save;
+using MixerThreholdMod_1_0_0.Threading;
 using ScheduleOne.Management;
 using ScheduleOne.ObjectScripts;
 using System;
@@ -15,10 +15,10 @@ using System.Reflection;
 using UnityEngine;
 
 // Assembly attributes must come first, before namespace
-[assembly: MelonInfo(typeof(MixerThreholdMod_0_0_1.Main), "MixerThreholdMod", "0.0.1", "mooleshacat")]
+[assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), "MixerThreholdMod", "1.0.0", "mooleshacat")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0
 {
     /// <summary>
     /// MixerThresholdMod - Main class for mixer threshold management and save crash prevention.

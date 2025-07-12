@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0
 {
     public static class MixerIDManager
     {

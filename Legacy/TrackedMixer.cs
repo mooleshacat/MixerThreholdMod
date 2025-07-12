@@ -1,4 +1,4 @@
-﻿using MixerThreholdMod_0_0_1;
+﻿using MixerThreholdMod_1_0_0;
 using ScheduleOne.Management;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine.PlayerLoop;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0
 {
     /// <summary>
     /// Thread-safe data container for tracked mixer instances.

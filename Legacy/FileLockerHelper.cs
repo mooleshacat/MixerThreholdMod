@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MixerThreholdMod_0_0_1.Helpers
+namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
     /// Thread-safe file locking helper for .NET 4.8.1 compatibility

@@ -6,7 +6,7 @@ using System.IO;
 using UnityEngine;
 using HarmonyLib;
 
-namespace MixerThreholdMod_0_0_1.Patches
+namespace MixerThreholdMod_1_0_0.Patches
 {
     /// <summary>
     /// Harmony patch for SaveManager.Save to capture save folder path and trigger mixer data persistence.
@@ -98,7 +98,4 @@ namespace MixerThreholdMod_0_0_1.Patches
             }
         }
     }
-}
-
-
 }

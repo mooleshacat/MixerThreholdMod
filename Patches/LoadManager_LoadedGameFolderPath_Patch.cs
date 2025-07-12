@@ -2,7 +2,7 @@
 using ScheduleOne.Persistence;
 using System;
 
-namespace MixerThreholdMod_0_0_1.Patches
+namespace MixerThreholdMod_1_0_0.Patches
 {
     /// <summary>
     /// Harmony patch for LoadManager.StartGame to capture load operations and initialize save path.
@@ -87,30 +87,6 @@ namespace MixerThreholdMod_0_0_1.Patches
                 Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
                 return path;
             }
-        }
-    }
-}
-            }
-        }
-
-        private static IEnumerator SaveThresholdsCoroutine(string savePath)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(savePath))
-                {
-                    Main.logger.Warn(1, "SaveThresholdsCoroutine: savePath is null or empty");
-                    yield break;
-                }
-                // This will run the async save logic safely
-                MixerSaveManager.SaveMixerThresholds(savePath);
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("SaveThresholdsCoroutine: Error: {0}\n{1}", ex.Message, ex.StackTrace));
-            }
-            
-            yield return null; // Done
         }
     }
 }
