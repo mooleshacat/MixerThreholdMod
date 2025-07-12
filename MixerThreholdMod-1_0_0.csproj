@@ -112,6 +112,8 @@
     
     <!-- Restored Critical Helpers -->
     <Compile Include="Helpers\CancellableIoRunner.cs" />
+    <Compile Include="Helpers\ThreadSafeList.cs" />
+    <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
     <Compile Include="Helpers\FileLockerHelper.cs" />
     <Compile Include="Helpers\FileOperations.cs" />
     <Compile Include="Helpers\MixerSaveManager.cs" />

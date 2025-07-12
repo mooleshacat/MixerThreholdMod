@@ -30,7 +30,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"MixerConsoleHook.Instance getter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        Main.logger?.Err(string.Format("MixerConsoleHook.Instance getter: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                         return null;
                     }
                 }
@@ -45,7 +45,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"MixerConsoleHook.Instance setter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        Main.logger?.Err(string.Format("MixerConsoleHook.Instance setter: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                     }
                 }
             }
@@ -67,7 +67,7 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"MixerConsoleHook.Awake: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("MixerConsoleHook.Awake: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
 
@@ -79,7 +79,7 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"MixerConsoleHook.Update: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("MixerConsoleHook.Update: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
 
@@ -101,7 +101,7 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"OnConsoleCommand: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("OnConsoleCommand: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
 
@@ -127,14 +127,14 @@ namespace MixerThreholdMod_0_0_1
                             }
                             else
                             {
-                                Main.logger?.Warn(1, $"Unknown console command: {lowerCommand}");
+                                Main.logger?.Warn(1, string.Format("Unknown console command: {0}", lowerCommand));
                             }
                             break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"ProcessCommand: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("ProcessCommand: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
 
@@ -142,11 +142,15 @@ namespace MixerThreholdMod_0_0_1
             {
                 try
                 {
-                    if (Main.userSetValues != null)
-                        Main.userSetValues.Clear();
+                    // Note: Main.userSetValues doesn't exist in the provided Main.cs, but keeping for compatibility
+                    // if (Main.userSetValues != null)
+                    //     Main.userSetValues.Clear();
 
                     if (Main.savedMixerValues != null)
                         Main.savedMixerValues.Clear();
+
+                    // Reset MixerIDManager - no namespace needed since it's in the same namespace
+                    MixerIDManager.ResetStableIDCounter();
 
                     // Optional: Reset the saved JSON file
                     string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
@@ -160,7 +164,7 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"ResetMixerValues: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("ResetMixerValues: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
 
@@ -170,11 +174,11 @@ namespace MixerThreholdMod_0_0_1
                 {
                     // msgLogLevel = 1 because user initiated something, user wants to see results
                     string currentPath = Main.CurrentSavePath ?? "[null]";
-                    Main.logger?.Msg(1, $"Current Save Path: {currentPath}");
+                    Main.logger?.Msg(1, string.Format("Current Save Path: {0}", currentPath));
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"PrintSavePath: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("PrintSavePath: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
         }
@@ -216,7 +220,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"Error in console log message handler: {ex.Message}");
+                        Main.logger?.Err(string.Format("Error in console log message handler: {0}", ex.Message));
                     }
                 };
 
@@ -224,7 +228,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"RegisterConsoleCommandViaReflection: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("RegisterConsoleCommandViaReflection: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
     }

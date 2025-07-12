@@ -1,258 +1,193 @@
 using HarmonyLib;
 using MelonLoader;
 using MelonLoader.Utils;
-using MixerThreholdMod_1_0_0.Core;
-using MixerThreholdMod_1_0_0.Helpers;
-using MixerThreholdMod_1_0_0.Save;
-using Newtonsoft.Json;
+using MixerThreholdMod_0_0_1.Utils;
 using ScheduleOne.Management;
-using ScheduleOne.Noise;
 using ScheduleOne.ObjectScripts;
-using ScheduleOne.Persistence;
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using MelonLoader;
-using MelonLoader.Utils;
-using HarmonyLib;
-using MixerThreholdMod_1_0_0.Core;    // ✅ ESSENTIAL - Keep this! IDE false positive
-using MixerThreholdMod_1_0_0.Helpers; // ✅ NEEDED
-using MixerThreholdMod_1_0_0.Save;    // ✅ NEEDED
-// Suspect these two may be IL2CPP compatibility problems same as below
-//using ScheduleOne.Noise;
-//using ScheduleOne.ObjectScripts;
-// COMMENTED FOR TESTING COMPILE TIME ERRORS? IT APPEARS OK ... MAYBE NOT NEEDED.
 
-// We fixed these and used type resolver, do we need to do same for the above?
-// NOTE: I have seen MixerIDManager.cs access ScheduleOne.Manager and not use type resolver.
-// It's using declaration was even removed once and commented to use IL2CPPTypeResolver but
-// somehow it got added back. We need to fix it. This makes me think the above is not ok either.
-
-// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-
-// We fixed these and used type resolver, do we need to do same for the above?
-// NOTE: I have seen MixerIDManager.cs access ScheduleOne.Manager and not use type resolver.
-// It's using declaration was even removed once and commented to use IL2CPPTypeResolver but
-// somehow it got added back. We need to fix it. This makes me think the above is not ok either.
-
-// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-
-// We fixed these and used type resolver, do we need to do same for the above?
-// NOTE: I have seen MixerIDManager.cs access ScheduleOne.Manager and not use type resolver.
-// It's using declaration was even removed once and commented to use IL2CPPTypeResolver but
-// somehow it got added back. We need to fix it. This makes me think the above is not ok either.
-
-// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-
-// We fixed these and used type resolver, do we need to do same for the above?
-// NOTE: I have seen MixerIDManager.cs access ScheduleOne.Manager and not use type resolver.
-// It's using declaration was even removed once and commented to use IL2CPPTypeResolver but
-// somehow it got added back. We need to fix it. This makes me think the above is not ok either.
-
-// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-
-// Reminder: Add to steam game startup command: "--melonloader.captureplayerlogs" for extra MelonLogger verbosity :)
-
-[assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), "MixerThreholdMod", "1.0.0", "mooleshacat")]
+// Assembly attributes must come first, before namespace
+[assembly: MelonInfo(typeof(MixerThreholdMod_0_0_1.Main), "MixerThreholdMod", "0.0.1", "mooleshacat")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace MixerThreholdMod_1_0_0
 {
+    // Thread-safe list implementation for .NET 4.8.1 - only this class stays in Main.cs
+    public class ThreadSafeList<T>
+    {
+        private readonly List<T> _list = new List<T>();
+        private readonly object _lock = new object();
+
+        public void Add(T item)
+        {
+            lock (_lock)
+            {
+                _list.Add(item);
+            }
+        }
+
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _list.Clear();
+            }
+        }
+
+        public List<T> ToList()
+        {
+            lock (_lock)
+            {
+                return new List<T>(_list);
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _list.Count;
+                }
+            }
+        }
+
+        public void RemoveAll(Predicate<T> match)
+        {
+            lock (_lock)
+            {
+                _list.RemoveAll(match);
+            }
+        }
+
+        public bool Any(Func<T, bool> predicate)
+        {
+            lock (_lock)
+            {
+                return _list.Any(predicate);
+            }
+        }
+    }
+
     public class Main : MelonMod
     {
-        public static MelonPreferences_Entry<bool> debugLoggingEnabledEntry;
-        public static MelonPreferences_Entry<bool> showLogLevelCalcEntry;
-        public static MelonPreferences_Entry<int> currentMsgLogLevelEntry;
-        public static MelonPreferences_Entry<int> currentWarnLogLevelEntry;
-        public static readonly Core.Logger logger = new Core.Logger();
-        public static List<MixingStationConfiguration> queuedInstances = new List<MixingStationConfiguration>();
-        public static Dictionary<MixingStationConfiguration, float> userSetValues = new Dictionary<MixingStationConfiguration, float>();
-        public static ConcurrentDictionary<int, float> savedMixerValues = new ConcurrentDictionary<int, float>();
+        public static readonly Logger logger = new Logger();
+        public static new HarmonyLib.Harmony HarmonyInstance = new HarmonyLib.Harmony("com.mooleshacat.mixerthreholdmod"); // Fixed: added 'new' keyword
+
+        // Thread-safe collections for .NET 4.8.1
+        public static readonly ThreadSafeList<MixingStationConfiguration> queuedInstances = new ThreadSafeList<MixingStationConfiguration>();
+
+        // Use ConcurrentDictionary compatible with .NET 4.8.1
+        public static readonly System.Collections.Concurrent.ConcurrentDictionary<int, float> savedMixerValues =
+            new System.Collections.Concurrent.ConcurrentDictionary<int, float>();
 
         public static string CurrentSavePath = null;
-        public static bool LoadCoroutineStarted = false;
+        private Coroutine mainUpdateCoroutine; // Renamed to avoid any potential conflicts
+        private static bool isShuttingDown = false;
 
         public override void OnInitializeMelon()
         {
             base.OnInitializeMelon();
+
+            // Add unhandled exception handler for better crash investigation
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
             logger.Msg(1, "MixerThreholdMod initializing...");
             logger.Msg(1, string.Format("currentMsgLogLevel: {0}", logger.CurrentMsgLogLevel));
             logger.Msg(1, string.Format("currentWarnLogLevel: {0}", logger.CurrentWarnLogLevel));
 
+            Exception initError = null;
             try
             {
-                Instance = this;
-                base.OnInitializeMelon();
-                logger.Msg(1, "=== MixerThreholdMod v1.0.0 Initializing ===");
-                logger.Msg(1, string.Format("currentMsgLogLevel: {0}", logger.CurrentMsgLogLevel));
-                logger.Msg(1, string.Format("currentWarnLogLevel: {0}", logger.CurrentWarnLogLevel));
-                logger.Msg(1, "Phase 0: Basic initialization complete");
+                // Patch constructor to queue instance
+                var constructor = typeof(MixingStationConfiguration).GetConstructor(
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                    null,
+                    new[] {
+                        typeof(ConfigurationReplicator),
+                        typeof(IConfigurable),
+                        typeof(MixingStation)
+                    },
+                    null
+                );
 
-                // Test logger immediately - if this fails, we have a fundamental problem
-                try
+                if (constructor == null)
                 {
-                    logger.Msg(1, "Phase 0.25: [LOGGER TEST] MixerThreholdMod v1.0.0 Starting");
-                    System.Console.WriteLine("Phase 0.25: [CONSOLE TEST] MixerThreholdMod v1.0.0 Starting");
-                }
-                catch (Exception logEx)
-                {
-                    // If even basic logging fails, use console directly
-                    System.Console.WriteLine(string.Format("[CRITICAL] Logger failed during startup: {0}", logEx.Message));
-                    throw; // This is fatal - if we can't log, we're in trouble
+                    logger.Err("Target constructor NOT found!");
+                    return;
                 }
 
-                logger.Msg(1, "Phase 0.5: Detecting directories via game APIs (ultra-fast)...");
-                // ⚠️ ASYNC JUSTIFICATION: Game API access can take 50-200ms but prevents 20+ second filesystem recursion
-                // Uses game's own SaveManager/LoadManager APIs for instant path resolution
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        var directoryInfo = await Helpers.GameDirectoryResolver.InitializeDirectoryDetectionAsync();
-
-                        // Log key findings for user benefit
-                        logger.Msg(1, string.Format("[INIT] 🚀 Game-based directory detection: {0}", directoryInfo.ToString()));
-
-                        if (directoryInfo.MelonLoaderLogFound)
-                        {
-                            logger.Msg(1, string.Format("[INIT] 📄 MelonLoader log ready for management: {0}", directoryInfo.MelonLoaderLogFile));
-                        }
-
-                        if (directoryInfo.SavesDirectoryFound)
-                        {
-                            logger.Msg(1, string.Format("[INIT] 💾 Game saves directory: {0}", directoryInfo.SavesDirectory));
-                        }
-                    }
-                    catch (Exception dirEx)
-                    {
-                        logger.Err(string.Format("[INIT] Game-based directory detection failed: {0}", dirEx.Message));
-                    }
-                });
-                logger.Msg(1, "Phase 0.5: Game API directory detection started (100x faster than multiple drive recursion)");
-
-                try
-                {
-                    // IL2CPP COMPATIBLE: Use IL2CPPTypeResolver for safe type resolution in both MONO and IL2CPP builds
-                    // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
-                    logger.Msg(1, "Phase 2: Initializing IL2CPP-compatible type resolution...");
-                    
-                    // Log comprehensive type availability for debugging
-                    Core.IL2CPPTypeResolver.LogTypeAvailability();
-                    
-                    // IL2CPP-specific memory analysis after type loading
-                    if (Core.IL2CPPTypeResolver.IsIL2CPPBuild)
-                    {
-                    Core.AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis("POST_TYPE_LOADING");
-                    }
-
-                    logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
-                    var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
-                    if (constructor == null)
-                    {
-                        logger.Err("CRITICAL: Target constructor NOT found! This may be due to IL2CPP type loading issues.");
-                        logger.Err("CRITICAL: Mod functionality will be limited but initialization will continue.");
-                        // Don't return here - allow other initialization to continue
-                    }
-                    else
-                    {
-                        logger.Msg(1, "Phase 2: Constructor found successfully via IL2CPP-compatible type resolver");
-                    }
-
-                    logger.Msg(1, "Phase 3: Applying IL2CPP-compatible Harmony patch...");
-                    // IL2CPP COMPATIBLE: Only apply Harmony patch if constructor is available
-                    if (constructor != null)
-                    {
-                        // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
-                        HarmonyInstance.Patch(
-                            constructor,
-                            prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
-                        );
-                        logger.Msg(1, "Phase 3: IL2CPP-compatible Harmony patch applied successfully");
-                    }
-                    else
-                    {
-                        logger.Warn(1, "Phase 3: Skipping Harmony patch - constructor not available (IL2CPP type loading issue)");
-                        logger.Warn(1, "Phase 3: Mod will operate in limited mode without automatic mixer detection");
-                    }
-
-                    logger.Msg(1, "Phase 4: Registering IL2CPP-compatible console commands...");
-                    Core.ModConsoleCommandProcessor.RegisterConsoleCommandViaReflection();
-                    logger.Msg(1, "Phase 4a: Basic console hook registered");
-
-                    // Also initialize native console integration for game console commands
-                    logger.Msg(1, "Phase 4b: Initializing IL2CPP-compatible native game console integration...");
-                    Core.NativeGameConsoleIntegration.InitializeNativeConsoleIntegration();
-                    logger.Msg(1, "Phase 4c: IL2CPP-compatible console commands registered successfully");
-
-                    // Initialize IL2CPP-compatible patches
-                    logger.Msg(1, "Phase 6: Initializing IL2CPP-compatible patches...");
-                    Patches.SaveManager_Save_Patch.Initialize();
-                    Patches.LoadManager_LoadedGameFolderPath_Patch.Initialize();
-                    Patches.EntityConfiguration_Destroy_Patch.Initialize();
-                    logger.Msg(1, "Phase 6: IL2CPP-compatible patches initialized");
-
-                    // Initialize game logger bridge for exception monitoring
-                    logger.Msg(1, "Phase 7: Initializing game exception monitoring...");
-                    Core.GameExceptionMonitor.InitializeLoggingBridge();
-                    logger.Msg(1, "Phase 7: Game exception monitoring initialized");
-
-                    // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
-                    logger.Msg(1, "Phase 6: Initializing advanced system monitoring with memory leak detection...");
-                    Core.SystemMonitor.Initialize();
-                    logger.Msg(1, "Phase 6: Advanced system monitoring with memory leak detection initialized");
-
-                    // Phase 7 nothing interesting here ... Just "performance optimization routines"
-                    logger.Msg(1, "Phase 7: Initializing advanced performance optimization...");
-                    Helpers.Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
-                    logger.Msg(1, "Phase 7: Advanced performance optimization initialized (authentication required)");
-
-                    logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
-                }
-                catch (Exception harmonyEx)
-                {
-                    logger.Err(string.Format("CRITICAL: Harmony/Console setup failed: {0}\n{1}", harmonyEx.Message, harmonyEx.StackTrace));
-                    throw; // Re-throw to ensure initialization failure is visible
-                }
                 HarmonyInstance.Patch(
                     constructor,
                     prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
                 );
+
                 logger.Msg(2, "Patched constructor");
-                Core.Console.RegisterConsoleCommandViaReflection();
+                Console.RegisterConsoleCommandViaReflection();
+
+                // Start the update coroutine - explicit cast to Coroutine
+                var coroutineObj = MelonCoroutines.Start(UpdateCoroutine());
+                mainUpdateCoroutine = coroutineObj as Coroutine;
+                logger.Msg(3, "Update coroutine started successfully");
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("OnInitializeMelon: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                initError = ex;
             }
-            HarmonyInstance.Patch(
-                constructor,
-                prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
-            );
-            logger.Msg(2, "Patched constructor");
-            Console.RegisterConsoleCommandViaReflection();
+
+            if (initError != null)
+            {
+                logger.Err(string.Format("OnInitializeMelon error: {0}\nStackTrace: {1}", initError.Message, initError.StackTrace));
+            }
+        }
+
+        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = e.ExceptionObject as Exception;
+            if (exception != null)
+            {
+                logger.Err(string.Format("[GLOBAL CRASH] Unhandled exception: {0}\nStackTrace: {1}",
+                    exception.Message, exception.StackTrace));
+
+                // Try to save current state before crash - NO YIELD RETURNS here
+                Exception saveError = null;
+                try
+                {
+                    Utils.MixerSaveManager.EmergencySave();
+                }
+                catch (Exception saveEx)
+                {
+                    saveError = saveEx;
+                }
+
+                if (saveError != null)
+                {
+                    logger.Err(string.Format("Emergency save failed: {0}", saveError.Message));
+                }
+            }
+            else
+            {
+                logger.Err(string.Format("[GLOBAL CRASH] Non-exception object: {0}", e.ExceptionObject));
+            }
         }
 
         private static void QueueInstance(MixingStationConfiguration __instance)
         {
+            if (isShuttingDown) return;
+
+            Exception queueError = null;
             try
             {
                 if (__instance == null)
                 {
-                    logger.Warn(1, "QueueInstance: Received null instance - ignoring");
+                    logger.Warn(1, "QueueInstance: Attempting to queue null instance");
                     return;
                 }
 
@@ -261,322 +196,179 @@ namespace MixerThreholdMod_1_0_0
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("QueueInstance: Caught exception: {0}", ex));
+                queueError = ex;
+            }
+
+            if (queueError != null)
+            {
+                logger.Err(string.Format("QueueInstance error: {0}\nStackTrace: {1}", queueError.Message, queueError.StackTrace));
             }
         }
 
-        public async override void OnUpdate()
+        public override void OnUpdate()
         {
-            try
+            // Keep OnUpdate minimal for .NET 4.8.1 compatibility
+            if (isShuttingDown && mainUpdateCoroutine != null)
             {
-                // Prevent multiple concurrent executions of async operations
-                if (_isProcessingQueued || queuedInstances.Count == 0)
-                    return;
-
-                // ⚠️ ASYNC JUSTIFICATION: ProcessQueuedInstancesAsync() contains:
-                // - Thread-safe collection operations that could block main thread for 10-50ms
-                // - Reflection-based property access that can take 5-20ms per instance
-                // - Potential database-like operations in MixerConfigurationTracker (up to 100ms)
-                // - File I/O for coroutine-based save operations (50-200ms)
-                // Task.Run prevents Unity main thread blocking which would cause frame drops
-                Task.Run(async () =>
-                {
-                    if (await Core.TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
-                    {
-                        logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
-                        continue;
-                    }
-                    if (instance.StartThrehold == null)
-                    {
-                        logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
-                        continue;
-                    }
-                    var mixerData = await Core.TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
-                    if (mixerData == null)
-                    {
-                        try
-                        {
-                            instance.StartThrehold.Configure(1f, 20f, true);
-
-                            var newTrackedMixer = new Core.TrackedMixer
-                            {
-                                ConfigInstance = instance,
-                                MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
-                            };
-                            await Core.TrackedMixers.AddAsync(newTrackedMixer);
-                            logger.Msg(3, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
-
-                            if (!newTrackedMixer.ListenerAdded)
-                            {
-                                logger.Msg(3, string.Format("Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
-                                Helpers.Utils.CoroutineHelper.RunCoroutine(Save.CrashResistantSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
-                                newTrackedMixer.ListenerAdded = true;
-                            }
-                            // Restore saved value if exists
-                            float savedValue;
-                            if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
-                            {
-                                logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
-                                instance.StartThrehold.SetValue(savedValue, true);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Err("Error configuring mixer: " + ex);
-                        }
-                    }
-                }
-                queuedInstances.Clear();
-            }
-            catch (Exception ex)
-            {
-                logger.Err(string.Format("OnUpdate: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                MelonCoroutines.Stop(mainUpdateCoroutine);
+                mainUpdateCoroutine = null;
             }
         }
 
-        private static async Task ProcessQueuedInstancesAsync()
+        private IEnumerator UpdateCoroutine()
         {
-            var diagnostics = new Helpers.FileOperationDiagnostics();
+            logger.Msg(3, "UpdateCoroutine started");
 
-            try
+            while (!isShuttingDown)
             {
-                logger.Msg(3, "ProcessQueuedInstancesAsync: Starting cleanup and processing");
+                // NO TRY-CATCH around yield returns for .NET 4.8.1 compatibility
 
-                // ⚠️ ASYNC JUSTIFICATION: RemoveAllAsync() performs:
-                // - ConcurrentBag enumeration and filtering (5-15ms for large collections)
-                // - Thread-safe collection rebuilding (10-30ms)
-                // - Memory allocation/deallocation that could trigger GC (5-50ms)
-                await Core.MixerConfigurationTracker.RemoveAllAsync(tm => tm.ConfigInstance == null);
+                // Clean up null/invalid mixers first - use synchronous version
+                TrackedMixers.RemoveAll(tm => tm?.ConfigInstance == null);
 
-                var toProcess = queuedInstances.ToList();
-                logger.Msg(3, string.Format("ProcessQueuedInstancesAsync: Processing {0} queued instances", toProcess.Count));
-
-                foreach (var instance in toProcess)
+                if (queuedInstances.Count > 0)
                 {
-                    try
+                    var toProcess = queuedInstances.ToList();
+                    queuedInstances.Clear();
+
+                    logger.Msg(3, string.Format("Processing {0} queued instances", toProcess.Count));
+
+                    foreach (var instance in toProcess)
                     {
-                        if (instance == null)
-                        {
-                            logger.Warn(1, "ProcessQueuedInstancesAsync: Skipping null instance");
-                            continue;
-                        }
+                        if (isShuttingDown) break;
 
-                        // ⚠️ ASYNC JUSTIFICATION: AnyAsync() performs:
-                        // - LINQ operations on potentially large collections (5-20ms)
-                        // - Thread-safe enumeration with locking (3-10ms)
-                        // - Predicate evaluation across multiple objects (2-15ms per object)
-                        if (await Core.MixerConfigurationTracker.AnyAsync(tm => tm.ConfigInstance == instance))
-                        {
-                            logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
-                            continue;
-                        }
+                        // Process without try-catch around yield
+                        yield return ProcessSingleInstanceCoroutine(instance);
 
-                        // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property safely
-                        var startThresholdProperty = instance.GetType().GetProperty("StartThrehold");
-                        if (startThresholdProperty == null)
-                        {
-                            logger.Warn(1, "StartThrehold property not found for instance. Skipping.");
-                            continue;
-                        }
-
-                        var startThreshold = startThresholdProperty.GetValue(instance, null);
-                        if (startThreshold == null)
-                        {
-                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
-                            continue;
-                        }
-
-                        // ⚠️ ASYNC JUSTIFICATION: FirstOrDefaultAsync() performs:
-                        // - Complex LINQ predicate matching (5-25ms)
-                        // - Thread-safe collection access with potential lock contention (3-15ms)
-                        // - Object comparison operations across multiple instances (2-10ms per comparison)
-                        var mixerData = await Core.MixerConfigurationTracker.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
-                        if (mixerData == null)
-                        {
-                            try
-                            {
-                                logger.Msg(3, "ProcessQueuedInstancesAsync: Configuring new mixer...");
-
-                                // IL2CPP COMPATIBLE: Use reflection to call Configure method safely
-                                var configureMethod = startThreshold.GetType().GetMethod("Configure", new[] { typeof(float), typeof(float), typeof(bool) });
-                                if (configureMethod != null)
-                                {
-                                    configureMethod.Invoke(startThreshold, new object[] { 1f, 20f, true });
-                                    logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
-                                }
-                                else
-                                {
-                                    logger.Warn(1, "Configure method not found on StartThrehold. Skipping configuration.");
-                                    continue;
-                                }
-
-                                var newTrackedMixer = new Core.TrackedMixer
-                                {
-                                    ConfigInstance = instance,
-                                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
-                                };
-
-                                // ⚠️ ASYNC JUSTIFICATION: AddAsync() performs:
-                                // - Thread-safe collection modification (3-10ms)
-                                // - Timestamp generation and object initialization (1-5ms)
-                                // - Memory allocation that could trigger GC (5-50ms)
-                                await Core.MixerConfigurationTracker.AddAsync(newTrackedMixer);
-                                logger.Msg(2, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
-
-                                if (!newTrackedMixer.ListenerAdded)
-                                {
-                                    logger.Msg(3, string.Format("Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
-                                    Helpers.Utils.CoroutineHelper.RunCoroutine(Save.CrashResistantSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
-                                    newTrackedMixer.ListenerAdded = true;
-                                }
-
-                                // Restore saved value if exists
-                                float savedValue;
-                                if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
-                                {
-                                    logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
-
-                                    // IL2CPP COMPATIBLE: Use reflection to call SetValue method safely
-                                    var setValueMethod = startThreshold.GetType().GetMethod("SetValue", new[] { typeof(float), typeof(bool) });
-                                    if (setValueMethod != null)
-                                    {
-                                        setValueMethod.Invoke(startThreshold, new object[] { savedValue, true });
-                                    }
-                                    else
-                                    {
-                                        logger.Warn(1, "SetValue method not found on StartThrehold. Cannot restore saved value.");
-                                    }
-                                }
-                            }
-                            catch (Exception mixerEx)
-                            {
-                                logger.Err(string.Format("Error configuring individual mixer: {0}\n{1}", mixerEx.Message, mixerEx.StackTrace));
-                                // Continue processing other mixers despite this failure
-                            }
-                        }
-                    }
-                    catch (Exception instanceEx)
-                    {
-                        logger.Err(string.Format("Error processing individual instance: {0}\n{1}", instanceEx.Message, instanceEx.StackTrace));
-                        // Continue processing other instances despite this failure
+                        // Yield every few operations to prevent frame drops
+                        yield return null;
                     }
                 }
 
-                queuedInstances.Clear();
-                logger.Msg(3, "ProcessQueuedInstancesAsync: Completed successfully");
+                // Normal processing interval - NO try-catch around this yield
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            logger.Msg(3, "UpdateCoroutine finished");
+        }
+
+        private IEnumerator ProcessSingleInstanceCoroutine(MixingStationConfiguration instance)
+        {
+            if (instance == null || isShuttingDown) yield break;
+
+            Exception processingError = null;
+            bool alreadyTracked = false;
+            TrackedMixer newTrackedMixer = null;
+
+            // Do all error-prone work BEFORE any yield returns
+            try
+            {
+                // Check if already tracked (thread-safe) - use synchronous version
+                alreadyTracked = TrackedMixers.Any(tm => tm?.ConfigInstance == instance);
+                if (alreadyTracked)
+                {
+                    logger.Warn(1, "Instance already tracked - skipping duplicate");
+                    yield break;
+                }
+
+                if (instance.StartThrehold == null)
+                {
+                    logger.Warn(1, "StartThrehold is null - skipping instance");
+                    yield break;
+                }
+
+                // Configure threshold on main thread (Unity requirement)
+                instance.StartThrehold.Configure(1f, 20f, true);
+
+                newTrackedMixer = new TrackedMixer
+                {
+                    ConfigInstance = instance,
+                    MixerInstanceID = MixerIDManager.GetMixerID(instance)
+                };
+
+                // Add to collection (thread-safe) - use synchronous version
+                TrackedMixers.Add(newTrackedMixer);
+                logger.Msg(3, string.Format("Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("ProcessQueuedInstancesAsync: Critical failure: {0}\n{1}", ex.Message, ex.StackTrace));
-                // Ensure we don't leave the system in a bad state
+                processingError = ex;
+            }
+
+            if (processingError != null)
+            {
+                logger.Err(string.Format("ProcessSingleInstance error: {0}\nStackTrace: {1}", processingError.Message, processingError.StackTrace));
+                yield break;
+            }
+
+            if (newTrackedMixer == null) yield break;
+
+            // Attach listener safely - NO try-catch around yield
+            if (!newTrackedMixer.ListenerAdded)
+            {
+                logger.Msg(3, string.Format("Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
+
+                Exception listenerError = null;
                 try
                 {
-                    queuedInstances.Clear();
+                    MelonCoroutines.Start(Utils.MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
+                    newTrackedMixer.ListenerAdded = true;
                 }
-                catch
+                catch (Exception listenerEx)
                 {
-                    // Even clearing failed - something is seriously wrong
-                    logger.Err("ProcessQueuedInstancesAsync: Even queue clearing failed!");
+                    listenerError = listenerEx;
+                }
+
+                if (listenerError != null)
+                {
+                    logger.Err(string.Format("Failed to attach listener: {0}", listenerError.Message));
                 }
             }
-            finally
+
+            // Restore saved value if exists (thread-safe) - .NET 4.8.1 compatible
+            float savedValue;
+            if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
             {
-                diagnostics.LogSummary("ProcessQueuedInstancesAsync");
+                logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
+
+                Exception restoreError = null;
+                try
+                {
+                    instance.StartThrehold.SetValue(savedValue, true);
+                }
+                catch (Exception ex)
+                {
+                    restoreError = ex;
+                }
+
+                if (restoreError != null)
+                {
+                    logger.Err(string.Format("Failed to restore value: {0}", restoreError.Message));
+                }
             }
         }
 
-        /// <summary>
-        /// ⚠️ DEFENSIVE PROGRAMMING: Enhanced MixerExists with comprehensive error handling,
-        /// timeout protection, and thread-safe operations for production reliability.
-        /// ⚠️ SIMPLIFIED SYNC VERSION: Removed unnecessary async for simple lookup operations
-        /// that complete in <5ms and don't involve file I/O or heavy processing.
-        /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses framework-safe patterns and exception handling.
-        /// </summary>
         public static bool MixerExists(int mixerInstanceID)
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            Exception operationError = null;
+            Exception checkError = null;
+            bool result = false;
 
             try
             {
-                logger.Msg(3, string.Format("MixerExists: Checking for mixer ID {0}", mixerInstanceID));
-
-                // Input validation with defensive programming
-                if (mixerInstanceID <= 0)
-                {
-                    logger.Warn(2, string.Format("MixerExists: Invalid mixer ID {0} - must be positive integer", mixerInstanceID));
-                    return false;
-                }
-
-                // ⚠️ SYNC JUSTIFICATION: This operation is now synchronous because:
-                // - Simple LINQ Any() operation completes in 1-5ms typically
-                // - ConcurrentBag enumeration is thread-safe and fast
-                // - No file I/O or heavy processing involved
-                // - Async overhead (3-8ms) is more than the operation itself
-
-                // Use a timeout to prevent hanging in edge cases
-                var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                bool result = false;
-
-                // Run with timeout protection for defensive programming
-                var task = Task.Run(() =>
-                {
-                    try
-                    {
-                        // Get current snapshot of mixers for thread-safe enumeration
-                        var mixers = Core.MixerConfigurationTracker.ToListAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                        result = mixers.Any(tm => tm.MixerInstanceID == mixerInstanceID);
-                        return result;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Err(string.Format("MixerExists: Inner operation failed: {0}", ex.Message));
-                        return false;
-                    }
-                }, timeoutCts.Token);
-
-                // Wait with timeout protection
-                if (task.Wait(2000)) // 2 second timeout
-                {
-                    result = task.Result;
-                    logger.Msg(3, string.Format("MixerExists: Mixer ID {0} exists: {1} (checked in {2:F1}ms)",
-                        mixerInstanceID, result, sw.Elapsed.TotalMilliseconds));
-                }
-                else
-                {
-                    logger.Warn(1, string.Format("MixerExists: Timeout after 2 seconds checking mixer ID {0}", mixerInstanceID));
-                    result = false;
-                }
-
-                return result;
+                result = TrackedMixers.Any(tm => tm.MixerInstanceID == mixerInstanceID);
             }
             catch (Exception ex)
             {
-                operationError = ex;
+                checkError = ex;
+            }
+
+            if (checkError != null)
+            {
+                logger.Err(string.Format("MixerExists error: {0}", checkError.Message));
                 return false;
             }
-            finally
-            {
-                sw.Stop();
 
-                if (operationError != null)
-                {
-                    logger.Err(string.Format("MixerExists: CRASH PREVENTION - Operation failed for mixer ID {0}: {1} (took {2:F1}ms)",
-                        mixerInstanceID, operationError.Message, sw.Elapsed.TotalMilliseconds));
-                }
-
-                // Performance monitoring and warnings
-                var elapsedMs = sw.Elapsed.TotalMilliseconds;
-                if (elapsedMs > 100)
-                {
-                    logger.Warn(1, string.Format("MixerExists: PERFORMANCE WARNING - Operation took {0:F1}ms for mixer ID {1} (expected <10ms)",
-                        elapsedMs, mixerInstanceID));
-                }
-                else if (elapsedMs > 50)
-                {
-                    logger.Msg(2, string.Format("MixerExists: Slow operation - {0:F1}ms for mixer ID {1}", elapsedMs, mixerInstanceID));
-                }
-            }
+            return result;
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -584,335 +376,113 @@ namespace MixerThreholdMod_1_0_0
             base.OnSceneWasLoaded(buildIndex, sceneName);
             logger.Msg(2, "Scene loaded: " + sceneName);
 
-            // One-time console command test when main scene loads (to verify commands work)
-            if (sceneName == "Main" && !_consoleTestCompleted)
+            if (sceneName == "Main" && !isShuttingDown)
             {
-                _consoleTestCompleted = true;
-                logger.Msg(2, "[DEBUG] Running one-time console command test...");
-
-                // ⚠️ ASYNC JUSTIFICATION: Test console commands in background because:
-                // - Console command processing can take 10-50ms per command
-                // - Thread.Sleep(1000) would freeze Unity main thread for 1 second
-                // - Testing multiple commands sequentially could take 100-300ms total
-                // Task.Run prevents Unity frame drops during console testing
-                Task.Run(() =>
-                {
-                    try
-                    {
-                        // Wait a moment for everything to settle
-                        Thread.Sleep(1000);
-
-                        logger.Msg(2, "[DEBUG] Testing console commands...");
-                        Core.ModConsoleCommandProcessor.ProcessManualCommand("msg This is a test message from console command");
-                        Core.ModConsoleCommandProcessor.ProcessManualCommand("warn This is a test warning from console command");
-                        logger.Msg(2, "[DEBUG] Console command test completed - check logs above for test output");
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Err(string.Format("[DEBUG] Console command test failed: {0}", ex.Message));
-                    }
-                });
-            }
-
-            if (sceneName == "Main")
-            {
+                Exception sceneError = null;
                 try
                 {
-                    Core.MixerIDManager.MixerInstanceMap.Clear();
-                    Core.MixerIDManager.ResetStableIDCounter();
-
+                    // Reset mixer state
+                    if (MixerIDManager.MixerInstanceMap != null)
+                    {
+                        MixerIDManager.MixerInstanceMap.Clear();
+                    }
+                    MixerIDManager.ResetStableIDCounter();
                     savedMixerValues.Clear();
-                    logger.Msg(3, "Current Save Path at scene load: " + (CurrentSavePath ?? "[not available yet]"));
-                    StartLoadCoroutine();
 
+                    logger.Msg(3, "Current Save Path at scene load: " + (CurrentSavePath ?? "[not available yet]"));
+
+                    // Start load coroutine
+                    if (!_coroutineStarted)
+                    {
+                        StartLoadCoroutine();
+                    }
+
+                    // Handle file copying safely
                     if (!string.IsNullOrEmpty(CurrentSavePath))
                     {
-                        // ⚠️ ASYNC JUSTIFICATION: File copy operations require async because:
-                        // - File.Exists() can take 5-20ms for network drives or slow storage
-                        // - SafeReadAllTextAsync() can take 50-500ms depending on file size
-                        // - SafeWriteAllTextAsync() can take 100-1000ms for large files
-                        // - Total operation could be 200-1500ms which would freeze Unity
-                        Task.Run(async () =>
+                        string persistentPath = MelonEnvironment.UserDataDirectory;
+                        if (!string.IsNullOrEmpty(persistentPath))
                         {
-                            var diagnostics = new Helpers.FileOperationDiagnostics();
+                            string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
+                            string targetFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json");
 
-                            try
+                            if (File.Exists(sourceFile))
                             {
-                                string persistentPath = MelonEnvironment.UserDataDirectory;
-                                string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
-                                string targetFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
-
-                                if (File.Exists(sourceFile))
-                                {
-                                    diagnostics.StartOperation("File Copy Operation");
-
-                                    var readSw = System.Diagnostics.Stopwatch.StartNew();
-                                    string content = await Helpers.ThreadSafeFileOperations.SafeReadAllTextAsync(sourceFile);
-                                    readSw.Stop();
-
-                                    var writeSw = System.Diagnostics.Stopwatch.StartNew();
-                                    await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(targetFile, content);
-                                    writeSw.Stop();
-
-                                    diagnostics.EndOperation();
-
-                                    logger.Msg(3, string.Format("Copied MixerThresholdSave.json from persistent to save folder (Read: {0:F1}ms, Write: {1:F1}ms, Total: {2:F1}ms)",
-                                        readSw.Elapsed.TotalMilliseconds, writeSw.Elapsed.TotalMilliseconds, diagnostics.GetLastOperationTime()));
-                                }
+                                FileOperations.SafeCopy(sourceFile, targetFile, overwrite: true);
+                                logger.Msg(3, "Copied MixerThresholdSave.json successfully");
                             }
-                            catch (Exception ex)
-                            {
-                                logger.Err(string.Format("Background file copy failed: {0}", ex));
-                            }
-                            finally
-                            {
-                                diagnostics.LogSummary("Background File Copy");
-                            }
-                        });
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.Err(string.Format("OnSceneWasLoaded: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                    sceneError = ex;
+                }
+
+                if (sceneError != null)
+                {
+                    logger.Err(string.Format("OnSceneWasLoaded error: {0}\nStackTrace: {1}", sceneError.Message, sceneError.StackTrace));
                 }
             }
         }
 
         private static void StartLoadCoroutine()
         {
+            if (_coroutineStarted || isShuttingDown) return;
+
+            Exception startError = null;
             try
             {
-                if (LoadCoroutineStarted) return;
-                LoadCoroutineStarted = true;
-                MelonCoroutines.Start(Save.CrashResistantSaveManager.LoadMixerValuesWhenReady());
+                _coroutineStarted = true;
+                MelonCoroutines.Start(Utils.MixerSaveManager.LoadMixerValuesWhenReady());
+                logger.Msg(3, "Load coroutine started successfully");
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("StartLoadCoroutine: Caught exception: {0}", ex));
-            }
-        }
-
-        // Placeholder methods referenced by Console.cs - can be implemented later
-        public static IEnumerator StressGameSaveTestWithComprehensiveMonitoring(int iterations, float delaySeconds, bool bypassCooldown)
-        {
-            logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
-            
-            // Log initial system state
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_START");
-
-            var startTime = DateTime.Now;
-            int successCount = 0;
-            int failureCount = 0;
-
-            for (int i = 1; i <= iterations; i++)
-            {
-                logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
-
-                // Track timing and system performance for this iteration
-                var iterationStart = DateTime.Now;
-                bool iterationSuccess = false;
-
-                // Log system state before critical operation (every 5th iteration to avoid spam)
-                if (i % 5 == 1 || iterations <= 5)
-                {
-                    AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
-                }
-                
-                // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
-                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-                
-                try
-                {
-                    var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
-                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
-
-                    // Log system state after critical operation (every 5th iteration)
-                    if (i % 5 == 0 || i == iterations || iterations <= 5)
-                    {
-                        AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
-                    }
-
-                    successCount++;
-                    iterationSuccess = true;
-                }
-                catch (Exception ex)
-                {
-                    logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
-                    AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_FAILED", i));
-                    failureCount++;
-                }
-
-                // Add delay if specified - yield return outside try/catch for .NET 4.8.1 compatibility
-                if (delaySeconds > 0f && iterationSuccess)
-                {
-                    logger.Msg(3, string.Format("[MONITOR] Waiting {0:F3}s before next iteration...", delaySeconds));
-                    yield return new WaitForSeconds(delaySeconds);
-                }
+                startError = ex;
+                _coroutineStarted = false; // Reset on error
             }
 
-            var totalTime = (DateTime.Now - startTime).TotalSeconds;
-
-            var totalTime = (DateTime.Now - startTime).TotalSeconds;
-            
-            // Log final system state after stress test
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
-
-            logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
-            logger.Msg(1, string.Format("[MONITOR] Average time per operation: {0:F1}ms", (totalTime * 1000) / iterations));
-            logger.Msg(1, string.Format("[MONITOR] Success rate: {0:F1}%", (successCount * 100.0) / iterations));
-        }
-
-        public static IEnumerator PerformTransactionalSave()
-        {
-            logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
-            logger.Msg(2, "[TRANSACTION] Performing save operation...");
-            
-            // Log system state before transaction
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_START");
-
-            var saveStart = DateTime.Now;
-
-            var saveStart = DateTime.Now;
-            
-            // Perform the save operation - yield return outside try/catch for .NET 4.8.1 compatibility
-            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-            
-            try
+            if (startError != null)
             {
-                var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
-                
-                // Log system state after successful transaction
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
-
-                logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
-                logger.Msg(2, string.Format("[TRANSACTION] Performance: {0:F3} saves/second", 1000.0 / saveTime));
-            }
-            catch (Exception ex)
-            {
-                // Log system state after failed transaction
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_FAILED");
-
-                logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
-                logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
-            }
-        }
-
-        public static IEnumerator AdvancedSaveOperationProfiling()
-        {
-            logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
-
-            var profileStart = DateTime.Now;
-
-            var profileStart = DateTime.Now;
-            
-            // Initial system state capture
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_START");
-
-            // Phase 1: Pre-save diagnostics
-            logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
-            var phase1Start = DateTime.Now;
-
-            double phase1Time = 0;
-            double phase2Time = 0;
-            double phase3Time = 0;
-            Exception profileError = null;
-
-            try
-            {
-                logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
-                logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
-                logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
-                
-                // Enhanced system diagnostics
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE1");
-
-                phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
-                logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
-            }
-            catch (Exception ex)
-            {
-                profileError = ex;
-            }
-
-            // Phase 2: Save operation profiling - yield return outside try/catch for .NET 4.8.1 compatibility
-            logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
-            var phase2Start = DateTime.Now;
-            
-            // System state before save operation
-            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
-            
-            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-            
-            try
-            {
-                phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
-                logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
-                
-                // System state after save operation
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_AFTER_SAVE");
-
-                // Phase 3: Post-save diagnostics
-                logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
-                var phase3Start = DateTime.Now;
-
-                logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", GC.GetTotalMemory(false) / 1024));
-                logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
-                
-                // Final system state capture
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE3");
-
-                phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
-                logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
-
-                var totalTime = (DateTime.Now - profileStart).TotalMilliseconds;
-
-                // Comprehensive performance summary
-                logger.Msg(1, string.Format("[PROFILE] Advanced profiling complete. Total time: {0:F1}ms", totalTime));
-                logger.Msg(1, string.Format("[PROFILE] Breakdown: PreSave={0:F1}ms, Save={1:F1}ms, PostSave={2:F1}ms",
-                    phase1Time, phase2Time, phase3Time));
-                logger.Msg(1, string.Format("[PROFILE] Performance: {0:F3} saves/second", 1000.0 / phase2Time));
-                logger.Msg(1, string.Format("[PROFILE] Overhead ratio: {0:F1}% (diagnostics vs save time)",
-                    ((phase1Time + phase3Time) / phase2Time) * 100));
-                
-                // Final system state
-                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_COMPLETE");
-            }
-            catch (Exception ex)
-            {
-                // System state on error
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_ERROR");
-
-                if (profileError != null)
-                {
-                    logger.Err(string.Format("[PROFILE] Advanced profiling FAILED in Phase 1: {0}", profileError.Message));
-                }
-                logger.Err(string.Format("[PROFILE] Advanced profiling FAILED in Phase 2/3: {0}", ex.Message));
-            }
-
-            // Log phase 1 error if no other errors occurred
-            if (profileError != null)
-            {
-                logger.Err(string.Format("[PROFILE] Advanced profiling had Phase 1 error: {0}", profileError.Message));
+                logger.Err(string.Format("StartLoadCoroutine error: {0}\nStackTrace: {1}", startError.Message, startError.StackTrace));
             }
         }
 
         public override void OnApplicationQuit()
         {
+            isShuttingDown = true;
+
+            Exception quitError = null;
             try
             {
-                logger?.Msg(2, "[MAIN] Application shutting down - cleaning up resources");
-                
-                // Cleanup system monitoring resources
-                Core.AdvancedSystemPerformanceMonitor.Cleanup();
+                logger.Msg(2, "Application shutting down - cleaning up resources");
 
-                logger?.Msg(1, "[MAIN] Cleanup completed successfully");
+                if (mainUpdateCoroutine != null)
+                {
+                    MelonCoroutines.Stop(mainUpdateCoroutine);
+                    mainUpdateCoroutine = null;
+                    logger.Msg(2, "Update coroutine stopped");
+                }
+
+                // Try to save current state
+                if (savedMixerValues.Count > 0)
+                {
+                    Utils.MixerSaveManager.EmergencySave();
+                    logger.Msg(2, "Emergency save completed");
+                }
             }
             catch (Exception ex)
             {
-                logger?.Err(string.Format("[MAIN] Cleanup error: {0}", ex.Message));
-                // Don't throw here - we're shutting down anyway
+                quitError = ex;
             }
+
+            if (quitError != null)
+            {
+                logger.Err(string.Format("OnApplicationQuit error: {0}", quitError.Message));
+            }
+
+            base.OnApplicationQuit();
         }
     }
-
 }

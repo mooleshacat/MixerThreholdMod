@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MixerThreholdMod_1_0_0.Helpers
+namespace MixerThreholdMod_0_0_1.Helpers
 {
     public static class UtilityHelpers
     {
