@@ -4,8 +4,10 @@ In here I will paste up to 3 types of files.
 
 DO NOT delete this file, or the folder, we need to reuse it.
 
-No longer will you delete anything in this directory, human will manually confirm changes
+- No longer will you delete anything in this directory, human will manually confirm changes
 and remove files no longer necessary.
+
+- DO NOT reference these files contents in the code base (except comments)
 
 =================================================================================================================
 
