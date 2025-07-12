@@ -79,10 +79,6 @@ namespace MixerThreholdMod_0_0_1
                 Main.logger.Err("LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
                 Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
-            finally
-            {
-                isHandlingGetter = false;
-            }
         }
 
         private static IEnumerator SaveThresholdsCoroutine(string savePath)
