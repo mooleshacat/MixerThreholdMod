@@ -262,7 +262,7 @@ namespace MixerThreholdMod_1_0_0
 
                 // Register console commands for debugging
                 Core.Console.RegisterConsoleCommandViaReflection();
-                logger.Msg(2, "[MAIN] ✓ Console commands registered");
+                logger.Msg(3, "[MAIN] Console commands registered");
 
                 // Start the main update coroutine with runtime mixer scanning
                 var coroutineObj = MelonCoroutines.Start(UpdateCoroutine());
@@ -694,8 +694,11 @@ namespace MixerThreholdMod_1_0_0
 
             try
             {
-                Exception updateError = null;
-                try
+                // Clean up null/invalid mixers first
+                Core.TrackedMixers.RemoveAll(tm => tm?.ConfigInstance == null);
+
+                // Process queued instances
+                if (queuedInstances.Count > 0)
                 {
                     var toProcess = queuedInstances.ToList();
                     queuedInstances.Clear();
@@ -1030,10 +1033,8 @@ namespace MixerThreholdMod_1_0_0
             // Do all error-prone work BEFORE any yield returns
             try
             {
-                // Check if already tracked using coroutine approach
-                bool alreadyTracked = false;
-                yield return CheckIfAlreadyTracked(instance, (result) => alreadyTracked = result);
-
+                // Check if already tracked
+                bool alreadyTracked = Core.TrackedMixers.Any(tm => tm?.ConfigInstance == instance);
                 if (alreadyTracked)
                 {
                     logger.Warn(1, "Instance already tracked - skipping duplicate");
@@ -1052,12 +1053,12 @@ namespace MixerThreholdMod_1_0_0
                 newTrackedMixer = new TrackedMixer
                 {
                     ConfigInstance = instance,
-                    MixerInstanceID = MixerIDManager.GetMixerID(instance)
+                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
                 };
 
                 // Add to tracking collection
                 Core.TrackedMixers.Add(newTrackedMixer);
-                logger.Msg(1, string.Format("[MAIN] ✓ MIXER PROCESSED: Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
+                logger.Msg(2, string.Format("[MAIN] Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
             }
             catch (Exception ex)
             {
@@ -1291,21 +1292,7 @@ namespace MixerThreholdMod_1_0_0
         {
             try
             {
-                // Use timeout-safe approach for checking mixer existence
-                var task = Core.TrackedMixers.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
-                
-                // Use shorter timeout for existence check
-                bool completed = task.Wait(1000); // 1 second timeout
-                
-                if (completed && !task.IsFaulted)
-                {
-                    return task.Result;
-                }
-                else
-                {
-                    logger.Warn(1, string.Format("[MAIN] MixerExists: Timeout or error checking mixer {0}", mixerInstanceID));
-                    return false;
-                }
+                return Core.TrackedMixers.Any(tm => tm.MixerInstanceID == mixerInstanceID);
             }
             catch (Exception ex)
             {
@@ -1359,12 +1346,12 @@ namespace MixerThreholdMod_1_0_0
 <<<<<<< HEAD
                 if (sceneName == "Main")
                 {
-                    // Reset mixer state
-                    if (MixerIDManager.MixerInstanceMap != null)
+                    // Reset mixer state for new game session
+                    if (Core.MixerIDManager.MixerInstanceMap != null)
                     {
-                        MixerIDManager.MixerInstanceMap.Clear();
+                        Core.MixerIDManager.MixerInstanceMap.Clear();
                     }
-                    MixerIDManager.ResetStableIDCounter();
+                    Core.MixerIDManager.ResetStableIDCounter();
                     savedMixerValues.Clear();
 
                         // Clear previous mixer values
