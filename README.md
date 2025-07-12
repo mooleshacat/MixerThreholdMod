@@ -53,6 +53,32 @@ Trigger emergency save operation:
 mixer_emergency                 # Immediate save without cooldown checks
 ```
 
+#### **Mixer Management**
+
+##### `mixer_reset`
+Reset all mixer values and clear the tracked mixer data:
+```
+mixer_reset                      # Clear all mixer values and reset ID counter
+```
+
+##### `mixer_save`
+Force immediate save operation:
+```
+mixer_save                       # Trigger immediate save with cooldown respect
+```
+
+##### `mixer_path`
+Display current save path and mixer statistics:
+```
+mixer_path                       # Show save path and tracked mixer count
+```
+
+##### `mixer_emergency`
+Trigger emergency save operation:
+```
+mixer_emergency                  # Emergency save bypassing all cooldowns and checks
+```
+
 #### **Advanced Save Testing**
 
 ##### `saveprefstress <count> [delay] [bypass]`
@@ -119,6 +145,21 @@ err Critical save failure - investigating corruption
 err Mixer threshold validation failed
 ```
 
+#### **Help and Information**
+
+##### `help` or `?`
+Display complete command reference with usage examples:
+```
+help                             # Show all available commands with examples
+?                                # Alias for help command
+```
+
+**Command-Specific Help**: When you use a command without required parameters, detailed help is automatically displayed:
+```
+saveprefstress                   # Shows specific help for saveprefstress command
+msg                              # Shows specific help for msg command
+```
+
 ### Console Access
 
 **In-Game Console**: Open with `F4` (MelonLoader console) or use the game's console system
@@ -131,6 +172,7 @@ err Mixer threshold validation failed
 - **4 Mixer Management Commands** - Basic mixer operations and path info
 - **5 Advanced Save Testing Commands** - Stress testing and monitoring with dnSpy integration  
 - **3 Manual Logging Commands** - Direct logging for debugging and testing
+- **1 Help Command** - Complete command reference and specific command help
 
 ### Command Features
 
