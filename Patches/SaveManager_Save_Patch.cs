@@ -77,8 +77,7 @@ namespace MixerThreholdMod_0_0_1
 
         private static IEnumerator BackupSaveFolder(string _saveRoot)
         {
-<<<<<<< HEAD
-            Main.logger.Msg(3, $"BackupSaveFolder started for: {_saveRoot}");
+            Main.logger.Msg(3, string.Format("BackupSaveFolder started for: {0}", _saveRoot));
             yield return new WaitForSeconds(1.5f); // Ensure save completes
 
             // Move backup logic to a background task to avoid yield issues
