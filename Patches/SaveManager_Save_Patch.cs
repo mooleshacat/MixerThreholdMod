@@ -141,59 +141,9 @@ namespace MixerThreholdMod_0_0_1.Patches
                 Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
                 return path; // Return original on error
             }
+        }
     }
 }
 
-                var parentDir = Directory.GetParent(_saveRoot);
-                if (parentDir == null)
-                {
-                    Main.logger.Warn(1, $"Could not get parent directory of save root: {_saveRoot}");
-                    return BackupResult.CreateFailure($"Could not get parent directory of save root: {_saveRoot}");
-                }
 
-                var _backupRoot = Utils.NormalizePath(Path.Combine(parentDir.FullName, "MixerThreholdMod_backup")) + "\\";
-                _saveRoot = _saveRoot.TrimEnd('\\') + "\\";
-
-                Main.logger.Msg(2, $"BACKUP ROOT: {_backupRoot}");
-                Main.logger.Msg(2, $"SAVE ROOT: {_saveRoot}");
-
-                if (!Directory.Exists(_saveRoot))
-                {
-                    Main.logger.Warn(1, $"Save directory not found at {_saveRoot}");
-                    return BackupResult.CreateFailure($"Save directory not found at {_saveRoot}");
-                }
-
-                if (!Utils.EnsureDirectoryExists(_backupRoot, "backup directory creation"))
-                {
-                    return BackupResult.CreateFailure("Failed to create backup directory");
-                }
-
-                string _timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-                string _backupDirName = $"SaveGame_2_backup_{_timestamp}";
-                string _backupPath = Path.Combine(_backupRoot, _backupDirName);
-                string _saveRootPrefix = Path.GetFileName(_saveRoot.TrimEnd('\\'));
-
-                Main.logger.Msg(2, $"SAVE ROOT PREFIX: {_saveRootPrefix}");
-
-                try
-                {
-                    // Copy the SaveGame_2 folder to backup location
-                    CopyDirectory(_saveRoot, _backupPath);
-                    Main.logger.Msg(2, $"Saved backup to: {_backupPath}");
-                }
-                catch (Exception copyEx)
-                {
-                    Main.logger.Err($"Failed to copy directory during backup: {copyEx.Message}\n{copyEx.StackTrace}");
-                    return BackupResult.CreateFailure($"Failed to copy directory during backup: {copyEx.Message}");
-                }
-
-                return BackupResult.CreateSuccess(_backupRoot, _saveRootPrefix);
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
-                return path; // Return original on error
-            }
-        }
-    }
 }

@@ -7,24 +7,6 @@ namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
     /// Thread-safe file locking helper for .NET 4.8.1 compatibility
-    /// 
-    /// Thread Safety: This class is thread-safe and designed for concurrent use.
-    /// However, be aware of the following:
-    /// 
-    /// ⚠️ MAIN THREAD WARNING: 
-    /// - Synchronous methods (AcquireSharedLock, AcquireExclusiveLock) use Thread.Sleep
-    ///   and should NOT be called from the main thread as they can cause UI freezes.
-    /// - Use async methods (AcquireSharedLockAsync, AcquireExclusiveLockAsync) for main thread safety.
-    /// 
-    /// .NET 4.8.1 Compatibility: 
-    /// - Uses proper locking mechanisms and ConfigureAwait(false) in async methods
-    /// - Supports cancellation tokens for cooperative cancellation
-    /// 
-    /// File Locking Strategy:
-    /// - Creates temporary lock files to coordinate access
-    /// - Shared locks allow multiple concurrent readers
-    /// - Exclusive locks ensure single writer access
-    /// - Automatic cleanup of lock files on disposal
     /// </summary>
     public class FileLockHelper : IDisposable
     {
@@ -58,14 +40,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Attempts to acquire a shared (read) lock with timeout.
-        /// 
-        /// ⚠️ MAIN THREAD WARNING: This method uses Thread.Sleep and blocks the calling thread.
-        /// Do NOT call from main thread. Use AcquireSharedLockAsync() for main thread safety.
-        /// 
-        /// Thread Safety: Uses proper locking mechanisms but blocks calling thread during retries.
         /// </summary>
-        /// <param name="timeoutMs">Timeout in milliseconds</param>
-        /// <returns>True if lock acquired successfully, false on timeout or error</returns>
         public bool AcquireSharedLock(int timeoutMs = DefaultTimeoutMs)
         {
             try
@@ -108,13 +83,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         catch (IOException)
                         {
                             // File is locked, wait and retry
-                            // WARNING: Thread.Sleep blocks calling thread - consider using async version for main thread safety
                             Thread.Sleep(RetryDelayMs);
                         }
                         catch (UnauthorizedAccessException)
                         {
                             // Permission denied, wait and retry
-                            // WARNING: Thread.Sleep blocks calling thread - consider using async version for main thread safety
                             Thread.Sleep(RetryDelayMs);
                         }
                     }
@@ -140,14 +113,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Attempts to acquire an exclusive (write) lock with timeout.
-        /// 
-        /// ⚠️ MAIN THREAD WARNING: This method uses Thread.Sleep and blocks the calling thread.
-        /// Do NOT call from main thread. Use AcquireExclusiveLockAsync() for main thread safety.
-        /// 
-        /// Thread Safety: Uses proper locking mechanisms but blocks calling thread during retries.
         /// </summary>
-        /// <param name="timeoutMs">Timeout in milliseconds</param>
-        /// <returns>True if lock acquired successfully, false on timeout or error</returns>
         public bool AcquireExclusiveLock(int timeoutMs = DefaultTimeoutMs)
         {
             try
@@ -190,13 +156,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         catch (IOException)
                         {
                             // File is locked, wait and retry
-                            // WARNING: Thread.Sleep blocks calling thread - consider using async version for main thread safety
                             Thread.Sleep(RetryDelayMs);
                         }
                         catch (UnauthorizedAccessException)
                         {
                             // Permission denied, wait and retry
-                            // WARNING: Thread.Sleep blocks calling thread - consider using async version for main thread safety
                             Thread.Sleep(RetryDelayMs);
                         }
                     }
@@ -222,16 +186,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Asynchronously acquires a shared (read) lock with timeout.
-        /// 
-        /// Thread Safety: This method is fully async and safe to call from main thread.
-        /// Uses Task.Delay instead of Thread.Sleep to avoid blocking.
-        /// 
-        /// .NET 4.8.1 Compatibility: Uses ConfigureAwait(false) to prevent deadlocks.
-        /// Supports cancellation tokens for cooperative cancellation.
         /// </summary>
-        /// <param name="timeoutMs">Timeout in milliseconds</param>
-        /// <param name="cancellationToken">Cancellation token for cooperative cancellation</param>
-        /// <returns>Task returning true if lock acquired successfully, false on timeout/cancellation</returns>
         public async Task<bool> AcquireSharedLockAsync(int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
@@ -307,16 +262,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Asynchronously acquires an exclusive (write) lock with timeout.
-        /// 
-        /// Thread Safety: This method is fully async and safe to call from main thread.
-        /// Uses Task.Delay instead of Thread.Sleep to avoid blocking.
-        /// 
-        /// .NET 4.8.1 Compatibility: Uses ConfigureAwait(false) to prevent deadlocks.
-        /// Supports cancellation tokens for cooperative cancellation.
         /// </summary>
-        /// <param name="timeoutMs">Timeout in milliseconds</param>
-        /// <param name="cancellationToken">Cancellation token for cooperative cancellation</param>
-        /// <returns>Task returning true if lock acquired successfully, false on timeout/cancellation</returns>
         public async Task<bool> AcquireExclusiveLockAsync(int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
