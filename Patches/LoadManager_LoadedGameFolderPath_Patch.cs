@@ -111,6 +111,33 @@ namespace MixerThreholdMod_0_0_1.Patches
             }
             catch (Exception ex)
             {
+                Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
+                return path;
+            }
+        }
+    }
+}
+            }
+        }
+
+        /// <summary>
+        /// Simple path normalization for .NET 4.8.1 compatibility
+        /// </summary>
+        private static string NormalizePath(string path)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(path)) return string.Empty;
+                
+                string normalized = path.Replace('/', '\\').Trim();
+                if (normalized.EndsWith("\\") && normalized.Length > 1)
+                {
+                    normalized = normalized.TrimEnd('\\');
+                }
+                return normalized;
+            }
+            catch (Exception ex)
+            {
 <<<<<<< HEAD
                 Main.logger.Err(string.Format("SaveThresholdsCoroutine: Error: {0}\n{1}", ex.Message, ex.StackTrace));
 =======

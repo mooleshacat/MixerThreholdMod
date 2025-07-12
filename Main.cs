@@ -130,6 +130,10 @@ namespace MixerThreholdMod_1_0_0
             {
                 logger.Msg(1, "[MAIN] MixerThresholdMod initialization completed successfully");
             }
+            else
+            {
+                logger.Msg(1, "[MAIN] MixerThresholdMod initialization completed successfully");
+            }
             HarmonyInstance.Patch(
                 constructor,
                 prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
@@ -554,6 +558,42 @@ namespace MixerThreholdMod_1_0_0
                 {
                     File.Copy(emergencyFile, targetFile, overwrite: false);
                     logger.Msg(2, "[MAIN] Copied emergency save to current save location");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("[MAIN] CopyEmergencySaveIfExists error: {0}", ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Application quit handler with emergency save
+        /// </summary>
+        public override void OnApplicationQuit()
+        {
+            isShuttingDown = true;
+            logger.Msg(1, "[MAIN] Application shutting down - performing cleanup");
+
+            Exception quitError = null;
+            try
+            {
+                // Stop main coroutine
+                if (mainUpdateCoroutine != null)
+                {
+                    MelonCoroutines.Stop(mainUpdateCoroutine);
+                    mainUpdateCoroutine = null;
+                    logger.Msg(2, "[MAIN] Main update coroutine stopped");
+                }
+
+                // Emergency save if we have data
+                if (savedMixerValues.Count > 0)
+                {
+                    CrashResistantSaveManager.EmergencySave();
+                    logger.Msg(1, "[MAIN] Emergency save completed on quit");
+                }
+                else
+                {
+                    logger.Msg(2, "[MAIN] No mixer data to save on quit");
                 }
             }
             catch (Exception ex)
