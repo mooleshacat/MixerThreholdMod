@@ -123,7 +123,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 // Fallback for caught exception (can we rely on custom logging here? It may be broken!)
                 // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
                 try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Warn exception while logging warning: {0} Exception: {1}\nStack Trace: {2}", warningMessage ?? "null", ex.Message, ex.StackTrace)); }
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }
@@ -158,7 +157,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 // Fallback for caught exception (can we rely on custom logging here? It may be broken!)
                 // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
                 try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Err exception while logging error: {0} Exception: {1}\nStack Trace: {2}", errorMessage ?? "null", ex.Message, ex.StackTrace)); }
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }
