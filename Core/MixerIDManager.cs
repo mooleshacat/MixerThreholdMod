@@ -1,33 +1,48 @@
-﻿using MelonLoader;
 using ScheduleOne.Management;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0.Core
 {
+    /// <summary>
+    /// Thread-safe mixer ID management system for .NET 4.8.1 compatibility.
+    /// Provides stable, unique IDs for mixer configurations across save/load cycles.
+    /// 
+    /// ⚠️ THREAD SAFETY: This class is fully thread-safe using ConcurrentDictionary.
+    /// All operations are atomic and safe for multi-threaded access.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses ConcurrentDictionary for thread-safe operations
+    /// - Compatible exception handling patterns
+    /// - Proper null checks and defensive programming
+    /// 
+    /// Purpose:
+    /// - Assigns stable IDs to mixer configurations
+    /// - Persists across game sessions for save/load functionality
+    /// - Prevents ID conflicts and provides collision detection
+    /// </summary>
     public static class MixerIDManager
     {
-        private static int _nextStableID = 0;
-        private static readonly object _resetLock = new object();
+        private static int _nextStableID = 1;
+        private static readonly object _counterLock = new object();
 
+        // Thread-safe dictionary for .NET 4.8.1
         public static readonly ConcurrentDictionary<MixingStationConfiguration, int> MixerInstanceMap =
             new ConcurrentDictionary<MixingStationConfiguration, int>();
 
+        /// <summary>
+        /// Reset the stable ID counter to 1. Used when starting new game sessions.
+        /// ⚠️ THREAD SAFETY: This method is thread-safe using lock synchronization.
+        /// </summary>
         public static void ResetStableIDCounter()
         {
             try
             {
-                lock (_resetLock)
+                lock (_counterLock)
                 {
-                    _nextStableID = 0;
-                    MixerInstanceMap.Clear();
-                    MelonLogger.Msg("Stable ID counter reset and instance map cleared.");
+                    _nextStableID = 1;
                 }
+                Main.logger?.Msg(3, "MixerIDManager: Reset stable ID counter to 1");
             }
             catch (Exception ex)
             {
@@ -36,6 +51,10 @@ namespace MixerThreholdMod_0_0_1
             }
         }
 
+        /// <summary>
+        /// Get or assign a unique mixer ID for the given configuration instance.
+        /// ⚠️ THREAD SAFETY: This method is thread-safe and handles concurrent access.
+        /// </summary>
         public static int GetMixerID(MixingStationConfiguration instance)
         {
             try
@@ -44,7 +63,7 @@ namespace MixerThreholdMod_0_0_1
                 {
                     const string errorMsg = "Cannot assign ID to null MixingStationConfiguration";
                     Main.logger?.Err(errorMsg);
-                    throw new ArgumentNullException("instance", errorMsg); // .NET 4.8.1 compatible
+                    throw new ArgumentNullException("instance", errorMsg);
                 }
 
                 // Try to get existing ID first
@@ -55,10 +74,14 @@ namespace MixerThreholdMod_0_0_1
                     return existingId;
                 }
 
-                // Generate new ID thread-safely
-                int newId = Interlocked.Increment(ref _nextStableID);
+                // Generate new ID atomically
+                int newId;
+                lock (_counterLock)
+                {
+                    newId = _nextStableID++;
+                }
 
-                // Try to add to map - if another thread beat us, use their ID
+                // Attempt to add to map - returns actual ID (new or existing)
                 int actualId = MixerInstanceMap.GetOrAdd(instance, newId);
 
                 if (actualId == newId)
@@ -74,7 +97,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (ArgumentNullException)
             {
-                throw; // Re-throw argument null exceptions
+                throw;
             }
             catch (Exception ex)
             {
@@ -83,17 +106,16 @@ namespace MixerThreholdMod_0_0_1
             }
         }
 
+        /// <summary>
+        /// Try to get mixer ID without throwing exceptions.
+        /// ⚠️ THREAD SAFETY: This method is thread-safe and won't throw exceptions.
+        /// </summary>
         public static bool TryGetMixerID(MixingStationConfiguration instance, out int id)
         {
-            id = 0;
+            id = -1;
             try
             {
-                if (instance == null)
-                {
-                    Main.logger?.Warn(2, "TryGetMixerID: instance is null");
-                    return false;
-                }
-
+                if (instance == null) return false;
                 return MixerInstanceMap.TryGetValue(instance, out id);
             }
             catch (Exception ex)
@@ -103,13 +125,17 @@ namespace MixerThreholdMod_0_0_1
             }
         }
 
+        /// <summary>
+        /// Remove mixer ID mapping. Used for cleanup when mixers are destroyed.
+        /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.
+        /// </summary>
         public static bool RemoveMixerID(MixingStationConfiguration instance)
         {
             try
             {
                 if (instance == null)
                 {
-                    Main.logger?.Warn(2, "RemoveMixerID: instance is null");
+                    Main.logger?.Warn(1, "RemoveMixerID: Cannot remove null instance");
                     return false;
                 }
 
@@ -133,6 +159,10 @@ namespace MixerThreholdMod_0_0_1
             }
         }
 
+        /// <summary>
+        /// Get current count of tracked mixers.
+        /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.Count.
+        /// </summary>
         public static int GetMixerCount()
         {
             try

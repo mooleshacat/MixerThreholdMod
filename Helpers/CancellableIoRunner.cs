@@ -5,12 +5,36 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-public static class CancellableIoRunner
+namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
-    /// Runs a cancellable I/O operation on a background thread.
-    /// Optionally logs messages through the provided logging action.
+    /// Cancellable I/O operation runner for .NET 4.8.1 compatibility.
+    /// Provides safe execution of I/O operations with proper cancellation support.
+    /// 
+    /// ⚠️ THREAD SAFETY: This class is thread-safe and designed for background I/O operations.
+    /// All operations respect cancellation tokens and provide proper error handling.
+    /// 
+    /// ⚠️ MAIN THREAD WARNING: Operations run on background threads to prevent blocking
+    /// Unity's main thread. Use this for any potentially slow I/O operations.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses Task-based async patterns with proper ConfigureAwait
+    /// - Compatible cancellation token support
+    /// - Defensive programming with comprehensive error handling
+    /// - String.Format usage for logging compatibility
+    /// 
+    /// Purpose:
+    /// - Enables cancellable file I/O operations
+    /// - Prevents main thread blocking during I/O
+    /// - Provides timeout and cancellation mechanisms
+    /// - Integrates with the mod's logging system
     /// </summary>
+    public static class CancellableIoRunner
+    {
+        /// <summary>
+        /// Runs a cancellable I/O operation on a background thread.
+        /// Optionally logs messages through the provided logging action.
+        /// </summary>
     public static async Task<bool> Run(
         Func<CancellationToken, Task> ioOperation,
         CancellationToken ct,
@@ -58,14 +82,15 @@ public static class CancellableIoRunner
             }
             catch (Exception ex)
             {
-                logger?.Invoke(1, $"Error during cancellable I/O operation: {ex.Message}");
+                logger?.Invoke(1, string.Format("Error during cancellable I/O operation: {0}", ex.Message));
                 return false;
             }
         }
         catch (Exception ex)
         {
-            logger?.Invoke(1, $"CancellableIoRunner.Run: Critical error: {ex.Message}");
+            logger?.Invoke(1, string.Format("CancellableIoRunner.Run: Critical error: {0}", ex.Message));
             return false;
         }
     }
+}
 }

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>LavaGang.MelonLoader</id>
+    <version>0.7.1</version>
+    <authors>Lava Gang</authors>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <projectUrl>https://github.com/LavaGang/MelonLoader</projectUrl>
+    <description>The World's First Universal Mod Loader for Unity Games compatible with both Il2Cpp and Mono.</description>
+    <copyright>Copyright (c) 2022 Lava Gang</copyright>
+    <tags>modding unity</tags>
+    <repository type="git" url="https://github.com/LavaGang/MelonLoader" commit="0a690474c6c66ad458c05a6aa9199ad91b87fa4b" />
+    <dependencies>
+      <group targetFramework=".NETFramework3.5" />
+      <group targetFramework="net6.0" />
+    </dependencies>
+  </metadata>
+</package>
