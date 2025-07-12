@@ -93,11 +93,29 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <!-- Core Components -->
+    <Compile Include="Core\GameConsoleBridge.cs" />
+    <Compile Include="Core\GameLoggerBridge.cs" />
+    <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\MixerIDManager.cs" />
+    <Compile Include="Core\TrackedMixer.cs" />
+    <Compile Include="Core\Console.cs" />
+    <!-- Save System -->
+    <Compile Include="Save\CrashResistantSaveManager.cs" />
+    <!-- Threading -->
+    <Compile Include="Threading\ThreadSafeCollections.cs" />
+    <!-- Restored Critical Helpers -->
     <Compile Include="Helpers\CancellableIoRunner.cs" />
     <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
     <Compile Include="Helpers\FileLockerHelper.cs" />
     <Compile Include="Helpers\FileOperations.cs" />
+    <Compile Include="Helpers\MixerSaveManager.cs" />
+    <Compile Include="Helpers\Utils.cs" />
+    <!-- Patches -->
+    <Compile Include="Patches\SaveManager_Save_Patch.cs" />
     <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
+    <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
+    <!-- Main entry point -->
     <Compile Include="Main.cs" />
     <Compile Include="Helpers\Console.cs" />
     <Compile Include="GlobalSuppressions.cs" />

@@ -149,8 +149,20 @@ namespace MixerThreholdMod_1_0_0
         {
             Instance = this;
             base.OnInitializeMelon();
-            // Global unhandled exception handler
-            UnhandledExceptionEventHandler value = (sender, args) =>
+            
+            // Initialize exception handler here too ?
+
+            // Initialize game logging bridge for exception monitoring
+            Core.GameLoggerBridge.InitializeLoggingBridge();
+
+            // Critical: Add unhandled exception handler for crash prevention
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+            logger.Msg(1, "[MAIN] MixerThresholdMod initializing - focused on save crash prevention");
+            logger.Msg(1, string.Format("[MAIN] Debug levels - Msg: {0}, Warn: {1}", logger.CurrentMsgLogLevel, logger.CurrentWarnLogLevel));
+
+            Exception initError = null;
+            try
             {
                 Exception ex = args.ExceptionObject as Exception;
                 if (ex != null)
