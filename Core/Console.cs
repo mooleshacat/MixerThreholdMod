@@ -154,14 +154,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         case "savemonitor":
                             HandleComprehensiveSaveMonitoringCommand(parts);
                             break;
-                        case "transactionalsave":
-                        case "mixer_transactional":
-                            HandleTransactionalSaveCommand();
-                            break;
-                        case "profile":
-                        case "mixer_profile":
-                            HandleProfileCommand();
-                            break;
                         // REMOVED: case "mixer_log": and case "log":
                         case "msg":
                             HandleSingleLogCommand("msg", parts, lowerCommand);
@@ -205,8 +197,6 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(1, "[CONSOLE]   saveprefstress <count> [delay] [bypass] - Stress test mixer prefs saves");
                     Main.logger?.Msg(1, "[CONSOLE]   savegamestress <count> [delay] [bypass] - Stress test game saves");
                     Main.logger?.Msg(1, "[CONSOLE]   savemonitor <count> [delay] [bypass] - Comprehensive save monitoring (dnSpy)");
-                    Main.logger?.Msg(1, "[CONSOLE]   transactionalsave - Perform atomic transactional save");
-                    Main.logger?.Msg(1, "[CONSOLE]   profile - Advanced save operation profiling");
                     Main.logger?.Msg(1, "[CONSOLE]     Examples: saveprefstress 10 0.1 true");
                     Main.logger?.Msg(1, "[CONSOLE]               savegamestress 5 false 2.0");
                     Main.logger?.Msg(1, "[CONSOLE]               savemonitor 3 1.0 - Multi-method validation");
@@ -561,75 +551,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (monitorError != null)
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] HandleComprehensiveSaveMonitoringCommand error: {0}\n{1}", monitorError.Message, monitorError.StackTrace));
-                }
-            }
-
-            /// <summary>
-            /// Handle transactional save command.
-            /// ⚠️ THREAD SAFETY: Starts atomic save operation safely.
-            /// </summary>
-            private void HandleTransactionalSaveCommand()
-            {
-                Exception transactionError = null;
-                try
-                {
-                    // Validate current save path
-                    if (string.IsNullOrEmpty(Main.CurrentSavePath))
-                    {
-                        Main.logger?.Err("[CONSOLE] No current save path available. Load a game first.");
-                        return;
-                    }
-
-                    if (Main.savedMixerValues.Count == 0)
-                    {
-                        Main.logger?.Warn(1, "[CONSOLE] No mixer data to save. Try adjusting some mixer thresholds first.");
-                        return;
-                    }
-
-                    // Start transactional save
-                    Main.logger?.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
-                    MelonCoroutines.Start(Main.PerformTransactionalSave());
-                }
-                catch (Exception ex)
-                {
-                    transactionError = ex;
-                }
-
-                if (transactionError != null)
-                {
-                    Main.logger?.Err(string.Format("[CONSOLE] HandleTransactionalSaveCommand error: {0}\n{1}", transactionError.Message, transactionError.StackTrace));
-                }
-            }
-
-            /// <summary>
-            /// Handle advanced profiling command.
-            /// ⚠️ THREAD SAFETY: Starts performance profiling operation safely.
-            /// </summary>
-            private void HandleProfileCommand()
-            {
-                Exception profileError = null;
-                try
-                {
-                    // Validate current save path
-                    if (string.IsNullOrEmpty(Main.CurrentSavePath))
-                    {
-                        Main.logger?.Err("[CONSOLE] No current save path available. Load a game first.");
-                        return;
-                    }
-
-                    // Start advanced profiling
-                    Main.logger?.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
-                    Main.logger?.Msg(1, "[CONSOLE] This will perform a complete save cycle with detailed performance monitoring");
-                    MelonCoroutines.Start(Main.AdvancedSaveOperationProfiling());
-                }
-                catch (Exception ex)
-                {
-                    profileError = ex;
-                }
-
-                if (profileError != null)
-                {
-                    Main.logger?.Err(string.Format("[CONSOLE] HandleProfileCommand error: {0}\n{1}", profileError.Message, profileError.StackTrace));
                 }
             }
 
