@@ -25,9 +25,9 @@ namespace MixerThreholdMod_1_0_0.Core
     {
         private static int _nextStableID = 1;
         private static readonly object _counterLock = new object();
-        
+
         // Thread-safe dictionary for .NET 4.8.1
-        public static readonly ConcurrentDictionary<MixingStationConfiguration, int> MixerInstanceMap = 
+        public static readonly ConcurrentDictionary<MixingStationConfiguration, int> MixerInstanceMap =
             new ConcurrentDictionary<MixingStationConfiguration, int>();
 
         /// <summary>
@@ -63,10 +63,10 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     const string errorMsg = "Cannot assign ID to null MixingStationConfiguration";
                     Main.logger?.Err(errorMsg);
-                    throw new ArgumentNullException("instance", errorMsg); // .NET 4.8.1 compatible
+                    throw new ArgumentNullException("instance", errorMsg);
                 }
 
-                // Try to get existing ID first - .NET 4.8.1 compatible
+                // Try to get existing ID first
                 int existingId;
                 if (MixerInstanceMap.TryGetValue(instance, out existingId))
                 {
@@ -97,7 +97,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (ArgumentNullException)
             {
-                throw; // Re-throw argument exceptions
+                throw;
             }
             catch (Exception ex)
             {
@@ -139,7 +139,6 @@ namespace MixerThreholdMod_1_0_0.Core
                     return false;
                 }
 
-                // .NET 4.8.1 compatible - use explicit out parameter
                 int removedId;
                 bool removed = MixerInstanceMap.TryRemove(instance, out removedId);
                 if (removed)

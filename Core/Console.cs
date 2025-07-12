@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.U2D;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -162,7 +161,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         case "mixer_profile":
                             HandleProfileCommand();
                             break;
-                        // REMOVED: case "mixer_log": and case "log":
                         case "msg":
                             HandleSingleLogCommand("msg", parts, lowerCommand);
                             break;
@@ -362,12 +360,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Handle stress save game command with parameters
-            /// ⚠️ THREAD SAFETY: Validates parameters and starts game save stress test safely
-            /// Supports flexible parameter ordering: <count> [delay] [bypassCooldown]
-            /// </summary>
-            /// <param name="parts">Command parts: [0]=command, [1-3]=flexible parameters</param>
             private void HandleStressSaveGameCommand(string[] parts)
             {
                 Exception stressError = null;
@@ -387,7 +379,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-                    // Parse iteration count (always first parameter)
                     int iterations;
                     if (!int.TryParse(parts[1], out iterations) || iterations <= 0)
                     {
@@ -395,23 +386,18 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-                    // Parse remaining parameters flexibly
                     float delaySeconds = 0f;
-                    bool bypassCooldown = true; // Default to true
+                    bool bypassCooldown = true;
 
-                    // Analyze remaining parameters (parts[2] and parts[3] if they exist)
                     for (int i = 2; i < parts.Length && i < 4; i++)
                     {
                         var param = parts[i].Trim();
-
-                        // Try to parse as boolean first
                         bool boolValue;
                         if (bool.TryParse(param, out boolValue))
                         {
                             bypassCooldown = boolValue;
                             Main.logger?.Msg(3, string.Format("[CONSOLE] Parsed parameter '{0}' as bypass cooldown: {1}", param, boolValue));
                         }
-                        // Try to parse as float
                         else
                         {
                             float floatValue;
@@ -428,7 +414,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         }
                     }
 
-                    // Game save validation warnings (more conservative)
                     if (iterations > 20)
                     {
                         Main.logger?.Warn(1, string.Format("[CONSOLE] Warning: {0} game saves is excessive. Consider using fewer iterations.", iterations));
@@ -439,12 +424,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[CONSOLE] Warning: Game saves should have adequate delay (3+ seconds recommended) to prevent corruption.");
                     }
 
-                    if (!bypassCooldown)
-                    {
-                        Main.logger?.Warn(1, "[CONSOLE] Warning: Game save cooldown behavior depends on game's internal cooldown system (not controlled by this mod).");
-                    }
-
-                    // Start the game save stress test using direct SaveManager access
                     Main.logger?.Msg(1, string.Format("[CONSOLE] Starting game save stress test: {0} iterations, {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
                     MelonCoroutines.Start(Save.CrashResistantSaveManager.StressGameSaveTest(iterations, delaySeconds, bypassCooldown));
                 }
@@ -459,12 +438,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Handle comprehensive save monitoring command with dnSpy multi-method validation.
-            /// ⚠️ THREAD SAFETY: Validates parameters and starts comprehensive monitoring safely.
-            /// Supports flexible parameter ordering: <count> [delay] [bypassCooldown]
-            /// </summary>
-            /// <param name="parts">Command parts: [0]=command, [1-3]=flexible parameters</param>
             private void HandleComprehensiveSaveMonitoringCommand(string[] parts)
             {
                 Exception monitorError = null;
@@ -479,16 +452,9 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Msg(1, "[CONSOLE]   savemonitor 3 2.0              (3 saves, 2s delay, bypass=true)");
                         Main.logger?.Msg(1, "[CONSOLE]   savemonitor 10 false           (10 saves, no delay, bypass=false)");
                         Main.logger?.Msg(1, "[CONSOLE]   savemonitor 5 1.5 false        (5 saves, 1.5s delay, bypass=false)");
-                        Main.logger?.Msg(1, "[CONSOLE] ");
-                        Main.logger?.Msg(1, "[CONSOLE] Features (dnSpy integration):");
-                        Main.logger?.Msg(1, "[CONSOLE]   • Multi-method save validation (timestamp, size, backup, permissions)");
-                        Main.logger?.Msg(1, "[CONSOLE]   • Enhanced permission testing (4-layer validation)");
-                        Main.logger?.Msg(1, "[CONSOLE]   • Comprehensive failure categorization");
-                        Main.logger?.Msg(1, "[CONSOLE]   • File system baseline monitoring");
                         return;
                     }
 
-                    // Parse iteration count (always first parameter)
                     int iterations;
                     if (!int.TryParse(parts[1], out iterations) || iterations <= 0)
                     {
@@ -496,16 +462,13 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-                    // Parse remaining parameters flexibly
                     float delaySeconds = 0f;
-                    bool bypassCooldown = true; // Default to true
+                    bool bypassCooldown = true;
 
-                    // Process parameters after count in any order
                     for (int i = 2; i < parts.Length; i++)
                     {
                         string param = parts[i];
-                        
-                        // Check if it's a boolean parameter
+
                         if (param.Equals("true", StringComparison.OrdinalIgnoreCase))
                         {
                             bypassCooldown = true;
@@ -514,7 +477,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         {
                             bypassCooldown = false;
                         }
-                        // Check if it's a numeric parameter (delay)
                         else
                         {
                             float value;
@@ -536,20 +498,12 @@ namespace MixerThreholdMod_1_0_0.Core
                         }
                     }
 
-                    // Validate current save path
                     if (string.IsNullOrEmpty(Main.CurrentSavePath))
                     {
                         Main.logger?.Err("[CONSOLE] No current save path available. Load a game first.");
                         return;
                     }
 
-                    // Warn about cooldown behavior
-                    if (!bypassCooldown)
-                    {
-                        Main.logger?.Warn(1, "[CONSOLE] Warning: Comprehensive monitoring respects game save cooldown behavior.");
-                    }
-
-                    // Start the comprehensive save monitoring test
                     Main.logger?.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring (dnSpy): {0} iterations, {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
                     MelonCoroutines.Start(Main.StressGameSaveTestWithComprehensiveMonitoring(iterations, delaySeconds, bypassCooldown));
                 }
@@ -564,16 +518,11 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Handle transactional save command.
-            /// ⚠️ THREAD SAFETY: Starts atomic save operation safely.
-            /// </summary>
             private void HandleTransactionalSaveCommand()
             {
                 Exception transactionError = null;
                 try
                 {
-                    // Validate current save path
                     if (string.IsNullOrEmpty(Main.CurrentSavePath))
                     {
                         Main.logger?.Err("[CONSOLE] No current save path available. Load a game first.");
@@ -586,7 +535,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-                    // Start transactional save
                     Main.logger?.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
                     MelonCoroutines.Start(Main.PerformTransactionalSave());
                 }
@@ -601,23 +549,17 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Handle advanced profiling command.
-            /// ⚠️ THREAD SAFETY: Starts performance profiling operation safely.
-            /// </summary>
             private void HandleProfileCommand()
             {
                 Exception profileError = null;
                 try
                 {
-                    // Validate current save path
                     if (string.IsNullOrEmpty(Main.CurrentSavePath))
                     {
                         Main.logger?.Err("[CONSOLE] No current save path available. Load a game first.");
                         return;
                     }
 
-                    // Start advanced profiling
                     Main.logger?.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
                     Main.logger?.Msg(1, "[CONSOLE] This will perform a complete save cycle with detailed performance monitoring");
                     MelonCoroutines.Start(Main.AdvancedSaveOperationProfiling());
@@ -633,12 +575,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Handle stress save mixer preferences command with parameters
-            /// ⚠️ THREAD SAFETY: Validates parameters and starts coroutine safely
-            /// Supports flexible parameter ordering: <count> [delay] [bypassCooldown]
-            /// </summary>
-            /// <param name="parts">Command parts: [0]=command, [1-3]=flexible parameters</param>
             private void HandleStressSavePrefCommand(string[] parts)
             {
                 Exception stressError = null;
@@ -657,7 +593,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-                    // Parse iteration count (always first parameter)
                     int iterations;
                     if (!int.TryParse(parts[1], out iterations) || iterations <= 0)
                     {
@@ -665,23 +600,18 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-                    // Parse remaining parameters flexibly
                     float delaySeconds = 0f;
-                    bool bypassCooldown = true; // Default to true
+                    bool bypassCooldown = true;
 
-                    // Analyze remaining parameters (parts[2] and parts[3] if they exist)
                     for (int i = 2; i < parts.Length && i < 4; i++)
                     {
                         var param = parts[i].Trim();
-
-                        // Try to parse as boolean first
                         bool boolValue;
                         if (bool.TryParse(param, out boolValue))
                         {
                             bypassCooldown = boolValue;
                             Main.logger?.Msg(3, string.Format("[CONSOLE] Parsed parameter '{0}' as bypass cooldown: {1}", param, boolValue));
                         }
-                        // Try to parse as float
                         else
                         {
                             float floatValue;
@@ -698,7 +628,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         }
                     }
 
-                    // Validation warnings
                     if (iterations > 100)
                     {
                         Main.logger?.Warn(1, string.Format("[CONSOLE] Warning: {0} iterations is a large stress test. This may take significant time.", iterations));
@@ -714,7 +643,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[CONSOLE] Warning: With cooldown enabled and low delay, some saves may be skipped due to 2-second cooldown.");
                     }
 
-                    // Start the mixer preferences stress test
                     Main.logger?.Msg(1, string.Format("[CONSOLE] Starting mixer preferences stress test: {0} iterations, {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
                     MelonCoroutines.Start(Save.CrashResistantSaveManager.StressSaveTest(iterations, delaySeconds, bypassCooldown));
                 }
@@ -729,9 +657,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Reset all mixer values
-            /// </summary>
             private void ResetMixerValues()
             {
                 Exception resetError = null;
@@ -743,11 +668,9 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Msg(1, "[CONSOLE] Mixer values cleared");
                     }
 
-                    // Reset ID manager
                     MixerIDManager.ResetStableIDCounter();
                     Main.logger?.Msg(1, "[CONSOLE] Mixer ID counter reset");
 
-                    // Force emergency save of empty state
                     Save.CrashResistantSaveManager.EmergencySave();
                     Main.logger?.Msg(1, "[CONSOLE] Empty state saved");
                 }
@@ -762,9 +685,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Force an immediate save
-            /// </summary>
             private void ForceSave()
             {
                 Exception saveError = null;
@@ -784,9 +704,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Print current save path
-            /// </summary>
             private void PrintSavePath()
             {
                 Exception pathError = null;
@@ -809,9 +726,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-            /// <summary>
-            /// Trigger emergency save
-            /// </summary>
             private void EmergencySave()
             {
                 Exception emergencyError = null;
