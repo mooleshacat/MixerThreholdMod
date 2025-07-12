@@ -68,6 +68,11 @@ namespace MixerThreholdMod_1_0_0
         public override void OnInitializeMelon()
         {
             base.OnInitializeMelon();
+            
+            // Initialize exception handler here too ?
+
+            // Initialize game logging bridge for exception monitoring
+            Core.GameLoggerBridge.InitializeLoggingBridge();
 
             // Critical: Add unhandled exception handler for crash prevention
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;

@@ -808,5 +808,594 @@ namespace MixerThreholdMod_1_0_0.Save
                     diagError.Message, diagError.StackTrace));
             }
         }
-    }
-}
+
+        /// <summary>
+        /// Stress test mixer preferences save operations for crash prevention validation
+        /// ⚠️ CRASH PREVENTION: This method can optionally bypass cooldowns for testing mixer pref saves
+        /// Thread-safe operation with comprehensive error tracking and recovery
+        /// </summary>
+        /// <param name="iterations">Number of mixer preferences save operations to perform</param>
+        /// <param name="delaySeconds">Delay between operations in seconds (supports decimals for milliseconds)</param>
+        /// <param name="bypassCooldown">Whether to bypass the 2-second save cooldown (default: true)</param>
+        public static IEnumerator StressSaveTest(int iterations, float delaySeconds = 0f, bool bypassCooldown = true)
+        {
+            if (iterations <= 0)
+            {
+                Main.logger.Warn(1, "[SAVE] StressSaveTest: Invalid iteration count, must be > 0");
+                yield break;
+            }
+
+            if (delaySeconds < 0f)
+            {
+                Main.logger.Warn(1, "[SAVE] StressSaveTest: Invalid delay, using 0 seconds");
+                delaySeconds = 0f;
+            }
+
+            Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFERENCES StressSaveTest: Starting stress test - {0} iterations with {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
+
+            // Track stress test statistics
+            int successCount = 0;
+            int failureCount = 0;
+            int skippedCount = 0;
+            float totalTime = 0f;
+            var startTime = Time.time;
+
+            // Store original cooldown for restoration
+            var originalLastSaveTime = lastSaveTime;
+
+            try
+            {
+                for (int i = 1; i <= iterations; i++)
+                {
+                    var iterationStartTime = Time.time;
+                    bool iterationSkipped = false;
+
+                    // Handle setup and checks WITHOUT try-catch to avoid yield return issues
+                    Main.logger.Msg(2, string.Format("[SAVE] MIXER PREFS StressSaveTest: Iteration {0}/{1}", i, iterations));
+
+                    // Conditionally bypass cooldown for stress testing
+                    if (bypassCooldown)
+                    {
+                        lock (saveLock)
+                        {
+                            lastSaveTime = DateTime.MinValue;
+                        }
+                        Main.logger.Msg(3, string.Format("[SAVE] StressSaveTest: Bypassed cooldown for iteration {0}", i));
+                    }
+                    else
+                    {
+                        // Check if we need to skip due to cooldown
+                        if (DateTime.Now - lastSaveTime < SAVE_COOLDOWN)
+                        {
+                            Main.logger.Msg(3, string.Format("[SAVE] StressSaveTest: Iteration {0} skipped due to cooldown", i));
+                            iterationSkipped = true;
+                            skippedCount++;
+                        }
+                    }
+
+                    // Perform save operation OUTSIDE try-catch to avoid yield return restrictions
+                    if (!iterationSkipped)
+                    {
+                        Exception iterationError = null;
+
+                        // Execute the save operation OUTSIDE try-catch
+                        yield return PerformStressSaveIteration(i);
+
+                        // Handle results with try-catch AFTER yield return
+                        try
+                        {
+                            successCount++;
+
+                            var iterationTime = Time.time - iterationStartTime;
+                            Main.logger.Msg(3, string.Format("[SAVE] MIXER PREFS StressSaveTest: Iteration {0} completed in {1:F3}s", i, iterationTime));
+                        }
+                        catch (Exception ex)
+                        {
+                            iterationError = ex;
+                            failureCount++;
+                        }
+
+                        if (iterationError != null)
+                        {
+                            Main.logger.Err(string.Format("[SAVE] MIXER PREFS StressSaveTest: Iteration {0} FAILED: {1}", i, iterationError.Message));
+                        }
+                    }
+
+                    // Progress reporting every 10 iterations or on last iteration
+                    if (i % 10 == 0 || i == iterations)
+                    {
+                        float currentTime = Time.time - startTime;
+                        float avgTimePerSave = currentTime / i;
+                        Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Progress {0}/{1} - Success: {2}, Failed: {3}, Skipped: {4}, Avg: {5:F3}s/iteration",
+                            i, iterations, successCount, failureCount, skippedCount, avgTimePerSave));
+                    }
+
+                    // Apply delay between iterations if specified - OUTSIDE try-catch
+                    if (delaySeconds > 0f && i < iterations)
+                    {
+                        yield return new WaitForSeconds(delaySeconds);
+                    }
+
+                    // Yield every iteration to prevent frame drops - OUTSIDE try-catch
+                    yield return null;
+                }
+
+                totalTime = Time.time - startTime;
+
+                // Final statistics
+                Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ===== MIXER PREFERENCES STRESS TEST COMPLETED =====");
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Total iterations: {0}", iterations));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Successful saves: {0}", successCount));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Failed saves: {0}", failureCount));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Skipped saves (cooldown): {0}", skippedCount));
+
+                if ((iterations - skippedCount) > 0)
+                {
+                    Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Success rate: {0:F1}%", (successCount / (float)(iterations - skippedCount)) * 100f));
+                }
+
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Total time: {0:F3}s", totalTime));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Average time per iteration: {0:F3}s", totalTime / iterations));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Bypass cooldown: {0}", bypassCooldown));
+
+                if (delaySeconds > 0f)
+                {
+                    float actualSaveTime = totalTime - (delaySeconds * (iterations - 1));
+                    Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Actual save time (excluding delays): {0:F3}s", actualSaveTime));
+                    Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Average save time (excluding delays): {0:F3}s", actualSaveTime / iterations));
+                }
+
+                Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ==========================================");
+
+                // Performance warnings
+                if (failureCount > 0)
+                {
+                    Main.logger.Warn(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: ⚠️ {0} save operations failed - check logs for details", failureCount));
+                }
+
+                if (skippedCount > 0 && !bypassCooldown)
+                {
+                    Main.logger.Warn(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: ⚠️ {0} saves skipped due to cooldown - consider enabling bypass or increasing delay", skippedCount));
+                }
+
+                if (totalTime / iterations > 1.0f)
+                {
+                    Main.logger.Warn(1, "[SAVE] MIXER PREFS StressSaveTest: ⚠️ Average time per iteration > 1 second - performance issue detected");
+                }
+
+                if (successCount == iterations)
+                {
+                    Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ✅ All mixer preferences save operations completed successfully!");
+                }
+                else if (successCount + skippedCount == iterations)
+                {
+                    Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ✅ All attempted mixer preferences save operations completed successfully!");
+                }
+            }
+            finally
+            {
+                // Restore original cooldown state
+                lock (saveLock)
+                {
+                    lastSaveTime = originalLastSaveTime;
+                    isSaveInProgress = false; // Ensure save lock is released
+                }
+
+                Main.logger.Msg(2, "[SAVE] MIXER PREFS StressSaveTest: Stress test cleanup completed");
+            }
+        }
+
+        /// <summary>
+        /// Helper method to perform a single stress save iteration
+        /// Separated to avoid yield return in try-catch issues
+        /// </summary>
+        /// <param name="iterationNumber">Current iteration number for logging</param>
+        private static IEnumerator PerformStressSaveIteration(int iterationNumber)
+        {
+            Main.logger.Msg(3, string.Format("[SAVE] PerformStressSaveIteration: Starting iteration {0}", iterationNumber));
+
+            // Perform the mixer preferences save operation
+            yield return TriggerSaveWithCooldown();
+
+            Main.logger.Msg(3, string.Format("[SAVE] PerformStressSaveIteration: Completed iteration {0}", iterationNumber));
+        }
+
+        /// <summary>
+        /// Stress test game save operations by calling SaveManager directly
+        /// ⚠️ CRASH PREVENTION: This method calls the game's save system directly with comprehensive monitoring
+        /// Thread-safe operation with comprehensive error tracking and recovery
+        /// </summary>
+        /// <param name="iterations">Number of game save operations to perform</param>
+        /// <param name="delaySeconds">Delay between operations in seconds (supports decimals for milliseconds)</param>
+        /// <param name="bypassCooldown">Whether to bypass any game cooldowns (note: this may not affect game's internal cooldown)</param>
+        public static IEnumerator StressGameSaveTest(int iterations, float delaySeconds = 0f, bool bypassCooldown = true)
+        {
+            if (iterations <= 0)
+            {
+                Main.logger.Warn(1, "[SAVE] StressGameSaveTest: Invalid iteration count, must be > 0");
+                yield break;
+            }
+
+            if (delaySeconds < 0f)
+            {
+                Main.logger.Warn(1, "[SAVE] StressGameSaveTest: Invalid delay, using 0 seconds");
+                delaySeconds = 0f;
+            }
+
+            Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Starting stress test - {0} iterations with {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
+
+            // Track stress test statistics
+            int successCount = 0;
+            int failureCount = 0;
+            float totalTime = 0f;
+            var startTime = Time.time;
+
+            try
+            {
+                for (int i = 1; i <= iterations; i++)
+                {
+                    var iterationStartTime = Time.time;
+                    Exception saveError = null;
+
+                    Main.logger.Msg(2, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Iteration {0}/{1}", i, iterations));
+
+                    // Call game's save system using reflection to avoid namespace issues
+                    try
+                    {
+                        // Find SaveManager using reflection
+                        var saveManagerType = System.Type.GetType("ScheduleOne.Management.SaveManager, Assembly-CSharp");
+                        if (saveManagerType != null)
+                        {
+                            // Find Singleton<SaveManager>.Instance using reflection
+                            var singletonType = saveManagerType.Assembly.GetTypes()
+                                .FirstOrDefault(t => t.Name == "Singleton`1");
+
+                            if (singletonType != null)
+                            {
+                                var genericSingletonType = singletonType.MakeGenericType(saveManagerType);
+                                var instanceProperty = genericSingletonType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+
+                                if (instanceProperty != null)
+                                {
+                                    var saveManagerInstance = instanceProperty.GetValue(null, null);
+                                    if (saveManagerInstance != null)
+                                    {
+                                        var saveMethod = saveManagerType.GetMethod("Save", BindingFlags.Public | BindingFlags.Instance);
+                                        if (saveMethod != null)
+                                        {
+                                            saveMethod.Invoke(saveManagerInstance, null);
+                                            successCount++;
+
+                                            var iterationTime = Time.time - iterationStartTime;
+                                            Main.logger.Msg(3, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Iteration {0} completed in {1:F3}s", i, iterationTime));
+                                        }
+                                        else
+                                        {
+                                            Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: Save method not found on SaveManager for iteration {0}", i));
+                                            failureCount++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: SaveManager instance is null for iteration {0}", i));
+                                        failureCount++;
+                                    }
+                                }
+                                else
+                                {
+                                    Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: Instance property not found on Singleton for iteration {0}", i));
+                                    failureCount++;
+                                }
+                            }
+                            else
+                            {
+                                Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: Singleton type not found for iteration {0}", i));
+                                failureCount++;
+                            }
+                        }
+                        else
+                        {
+                            Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: SaveManager type not found for iteration {0}", i));
+                            failureCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        saveError = ex;
+                        failureCount++;
+                    }
+
+                    if (saveError != null)
+                    {
+                        Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: Iteration {0} FAILED: {1}\nStackTrace: {2}",
+                            i, saveError.Message, saveError.StackTrace));
+                    }
+
+                    // Progress reporting every 5 iterations or on last iteration (more frequent for game saves)
+                    if (i % 5 == 0 || i == iterations)
+                    {
+                        float currentTime = Time.time - startTime;
+                        float avgTimePerSave = currentTime / i;
+                        Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Progress {0}/{1} - Success: {2}, Failed: {3}, Avg: {4:F3}s/iteration",
+                            i, iterations, successCount, failureCount, avgTimePerSave));
+                    }
+
+                    // Apply delay between iterations if specified
+                    if (delaySeconds > 0f && i < iterations)
+                    {
+                        yield return new WaitForSeconds(delaySeconds);
+                    }
+
+                    // Yield every iteration to prevent frame drops
+                    yield return null;
+                }
+
+                totalTime = Time.time - startTime;
+
+                // Final statistics
+                Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ===== GAME SAVE STRESS TEST COMPLETED =====");
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Total iterations: {0}", iterations));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Successful saves: {0}", successCount));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Failed saves: {0}", failureCount));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Success rate: {0:F1}%", (successCount / (float)iterations) * 100f));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Total time: {0:F3}s", totalTime));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Average time per iteration: {0:F3}s", totalTime / iterations));
+
+                if (delaySeconds > 0f)
+                {
+                    float actualSaveTime = totalTime - (delaySeconds * (iterations - 1));
+                    Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Actual save time (excluding delays): {0:F3}s", actualSaveTime));
+                    Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Average save time (excluding delays): {0:F3}s", actualSaveTime / iterations));
+                }
+
+                Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ==========================================");
+
+                // Performance warnings
+                if (failureCount > 0)
+                {
+                    Main.logger.Warn(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: ⚠️ {0} save operations failed - check logs for details", failureCount));
+                }
+
+                if (successCount == iterations)
+                {
+                    Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ✅ All game save operations completed successfully!");
+                }
+            }
+            finally
+            {
+                Main.logger.Msg(2, "[SAVE] GAME SAVE StressGameSaveTest: Stress test cleanup completed");
+            }
+        }
+
+        /// <summary>
+        /// Enhanced save monitoring using game's write permission testing
+        /// ⚠️ CRASH PREVENTION: Proactive validation prevents save failures
+        /// ⚠️ THREAD SAFETY: Thread-safe operation with comprehensive error detection
+        /// ⚠️ MAIN THREAD WARNING: Monitoring operations are non-blocking
+        /// 
+        /// .NET 4.8.1 Compatibility:
+        /// - Uses compatible file I/O patterns
+        /// - Proper exception handling for crash prevention
+        /// - Compatible with Unity's coroutine system
+        /// 
+        /// Features:
+        /// - Replicates game's HasWritePermissionOnDir logic
+        /// - Proactive corruption detection
+        /// - Emergency save triggering
+        /// - Performance monitoring
+        /// </summary>
+        public static IEnumerator MonitorSaveHealth()
+        {
+            if (string.IsNullOrEmpty(Main.CurrentSavePath))
+            {
+                yield break;
+            }
+
+            Exception monitorError = null;
+            bool hasWriteAccess = false;
+            bool shouldAttemptRecovery = false;
+
+            // FIXED: Move all yield returns OUTSIDE try-catch blocks
+            try
+            {
+                Main.logger.Msg(3, "[SAVE] MonitorSaveHealth: Starting health check");
+
+                // Use game's own write permission testing logic from dnSpy
+                hasWriteAccess = TestWritePermission(Main.CurrentSavePath);
+
+                if (!hasWriteAccess)
+                {
+                    Main.logger.Err("[SAVE] CRITICAL: Write permission lost on save directory");
+                    Main.logger.Err(string.Format("[SAVE] Path: {0}", Main.CurrentSavePath));
+
+                    // Trigger emergency save to alternate location
+                    EmergencySave();
+                }
+
+                // Monitor save file integrity
+                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+                if (File.Exists(saveFile))
+                {
+                    var fileInfo = new FileInfo(saveFile);
+                    if (fileInfo.Length == 0)
+                    {
+                        Main.logger.Warn(1, "[SAVE] WARNING: Zero-byte save file detected - corruption possible");
+                        shouldAttemptRecovery = true;
+                    }
+                    else
+                    {
+                        Main.logger.Msg(3, string.Format("[SAVE] Save file health OK: {0} bytes", fileInfo.Length));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                monitorError = ex;
+            }
+
+            if (monitorError != null)
+            {
+                Main.logger.Err(string.Format("[SAVE] MonitorSaveHealth CRASH PREVENTION: Error: {0}\nStackTrace: {1}",
+                    monitorError.Message, monitorError.StackTrace));
+            }
+
+            // FIXED: yield return statements OUTSIDE try-catch
+            if (shouldAttemptRecovery)
+            {
+                yield return AttemptSaveRecovery();
+            }
+
+            yield return CheckBackupDirectoryHealth();
+
+            Main.logger.Msg(3, "[SAVE] MonitorSaveHealth: Health check completed");
+        }
+
+        /// <summary>
+        /// Replicate game's write permission testing from dnSpy
+        /// Based on SaveManager.HasWritePermissionOnDir exactly
+        /// </summary>
+        private static bool TestWritePermission(string path)
+        {
+            bool result = false;
+            string testFile = Path.Combine(path, "WriteTest_Mod.txt");
+
+            if (Directory.Exists(path))
+            {
+                try
+                {
+                    // Exact replication of game's test logic
+                    File.WriteAllText(testFile, "If you're reading this, it means MixerThresholdMod can write save files properly - Yay!");
+                    if (File.Exists(testFile))
+                    {
+                        result = true;
+                        File.Delete(testFile); // Cleanup like the game does
+                    }
+                }
+                catch (Exception)
+                {
+                    result = false;
+                    // Game's logic - silent failure like HasWritePermissionOnDir
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Attempt to recover corrupted save from backup
+        /// ⚠️ CRASH PREVENTION: Safe recovery with comprehensive error handling
+        /// </summary>
+        private static IEnumerator AttemptSaveRecovery()
+        {
+            Exception recoveryError = null;
+            try
+            {
+                Main.logger.Msg(2, "[SAVE] AttemptSaveRecovery: Starting save recovery process");
+
+                string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
+                if (Directory.Exists(backupDir))
+                {
+                    var backupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
+                    if (backupFiles.Length > 0)
+                    {
+                        // Get most recent backup
+                        var latestBackup = backupFiles.OrderByDescending(f => File.GetCreationTime(f)).First();
+                        string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+
+                        Main.logger.Msg(1, string.Format("[SAVE] Attempting recovery from: {0}", Path.GetFileName(latestBackup)));
+
+                        // Atomic recovery operation
+                        string tempFile = saveFile + ".recovery.tmp";
+                        File.Copy(latestBackup, tempFile, overwrite: true);
+
+                        if (File.Exists(saveFile))
+                        {
+                            File.Delete(saveFile);
+                        }
+
+                        File.Move(tempFile, saveFile);
+
+                        Main.logger.Msg(1, "[SAVE] Save recovery completed successfully");
+                    }
+                    else
+                    {
+                        Main.logger.Warn(1, "[SAVE] No backup files available for recovery");
+                    }
+                }
+                else
+                {
+                    Main.logger.Warn(1, "[SAVE] No backup directory found for recovery");
+                }
+            }
+            catch (Exception ex)
+            {
+                recoveryError = ex;
+            }
+
+            if (recoveryError != null)
+            {
+                Main.logger.Err(string.Format("[SAVE] AttemptSaveRecovery CRASH PREVENTION: Recovery failed: {0}", recoveryError.Message));
+            }
+
+            yield return null;
+        }
+
+        /// <summary>
+        /// Check backup directory health and cleanup if needed
+        /// ⚠️ CRASH PREVENTION: Prevents backup directory corruption
+        /// </summary>
+        private static IEnumerator CheckBackupDirectoryHealth()
+        {
+            Exception healthError = null;
+            try
+            {
+                string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
+                if (Directory.Exists(backupDir))
+                {
+                    var backupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
+                    int corruptedBackups = 0;
+
+                    foreach (var backupFile in backupFiles)
+                    {
+                        var fileInfo = new FileInfo(backupFile);
+                        if (fileInfo.Length == 0)
+                        {
+                            Main.logger.Warn(1, string.Format("[SAVE] Corrupted backup detected: {0}", Path.GetFileName(backupFile)));
+                            corruptedBackups++;
+
+                            try
+                            {
+                                File.Delete(backupFile);
+                                Main.logger.Msg(2, string.Format("[SAVE] Deleted corrupted backup: {0}", Path.GetFileName(backupFile)));
+                            }
+                            catch (Exception deleteEx)
+                            {
+                                Main.logger.Err(string.Format("[SAVE] Failed to delete corrupted backup: {0}", deleteEx.Message));
+                            }
+                        }
+                    }
+
+                    if (corruptedBackups > 0)
+                    {
+                        Main.logger.Warn(1, string.Format("[SAVE] Cleaned up {0} corrupted backup files", corruptedBackups));
+                    }
+                    else
+                    {
+                        Main.logger.Msg(3, string.Format("[SAVE] Backup directory health OK: {0} valid backups", backupFiles.Length));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                healthError = ex;
+            }
+
+            if (healthError != null)
+            {
+                Main.logger.Err(string.Format("[SAVE] CheckBackupDirectoryHealth error: {0}", healthError.Message));
+            }
+
+            yield return null;
+        }
+
+    } // end class
+} // end namespace
