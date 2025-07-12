@@ -48,7 +48,7 @@ namespace MixerThreholdMod_1_0_0
     public class Main : MelonMod
     {
         // Core components
-        public static readonly Logger logger = new Logger();
+        public static readonly MixerThreholdMod_1_0_0.Core.Logger logger = new MixerThreholdMod_1_0_0.Core.Logger();
         public static new HarmonyLib.Harmony HarmonyInstance = new HarmonyLib.Harmony("com.mooleshacat.mixerthreholdmod");
 
         // Thread-safe collections for .NET 4.8.1 compatibility
