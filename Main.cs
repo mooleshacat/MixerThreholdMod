@@ -106,6 +106,11 @@ namespace MixerThreholdMod_1_0_0
                     Core.GameLoggerBridge.InitializeLoggingBridge();
                     logger.Msg(1, "Phase 5: Game exception monitoring initialized");
                     
+                    // Initialize system hardware monitoring for debugging (DEBUG mode only)
+                    logger.Msg(1, "Phase 6: Initializing system monitoring...");
+                    Core.SystemMonitor.Initialize();
+                    logger.Msg(1, "Phase 6: System monitoring initialized");
+                    
                     logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
@@ -378,6 +383,9 @@ namespace MixerThreholdMod_1_0_0
         {
             logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
             
+            // Log initial system state
+            SystemMonitor.LogCurrentPerformance("STRESS_TEST_START");
+            
             var startTime = DateTime.Now;
             int successCount = 0;
             int failureCount = 0;
@@ -386,9 +394,15 @@ namespace MixerThreholdMod_1_0_0
             {
                 logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
                 
-                // Track timing for this iteration
+                // Track timing and system performance for this iteration
                 var iterationStart = DateTime.Now;
                 bool iterationSuccess = false;
+                
+                // Log system state before critical operation (every 5th iteration to avoid spam)
+                if (i % 5 == 1 || iterations <= 5)
+                {
+                    SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
+                }
                 
                 // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
                 yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
@@ -397,12 +411,20 @@ namespace MixerThreholdMod_1_0_0
                 {
                     var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
                     logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
+                    
+                    // Log system state after critical operation (every 5th iteration)
+                    if (i % 5 == 0 || i == iterations || iterations <= 5)
+                    {
+                        SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
+                    }
+                    
                     successCount++;
                     iterationSuccess = true;
                 }
                 catch (Exception ex)
                 {
                     logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
+                    SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_FAILED", i));
                     failureCount++;
                 }
                 
@@ -415,13 +437,22 @@ namespace MixerThreholdMod_1_0_0
             }
             
             var totalTime = (DateTime.Now - startTime).TotalSeconds;
+            
+            // Log final system state after stress test
+            SystemMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
+            
             logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
+            logger.Msg(1, string.Format("[MONITOR] Average time per operation: {0:F1}ms", (totalTime * 1000) / iterations));
+            logger.Msg(1, string.Format("[MONITOR] Success rate: {0:F1}%", (successCount * 100.0) / iterations));
         }
 
         public static IEnumerator PerformTransactionalSave()
         {
             logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
             logger.Msg(2, "[TRANSACTION] Performing save operation...");
+            
+            // Log system state before transaction
+            SystemMonitor.LogCurrentPerformance("TRANSACTION_START");
             
             var saveStart = DateTime.Now;
             
@@ -431,10 +462,18 @@ namespace MixerThreholdMod_1_0_0
             try
             {
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
+                
+                // Log system state after successful transaction
+                SystemMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
+                
                 logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
+                logger.Msg(2, string.Format("[TRANSACTION] Performance: {0:F3} saves/second", 1000.0 / saveTime));
             }
             catch (Exception ex)
             {
+                // Log system state after failed transaction
+                SystemMonitor.LogCurrentPerformance("TRANSACTION_FAILED");
+                
                 logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
                 logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
             }
@@ -445,6 +484,9 @@ namespace MixerThreholdMod_1_0_0
             logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
             
             var profileStart = DateTime.Now;
+            
+            // Initial system state capture
+            SystemMonitor.LogCurrentPerformance("PROFILE_START");
             
             // Phase 1: Pre-save diagnostics
             logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
@@ -461,6 +503,9 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
                 logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
                 
+                // Enhanced system diagnostics
+                SystemMonitor.LogCurrentPerformance("PROFILE_PHASE1");
+                
                 phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
             }
@@ -473,12 +518,18 @@ namespace MixerThreholdMod_1_0_0
             logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
             var phase2Start = DateTime.Now;
             
+            // System state before save operation
+            SystemMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
+            
             yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
             
             try
             {
                 phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
+                
+                // System state after save operation
+                SystemMonitor.LogCurrentPerformance("PROFILE_AFTER_SAVE");
                 
                 // Phase 3: Post-save diagnostics
                 logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
@@ -487,16 +538,30 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
                 logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
                 
+                // Final system state capture
+                SystemMonitor.LogCurrentPerformance("PROFILE_PHASE3");
+                
                 phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
                 
                 var totalTime = (DateTime.Now - profileStart).TotalMilliseconds;
+                
+                // Comprehensive performance summary
                 logger.Msg(1, string.Format("[PROFILE] Advanced profiling complete. Total time: {0:F1}ms", totalTime));
                 logger.Msg(1, string.Format("[PROFILE] Breakdown: PreSave={0:F1}ms, Save={1:F1}ms, PostSave={2:F1}ms", 
                     phase1Time, phase2Time, phase3Time));
+                logger.Msg(1, string.Format("[PROFILE] Performance: {0:F3} saves/second", 1000.0 / phase2Time));
+                logger.Msg(1, string.Format("[PROFILE] Overhead ratio: {0:F1}% (diagnostics vs save time)", 
+                    ((phase1Time + phase3Time) / phase2Time) * 100));
+                
+                // Final system state
+                SystemMonitor.LogCurrentPerformance("PROFILE_COMPLETE");
             }
             catch (Exception ex)
             {
+                // System state on error
+                SystemMonitor.LogCurrentPerformance("PROFILE_ERROR");
+                
                 if (profileError != null)
                 {
                     logger.Err(string.Format("[PROFILE] Advanced profiling FAILED in Phase 1: {0}", profileError.Message));
@@ -508,6 +573,24 @@ namespace MixerThreholdMod_1_0_0
             if (profileError != null)
             {
                 logger.Err(string.Format("[PROFILE] Advanced profiling had Phase 1 error: {0}", profileError.Message));
+            }
+        }
+
+        public override void OnApplicationQuit()
+        {
+            try
+            {
+                logger?.Msg(2, "[MAIN] Application shutting down - cleaning up resources");
+                
+                // Cleanup system monitoring resources
+                SystemMonitor.Cleanup();
+                
+                logger?.Msg(1, "[MAIN] Cleanup completed successfully");
+            }
+            catch (Exception ex)
+            {
+                logger?.Err(string.Format("[MAIN] Cleanup error: {0}", ex.Message));
+                // Don't throw here - we're shutting down anyway
             }
         }
     }
