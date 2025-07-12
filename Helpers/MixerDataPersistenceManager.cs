@@ -131,6 +131,46 @@ namespace MixerThreholdMod_1_0_0.Utils
             }
         }
 
+        private static async Task LoadMixerValuesFromFileAsync()
+        {
+            try
+            {
+                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+
+                if (File.Exists(saveFile))
+                {
+                    Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
+
+                    string json = await FileOperations.SafeReadAllTextAsync(saveFile);
+                    if (!string.IsNullOrEmpty(json))
+                    {
+                        var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+
+                        if (data != null && data.ContainsKey("MixerValues"))
+                        {
+                            var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data["MixerValues"].ToString());
+
+                            foreach (var kvp in mixerValues)
+                            {
+                                Main.savedMixerValues.TryAdd(kvp.Key, kvp.Value);
+                            }
+
+                            Main.logger.Msg(2, string.Format("LoadMixerValuesFromFileAsync: Loaded {0} mixer values", mixerValues.Count));
+                        }
+                    }
+                }
+                else
+                {
+                    Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: No save file found, starting fresh");
+                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("LoadMixerValuesFromFileAsync error: {0}", ex));
+                throw;
+            }
+        }
+
         public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
         {
             Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Started for Mixer {0}", mixerID));
@@ -527,6 +567,48 @@ namespace MixerThreholdMod_1_0_0.Utils
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
                     await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
+                    Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
+                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("SaveMixerValuesToFileAsync error: {0}", ex));
+                throw;
+            }
+        }
+
+        private static async Task SaveMixerValuesToFileAsync()
+        {
+            try
+            {
+                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+
+                // Convert to regular dictionary for JSON serialization
+                var mixerValuesDict = new Dictionary<int, float>();
+                foreach (var kvp in Main.savedMixerValues)
+                {
+                    mixerValuesDict[kvp.Key] = kvp.Value;
+                }
+
+                var saveData = new Dictionary<string, object>
+                {
+                    ["MixerValues"] = mixerValuesDict,
+                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    ["Version"] = "1.0.0"
+                };
+
+                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+                await FileOperations.SafeWriteAllTextAsync(saveFile, json);
+
+                Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
+
+                // Also save to persistent location
+                string persistentPath = MelonEnvironment.UserDataDirectory;
+                if (!string.IsNullOrEmpty(persistentPath))
+                {
+                    string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
+                    await FileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
             }

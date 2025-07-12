@@ -22,18 +22,6 @@ namespace MixerThreholdMod_1_0_0.Core
                     TrackedMixers.RemoveAsync(mixerData.ConfigInstance).Wait();
                     Main.logger.Msg(2, string.Format("Removed mixer from tracked list (via EntityConfiguration.Destroy)"));
                 }
-                else
-                {
-                    if (mixingStationConfigType == null)
-                    {
-                        MixerThreholdMod_1_0_0.Main.logger?.Msg(3, "[PATCH] MixingStationConfiguration type not available - skipping cleanup check");
-                    }
-                    else
-                    {
-                        MixerThreholdMod_1_0_0.Main.logger?.Msg(3, string.Format("[PATCH] Instance type {0} is not MixingStationConfiguration - no cleanup needed",
-                            instanceType.Name));
-                    }
-                }
             }
             catch (Exception ex)
             {
