@@ -289,7 +289,7 @@ namespace MixerThreholdMod_1_0_0.Core
 #if DEBUG
             if (!_isInitialized)
             {
-                Main.logger?.Warn(1, "[SYSMON] System monitoring not initialized - skipping performance logging");
+                Main.logger?.Warn(1, "[SYSMON] System monitoring not initialized - executing operation without monitoring");
                 return;
             }
 
