@@ -185,6 +185,11 @@ namespace MixerThreholdMod_0_0_1
                     Core.SystemMonitor.Initialize();
                     logger.Msg(1, "Phase 6: System monitoring initialized");
                     
+                    // Initialize system hardware monitoring for debugging (DEBUG mode only)
+                    logger.Msg(1, "Phase 6: Initializing system monitoring...");
+                    Core.SystemMonitor.Initialize();
+                    logger.Msg(1, "Phase 6: System monitoring initialized");
+                    
                     logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
