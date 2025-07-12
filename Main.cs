@@ -47,6 +47,9 @@ namespace MixerThreholdMod_0_0_1
         
         public static Dictionary<int, float> savedMixerValues = new Dictionary<int, float>();
         public static string CurrentSavePath = null;
+        public static bool LoadCoroutineStarted = false;
+        private static bool _consoleTestCompleted = false;
+
         public override void OnInitializeMelon()
         {
             base.OnInitializeMelon();
@@ -147,57 +150,23 @@ namespace MixerThreholdMod_0_0_1
                         logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSTRUCTOR_FOUND);
                     }
 
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.HARMONY_PATCH_START);
-                    // IL2CPP COMPATIBLE: Only apply Harmony patch if constructor is available
-                    if (constructor != null)
-                    {
-                        HarmonyInstance = new HarmonyLib.Harmony(ModConstants.HARMONY_MOD_ID);
-
-                        // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
-                        HarmonyInstance.Patch(
-                            constructor,
-                            prefix: new HarmonyMethod(typeof(Main).GetMethod(ModConstants.QUEUE_INSTANCE_METHOD_NAME, BindingFlags.Static | BindingFlags.NonPublic))
-                        );
-                        logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.HARMONY_PATCH_SUCCESS);
-                    }
-                    else
-                    {
-                        logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.HARMONY_PATCH_SKIP);
-                        logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.LIMITED_MODE_MESSAGE);
-                    }
-
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSOLE_COMMANDS_START);
-                    MixerThreholdMod_1_0_0.Core.Console.RegisterConsoleCommandViaReflection();
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSOLE_HOOK_REGISTERED);
-
+                    logger.Msg(1, "Phase 3: Applying Harmony patch...");
+                    HarmonyInstance.Patch(
+                        constructor,
+                        prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
+                    );
+                    logger.Msg(1, "Phase 3: Harmony patch applied successfully");
+                    
+                    logger.Msg(1, "Phase 4: Registering console commands...");
+                    Core.Console.RegisterConsoleCommandViaReflection();
+                    logger.Msg(1, "Phase 4a: Basic console hook registered");
+                    
                     // Also initialize native console integration for game console commands
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.NATIVE_CONSOLE_START);
+                    logger.Msg(1, "Phase 4b: Initializing native game console integration...");
                     Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.NATIVE_CONSOLE_SUCCESS);
-
-                    // Initialize IL2CPP-compatible patches
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PATCHES_START);
-                    Patches.SaveManager_Save_Patch.Initialize();
-                    Patches.LoadManager_LoadedGameFolderPath_Patch.Initialize();
-                    Patches.EntityConfiguration_Destroy_Patch.Initialize();
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PATCHES_COMPLETE);
-
-                    // Initialize game logger bridge for exception monitoring
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.GAME_EXCEPTION_START);
-                    Core.GameLoggerBridge.InitializeLoggingBridge();
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.GAME_EXCEPTION_COMPLETE);
-
-                    // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.SYSTEM_MONITORING_START);
-                    Core.AdvancedSystemPerformanceMonitor.Initialize();
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.SYSTEM_MONITORING_COMPLETE);
-
-                    // Phase 9 nothing interesting here ... Just "performance optimization routines"
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PERFORMANCE_OPT_START);
-                    Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PERFORMANCE_OPT_COMPLETE);
-
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.MOD_INIT_COMPLETE);
+                    logger.Msg(1, "Phase 4: Console commands registered successfully");
+                    
+                    logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
                 {
@@ -523,39 +492,35 @@ namespace MixerThreholdMod_0_0_1
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             base.OnSceneWasLoaded(buildIndex, sceneName);
-            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.SCENE_LOADED_TEMPLATE, sceneName));
-
+            logger.Msg(2, "Scene loaded: " + sceneName);
+            
             // One-time console command test when main scene loads (to verify commands work)
-            if (sceneName == ModConstants.MAIN_SCENE_NAME && !_consoleTestCompleted)
+            if (sceneName == "Main" && !_consoleTestCompleted)
             {
                 _consoleTestCompleted = true;
-                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.CONSOLE_COMMAND_TEST_START);
-
-                // ⚠️ ASYNC JUSTIFICATION: Test console commands in background because:
-                // - Console command processing can take 10-50ms per command
-                // - Thread.Sleep(1000) would freeze Unity main thread for 1 second
-                // - Testing multiple commands sequentially could take 100-300ms total
-                // Task.Run prevents Unity frame drops during console testing
+                logger.Msg(2, "[DEBUG] Running one-time console command test...");
+                
+                // Test console commands to verify they work
                 Task.Run(() =>
                 {
                     try
                     {
                         // Wait a moment for everything to settle
-                        Thread.Sleep(ModConstants.CONSOLE_COMMAND_DELAY_MS);
-
-                        logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.CONSOLE_COMMAND_TESTING);
-                        Core.Console.ProcessManualCommand(ModConstants.CONSOLE_TEST_MSG_COMMAND);
-                        Core.Console.ProcessManualCommand(ModConstants.CONSOLE_TEST_WARN_COMMAND);
-                        logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.CONSOLE_COMMAND_TEST_COMPLETE);
+                        System.Threading.Thread.Sleep(1000);
+                        
+                        logger.Msg(2, "[DEBUG] Testing console commands...");
+                        Core.Console.ProcessManualCommand("msg This is a test message from console command");
+                        Core.Console.ProcessManualCommand("warn This is a test warning from console command");
+                        logger.Msg(2, "[DEBUG] Console command test completed - check logs above for test output");
                     }
                     catch (Exception ex)
                     {
-                        logger.Err(string.Format(ModConstants.CONSOLE_COMMAND_TEST_FAILURE_TEMPLATE, ex.Message));
+                        logger.Err(string.Format("[DEBUG] Console command test failed: {0}", ex.Message));
                     }
                 });
             }
-
-            if (sceneName == ModConstants.MAIN_SCENE_NAME)
+            
+            if (sceneName == "Main")
             {
                 try
                 {
@@ -636,213 +601,111 @@ namespace MixerThreholdMod_0_0_1
         // Console command implementations for comprehensive testing and debugging
         public static IEnumerator StressGameSaveTestWithComprehensiveMonitoring(int iterations, float delaySeconds, bool bypassCooldown)
         {
-            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.COMPREHENSIVE_MONITORING_START_TEMPLATE, iterations, delaySeconds, bypassCooldown));
-
-            // Log initial system state
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_STRESS_TEST_START);
-
-
+            logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
+            
+            var startTime = DateTime.Now;
+            int successCount = 0;
+            int failureCount = 0;
+            
             for (int i = 1; i <= iterations; i++)
             {
-                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.MONITOR_ITERATION_START_TEMPLATE, i, iterations));
-
-                // Track timing and system performance for this iteration
-                var iterationStart = DateTime.Now;
-                bool iterationSuccess = false;
-
-                // Log system state before critical operation (every 5th iteration to avoid spam)
-                if (i % ModConstants.SYSTEM_MONITORING_LOG_INTERVAL == 1 || iterations <= ModConstants.SYSTEM_MONITORING_LOG_INTERVAL)
-                {
-                    Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format(ModConstants.PERF_TAG_ITERATION_START_TEMPLATE, i));
-                }
-
-                // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
-                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-
                 try
                 {
+                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
+                    
+                    // Track timing for this iteration
+                    var iterationStart = DateTime.Now;
+                    
+                    // Perform the save with comprehensive monitoring
+                    yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                    
                     var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
-                    logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.MONITOR_ITERATION_COMPLETE_TEMPLATE, i, iterations, iterationTime));
-
-                    // Log system state after critical operation (every 5th iteration)
-                    if (i % ModConstants.SYSTEM_MONITORING_LOG_INTERVAL == 0 || i == iterations || iterations <= ModConstants.SYSTEM_MONITORING_LOG_INTERVAL)
-                    {
-                        Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format(ModConstants.PERF_TAG_ITERATION_END_TEMPLATE, i));
-                    }
-
+                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
                     successCount++;
-                    iterationSuccess = true;
+                    
+                    // Add delay if specified
+                    if (delaySeconds > 0f)
+                    {
+                        logger.Msg(3, string.Format("[MONITOR] Waiting {0:F3}s before next iteration...", delaySeconds));
+                        yield return new WaitForSeconds(delaySeconds);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    logger.Err(string.Format(ModConstants.MONITOR_ITERATION_FAILED_TEMPLATE, i, iterations, ex.Message));
-                    Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format(ModConstants.PERF_TAG_ITERATION_FAILED_TEMPLATE, i));
+                    logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
                     failureCount++;
                 }
-
-                // Add delay if specified - yield return outside try/catch for .NET 4.8.1 compatibility
-                if (delaySeconds > ModConstants.DEFAULT_OPERATION_DELAY && iterationSuccess)
-                {
-                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.MONITOR_WAITING_TEMPLATE, delaySeconds));
-                    yield return new WaitForSeconds(delaySeconds);
-                }
             }
-
+            
             var totalTime = (DateTime.Now - startTime).TotalSeconds;
-
-            // Log final system state after stress test
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_STRESS_TEST_COMPLETE);
-
-            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.MONITOR_COMPLETE_TEMPLATE, successCount, failureCount, totalTime));
-            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.MONITOR_AVERAGE_TIME_TEMPLATE, (totalTime * ModConstants.MS_PER_SECOND) / iterations));
-            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.MONITOR_SUCCESS_RATE_TEMPLATE, (successCount * ModConstants.PERCENTAGE_CALCULATION_FACTOR) / iterations));
+            logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
         }
 
         public static IEnumerator PerformTransactionalSave()
         {
-            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.TRANSACTION_START_MESSAGE);
-            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.TRANSACTION_PERFORMING_MESSAGE);
-
-            // Log system state before transaction
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_TRANSACTION_START);
-
-            var saveStart = DateTime.Now;
-
-            // Perform the save operation - yield return outside try/catch for .NET 4.8.1 compatibility
-            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-
+            logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
+            
             try
             {
+                // Perform the save operation with comprehensive logging
+                logger.Msg(2, "[TRANSACTION] Performing save operation...");
+                var saveStart = DateTime.Now;
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
-
-                // Log system state after successful transaction
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_TRANSACTION_SUCCESS);
-
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.TRANSACTION_SUCCESS_TEMPLATE, saveTime));
-                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.TRANSACTION_PERFORMANCE_TEMPLATE, ModConstants.MS_PER_SECOND / saveTime));
+                
+                logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
             }
             catch (Exception ex)
             {
-                // Log system state after failed transaction
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_TRANSACTION_FAILED);
-
-                logger.Err(string.Format(ModConstants.TRANSACTION_FAILED_TEMPLATE, ex.Message));
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.TRANSACTION_BACKUP_CHECK);
+                logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
+                logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
             }
         }
 
         public static IEnumerator AdvancedSaveOperationProfiling()
         {
-            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PROFILE_START_MESSAGE);
-
-            var profileStart = DateTime.Now;
-
-            // Initial system state capture
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_START);
-
-            // Phase 1: Pre-save diagnostics
-            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.PROFILE_PHASE1_MESSAGE);
-            var phase1Start = DateTime.Now;
-
-            double phase1Time = 0;
-            double phase2Time = 0;
-            double phase3Time = 0;
-            Exception profileError = null;
-
+            logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
+            
             try
             {
-                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_SAVE_PATH_TEMPLATE, CurrentSavePath ?? ModConstants.NOT_SET_PATH_FALLBACK));
-                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_MIXER_COUNT_TEMPLATE, savedMixerValues?.Count ?? 0));
-                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_MEMORY_USAGE_TEMPLATE, GC.GetTotalMemory(false) / ModConstants.BYTES_TO_KB));
-
-                // Enhanced system diagnostics
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_PHASE1);
-
-                phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
-                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.PROFILE_PHASE_COMPLETE_TEMPLATE, "1", phase1Time));
-            }
-            catch (Exception ex)
-            {
-                profileError = ex;
-            }
-
-            // Phase 2: Save operation profiling - yield return outside try/catch for .NET 4.8.1 compatibility
-            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.PROFILE_PHASE2_MESSAGE);
-            var phase2Start = DateTime.Now;
-
-            // System state before save operation
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_BEFORE_SAVE);
-
-            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-
-            try
-            {
-                phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
-                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.PROFILE_PHASE_COMPLETE_TEMPLATE, "2 (save)", phase2Time));
-
-                // System state after save operation
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_AFTER_SAVE);
-
+                var profileStart = DateTime.Now;
+                
+                // Phase 1: Pre-save diagnostics
+                logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
+                var phase1Start = DateTime.Now;
+                
+                logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
+                logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
+                logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
+                
+                var phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
+                
+                // Phase 2: Save operation profiling
+                logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
+                var phase2Start = DateTime.Now;
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                var phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
+                
                 // Phase 3: Post-save diagnostics
-                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.PROFILE_PHASE3_MESSAGE);
+                logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
                 var phase3Start = DateTime.Now;
-
-                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_FINAL_MEMORY_TEMPLATE, GC.GetTotalMemory(false) / ModConstants.BYTES_TO_KB));
-                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_MIXER_COUNT_AFTER_TEMPLATE, savedMixerValues?.Count ?? 0));
-
-                // Final system state capture
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_PHASE3);
-
-                phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
-                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.PROFILE_PHASE_COMPLETE_TEMPLATE, "3", phase3Time));
-
+                
+                logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
+                logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
+                
+                var phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
+                
                 var totalTime = (DateTime.Now - profileStart).TotalMilliseconds;
-
-                // Comprehensive performance summary
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.PROFILE_COMPLETE_TEMPLATE, totalTime));
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.PROFILE_BREAKDOWN_TEMPLATE,
+                logger.Msg(1, string.Format("[PROFILE] Advanced profiling complete. Total time: {0:F1}ms", totalTime));
+                logger.Msg(1, string.Format("[PROFILE] Breakdown: PreSave={0:F1}ms, Save={1:F1}ms, PostSave={2:F1}ms", 
                     phase1Time, phase2Time, phase3Time));
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.PROFILE_PERFORMANCE_TEMPLATE, ModConstants.MS_PER_SECOND / phase2Time));
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.PROFILE_OVERHEAD_TEMPLATE,
-                    ((phase1Time + phase3Time) / phase2Time) * ModConstants.PERCENTAGE_CALCULATION_FACTOR));
-
-                // Final system state
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_COMPLETE);
             }
             catch (Exception ex)
             {
-                // System state on error
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_ERROR);
-
-                if (profileError != null)
-                {
-                    logger.Err(string.Format(ModConstants.PROFILE_PHASE1_FAILED_TEMPLATE, profileError.Message));
-                }
-                logger.Err(string.Format(ModConstants.PROFILE_PHASE23_FAILED_TEMPLATE, ex.Message));
-            }
-
-            // Log phase 1 error if no other errors occurred
-            if (profileError != null)
-            {
-                logger.Err(string.Format(ModConstants.PROFILE_PHASE1_ERROR_TEMPLATE, profileError.Message));
-            }
-        }
-
-        public override void OnApplicationQuit()
-        {
-            try
-            {
-                logger?.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.APPLICATION_SHUTDOWN_MESSAGE);
-
-                // Cleanup system monitoring resources
-                Core.AdvancedSystemPerformanceMonitor.Cleanup();
-
-                logger?.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CLEANUP_COMPLETE_MESSAGE);
-            }
-            catch (Exception ex)
-            {
-                logger?.Err(string.Format(ModConstants.CLEANUP_ERROR_TEMPLATE, ex.Message));
-                // Don't throw here - we're shutting down anyway
+                logger.Err(string.Format("[PROFILE] Advanced profiling FAILED: {0}", ex.Message));
             }
         }
     }
