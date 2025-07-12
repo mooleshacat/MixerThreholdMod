@@ -465,17 +465,13 @@ namespace MixerThreholdMod_0_0_1.Save
                 yield break;
             }
 
-            try
+            // Perform save operation without try/finally around yield return
+            yield return PerformCrashResistantSave();
+
+            // Always reset the flag after save
+            lock (saveLock)
             {
-                yield return PerformCrashResistantSave();
-            }
-            finally
-            {
-                // CRITICAL: Always reset the flag
-                lock (saveLock)
-                {
-                    isSaveInProgress = false;
-                }
+                isSaveInProgress = false;
             }
         }
 
@@ -510,17 +506,13 @@ namespace MixerThreholdMod_0_0_1.Save
                 yield break;
             }
 
-            try
+            // Perform save operation without try/finally around yield return
+            yield return PerformCrashResistantSave();
+
+            // Always reset the flag after save
+            lock (saveLock)
             {
-                yield return PerformCrashResistantSave();
-            }
-            finally
-            {
-                // CRITICAL: Always reset the flag
-                lock (saveLock)
-                {
-                    isSaveInProgress = false;
-                }
+                isSaveInProgress = false;
             }
         }
 
