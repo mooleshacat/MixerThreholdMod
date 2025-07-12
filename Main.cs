@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -164,38 +165,25 @@ namespace MixerThreholdMod_1_0_0
             Exception initError = null;
             try
             {
-                Exception ex = args.ExceptionObject as Exception;
-                if (ex != null)
+                // Enhanced constructor detection with comprehensive debugging
+                logger.Msg(1, "[MAIN] Starting MixingStationConfiguration constructor analysis...");
+                
+                var mixingStationType = typeof(MixingStationConfiguration);
+                logger.Msg(2, string.Format("[MAIN] MixingStationConfiguration type: {0}", mixingStationType.FullName));
+                
+                // Get all constructors for debugging
+                var allConstructors = mixingStationType.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                logger.Msg(1, string.Format("[MAIN] Found {0} total constructors", allConstructors.Length));
+                
+                for (int i = 0; i < allConstructors.Length; i++)
                 {
-                    Main.logger.Err($"[GLOBAL] Unhandled exception: {ex.Message}\n{ex.StackTrace}");
+                    var ctor = allConstructors[i];
+                    var parameters = ctor.GetParameters();
+                    var paramTypes = string.Join(", ", parameters.Select(p => p.ParameterType.Name));
+                    logger.Msg(2, string.Format("[MAIN] Constructor {0}: ({1})", i + 1, paramTypes));
                 }
-                else
-                {
-                    Main.logger.Err($"[GLOBAL] Unhandled exception: {args.ExceptionObject}");
-                }
-            };
-            AppDomain.CurrentDomain.UnhandledException += value;
 
-            // Test log
-            Logger logger = new Logger();
-            logger.Msg(1, "MixerThreholdMod initializing...");
-            logger.Msg(1, $"currentMsgLogLevel: {logger.CurrentMsgLogLevel}");
-            logger.Msg(1, $"currentWarnLogLevel: {logger.CurrentWarnLogLevel}");
-
-            // Patch constructor to queue instance
-            var constructor = typeof(MixingStationConfiguration).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new[] {
-                    typeof(ConfigurationReplicator),
-                    typeof(IConfigurable),
-                    typeof(MixingStation)
-                },
-                null
-            );
-            if (constructor == null)
-            {
-                // Patch constructor to queue instance
+                // Try the original constructor signature
                 var constructor = typeof(MixingStationConfiguration).GetConstructor(
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                     null,
@@ -209,22 +197,81 @@ namespace MixerThreholdMod_1_0_0
 
                 if (constructor == null)
                 {
-                    logger.Err("Target constructor NOT found!");
-                    return;
+                    logger.Warn(1, "[MAIN] Target constructor (ConfigurationReplicator, IConfigurable, MixingStation) not found");
+                    
+                    // Try alternative constructor signatures
+                    var alternativeSignatures = new[]
+                    {
+                        new Type[] { typeof(ConfigurationReplicator), typeof(IConfigurable) },
+                        new Type[] { typeof(IConfigurable), typeof(MixingStation) },
+                        new Type[] { typeof(MixingStation) },
+                        new Type[] { typeof(ConfigurationReplicator) }
+                    };
+                    
+                    foreach (var sig in alternativeSignatures)
+                    {
+                        var altConstructor = mixingStationType.GetConstructor(
+                            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                            null, sig, null);
+                            
+                        if (altConstructor != null)
+                        {
+                            constructor = altConstructor;
+                            var sigTypes = string.Join(", ", sig.Select(t => t.Name));
+                            logger.Msg(1, string.Format("[MAIN] Found alternative constructor: ({0})", sigTypes));
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    logger.Msg(1, "[MAIN] Target constructor found successfully");
                 }
 
-                HarmonyInstance.Patch(
-                    constructor,
-                    prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
-                );
+                if (constructor == null)
+                {
+                    logger.Err("[MAIN] CRITICAL: No suitable MixingStationConfiguration constructor found");
+                    logger.Msg(1, "[MAIN] Will attempt runtime mixer scanning as fallback");
+                    // Don't return - continue with fallback methods
+                }
+                else
+                {
+                    // Attempt to patch the constructor
+                    try
+                    {
+                        var queueMethod = typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic);
+                        if (queueMethod == null)
+                        {
+                            logger.Err("[MAIN] CRITICAL: QueueInstance method not found for patching");
+                        }
+                        else
+                        {
+                            HarmonyInstance.Patch(
+                                constructor,
+                                prefix: new HarmonyMethod(queueMethod)
+                            );
+                            
+                            logger.Msg(1, "[MAIN] ✓ Constructor patch applied successfully");
+                        }
+                    }
+                    catch (Exception patchEx)
+                    {
+                        logger.Err(string.Format("[MAIN] Constructor patch failed: {0}\nStackTrace: {1}", patchEx.Message, patchEx.StackTrace));
+                    }
+                }
 
-                logger.Msg(2, "Patched constructor");
-                Console.RegisterConsoleCommandViaReflection();
+                // Register console commands for debugging
+                Core.Console.RegisterConsoleCommandViaReflection();
+                logger.Msg(2, "[MAIN] ✓ Console commands registered");
 
-                // Start the update coroutine - explicit cast to Coroutine
+                // Start the main update coroutine with runtime mixer scanning
                 var coroutineObj = MelonCoroutines.Start(UpdateCoroutine());
                 mainUpdateCoroutine = coroutineObj as Coroutine;
-                logger.Msg(3, "Update coroutine started successfully");
+                logger.Msg(1, "[MAIN] ✓ Main update coroutine started successfully");
+                
+                // Start fallback mixer scanner coroutine
+                MelonCoroutines.Start(RuntimeMixerScanner());
+                logger.Msg(1, "[MAIN] ✓ Runtime mixer scanner started");
             }
             catch (Exception ex)
             {
@@ -251,7 +298,8 @@ namespace MixerThreholdMod_1_0_0
                 }
 
                 queuedInstances.Add(__instance);
-                logger.Msg(3, "Queued new MixingStationConfiguration");
+                logger.Msg(1, "[MAIN] ✓ MIXER DETECTED: Queued new MixingStationConfiguration for processing");
+                logger.Msg(2, string.Format("[MAIN] Queue size now: {0}", queuedInstances.Count));
             }
             catch (Exception ex)
             {
@@ -574,6 +622,71 @@ namespace MixerThreholdMod_1_0_0
         }
 
         /// <summary>
+        /// Runtime mixer scanner as fallback detection method
+        /// ⚠️ CRASH PREVENTION: Scans for mixers in case constructor patching fails
+        /// </summary>
+        private IEnumerator RuntimeMixerScanner()
+        {
+            logger.Msg(2, "[MAIN] RuntimeMixerScanner: Starting...");
+            
+            yield return new WaitForSeconds(5f); // Wait for game to initialize
+            
+            while (!isShuttingDown)
+            {
+                Exception scanError = null;
+                try
+                {
+                    // Find all MixingStationConfiguration instances in the scene
+                    var foundMixers = UnityEngine.Object.FindObjectsOfType<MixingStation>();
+                    if (foundMixers != null && foundMixers.Length > 0)
+                    {
+                        logger.Msg(2, string.Format("[MAIN] RuntimeMixerScanner: Found {0} MixingStation objects", foundMixers.Length));
+                        
+                        foreach (var mixingStation in foundMixers)
+                        {
+                            if (isShuttingDown) break;
+                            
+                            // Try to get the configuration via reflection
+                            var configField = mixingStation.GetType().GetField("configuration", BindingFlags.NonPublic | BindingFlags.Instance);
+                            if (configField != null)
+                            {
+                                var config = configField.GetValue(mixingStation) as MixingStationConfiguration;
+                                if (config != null)
+                                {
+                                    // Check if already tracked
+                                    bool alreadyTracked = Core.TrackedMixers.Any(tm => tm?.ConfigInstance == config);
+                                    if (!alreadyTracked)
+                                    {
+                                        queuedInstances.Add(config);
+                                        logger.Msg(1, string.Format("[MAIN] ✓ FALLBACK DETECTION: Found mixer via runtime scan: {0}", config.GetHashCode()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        logger.Msg(3, "[MAIN] RuntimeMixerScanner: No MixingStation objects found yet");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    scanError = ex;
+                }
+
+                if (scanError != null)
+                {
+                    logger.Err(string.Format("[MAIN] RuntimeMixerScanner CRASH PREVENTION: Error: {0}", scanError.Message));
+                }
+
+                // Scan every 10 seconds
+                yield return new WaitForSeconds(10f);
+            }
+            
+            logger.Msg(2, "[MAIN] RuntimeMixerScanner: Stopped");
+        }
+
+        /// <summary>
         /// Main update loop - uses coroutines to prevent blocking Unity thread
         /// ⚠️ CRASH PREVENTION: All operations designed to not block main thread
         /// </summary>
@@ -885,17 +998,20 @@ namespace MixerThreholdMod_1_0_0
         /// </summary>
         private IEnumerator GetAllMixersAsync()
         {
-            var allMixers = new List<TrackedMixer>();
-            Exception asyncError = null;
-            bool taskCompleted = false;
+            logger.Msg(2, "[MAIN] UpdateCoroutine started");
+            int frameCount = 0;
 
             try
             {
                 Exception updateError = null;
                 try
                 {
-                    // Clean up null/invalid mixers first - with better error handling
-                    try
+                    var toProcess = queuedInstances.ToList();
+                    queuedInstances.Clear();
+
+                    logger.Msg(1, string.Format("[MAIN] ✓ PROCESSING: {0} queued mixer instances", toProcess.Count));
+
+                    foreach (var instance in toProcess)
                     {
                         yield return CleanupNullMixers();
                     }
@@ -933,9 +1049,15 @@ namespace MixerThreholdMod_1_0_0
                         }
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    updateError = ex;
+                    // Log periodically if no mixers found to aid debugging
+                    frameCount++;
+                    if (frameCount % 1000 == 0) // Every ~100 seconds at 10fps
+                    {
+                        logger.Msg(2, string.Format("[MAIN] No mixers found yet (frame {0}). Tracked mixers: {1}, Saved values: {2}", 
+                            frameCount, Core.TrackedMixers.Count(tm => tm != null), savedMixerValues.Count));
+                    }
                 }
 
                 if (updateError != null)
@@ -1232,8 +1354,8 @@ namespace MixerThreholdMod_1_0_0
                     MixerInstanceID = MixerIDManager.GetMixerID(instance)
                 };
 
-                // Add to tracking collection using coroutine
-                yield return AddTrackedMixerAsync(newTrackedMixer);
+                // Add to tracking collection
+                Core.TrackedMixers.Add(newTrackedMixer);
                 logger.Msg(1, string.Format("[MAIN] ✓ MIXER PROCESSED: Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
             }
             catch (Exception ex)
