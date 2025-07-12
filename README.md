@@ -179,10 +179,40 @@ msg                              # Shows specific help for msg command
 - **Thread-safe execution** - All commands respect main thread safety
 - **Comprehensive logging** - Detailed progress and error reporting  
 - **Performance metrics** - Timing and memory usage tracking
+- **System monitoring** - Hardware performance tracking (DEBUG mode only)
 - **Error recovery** - Graceful handling of save failures
 - **Cooldown management** - Bypass or respect save cooldown systems
 - **Parameter flexibility** - Most commands support flexible parameter ordering
 - **Usage validation** - Helpful error messages and examples for incorrect usage
+
+### System Monitoring (DEBUG Mode Only) 🖥️
+
+**Hardware Performance Tracking**: Enhanced debugging capabilities that activate only in DEBUG builds:
+
+**Features**:
+- **CPU Usage Monitoring** - Real-time processor utilization during save operations
+- **Memory Usage Tracking** - RAM consumption with garbage collection analysis
+- **Disk I/O Performance** - Storage operation monitoring and bottleneck detection
+- **Process Metrics** - Working set, private memory, and CPU time tracking
+- **Performance Profiling** - Before/after system state comparisons for operations
+
+**System Information Logging**:
+- Operating system and .NET framework details
+- Processor specifications (cores, clock speed)
+- Memory configuration (total RAM, graphics memory)
+- Storage device information and free space
+- Unity engine hardware detection
+
+**Integration Points**:
+- All console commands include system performance snapshots
+- Stress testing operations log system state at key intervals
+- Save operations monitored for performance impact
+- Comprehensive performance summaries with overhead analysis
+
+**Compiler Directives**: 
+- Automatically disabled in RELEASE builds for production deployment
+- No performance impact when not in DEBUG mode
+- Graceful degradation when WMI or performance counters unavailable
 
 ## Save Backup System 🗃️
 

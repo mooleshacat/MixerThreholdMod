@@ -96,11 +96,14 @@ namespace MixerThreholdMod_1_0_0.Core
 
             /// <summary>
             /// Handle console command input
-            /// ⚠️ COMPREHENSIVE LOGGING: Logs full command details including all parameters and error context
+            /// ⚠️ COMPREHENSIVE LOGGING: Logs full command details including all parameters, system context, and error information
+            /// Enhanced with system monitoring integration and complete command breakdown
             /// </summary>
             public void OnConsoleCommand(string command)
             {
                 Exception commandError = null;
+                var commandStartTime = DateTime.UtcNow;
+                
                 try
                 {
                     if (string.IsNullOrEmpty(command)) 
@@ -109,27 +112,106 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-                    // Log complete command details for debugging
+                    // Enhanced comprehensive command logging with system context
                     Main.logger?.Msg(2, string.Format("[CONSOLE] === COMMAND RECEIVED ==="));
+                    Main.logger?.Msg(2, string.Format("[CONSOLE] Timestamp: {0:yyyy-MM-dd HH:mm:ss.fff} UTC", commandStartTime));
                     Main.logger?.Msg(2, string.Format("[CONSOLE] Full command: '{0}'", command));
                     Main.logger?.Msg(2, string.Format("[CONSOLE] Command length: {0} characters", command.Length));
+                    Main.logger?.Msg(2, string.Format("[CONSOLE] Command hash: {0}", command.GetHashCode()));
                     
-                    // Parse and log command components
-                    var parts = command.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    // Log system context during command processing (DEBUG mode only)
+                    SystemMonitor.LogCurrentPerformance("CONSOLE_COMMAND");
+                    
+                    // Parse and log command components with enhanced analysis
+                    var originalParts = command.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    var parts = command.ToLower().Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    
                     if (parts.Length > 0)
                     {
-                        Main.logger?.Msg(2, string.Format("[CONSOLE] Base command: '{0}'", parts[0]));
+                        Main.logger?.Msg(2, string.Format("[CONSOLE] Base command: '{0}' (case-insensitive)", parts[0]));
+                        Main.logger?.Msg(2, string.Format("[CONSOLE] Original case: '{0}'", originalParts[0]));
+                        
                         if (parts.Length > 1)
                         {
                             Main.logger?.Msg(2, string.Format("[CONSOLE] Parameters ({0}): [{1}]", parts.Length - 1, string.Join(", ", parts, 1, parts.Length - 1)));
+                            Main.logger?.Msg(2, string.Format("[CONSOLE] Original case parameters: [{0}]", string.Join(", ", originalParts, 1, originalParts.Length - 1)));
+                            
+                            // Enhanced parameter analysis
+                            for (int i = 1; i < parts.Length; i++)
+                            {
+                                var param = parts[i];
+                                var originalParam = originalParts[i];
+                                
+                                // Analyze parameter type
+                                int intValue;
+                                float floatValue;
+                                bool boolValue;
+                                
+                                string paramType = "STRING";
+                                if (int.TryParse(param, out intValue))
+                                {
+                                    paramType = "INTEGER";
+                                }
+                                else if (float.TryParse(param, out floatValue))
+                                {
+                                    paramType = "FLOAT";
+                                }
+                                else if (bool.TryParse(param, out boolValue))
+                                {
+                                    paramType = "BOOLEAN";
+                                }
+                                
+                                Main.logger?.Msg(3, string.Format("[CONSOLE] Parameter {0}: '{1}' (original: '{2}', type: {3})", i, param, originalParam, paramType));
+                            }
                         }
                         else
                         {
                             Main.logger?.Msg(3, "[CONSOLE] No parameters provided");
                         }
+                        
+                        // Check if command is recognized
+                        var recognizedCommands = new string[] 
+                        { 
+                            "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency",
+                            "saveprefstress", "savegamestress", "savemonitor", "transactionalsave", "profile",
+                            "msg", "warn", "err", "help", "?"
+                        };
+                        
+                        bool isRecognized = false;
+                        foreach (var cmd in recognizedCommands)
+                        {
+                            if (parts[0] == cmd)
+                            {
+                                isRecognized = true;
+                                break;
+                            }
+                        }
+                        
+                        Main.logger?.Msg(2, string.Format("[CONSOLE] Command recognition: {0}", isRecognized ? "RECOGNIZED" : "UNKNOWN"));
+                        
+                        if (!isRecognized)
+                        {
+                            Main.logger?.Warn(1, string.Format("[CONSOLE] Unknown command detected: '{0}'", parts[0]));
+                            Main.logger?.Msg(1, "[CONSOLE] Available commands: help, mixer_reset, mixer_save, mixer_path, mixer_emergency");
+                            Main.logger?.Msg(1, "[CONSOLE] Stress testing: saveprefstress, savegamestress, savemonitor, transactionalsave, profile");
+                            Main.logger?.Msg(1, "[CONSOLE] Logging: msg, warn, err");
+                        }
+                    }
+                    else
+                    {
+                        Main.logger?.Warn(1, "[CONSOLE] Command parsing failed - no components found");
+                        return;
                     }
                     
-                    ProcessCommand(command.ToLower().Trim());
+                    // Process command with performance monitoring
+                    SystemMonitor.MonitorOperation(string.Format("Console Command: {0}", parts[0]), () => {
+                        ProcessCommand(command.ToLower().Trim());
+                    });
+                    
+                    var commandEndTime = DateTime.UtcNow;
+                    var executionTime = commandEndTime - commandStartTime;
+                    
+                    Main.logger?.Msg(2, string.Format("[CONSOLE] Command execution time: {0:F3}ms", executionTime.TotalMilliseconds));
                     Main.logger?.Msg(2, "[CONSOLE] === COMMAND COMPLETED ===");
                 }
                 catch (Exception ex)
@@ -141,6 +223,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] OnConsoleCommand error: {0}\n{1}", commandError.Message, commandError.StackTrace));
                     Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? "[null]"));
+                    Main.logger?.Err(string.Format("[CONSOLE] Command processing failed after {0:F3}ms", (DateTime.UtcNow - commandStartTime).TotalMilliseconds));
                 }
             }
 
