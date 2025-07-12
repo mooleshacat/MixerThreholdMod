@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace MixerThreholdMod_1_0_0.Helpers
+namespace MixerThreholdMod_1_0_0.Utils
 {
     public static class MixerSaveManager
     {
@@ -432,7 +432,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     ["MixerValues"] = mixerValuesDict,
                     ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    ["Version"] = "0.0.1"
+                    ["Version"] = "1.0.0"
                 };
 
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);

@@ -3,11 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 
-<<<<<<< HEAD
-namespace MixerThreholdMod_0_0_1.Core
-=======
 namespace MixerThreholdMod_1_0_0.Core
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 {
     /// <summary>
     /// Thread-safe mixer ID management system for .NET 4.8.1 compatibility.

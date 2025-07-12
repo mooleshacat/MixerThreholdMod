@@ -3,9 +3,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MixerThreholdMod_0_0_1.Helpers;
+using MixerThreholdMod_1_0_0.Helpers;
 
-namespace MixerThreholdMod_1_0_0.Helpers
+namespace MixerThreholdMod_1_0_0
 {
     public static class FileOperations
     {

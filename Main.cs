@@ -1,7 +1,9 @@
 ﻿using HarmonyLib;
 using MelonLoader;
 using MelonLoader.Utils;
-using Newtonsoft.Json;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Save;
+using MixerThreholdMod_1_0_0.Threading;
 using ScheduleOne.Management;
 using ScheduleOne.Noise;
 using ScheduleOne.ObjectScripts;
@@ -23,10 +25,11 @@ using static VLB.Consts;
 
 // Reminder: Add to steam game startup command: "--melonloader.captureplayerlogs" for extra MelonLogger verbosity :)
 
-[assembly: MelonInfo(typeof(MixerThreholdMod_0_0_1.Main), "MixerThreholdMod", "0.0.1", "mooleshacat")]
+// Assembly attributes must come first, before namespace
+[assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), "MixerThreholdMod", "1.0.0", "mooleshacat")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0
 {
     public class Main : MelonMod
     {

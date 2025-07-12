@@ -16,11 +16,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-<<<<<<< HEAD
-namespace MixerThreholdMod_0_0_1.Save
-=======
 namespace MixerThreholdMod_1_0_0.Save
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 {
     /// <summary>
     /// Robust save management system focused on preventing crashes during save operations.

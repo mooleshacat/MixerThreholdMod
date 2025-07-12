@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine.PlayerLoop;
+using MixerThreholdMod_1_0_0.Threading;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0.Core
 {
     public class TrackedMixer
     {
