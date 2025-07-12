@@ -173,17 +173,12 @@ namespace MixerThreholdMod_0_0_1
                     // Also initialize native console integration for game console commands
                     logger.Msg(1, "Phase 4b: Initializing IL2CPP-compatible native game console integration...");
                     Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
-                    logger.Msg(1, "Phase 4c: IL2CPP-compatible console commands registered successfully");
+                    logger.Msg(1, "Phase 4c: Console commands registered successfully");
                     
                     // Initialize game logger bridge for exception monitoring
-                    logger.Msg(1, "Phase 7: Initializing game exception monitoring...");
-                    Core.GameExceptionMonitor.InitializeLoggingBridge();
-                    logger.Msg(1, "Phase 7: Game exception monitoring initialized");
-                    
-                    // Initialize system hardware monitoring for debugging (DEBUG mode only)
-                    logger.Msg(1, "Phase 6: Initializing system monitoring...");
-                    Core.SystemMonitor.Initialize();
-                    logger.Msg(1, "Phase 6: System monitoring initialized");
+                    logger.Msg(1, "Phase 5: Initializing game exception monitoring...");
+                    Core.GameLoggerBridge.InitializeLoggingBridge();
+                    logger.Msg(1, "Phase 5: Game exception monitoring initialized");
                     
                     logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
                 }
@@ -627,7 +622,6 @@ namespace MixerThreholdMod_0_0_1
                 SystemMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
                 
                 logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
-                logger.Msg(2, string.Format("[TRANSACTION] Performance: {0:F3} saves/second", 1000.0 / saveTime));
             }
             catch (Exception ex)
             {
@@ -663,9 +657,6 @@ namespace MixerThreholdMod_0_0_1
                 logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
                 logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
                 
-                // Enhanced system diagnostics
-                SystemMonitor.LogCurrentPerformance("PROFILE_PHASE1");
-                
                 phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
             }
@@ -677,9 +668,6 @@ namespace MixerThreholdMod_0_0_1
             // Phase 2: Save operation profiling - yield return outside try/catch for .NET 4.8.1 compatibility
             logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
             var phase2Start = DateTime.Now;
-            
-            // System state before save operation
-            SystemMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
             
             yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
             
@@ -697,9 +685,6 @@ namespace MixerThreholdMod_0_0_1
                 
                 logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
                 logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
-                
-                // Final system state capture
-                SystemMonitor.LogCurrentPerformance("PROFILE_PHASE3");
                 
                 phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
@@ -719,9 +704,6 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                // System state on error
-                SystemMonitor.LogCurrentPerformance("PROFILE_ERROR");
-                
                 if (profileError != null)
                 {
                     logger.Err(string.Format("[PROFILE] Advanced profiling FAILED in Phase 1: {0}", profileError.Message));
@@ -733,24 +715,6 @@ namespace MixerThreholdMod_0_0_1
             if (profileError != null)
             {
                 logger.Err(string.Format("[PROFILE] Advanced profiling had Phase 1 error: {0}", profileError.Message));
-            }
-        }
-
-        public override void OnApplicationQuit()
-        {
-            try
-            {
-                logger?.Msg(2, "[MAIN] Application shutting down - cleaning up resources");
-                
-                // Cleanup system monitoring resources
-                SystemMonitor.Cleanup();
-                
-                logger?.Msg(1, "[MAIN] Cleanup completed successfully");
-            }
-            catch (Exception ex)
-            {
-                logger?.Err(string.Format("[MAIN] Cleanup error: {0}", ex.Message));
-                // Don't throw here - we're shutting down anyway
             }
         }
     }
