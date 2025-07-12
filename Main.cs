@@ -550,6 +550,36 @@ namespace MixerThreholdMod_0_0_1
                 yield break;
             }
 
+            // Add delay for verification if needed - moved outside try/catch
+            if (needsVerificationDelay)
+            {
+                yield return null;
+            }
+
+            // Verify configuration and create tracker
+            try
+            {
+                // Log the actual configured values for debugging
+                var thresholdValue = instance.StartThrehold.Value;
+                logger.Msg(1, string.Format("[MAIN] THRESHOLD VERIFICATION: Current value is {0}", thresholdValue));
+
+                // Create tracked mixer
+                newTrackedMixer = new TrackedMixer
+                {
+                    ConfigInstance = instance,
+                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
+                };
+
+                // Add to tracking collection (thread-safe) - use synchronous version
+                Core.TrackedMixers.Add(newTrackedMixer);
+                logger.Msg(1, string.Format("[MAIN] ✓ MIXER PROCESSED: Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
+            }
+            catch (Exception verifyEx)
+            {
+                logger.Warn(1, string.Format("[MAIN] Could not verify threshold value or create tracker: {0}", verifyEx.Message));
+                yield break;
+            }
+
             try
             {
                 if (instance.StartThrehold == null)
