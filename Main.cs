@@ -311,7 +311,200 @@ namespace MixerThreholdMod_1_0_0
             logger.Msg(3, "UpdateCoroutine finished");
         }
 
-        private IEnumerator ProcessSingleInstanceCoroutine(MixingStationConfiguration instance)
+        /// <summary>
+        /// Cleanup null mixers using coroutine to prevent blocking
+        /// </summary>
+        private IEnumerator CleanupNullMixers()
+        {
+            Exception cleanupError = null;
+            List<TrackedMixer> currentMixers = null;
+            
+            // Get mixers without try/catch to avoid yield return issues
+            var getMixersCoroutine = GetAllMixersAsync();
+            if (getMixersCoroutine != null)
+            {
+                yield return getMixersCoroutine;
+                // Extract result from coroutine
+                if (getMixersCoroutine.Current is List<TrackedMixer>)
+                {
+                    currentMixers = (List<TrackedMixer>)getMixersCoroutine.Current;
+                }
+            }
+            
+            try
+            {
+                if (currentMixers != null)
+                {
+                    var validMixers = new List<TrackedMixer>();
+                    foreach (var tm in currentMixers)
+                    {
+                        if (tm?.ConfigInstance != null)
+                        {
+                            validMixers.Add(tm);
+                        }
+                    }
+
+                    if (validMixers.Count != currentMixers.Count)
+                    {
+                        logger.Msg(3, string.Format("[MAIN] Cleaned up {0} null mixers", currentMixers.Count - validMixers.Count));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                cleanupError = ex;
+            }
+
+            if (cleanupError != null)
+            {
+                logger.Err(string.Format("[MAIN] CleanupNullMixers: Error: {0}", cleanupError.Message));
+            }
+            
+            yield return null; // Required return for IEnumerator
+        }
+
+        /// <summary>
+        /// Get all mixers via async coroutine
+        /// </summary>
+        /// <summary>
+        /// Get all mixers via async coroutine
+        /// </summary>
+        private IEnumerator GetAllMixersAsync()
+        {
+            var allMixers = new List<TrackedMixer>();
+            Exception asyncError = null;
+
+            // Execute async task without try/catch to avoid yield return issues
+            var task = Core.TrackedMixers.GetAllAsync();
+
+            // Wait for async task with timeout
+            float startTime = Time.time;
+            while (!task.IsCompleted && (Time.time - startTime) < 2f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            try
+            {
+                if (task.IsCompleted && !task.IsFaulted)
+                {
+                    allMixers.AddRange(task.Result);
+                    logger.Msg(3, "[MAIN] GetAllMixersAsync: Successfully retrieved mixer list");
+                }
+                else if (task.IsFaulted)
+                {
+                    logger.Err(string.Format("[MAIN] GetAllMixersAsync: Task faulted: {0}", task.Exception?.Message));
+                }
+                else
+                {
+                    logger.Warn(1, "[MAIN] GetAllMixersAsync: Task timed out after 2 seconds");
+                }
+            }
+            catch (Exception ex)
+            {
+                asyncError = ex;
+            }
+
+            if (asyncError != null)
+            {
+                logger.Err(string.Format("[MAIN] GetAllMixersAsync: Error: {0}", asyncError.Message));
+            }
+
+            yield return allMixers;
+        }
+
+        /// <summary>
+        /// Log mixer diagnostics as a coroutine
+        /// </summary>
+        private IEnumerator LogMixerDiagnostics(int frameCount)
+        {
+            Exception diagError = null;
+            object mixerCountResult = null;
+            
+            // Get mixer count without try/catch to avoid yield return issues
+            var getMixerCountCoroutine = GetMixerCountAsync();
+            if (getMixerCountCoroutine != null)
+            {
+                yield return getMixerCountCoroutine;
+                mixerCountResult = getMixerCountCoroutine.Current;
+            }
+            
+            try
+            {
+                int trackedMixersCount = 0;
+                
+                if (mixerCountResult is int)
+                {
+                    trackedMixersCount = (int)mixerCountResult;
+                }
+
+                logger.Msg(2, string.Format("[MAIN] Diagnostic (frame {0}): Tracked mixers: {1}, Saved values: {2}, Queued: {3}", 
+                    frameCount, trackedMixersCount, savedMixerValues.Count, queuedInstances.Count));
+
+                // Enhanced diagnostics every 2000 frames (~200 seconds)
+                if (frameCount % 2000 == 0)
+                {
+                    logger.Msg(1, string.Format("[MAIN] ENHANCED DIAGNOSTICS:"));
+                    logger.Msg(1, string.Format("  - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
+                    logger.Msg(1, string.Format("  - Current save path: {0}", CurrentSavePath ?? "[none]"));
+                    logger.Msg(1, string.Format("  - Shutdown status: {0}", isShuttingDown));
+                }
+            }
+            catch (Exception ex)
+            {
+                diagError = ex;
+            }
+
+            if (diagError != null)
+            {
+                logger.Err(string.Format("[MAIN] LogMixerDiagnostics: Error: {0}", diagError.Message));
+            }
+            
+            yield return null; // Required return for IEnumerator
+        }
+
+        /// <summary>
+        /// Get mixer count via async coroutine
+        /// </summary>
+        private IEnumerator GetMixerCountAsync()
+        {
+            Exception countError = null;
+            int count = 0;
+
+            // Execute async task without try/catch to avoid yield return issues
+            var task = Core.TrackedMixers.CountAsync(tm => tm != null);
+            
+            // Wait for async task with timeout
+            float startTime = Time.time;
+            while (!task.IsCompleted && (Time.time - startTime) < 1f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            try
+            {
+                if (task.IsCompleted && !task.IsFaulted)
+                {
+                    count = task.Result;
+                }
+            }
+            catch (Exception ex)
+            {
+                countError = ex;
+            }
+
+            if (countError != null)
+            {
+                logger.Err(string.Format("[MAIN] GetMixerCountAsync: Error: {0}", countError.Message));
+            }
+
+            yield return count;
+        }
+
+        /// <summary>
+        /// Process a single mixer instance with crash protection
+        /// </summary>
+        private IEnumerator ProcessMixerInstance(MixingStationConfiguration instance)
         {
             if (instance == null || isShuttingDown) yield break;
 
