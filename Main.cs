@@ -497,25 +497,9 @@ namespace MixerThreholdMod_0_0_1
                 }
 
                 // Configure threshold on main thread (Unity requirement)
-                // CRITICAL: This line sets the mixer threshold range from 1 to 20
                 logger.Msg(1, string.Format("[MAIN] CONFIGURING THRESHOLD: Setting range 1.0f to 20.0f for Mixer Instance"));
                 instance.StartThrehold.Configure(1f, 20f, true);
                 logger.Msg(1, string.Format("[MAIN] THRESHOLD CONFIGURED: Mixer should now support 1-20 range"));
-                
-                // Verify the configuration took effect
-                try
-                {
-                    // Add a small delay to ensure configuration is applied
-                    yield return null;
-                    
-                    // Log the actual configured values for debugging
-                    var thresholdValue = instance.StartThrehold.Value;
-                    logger.Msg(1, string.Format("[MAIN] THRESHOLD VERIFICATION: Current value is {0}", thresholdValue));
-                }
-                catch (Exception verifyEx)
-                {
-                    logger.Warn(1, string.Format("[MAIN] Could not verify threshold value: {0}", verifyEx.Message));
-                }
 
                 // Create tracked mixer
                 newTrackedMixer = new TrackedMixer
@@ -567,16 +551,19 @@ namespace MixerThreholdMod_0_0_1
             // Verify configuration and create tracker
             try
             {
-                // Log the actual configured values for debugging
-                var thresholdValue = instance.StartThrehold.Value;
-                logger.Msg(1, string.Format("[MAIN] THRESHOLD VERIFICATION: Current value is {0}", thresholdValue));
+                logger.Msg(2, string.Format("[MAIN] Restoring Mixer {0} to saved value: {1}", newTrackedMixer.MixerInstanceID, savedValue));
+                logger.Msg(1, string.Format("[MAIN] RESTORING VALUE: Setting Mixer {0} StartThreshold to {1}", newTrackedMixer.MixerInstanceID, savedValue));
 
                 // Create tracked mixer
                 newTrackedMixer = new TrackedMixer
                 {
-                    ConfigInstance = instance,
-                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
-                };
+                    instance.StartThrehold.SetValue(savedValue, true);
+                    logger.Msg(1, string.Format("[MAIN] VALUE RESTORED: Successfully set Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
+                }
+                catch (Exception ex)
+                {
+                    restoreError = ex;
+                }
 
                 // Add to tracking collection (thread-safe) - use synchronous version
                 Core.TrackedMixers.Add(newTrackedMixer);
@@ -1771,9 +1758,9 @@ namespace MixerThreholdMod_0_0_1
         }
 
         /// <summary>
-        /// dnSpy Finding: Game tests directory creation/deletion rights.
+        /// Check if a mixer exists by ID
         /// </summary>
-        private static bool TestDirectoryManipulationRights(string path)
+        public static bool MixerExists(int mixerInstanceID)
         {
             try
             {
