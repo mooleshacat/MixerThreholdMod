@@ -1,10 +1,11 @@
 ﻿using HarmonyLib;
 using MelonLoader;
 using MelonLoader.Utils;
-using Newtonsoft.Json;
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-using ScheduleOne.Noise;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Helpers;
+using MixerThreholdMod_1_0_0.Save;
+using MixerThreholdMod_1_0_0.Threading;
+using ScheduleOne.Management;
 using ScheduleOne.ObjectScripts;
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
@@ -113,8 +114,8 @@ namespace MixerThreholdMod_0_0_1
                 // Test logger immediately - if this fails, we have a fundamental problem
                 try
                 {
-                    logger.Msg(1, "=== LOGGER TEST: MixerThreholdMod v1.0.0 Starting ===");
-                    System.Console.WriteLine("[CONSOLE TEST] MixerThreholdMod v1.0.0 Starting");
+                    Helpers.MixerSaveManager.EmergencySave();
+                    logger.Msg(1, "[MAIN] Emergency save completed before crash");
                 }
                 catch (Exception logEx)
                 {
@@ -501,7 +502,31 @@ namespace MixerThreholdMod_0_0_1
                 instance.StartThrehold.Configure(1f, 20f, true);
                 logger.Msg(1, string.Format("[MAIN] THRESHOLD CONFIGURED: Mixer should now support 1-20 range"));
                 
-                needsVerificationDelay = true;
+                // Verify the configuration took effect
+                try
+                {
+                    // Add a small delay to ensure configuration is applied
+                    yield return null;
+                    
+                    // Log the actual configured values for debugging
+                    var thresholdValue = instance.StartThrehold.Value;
+                    logger.Msg(1, string.Format("[MAIN] THRESHOLD VERIFICATION: Current value is {0}", thresholdValue));
+                }
+                catch (Exception verifyEx)
+                {
+                    logger.Warn(1, string.Format("[MAIN] Could not verify threshold value: {0}", verifyEx.Message));
+                }
+
+                // Create tracked mixer
+                newTrackedMixer = new TrackedMixer
+                {
+                    ConfigInstance = instance,
+                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
+                };
+
+                // Add to tracking collection (thread-safe) - use synchronous version
+                Core.TrackedMixers.Add(newTrackedMixer);
+                logger.Msg(1, string.Format("[MAIN] ✓ MIXER PROCESSED: Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
             }
             catch (Exception ex)
             {
@@ -518,7 +543,25 @@ namespace MixerThreholdMod_0_0_1
             // Add delay for verification if needed - moved outside try/catch
             if (needsVerificationDelay)
             {
-                yield return null;
+                logger.Msg(3, string.Format("[MAIN] Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
+
+                Exception listenerError = null;
+                try
+                {
+                    // Use the Helpers MixerSaveManager for listener attachment (proven approach)
+                    MelonCoroutines.Start(Helpers.MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
+                    newTrackedMixer.ListenerAdded = true;
+                    logger.Msg(2, string.Format("[MAIN] Listener attached successfully for Mixer {0}", newTrackedMixer.MixerInstanceID));
+                }
+                catch (Exception listenerEx)
+                {
+                    listenerError = listenerEx;
+                }
+
+                if (listenerError != null)
+                {
+                    logger.Err(string.Format("[MAIN] Failed to attach listener for Mixer {0}: {1}", newTrackedMixer.MixerInstanceID, listenerError.Message));
+                }
             }
 
             // Verify configuration and create tracker
@@ -2320,8 +2363,90 @@ namespace MixerThreholdMod_0_0_1
                 // 4. Enhanced failure categorization
                 if (validation.IsSuccess)
                 {
-                    successCount++;
-                    logger.Msg(3, string.Format("[SAVE] Iteration {0}: SUCCESS - {1} positive indicators", i, validation.PositiveIndicators));
+                    logger.Err(string.Format("[MAIN] OnSceneWasLoaded CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
+                        sceneError.Message, sceneError.StackTrace));
+                }
+            }
+        }
+
+        private static bool _loadCoroutineStarted = false;
+        public static bool LoadCoroutineStarted { get { return _loadCoroutineStarted; } }
+
+        /// <summary>
+        /// Start the load coroutine once per session
+        /// </summary>
+        private static void StartLoadCoroutine()
+        {
+            if (_loadCoroutineStarted || isShuttingDown) return;
+
+            Exception startError = null;
+            try
+            {
+                _loadCoroutineStarted = true;
+                MelonCoroutines.Start(Helpers.MixerSaveManager.LoadMixerValuesWhenReady());
+                logger.Msg(2, "[MAIN] Load coroutine started successfully");
+            }
+            catch (Exception ex)
+            {
+                startError = ex;
+                _loadCoroutineStarted = false; // Reset on error
+            }
+
+            if (startError != null)
+            {
+                logger.Err(string.Format("[MAIN] StartLoadCoroutine error: {0}\nStackTrace: {1}", startError.Message, startError.StackTrace));
+            }
+        }
+
+        /// <summary>
+        /// Copy emergency save file to current save path if it exists
+        /// </summary>
+        private static void CopyEmergencySaveIfExists()
+        {
+            try
+            {
+                string persistentPath = MelonEnvironment.UserDataDirectory;
+                if (string.IsNullOrEmpty(persistentPath) || string.IsNullOrEmpty(CurrentSavePath)) return;
+
+                string emergencyFile = Path.Combine(persistentPath, "MixerThresholdSave_Emergency.json");
+                string targetFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json");
+
+                if (File.Exists(emergencyFile) && !File.Exists(targetFile))
+                {
+                    File.Copy(emergencyFile, targetFile, overwrite: false);
+                    logger.Msg(2, "[MAIN] Copied emergency save to current save location");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("[MAIN] CopyEmergencySaveIfExists error: {0}", ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Application quit handler with emergency save
+        /// </summary>
+        public override void OnApplicationQuit()
+        {
+            isShuttingDown = true;
+            logger.Msg(1, "[MAIN] Application shutting down - performing cleanup");
+
+            Exception quitError = null;
+            try
+            {
+                // Stop main coroutine
+                if (mainUpdateCoroutine != null)
+                {
+                    MelonCoroutines.Stop(mainUpdateCoroutine);
+                    mainUpdateCoroutine = null;
+                    logger.Msg(2, "[MAIN] Main update coroutine stopped");
+                }
+
+                // Emergency save if we have data
+                if (savedMixerValues.Count > 0)
+                {
+                    Helpers.MixerSaveManager.EmergencySave();
+                    logger.Msg(1, "[MAIN] Emergency save completed on quit");
                 }
                 else
                 {
