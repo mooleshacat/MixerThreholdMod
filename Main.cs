@@ -275,6 +275,105 @@ namespace MixerThreholdMod_0_0_1
             }
         }
 
+        private static async Task ProcessQueuedInstancesAsync()
+        {
+            try
+            {
+                logger.Msg(3, "ProcessQueuedInstancesAsync: Starting cleanup and processing");
+                
+                // Clean up null instances
+                await Core.TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
+                
+                var toProcess = queuedInstances.ToList();
+                logger.Msg(3, string.Format("ProcessQueuedInstancesAsync: Processing {0} queued instances", toProcess.Count));
+                
+                foreach (var instance in toProcess)
+                {
+                    try
+                    {
+                        if (instance == null)
+                        {
+                            logger.Warn(1, "ProcessQueuedInstancesAsync: Skipping null instance");
+                            continue;
+                        }
+
+                        if (await Core.TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
+                        {
+                            logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
+                            continue;
+                        }
+                        
+                        if (instance.StartThrehold == null)
+                        {
+                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
+                            continue;
+                        }
+                        
+                        var mixerData = await Core.TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
+                        if (mixerData == null)
+                        {
+                            try
+                            {
+                                logger.Msg(3, "ProcessQueuedInstancesAsync: Configuring new mixer...");
+                                instance.StartThrehold.Configure(1f, 20f, true);
+                                logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
+
+                                var newTrackedMixer = new Core.TrackedMixer
+                                {
+                                    ConfigInstance = instance,
+                                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
+                                };
+                                await Core.TrackedMixers.AddAsync(newTrackedMixer);
+                                logger.Msg(2, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
+
+                                if (!newTrackedMixer.ListenerAdded)
+                                {
+                                    logger.Msg(3, string.Format("Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
+                                    Helpers.Utils.CoroutineHelper.RunCoroutine(Save.CrashResistantSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
+                                    newTrackedMixer.ListenerAdded = true;
+                                }
+                                
+                                // Restore saved value if exists
+                                float savedValue;
+                                if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
+                                {
+                                    logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
+                                    instance.StartThrehold.SetValue(savedValue, true);
+                                }
+                            }
+                            catch (Exception mixerEx)
+                            {
+                                logger.Err(string.Format("Error configuring individual mixer: {0}\n{1}", mixerEx.Message, mixerEx.StackTrace));
+                                // Continue processing other mixers despite this failure
+                            }
+                        }
+                    }
+                    catch (Exception instanceEx)
+                    {
+                        logger.Err(string.Format("Error processing individual instance: {0}\n{1}", instanceEx.Message, instanceEx.StackTrace));
+                        // Continue processing other instances despite this failure
+                    }
+                }
+                
+                queuedInstances.Clear();
+                logger.Msg(3, "ProcessQueuedInstancesAsync: Completed successfully");
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("ProcessQueuedInstancesAsync: Critical failure: {0}\n{1}", ex.Message, ex.StackTrace));
+                // Ensure we don't leave the system in a bad state
+                try
+                {
+                    queuedInstances.Clear();
+                }
+                catch 
+                {
+                    // Even clearing failed - something is seriously wrong
+                    logger.Err("ProcessQueuedInstancesAsync: Even queue clearing failed!");
+                }
+            }
+        }
+
         public async static Task<bool> MixerExists(int mixerInstanceID)
         {
             var diagnostics = new Helpers.FileOperationDiagnostics();
