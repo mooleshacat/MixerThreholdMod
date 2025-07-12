@@ -65,6 +65,7 @@ namespace MixerThreholdMod_0_0_1
                 }
             }
             }
+            }
             catch (Exception ex)
             {
                 // catchall at patch level, where my DLL interacts with the game and it's engine
