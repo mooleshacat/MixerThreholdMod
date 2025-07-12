@@ -131,8 +131,13 @@ namespace MixerThreholdMod_1_0_0
 
     public class Main : MelonMod
     {
-        public static readonly Logger logger = new Logger();
-        private static List<MixingStationConfiguration> queuedInstances = new List<MixingStationConfiguration>();
+        public static Main Instance { get; private set; }
+        public static MelonPreferences_Entry<bool> debugLoggingEnabledEntry;
+        public static MelonPreferences_Entry<bool> showLogLevelCalcEntry;
+        public static MelonPreferences_Entry<int> currentMsgLogLevelEntry;
+        public static MelonPreferences_Entry<int> currentWarnLogLevelEntry;
+        public static readonly Core.Logger logger = new Core.Logger();
+        public static List<MixingStationConfiguration> queuedInstances = new List<MixingStationConfiguration>();
         public static Dictionary<MixingStationConfiguration, float> userSetValues = new Dictionary<MixingStationConfiguration, float>();
 
         public static Dictionary<int, float> savedMixerValues = new Dictionary<int, float>();
@@ -142,6 +147,7 @@ namespace MixerThreholdMod_1_0_0
 
         public override void OnInitializeMelon()
         {
+            Instance = this;
             base.OnInitializeMelon();
             // Global unhandled exception handler
             UnhandledExceptionEventHandler value = (sender, args) =>

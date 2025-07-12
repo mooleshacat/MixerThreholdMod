@@ -39,15 +39,8 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     Main.logger?.Msg(2, "[BRIDGE] Initializing GameLoggerBridge patches");
 
-                    // ✅ ULTRA-SAFE: Check Harmony availability first
-                    if (Main.HarmonyInstance == null)
-                    {
-                        Main.logger?.Err("[BRIDGE] Harmony instance not available for logging bridge initialization");
-                        return;
-                    }
-
-                    var harmony = Main.HarmonyInstance;
-                    Main.logger?.Msg(3, "[BRIDGE] Harmony instance obtained successfully");
+                    // Apply Harmony patches to intercept game logging
+                    var harmony = Main.Instance.HarmonyInstance;
 
                     // ✅ ULTRA-SAFE: Patch ScheduleOne.Console.Log with comprehensive null checking
                     try
