@@ -67,24 +67,15 @@ namespace MixerThreholdMod_0_0_1
     /// </summary>
     public class Main : MelonMod
     {
-        public static MelonPreferences_Entry<bool> debugLoggingEnabledEntry;
-        public static MelonPreferences_Entry<bool> showLogLevelCalcEntry;
-        public static MelonPreferences_Entry<int> currentMsgLogLevelEntry;
-        public static MelonPreferences_Entry<int> currentWarnLogLevelEntry;
-        public static readonly Core.Logger logger = new Core.Logger();
-        
-        // IL2CPP COMPATIBLE: Use compile-time known collection types with proper generic constraints
-        public static List<MixingStationConfiguration> queuedInstances = new List<MixingStationConfiguration>();
-        public static Dictionary<MixingStationConfiguration, float> userSetValues = new Dictionary<MixingStationConfiguration, float>();
-=======
-        public static readonly Core.Logger logger = new Core.Logger();
-        
-        // IL2CPP COMPATIBLE: Use object instead of specific types to avoid TypeLoadException in IL2CPP builds
-        // Types will be resolved dynamically using IL2CPPTypeResolver when needed
-        public static List<object> queuedInstances = new List<object>();
-        public static Dictionary<object, float> userSetValues = new Dictionary<object, float>();
-        public static ConcurrentDictionary<int, float> savedMixerValues = new ConcurrentDictionary<int, float>();
-        
+        // Core components
+        public static readonly MixerThreholdMod_1_0_0.Core.Logger logger = new MixerThreholdMod_1_0_0.Core.Logger();
+        public static new HarmonyLib.Harmony HarmonyInstance = new HarmonyLib.Harmony("com.mooleshacat.mixerthreholdmod");
+
+        // Thread-safe collections for .NET 4.8.1 compatibility
+        public static readonly ThreadSafeList<MixingStationConfiguration> queuedInstances = new ThreadSafeList<MixingStationConfiguration>();
+        public static readonly ConcurrentDictionary<int, float> savedMixerValues = new ConcurrentDictionary<int, float>();
+
+        // State management
         public static string CurrentSavePath = null;
         public override void OnInitializeMelon()
         {
