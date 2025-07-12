@@ -7,8 +7,6 @@ using System.Threading;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
-<<<<<<< HEAD
-=======
     /// <summary>
     /// Cancellable I/O operation runner for .NET 4.8.1 compatibility.
     /// Provides safe execution of I/O operations with proper cancellation support.
@@ -31,7 +29,6 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// - Provides timeout and cancellation mechanisms
     /// - Integrates with the mod's logging system
     /// </summary>
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     public static class CancellableIoRunner
     {
         /// <summary>

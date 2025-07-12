@@ -17,11 +17,27 @@ namespace MixerThreholdMod_0_0_1
 namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
-    /// ⚠️ THREAD SAFETY: All utility operations are thread-safe and designed for concurrent access
-    /// ⚠️ .NET 4.8.1 Compatible: Uses compatible syntax and exception handling patterns
-    /// ⚠️ MAIN THREAD WARNING: Utility operations are non-blocking and thread-safe
+    /// General utility helpers for coroutine management and common operations.
+    /// Provides thread-safe coroutine execution and path normalization utilities.
+    /// 
+    /// ⚠️ THREAD SAFETY: CoroutineHelper is thread-safe and can be accessed from any thread.
+    /// All operations include proper error handling to prevent crashes.
+    /// 
+    /// ⚠️ MAIN THREAD WARNING: Coroutines must be started from Unity's main thread.
+    /// The CoroutineHelper handles thread safety for coroutine scheduling.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses string.Format instead of string interpolation
+    /// - Compatible exception handling patterns
+    /// - Proper singleton implementation with thread safety
+    /// 
+    /// Key Features:
+    /// - Thread-safe coroutine management
+    /// - Automatic error handling and logging
+    /// - Path normalization utilities
+    /// - Directory creation helpers with proper error handling
     /// </summary>
-    public class Utils
+    public static class UtilityHelpers
     {
         public class CoroutineHelper : MonoBehaviour
         {

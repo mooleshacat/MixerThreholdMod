@@ -14,6 +14,32 @@ using UnityEngine;
 
 namespace MixerThreholdMod_1_0_0.Utils
 {
+    /// <summary>
+    /// Comprehensive mixer save/load management system with crash prevention focus.
+    /// Handles mixer value persistence, backup management, and event attachment.
+    /// 
+    /// ⚠️ CRASH PREVENTION FOCUS: This system is specifically designed to prevent 
+    /// save corruption and data loss during crashes, repeated saves, and extended gameplay.
+    /// 
+    /// ⚠️ THREAD SAFETY: All save operations are thread-safe with proper locking mechanisms.
+    /// Coroutines are used to prevent blocking Unity's main thread during file operations.
+    /// 
+    /// ⚠️ MAIN THREAD WARNING: Emergency save methods are designed for crash scenarios and 
+    /// use blocking I/O. Regular save operations use coroutines to avoid main thread blocking.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses string.Format instead of string interpolation
+    /// - Compatible async patterns with proper ConfigureAwait usage
+    /// - Manual dictionary operations instead of modern LINQ where needed
+    /// - Proper exception handling and resource cleanup
+    /// 
+    /// Key Features:
+    /// - Save cooldown system to prevent corruption from rapid saves
+    /// - Automatic backup creation and cleanup (maintains 5 most recent)
+    /// - Event attachment with multiple fallback strategies
+    /// - Emergency save functionality for crash scenarios
+    /// - Atomic file operations with temp file + rename strategy
+    /// </summary>
     public static class MixerSaveManager
     {
         // Concurrency protection fields
