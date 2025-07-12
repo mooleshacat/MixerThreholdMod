@@ -73,7 +73,7 @@ namespace MixerThreholdMod_1_0_0
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             logger.Msg(1, "[MAIN] MixerThresholdMod initializing - focused on save crash prevention");
-            logger.Msg(1, string.Format("[MAIN] Debug levels - Msg: {0}, Warn: {1}", logger.CurrentMsgLogLevel, logger.Current_warnLogLevel));
+            logger.Msg(1, string.Format("[MAIN] Debug levels - Msg: {0}, Warn: {1}", logger.CurrentMsgLogLevel, logger.CurrentWarnLogLevel));
 
             Exception initError = null;
             try
