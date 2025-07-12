@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 
-namespace MixerThreholdMod_1_0_0.Helpers
+namespace MixerThreholdMod_1_0_0.Utils
 {
     /// <summary>
     /// Comprehensive mixer save/load management system with crash prevention focus.
@@ -501,8 +501,20 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
                 catch (Exception ex)
                 {
-                    saveError = ex;
-                    saveCompleted = true;
+                    ["MixerValues"] = mixerValuesDict,
+                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    ["Version"] = "1.0.0"
+                };
+
+                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+                // Write to temp file first, then rename for atomic operation
+                string tempFile = saveFile + ".tmp";
+                File.WriteAllText(tempFile, json);
+
+                if (File.Exists(saveFile))
+                {
+                    File.Delete(saveFile);
                 }
             });
 

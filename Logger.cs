@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static ScheduleOne.Console;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0
 {
     public class Logger
     {

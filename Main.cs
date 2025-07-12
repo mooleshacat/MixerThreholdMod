@@ -1,7 +1,9 @@
 ﻿using HarmonyLib;
 using MelonLoader;
 using MelonLoader.Utils;
-using Newtonsoft.Json;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Save;
+using MixerThreholdMod_1_0_0.Threading;
 using ScheduleOne.Management;
 using ScheduleOne.Noise;
 using ScheduleOne.ObjectScripts;
@@ -24,16 +26,11 @@ using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our con
 using MixerThreholdMod_1_0_0.Helpers; // ✅ NEEDED
 using MixerThreholdMod_1_0_0.Save;    // ✅ NEEDED
 
-// Reminder: Add to steam game startup command: "--melonloader.captureplayerlogs" for extra MelonLogger verbosity :)
-
-// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-
-[assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), ModConstants.MOD_NAME, ModConstants.VERSION, "mooleshacat")]
+// Assembly attributes must come first, before namespace
+[assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), "MixerThreholdMod", "1.0.0", "mooleshacat")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0
 {
     public class Main : MelonMod
     {

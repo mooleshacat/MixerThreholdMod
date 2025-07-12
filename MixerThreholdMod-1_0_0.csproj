@@ -10,8 +10,8 @@
     <ProjectGuid>{17E5161C-09CB-40A1-B3AE-2D7E968E8660}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MixerThreholdMod_0_0_1</RootNamespace>
-    <AssemblyName>MixerThreholdMod-0_0_1</AssemblyName>
+    <RootNamespace>MixerThreholdMod_1_0_0</RootNamespace>
+    <AssemblyName>MixerThreholdMod-1_0_0</AssemblyName>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
