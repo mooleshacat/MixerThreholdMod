@@ -79,23 +79,34 @@ namespace MixerThreholdMod_1_0_0.Core
                         {
                             Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field type: {0}", commandsField.FieldType));
                             
-                            var commandsDict = commandsField.GetValue(null) as System.Collections.IDictionary;
-                            Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary retrieved: {0}", commandsDict != null ? "YES" : "NO"));
-                            
-                            if (commandsDict != null)
+                            // Check if it's a Dictionary type first
+                            if (commandsField.FieldType.IsGenericType && 
+                                commandsField.FieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
                             {
-                                Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary count: {0}", commandsDict.Count));
+                                var commandsDict = commandsField.GetValue(null) as System.Collections.IDictionary;
+                                Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary retrieved: {0}", commandsDict != null ? "YES" : "NO"));
                                 
-                                // Add mod commands to game's native console using reflection-based approach
-                                AddModCommandsToGameConsole(commandsDict, consoleType);
+                                if (commandsDict != null)
+                                {
+                                    Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary count: {0}", commandsDict.Count));
+                                    
+                                    // Add mod commands to game's native console using reflection-based approach
+                                    AddModCommandsToGameConsole(commandsDict, consoleType);
 
-                                _isInitialized = true;
-                                Main.logger?.Msg(1, "[BRIDGE] Successfully integrated mod commands into game console");
+                                    _isInitialized = true;
+                                    Main.logger?.Msg(1, "[BRIDGE] Successfully integrated mod commands into game console");
+                                }
+                                else
+                                {
+                                    Main.logger?.Warn(1, "[BRIDGE] Could not access game's commands dictionary - may not be initialized yet");
+                                    // Try alternative approaches
+                                    TryAlternativeConsoleIntegration(consoleType);
+                                }
                             }
                             else
                             {
-                                Main.logger?.Warn(1, "[BRIDGE] Could not access game's commands dictionary - may not be initialized yet");
-                                // Try alternative approaches
+                                Main.logger?.Warn(1, string.Format("[BRIDGE] Commands field is not a Dictionary type: {0}", commandsField.FieldType));
+                                // Try alternative approaches for non-dictionary types
                                 TryAlternativeConsoleIntegration(consoleType);
                             }
                         }
@@ -125,8 +136,18 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
                 
                 // Regardless of native integration success, provide fallback information
-                Main.logger?.Msg(1, "[BRIDGE] Console commands available through manual processing:");
-                Main.logger?.Msg(1, "[BRIDGE] Use Core.Console.ProcessManualCommand(\"command\") for testing");
+                if (!_isInitialized)
+                {
+                    Main.logger?.Warn(1, "[BRIDGE] Native console integration failed - using manual command processing only");
+                    Main.logger?.Msg(1, "[BRIDGE] Console commands available through manual processing:");
+                    Main.logger?.Msg(1, "[BRIDGE] Use Core.Console.ProcessManualCommand(\"command\") for testing");
+                    Main.logger?.Msg(1, "[BRIDGE] Note: Commands may not appear in game's console help system");
+                }
+                else
+                {
+                    Main.logger?.Msg(1, "[BRIDGE] Console integration completed successfully");
+                    Main.logger?.Msg(1, "[BRIDGE] Commands should be available in game's native console system");
+                }
             }
         }
 
@@ -288,6 +309,15 @@ namespace MixerThreholdMod_1_0_0.Core
                     {
                         var paramTypes = string.Join(", ", method.GetParameters().Select(p => p.ParameterType.Name).ToArray());
                         Main.logger?.Msg(3, string.Format("[BRIDGE]   - {0}({1})", method.Name, paramTypes));
+                        
+                        // Look for promising methods to patch
+                        if (method.Name.ToLower().Contains("process") || 
+                            method.Name.ToLower().Contains("execute") || 
+                            method.Name.ToLower().Contains("command") ||
+                            method.Name.ToLower().Contains("parse"))
+                        {
+                            Main.logger?.Msg(2, string.Format("[BRIDGE] ** Potential command method: {0}({1})", method.Name, paramTypes));
+                        }
                     }
                 }
             }
