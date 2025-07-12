@@ -471,10 +471,7 @@ namespace MixerThreholdMod_1_0_0
             isShuttingDown = true;
             logger.Msg(1, "[MAIN] Application shutting down - performing cleanup");
 
-        public static IEnumerator PerformTransactionalSave()
-        {
-            logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
-            
+            Exception quitError = null;
             try
             {
                 // Stop main coroutine
@@ -498,14 +495,21 @@ namespace MixerThreholdMod_1_0_0
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
-                logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
+                logger.Err(string.Format("[MAIN] CopyEmergencySaveIfExists error: {0}", ex.Message));
             }
         }
 
-        public static IEnumerator AdvancedSaveOperationProfiling()
+        /// <summary>
+        /// Application quit handler with emergency save
+        /// </summary>
+        public override void OnApplicationQuit()
         {
-            logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
+            isShuttingDown = true;
+            logger.Msg(1, "[MAIN] Application shutting down - performing cleanup");
+
+        public static IEnumerator PerformTransactionalSave()
+        {
+            logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
             
             try
             {
