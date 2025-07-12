@@ -27,6 +27,7 @@ namespace MixerThreholdMod_1_0_0
 {
     public class Main : MelonMod
     {
+        public static Main Instance { get; private set; }
         public static MelonPreferences_Entry<bool> debugLoggingEnabledEntry;
         public static MelonPreferences_Entry<bool> showLogLevelCalcEntry;
         public static MelonPreferences_Entry<int> currentMsgLogLevelEntry;
@@ -40,6 +41,7 @@ namespace MixerThreholdMod_1_0_0
 
         public override void OnInitializeMelon()
         {
+            Instance = this;
             base.OnInitializeMelon();
             logger.Msg(1, "MixerThreholdMod initializing...");
             logger.Msg(1, string.Format("currentMsgLogLevel: {0}", logger.CurrentMsgLogLevel));

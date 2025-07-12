@@ -40,7 +40,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(2, "[BRIDGE] Initializing GameLoggerBridge patches");
 
                     // Apply Harmony patches to intercept game logging
-                    var harmony = Main.HarmonyInstance;
+                    var harmony = Main.Instance.HarmonyInstance;
 
                     // Patch ScheduleOne.Console.Log
                     var logMethod = AccessTools.Method(typeof(ScheduleOne.Console), "Log", new Type[] { typeof(object), typeof(UnityEngine.Object) });
