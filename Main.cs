@@ -99,7 +99,12 @@ namespace MixerThreholdMod_1_0_0
                     // Also initialize native console integration for game console commands
                     logger.Msg(1, "Phase 4b: Initializing native game console integration...");
                     Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
-                    logger.Msg(1, "Phase 4: Console commands registered successfully");
+                    logger.Msg(1, "Phase 4c: Console commands registered successfully");
+                    
+                    // Initialize game logger bridge for exception monitoring
+                    logger.Msg(1, "Phase 5: Initializing game exception monitoring...");
+                    Core.GameLoggerBridge.InitializeLoggingBridge();
+                    logger.Msg(1, "Phase 5: Game exception monitoring initialized");
                     
                     logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
                 }
@@ -419,7 +424,6 @@ namespace MixerThreholdMod_1_0_0
             logger.Msg(2, "[TRANSACTION] Performing save operation...");
             
             var saveStart = DateTime.Now;
-            bool saveSuccess = false;
             
             // Perform the save operation - yield return outside try/catch for .NET 4.8.1 compatibility
             yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
@@ -428,7 +432,6 @@ namespace MixerThreholdMod_1_0_0
             {
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
                 logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
-                saveSuccess = true;
             }
             catch (Exception ex)
             {
@@ -447,23 +450,34 @@ namespace MixerThreholdMod_1_0_0
             logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
             var phase1Start = DateTime.Now;
             
+            double phase1Time = 0;
+            double phase2Time = 0;
+            double phase3Time = 0;
+            Exception profileError = null;
+            
             try
             {
                 logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
                 logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
                 logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
                 
-                var phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
+                phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
-                
-                // Phase 2: Save operation profiling
-                logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
-                var phase2Start = DateTime.Now;
-                
-                // Move yield return outside try/catch for .NET 4.8.1 compatibility
-                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-                
-                var phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
+            }
+            catch (Exception ex)
+            {
+                profileError = ex;
+            }
+            
+            // Phase 2: Save operation profiling - yield return outside try/catch for .NET 4.8.1 compatibility
+            logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
+            var phase2Start = DateTime.Now;
+            
+            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+            
+            try
+            {
+                phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
                 
                 // Phase 3: Post-save diagnostics
@@ -473,7 +487,7 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
                 logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
                 
-                var phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
+                phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
                 
                 var totalTime = (DateTime.Now - profileStart).TotalMilliseconds;
@@ -483,7 +497,17 @@ namespace MixerThreholdMod_1_0_0
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("[PROFILE] Advanced profiling FAILED: {0}", ex.Message));
+                if (profileError != null)
+                {
+                    logger.Err(string.Format("[PROFILE] Advanced profiling FAILED in Phase 1: {0}", profileError.Message));
+                }
+                logger.Err(string.Format("[PROFILE] Advanced profiling FAILED in Phase 2/3: {0}", ex.Message));
+            }
+            
+            // Log phase 1 error if no other errors occurred
+            if (profileError != null)
+            {
+                logger.Err(string.Format("[PROFILE] Advanced profiling had Phase 1 error: {0}", profileError.Message));
             }
         }
     }

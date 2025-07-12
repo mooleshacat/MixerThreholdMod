@@ -21,6 +21,47 @@ A comprehensive mod for **Schedule 1** that enhances the mixer system with crash
 2. Extract to your Schedule 1 Mods directory
 3. Launch game - mod auto-initializes with comprehensive logging
 
+## Console Commands 🎮
+
+The mod provides several powerful console commands for testing, monitoring, and advanced save operations:
+
+### Available Commands
+
+#### `savemonitor <count> [delay] [bypass]`
+Comprehensive save monitoring with multi-method validation:
+```
+savemonitor 5                    # 5 saves, no delay, bypass cooldown
+savemonitor 3 2.0               # 3 saves, 2s delay, bypass cooldown  
+savemonitor 10 false            # 10 saves, no delay, respect cooldown
+savemonitor 5 1.5 false         # 5 saves, 1.5s delay, respect cooldown
+```
+
+#### `transactionalsave`
+Performs atomic transactional save operation with timing and error recovery:
+```
+transactionalsave               # Single save with comprehensive logging
+```
+
+#### `profile`
+Advanced save operation profiling with memory tracking and phase breakdown:
+```
+profile                         # Full save profiling with detailed metrics
+```
+
+### Console Access
+
+**In-Game Console**: Open with `F4` (MelonLoader console) or use the game's console system
+**Command Format**: Type command directly (no prefix required)
+**Logging**: All commands provide detailed output and error reporting
+
+### Command Features
+
+- **Thread-safe execution** - All commands respect main thread safety
+- **Comprehensive logging** - Detailed progress and error reporting  
+- **Performance metrics** - Timing and memory usage tracking
+- **Error recovery** - Graceful handling of save failures
+- **Cooldown management** - Bypass or respect save cooldown systems
+
 ## Save Backup System 🗃️
 
 **Automatic Protection**: Every save operation creates timestamped backups in:
