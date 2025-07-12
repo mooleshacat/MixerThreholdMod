@@ -78,7 +78,7 @@ namespace MixerThreholdMod_0_0_1
 
                 // Start the update coroutine instead of using async OnUpdate
                 updateCoroutine = MelonCoroutines.Start(UpdateCoroutine());
-                logger.Msg(2, "Update coroutine started successfully");
+                logger.Msg(3, "Update coroutine started, caller method continues successfully");
             }
             catch (Exception ex)
             {
@@ -109,7 +109,7 @@ namespace MixerThreholdMod_0_0_1
         // New coroutine-based update system
         private IEnumerator UpdateCoroutine()
         {
-            Main.logger.Msg(2, "UpdateCoroutine started");
+            Main.logger.Msg(3, "UpdateCoroutine started (inside coroutine)");
             while (true)
             {
                 // Move try-catch inside the loop, but keep yield outside try blocks
@@ -146,11 +146,12 @@ namespace MixerThreholdMod_0_0_1
 
                 yield return new WaitForSeconds(0.1f); // Process every 100ms instead of every frame
             }
+            Main.logger.Msg(3, "UpdateCoroutine finished (inside coroutine)");
         }
 
         private IEnumerator ProcessQueuedInstances()
         {
-            Main.logger.Msg(4, "ProcessQueuedInstances started");
+            Main.logger.Msg(3, "ProcessQueuedInstances started");
 
             // Handle cleanup with separate error handling - NO yield in try-catch
             Task cleanupTask = null;
@@ -240,11 +241,12 @@ namespace MixerThreholdMod_0_0_1
                 // Yield occasionally to prevent frame drops
                 yield return null;
             }
+            Main.logger.Msg(3, "ProcessQueuedInstances finished");
         }
 
         private IEnumerator ProcessSingleInstance(MixingStationConfiguration instance)
         {
-            Main.logger.Msg(4, "Processing single instance");
+            Main.logger.Msg(3, "Processing single instance started");
 
             // Check if already tracked - NO yield in try-catch
             Task<bool> existsTask = null;
@@ -313,11 +315,12 @@ namespace MixerThreholdMod_0_0_1
             {
                 yield return createCoroutine;
             }
+            Main.logger.Msg(3, "Processing single instance finished");
         }
 
         private IEnumerator CreateTrackedMixer(MixingStationConfiguration instance)
         {
-            Main.logger.Msg(3, "Creating tracked mixer");
+            Main.logger.Msg(3, "Creating tracked mixer started");
 
             TrackedMixer newTrackedMixer = null;
             Exception mixerError = null;
@@ -406,6 +409,7 @@ namespace MixerThreholdMod_0_0_1
             {
                 Main.logger.Err(string.Format("Error setting up mixer listener/restore: {0}", listenerError));
             }
+            Main.logger.Msg(3, "Creating tracked mixer finished");
         }
 
         // Wrapper methods for async operations with proper error handling
