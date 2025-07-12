@@ -1754,7 +1754,12 @@ namespace MixerThreholdMod_0_0_1
                 result = false;
             }
 
-            return result;
+            if (checkError != null)
+            {
+                logger.Err(string.Format("[MAIN] CheckIfAlreadyTracked: Error: {0}", checkError.Message));
+            }
+
+            callback(result);
         }
 
         /// <summary>
