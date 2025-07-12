@@ -14,57 +14,30 @@ namespace MixerThreholdMod_0_0_1.Utils
 {
     public static class MixerSaveManager
     {
-        // Concurrency protection fields
-        private static bool isBackupInProgress = false;
-        private static readonly object backupLock = new object();
-        private static bool isSaveInProgress = false;
-        private static readonly object saveLock = new object();
-        private static DateTime lastSaveTime = DateTime.MinValue;
-        private static readonly TimeSpan SAVE_COOLDOWN = TimeSpan.FromSeconds(1);
+        private static CancellationTokenSource saveCts = new CancellationTokenSource();
+        public static ConcurrentDictionary<int, float> SavedMixerValues = new ConcurrentDictionary<int, float>();
 
-        public static IEnumerator LoadMixerValuesWhenReady()
+        // Constants for file operations
+        private const int MaxRetries = 5;
+        private const int RetryDelayMs = 500;
+        private static readonly string LockFilePath = Path.Combine(MelonEnvironment.UserDataDirectory, "mixer_save.lock");
+
+        public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration instance, int uniqueID)
         {
-            Main.logger.Msg(3, "LoadMixerValuesWhenReady: Started");
+            Main.logger.Msg(3, $"AttachListenerWhenReady started for Mixer {uniqueID}");
 
-            // Wait until we have a valid save path - NO try-catch around yield
-            while (string.IsNullOrEmpty(Main.CurrentSavePath))
+            // Safety check: bail if instance is null
+            if (instance == null)
             {
-                yield return new WaitForSeconds(0.5f);
+                Main.logger.Warn(1, $"Instance is null — cannot attach listener for Mixer {uniqueID}");
+                yield break;
             }
 
-            Main.logger.Msg(3, string.Format("LoadMixerValuesWhenReady: Save path available: {0}", Main.CurrentSavePath));
+            // Wait for StartThrehold to become available, but only while instance exists
+            int waitAttempts = 0;
+            const int maxWaitAttempts = 100; // Prevent infinite loop
 
-            Exception loadError = null;
-            try
-            {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
-
-                if (File.Exists(saveFile))
-                {
-                    Main.logger.Msg(2, "LoadMixerValuesWhenReady: Loading saved mixer values");
-
-                    string json = File.ReadAllText(saveFile);
-                    var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-
-                    if (data != null && data.ContainsKey("MixerValues"))
-                    {
-                        var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data["MixerValues"].ToString());
-
-                        foreach (var kvp in mixerValues)
-                        {
-                            // .NET 4.8.1 compatible ConcurrentDictionary usage
-                            Main.savedMixerValues.TryAdd(kvp.Key, kvp.Value);
-                        }
-
-                        Main.logger.Msg(2, string.Format("LoadMixerValuesWhenReady: Loaded {0} mixer values", mixerValues.Count));
-                    }
-                }
-                else
-                {
-                    Main.logger.Msg(2, "LoadMixerValuesWhenReady: No save file found, starting fresh");
-                }
-            }
-            catch (Exception ex)
+            while (instance != null && instance.StartThrehold == null && waitAttempts < maxWaitAttempts)
             {
                 loadError = ex;
             }
@@ -74,7 +47,24 @@ namespace MixerThreholdMod_0_0_1.Utils
                 Main.logger.Err(string.Format("LoadMixerValuesWhenReady error: {0}\nStackTrace: {1}", loadError.Message, loadError.StackTrace));
             }
 
-            Main.logger.Msg(3, "LoadMixerValuesWhenReady: Finished");
+            if (instance.StartThrehold == null)
+            {
+                Main.logger.Warn(1, $"StartThrehold never became available after {maxWaitAttempts} attempts — Mixer {uniqueID}");
+                yield break;
+            }
+
+            // Process mixer setup on a separate thread to handle exceptions properly
+            Task.Run(() =>
+            {
+                try
+                {
+                    ProcessMixerSetupSafely(instance, uniqueID);
+                }
+                catch (Exception ex)
+                {
+                    Main.logger.Err($"AttachListenerWhenReady: Error in background setup for Mixer {uniqueID}: {ex.Message}\n{ex.StackTrace}");
+                }
+            });
         }
 
         public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
@@ -107,17 +97,12 @@ namespace MixerThreholdMod_0_0_1.Utils
                     var eventInfo = numberFieldType.GetEvent(eventName, BindingFlags.Public | BindingFlags.Instance);
                     if (eventInfo != null && eventInfo.EventHandlerType != null)
                     {
-                        Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Found event {0} for Mixer {1}", eventName, mixerID));
-
-                        // Create a delegate that matches the event signature
-                        var handler = CreateEventHandler(eventInfo.EventHandlerType, mixerID);
-                        if (handler != null)
-                        {
-                            eventInfo.AddEventHandler(config.StartThrehold, handler);
-                            eventAttached = true;
-                            Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Successfully attached to {0} event for Mixer {1}", eventName, mixerID));
-                            break;
-                        }
+                        instance.StartThrehold.SetValue(savedValue, true);
+                        Main.logger.Msg(3, $"Restored Mixer {uniqueID} to saved value: {savedValue}");
+                    }
+                    catch (Exception setEx)
+                    {
+                        Main.logger.Err($"ProcessMixerSetupSafely: Failed to set saved value for Mixer {uniqueID}: {setEx.Message}");
                     }
                 }
 
@@ -129,139 +114,35 @@ namespace MixerThreholdMod_0_0_1.Utils
                     {
                         if (field.FieldType.Name.Contains("UnityEvent") || field.FieldType.Name.Contains("Action"))
                         {
-                            Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Found potential event field: {0} of type {1}", field.Name, field.FieldType.Name));
-                        }
-                    }
-                }
-
-                // Method 3: Fallback to polling if no events available
-                if (!eventAttached)
-                {
-                    Main.logger.Msg(2, string.Format("AttachListenerWhenReady: No events found, using polling method for Mixer {0}", mixerID));
-                    MelonCoroutines.Start(PollValueChanges(config, mixerID));
-                    eventAttached = true; // Mark as handled
-                }
-            }
-            catch (Exception ex)
-            {
-                attachError = ex;
-            }
-
-            if (attachError != null)
-            {
-                Main.logger.Err(string.Format("AttachListenerWhenReady error for Mixer {0}: {1}\nStackTrace: {2}", mixerID, attachError.Message, attachError.StackTrace));
-
-                // Fallback to polling on error
-                if (!eventAttached)
-                {
-                    Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Falling back to polling for Mixer {0} due to error", mixerID));
-                    MelonCoroutines.Start(PollValueChanges(config, mixerID));
-                }
-            }
-
-            Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Finished for Mixer {0}", mixerID));
-        }
-
-        private static Delegate CreateEventHandler(Type eventHandlerType, int mixerID)
-        {
-            try
-            {
-                // Try to create a handler for common event signatures
-                if (eventHandlerType == typeof(Action<float>))
-                {
-                    return new Action<float>((float newValue) => OnValueChanged(mixerID, newValue));
-                }
-                else if (eventHandlerType == typeof(System.EventHandler))
-                {
-                    return new System.EventHandler((object sender, EventArgs e) => OnValueChangedGeneric(mixerID, sender));
-                }
-                else if (eventHandlerType.IsGenericType && eventHandlerType.GetGenericTypeDefinition() == typeof(Action<>))
-                {
-                    var paramType = eventHandlerType.GetGenericArguments()[0];
-                    if (paramType == typeof(float))
-                    {
-                        return new Action<float>((float newValue) => OnValueChanged(mixerID, newValue));
-                    }
-                }
-
-                Main.logger.Msg(3, string.Format("CreateEventHandler: Unsupported event handler type: {0}", eventHandlerType.Name));
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("CreateEventHandler error: {0}", ex.Message));
-                return null;
-            }
-        }
-
-        private static void OnValueChanged(int mixerID, float newValue)
-        {
-            Exception listenerError = null;
-            try
-            {
-                // .NET 4.8.1 compatible - use manual update instead of AddOrUpdate
-                float oldValue;
-                bool hasOldValue = Main.savedMixerValues.TryGetValue(mixerID, out oldValue);
-
-                if (!hasOldValue)
-                {
-                    Main.savedMixerValues.TryAdd(mixerID, newValue);
-                }
-                else
-                {
-                    Main.savedMixerValues.TryUpdate(mixerID, newValue, oldValue);
-                }
-
-                Main.logger.Msg(3, string.Format("Value changed for Mixer {0}: {1}", mixerID, newValue));
-
-                // Start save coroutine
-                MelonCoroutines.Start(SaveMixerValues());
-            }
-            catch (Exception ex)
-            {
-                listenerError = ex;
-            }
-
-            if (listenerError != null)
-            {
-                Main.logger.Err(string.Format("OnValueChanged error for Mixer {0}: {1}", mixerID, listenerError.Message));
-            }
-        }
-
-        private static void OnValueChangedGeneric(int mixerID, object sender)
-        {
-            Exception listenerError = null;
-            try
-            {
-                // Try to get the current value from the sender
-                if (sender != null)
-                {
-                    var senderType = sender.GetType();
-                    var valueProperty = senderType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-
-                    if (valueProperty != null && valueProperty.PropertyType == typeof(float))
-                    {
-                        float currentValue = (float)valueProperty.GetValue(sender, null);
-                        OnValueChanged(mixerID, currentValue);
+                            try
+                            {
+                                MixerSaveManager.SaveMixerValue(uniqueID, val);
+                                Main.logger.Msg(3, $"Mixer {uniqueID} changed to {val}");
+                            }
+                            catch (Exception saveEx)
+                            {
+                                Main.logger.Err($"ProcessMixerSetupSafely: Error in mixer value change listener for {uniqueID}: {saveEx.Message}");
+                            }
+                        });
+                        Main.logger.Msg(3, $"Successfully attached listener for Mixer {uniqueID}");
                     }
                     else
                     {
                         Main.logger.Msg(3, string.Format("OnValueChangedGeneric: Could not determine value for Mixer {0}", mixerID));
                     }
                 }
+                catch (Exception listenerEx)
+                {
+                    Main.logger.Err($"ProcessMixerSetupSafely: Failed to attach listener for Mixer {uniqueID}: {listenerEx.Message}");
+                }
             }
             catch (Exception ex)
             {
-                listenerError = ex;
-            }
-
-            if (listenerError != null)
-            {
-                Main.logger.Err(string.Format("OnValueChangedGeneric error for Mixer {0}: {1}", mixerID, listenerError.Message));
+                Main.logger.Err($"ProcessMixerSetupSafely: Critical error for Mixer {uniqueID}: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
-        private static IEnumerator PollValueChanges(MixingStationConfiguration config, int mixerID)
+        public static IEnumerator WriteMixerValuesAsync(string saveFolderPath)
         {
             Main.logger.Msg(3, string.Format("PollValueChanges: Started polling for Mixer {0}", mixerID));
 
@@ -359,67 +240,35 @@ namespace MixerThreholdMod_0_0_1.Utils
                 yield break;
             }
 
-            // Prevent concurrent saves
-            bool canProceed = false;
-            lock (saveLock)
+            // Move the Task.Run call outside of try-catch to avoid yield issues
+            var task = Task.Run(() => SaveMixerThresholds(saveFolderPath));
+
+            // Wait for completion without yielding inside try-catch
+            while (!task.IsCompleted)
             {
-                if (!isSaveInProgress)
-                {
-                    isSaveInProgress = true;
-                    lastSaveTime = DateTime.Now;
-                    canProceed = true;
-                }
+                yield return null;
             }
 
-            if (!canProceed)
+            // Check for errors after completion
+            if (task.IsFaulted)
             {
-                Main.logger.Warn(1, "SaveMixerValues: Already in progress, skipping duplicate call");
-                yield break;
+                Main.logger.Err($"WriteMixerValuesAsync: Task failed: {task.Exception?.GetBaseException()?.Message}");
             }
+        }
 
-            Main.logger.Msg(3, "SaveMixerValues: Started");
-
-            // Pre-validate before any yield returns
-            if (string.IsNullOrEmpty(Main.CurrentSavePath))
-            {
-                Main.logger.Warn(1, "SaveMixerValues: CurrentSavePath is null/empty, cannot save");
-                lock (saveLock)
-                {
-                    isSaveInProgress = false;
-                }
-                yield break;
-            }
-
-            if (Main.savedMixerValues.Count == 0)
-            {
-                Main.logger.Msg(3, "SaveMixerValues: No mixer values to save");
-                lock (saveLock)
-                {
-                    isSaveInProgress = false;
-                }
-                yield break;
-            }
-
-            // Check if backup is needed
-            bool needsBackup = ShouldCreateBackup();
-
-            if (needsBackup)
-            {
-                Main.logger.Msg(3, "SaveMixerValues: Starting backup coroutine");
-                // NO try-catch around yield return for .NET 4.8.1
-                yield return MelonCoroutines.Start(BackupSaveFolder());
-                Main.logger.Msg(3, "SaveMixerValues: Backup coroutine completed");
-            }
-            else
-            {
-                Main.logger.Msg(3, "SaveMixerValues: Skipping backup (recent backup exists)");
-            }
-
-            // Perform the actual save
-            Exception saveError = null;
+        private static void SaveMixerValue(int id, float value)
+        {
             try
             {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+                Main.logger.Msg(3, $"SaveMixerValue called for Mixer {id} with value {value}");
+
+                // Cancel any previous save operation
+                if (saveCts != null)
+                {
+                    saveCts.Cancel();
+                    saveCts.Dispose();
+                }
+                saveCts = new CancellationTokenSource();
 
                 // Convert to regular dictionary for JSON serialization - .NET 4.8.1 compatible
                 var mixerValuesDict = new Dictionary<int, float>();
@@ -428,7 +277,9 @@ namespace MixerThreholdMod_0_0_1.Utils
                     mixerValuesDict[kvp.Key] = kvp.Value;
                 }
 
-                var saveData = new Dictionary<string, object>
+                string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
+
+                if (string.IsNullOrEmpty(path))
                 {
                     ["MixerValues"] = mixerValuesDict,
                     ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -437,9 +288,7 @@ namespace MixerThreholdMod_0_0_1.Utils
 
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
 
-                // Write to temp file first, then rename for atomic operation
-                string tempFile = saveFile + ".tmp";
-                File.WriteAllText(tempFile, json);
+                bool success = await SafeWriteAllTextWithCancellationAsync(path, json, ct);
 
                 if (File.Exists(saveFile))
                 {
@@ -463,89 +312,270 @@ namespace MixerThreholdMod_0_0_1.Utils
             {
                 saveError = ex;
             }
-
-            // CRITICAL: Always reset the flag
-            lock (saveLock)
-            {
-                isSaveInProgress = false;
-            }
-
-            if (saveError != null)
-            {
-                Main.logger.Err(string.Format("SaveMixerValues error: {0}\nStackTrace: {1}", saveError.Message, saveError.StackTrace));
-            }
-
-            Main.logger.Msg(3, "SaveMixerValues: Finished and cleanup completed");
         }
 
-        public static IEnumerator BackupSaveFolder()
+        public static async Task<bool> SafeWriteAllTextWithCancellationAsync(string path, string output, CancellationToken ct)
         {
-            // Prevent multiple concurrent backup operations
-            bool canProceed = false;
-            lock (backupLock)
+            string normalizedPath = path.Replace('/', '\\');
+            for (int attempt = 1; attempt <= MaxRetries; attempt++)
             {
-                if (!isBackupInProgress)
+                if (ct.IsCancellationRequested)
                 {
-                    isBackupInProgress = true;
-                    canProceed = true;
+                    Main.logger.Warn(1, $"Operation canceled during SafeWriteAllTextWithCancellation for [{normalizedPath}]");
+                    return false;
+                }
+
+                try
+                {
+                    // Simple file write with retry logic - no complex locking for now
+                    using (var writer = new StreamWriter(path, false, Encoding.UTF8))
+                    {
+                        await writer.WriteAsync(output).ConfigureAwait(false);
+                    }
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Main.logger.Warn(1, $"Error writing to file [{path}] (attempt {attempt}/{MaxRetries}): {ex.Message}");
+                    if (attempt < MaxRetries)
+                    {
+                        await Task.Delay(RetryDelayMs * attempt, ct).ConfigureAwait(false);
+                    }
                 }
             }
+            return false;
+        }
 
-            if (!canProceed)
+        public static void SaveMixerThresholds(string saveFolderPath)
+        {
+            Utils.CoroutineHelper.RunCoroutine(SaveMixerThresholdsAsync(saveFolderPath));
+        }
+
+        public static bool _hasLoggedZeroMixers = false;
+
+        private static IEnumerator SaveMixerThresholdsAsync(string saveFolderPath)
+        {
+            if (string.IsNullOrEmpty(saveFolderPath))
             {
-                Main.logger.Warn(1, "BackupSaveFolder: Already in progress, skipping duplicate call");
+                Main.logger.Warn(1, "SaveMixerThresholdsAsync: saveFolderPath is null or empty");
                 yield break;
             }
 
-            Main.logger.Msg(3, "BackupSaveFolder: Started");
-
-            // Pre-validate before any yield returns
-            if (string.IsNullOrEmpty(Main.CurrentSavePath))
+            // Move Task.Run outside of try-catch to avoid yield issues
+            var saveTask = Task.Run(async () =>
             {
-                Main.logger.Warn(1, "BackupSaveFolder: CurrentSavePath is null/empty, cannot backup");
-                lock (backupLock)
+                string filePath = null;
+                try
                 {
-                    isBackupInProgress = false;
+                    Main.logger.Msg(3, $"SaveMixerThresholdsAsync: Starting save operation for folder: {saveFolderPath}");
+
+                    filePath = Path.Combine(saveFolderPath, "MixerThresholdSave.json").Replace('/', '\\');
+                    Main.logger.Msg(3, $"SaveMixerThresholdsAsync: Target file path: {filePath}");
+
+                    var _mixerCount = await TrackedMixers.CountAsync(tm => tm != null);
+                    var mixerIds = await TrackedMixers.SelectAsync(tm => tm?.MixerInstanceID ?? -1);
+                    var validMixerIds = mixerIds?.Where(id => id != -1)?.ToList() ?? new List<int>();
+
+                    Main.logger.Msg(3, $"Currently tracking {_mixerCount} mixers: {string.Join(", ", validMixerIds)}");
+
+                    if (_mixerCount == 0)
+                    {
+                        if (!_hasLoggedZeroMixers)
+                        {
+                            Main.logger.Msg(2, "No mixers tracked (maybe you have none?) — skipping mixer threshold prefs save/create.");
+                            Main.logger.Warn(1, "No mixers tracked (maybe you have none?) — suppressing future logs until reload save.");
+                            _hasLoggedZeroMixers = true;
+                        }
+                        return;
+                    }
+
+                    var mixerDataSnapshot = new Dictionary<int, float>();
+                    var trackedMixers = await TrackedMixers.ToListAsync();
+
+                    if (trackedMixers == null)
+                    {
+                        Main.logger.Warn(1, "SaveMixerThresholdsAsync: TrackedMixers.ToListAsync returned null");
+                        return;
+                    }
+
+                    foreach (var tm in trackedMixers)
+                    {
+                        try
+                        {
+                            if (tm == null)
+                            {
+                                Main.logger.Msg(3, $"Skipping null tracker mixer entry");
+                                continue;
+                            }
+
+                            if (tm.ConfigInstance == null)
+                            {
+                                Main.logger.Warn(1, $"Removing tracker with null ConfigInstance: {tm.MixerInstanceID}");
+                                await TrackedMixers.RemoveAsync(tm.ConfigInstance);
+                                continue;
+                            }
+
+                            if (tm.ConfigInstance.StartThrehold == null)
+                            {
+                                Main.logger.Warn(1, $"Removing tracker with null StartThrehold: {tm.MixerInstanceID}");
+                                await TrackedMixers.RemoveAsync(tm.ConfigInstance);
+                                continue;
+                            }
+
+                            try
+                            {
+                                float currentValue = tm.ConfigInstance.StartThrehold.Value;
+                                mixerDataSnapshot[tm.MixerInstanceID] = currentValue;
+                                Main.logger.Msg(3, $"Captured Mixer {tm.MixerInstanceID} value: {currentValue}");
+                            }
+                            catch (Exception valueEx)
+                            {
+                                Main.logger.Err($"SaveMixerThresholdsAsync: Error reading value from mixer {tm.MixerInstanceID}: {valueEx.Message}");
+                            }
+                        }
+                        catch (Exception tmEx)
+                        {
+                            Main.logger.Err($"SaveMixerThresholdsAsync: Error processing tracked mixer {tm?.MixerInstanceID ?? -1}: {tmEx.Message}");
+                        }
+                    }
+
+                    if (mixerDataSnapshot.Count == 0)
+                    {
+                        Main.logger.Msg(2, "No valid mixer data to save");
+                        return;
+                    }
+
+                    string json = JsonConvert.SerializeObject(new MixerThresholdSaveData
+                    {
+                        MixerValues = mixerDataSnapshot
+                    }, Formatting.Indented);
+
+                    bool success = false;
+                    int attempts = 0;
+                    const int maxAttempts = 5;
+
+                    while (!success && attempts < maxAttempts)
+                    {
+                        try
+                        {
+                            attempts++;
+                            Main.logger.Msg(3, $"SaveMixerThresholdsAsync: File write attempt {attempts}/{maxAttempts}");
+
+                            // Using SafeWriteAllText from FileOperations
+                            FileOperations.SafeWriteAllText(filePath, json);
+                            Main.logger.Msg(1, $"Saved {mixerDataSnapshot.Count} mixer thresholds to {filePath}.");
+                            success = true;
+                        }
+                        catch (IOException ioEx)
+                        {
+                            Main.logger.Warn(1, $"File write failed [{filePath}] (attempt {attempts}/{maxAttempts}), retrying... {ioEx.Message}");
+                            if (attempts < maxAttempts)
+                            {
+                                Thread.Sleep(500);
+                            }
+                        }
+                        catch (Exception writeEx)
+                        {
+                            Main.logger.Err($"SaveMixerThresholdsAsync: Unexpected error saving mixer file [{filePath}] (attempt {attempts}): {writeEx.Message}\n{writeEx.StackTrace}");
+                            break;
+                        }
+                    }
+
+                    if (!success)
+                    {
+                        Main.logger.Err($"SaveMixerThresholdsAsync: Failed to save mixer file after {maxAttempts} attempts: {filePath}");
+                    }
                 }
-                yield break;
+                catch (Exception ex)
+                {
+                    Main.logger.Err($"SaveMixerThresholdsAsync: Critical error during saving [{filePath ?? "unknown"}]");
+                    Main.logger.Err($"SaveMixerThresholdsAsync: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+                finally
+                {
+                    Main.logger.Msg(3, "SaveMixerThresholdsAsync: Mixer save operation completed.");
+                }
+            });
+
+            // Wait for task completion without yielding inside try-catch
+            while (!saveTask.IsCompleted)
+            {
+                yield return null;
             }
 
-            // Add timeout mechanism to prevent infinite loops
-            float startTime = Time.time;
-            const float BACKUP_TIMEOUT = 10f; // 10 seconds max
+            // Check for errors after completion
+            if (saveTask.IsFaulted)
+            {
+                Main.logger.Err($"SaveMixerThresholdsAsync: Task failed: {saveTask.Exception?.GetBaseException()?.Message}");
+            }
+        }
 
-            string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
-            string sourceFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+        private static bool _hasLoaded = false;
+        private static object _loadLock = new object();
 
-            // Check if source file exists with timeout - NO try-catch around yield
-            while (!File.Exists(sourceFile) && (Time.time - startTime) < BACKUP_TIMEOUT)
+        public static IEnumerator LoadMixerValuesWhenReady()
+        {
+            Main.logger.Msg(3, "LoadMixerValuesWhenReady: Starting");
+
+            // Check the flag at the very start
+            lock (_loadLock)
+            {
+                if (_hasLoaded)
+                {
+                    Main.logger.Msg(3, "LoadMixerValuesWhenReady: Already loaded, skipping");
+                    yield break;
+                }
+
+                // First one in, mark as loading
+                _hasLoaded = true;
+            }
+
+            int attempts = 0;
+            const int maxAttempts = 50;
+
+            while (string.IsNullOrEmpty(Main.CurrentSavePath) && attempts < maxAttempts)
             {
                 yield return new WaitForSeconds(0.1f);
             }
 
-            if (!File.Exists(sourceFile))
+            // Handle the loading operation on a background thread
+            Task.Run(() =>
             {
-                Main.logger.Msg(2, "BackupSaveFolder: Source file doesn't exist, no backup needed");
-                lock (backupLock)
+                try
                 {
-                    isBackupInProgress = false;
+                    HandleMixerLoadingSafely();
                 }
-                yield break;
-            }
+                catch (Exception ex)
+                {
+                    Main.logger.Err($"LoadMixerValuesWhenReady: Error in background loading: {ex.Message}\n{ex.StackTrace}");
+                }
+            });
+        }
 
             // Create backup directory with error handling
             Exception dirError = null;
             try
             {
-                if (!Directory.Exists(backupDir))
+                if (!string.IsNullOrEmpty(Main.CurrentSavePath))
                 {
-                    Directory.CreateDirectory(backupDir);
-                    Main.logger.Msg(3, "BackupSaveFolder: Created backup directory");
+                    try
+                    {
+                        LoadAndApplyMixerThresholds(Main.CurrentSavePath);
+                        logger.Msg(3, $"HandleMixerLoadingSafely: Loaded mixer values after save path became available: {Main.CurrentSavePath}");
+                    }
+                    catch (Exception loadEx)
+                    {
+                        logger.Err($"HandleMixerLoadingSafely: Error loading mixer thresholds: {loadEx.Message}");
+                    }
+                }
+                else
+                {
+                    logger.Warn(1, $"HandleMixerLoadingSafely: Save path never became available after attempts. Using empty/default mixer values.");
                 }
             }
             catch (Exception ex)
             {
-                dirError = ex;
+                logger.Err($"HandleMixerLoadingSafely: Critical error: {ex.Message}\n{ex.StackTrace}");
             }
 
             if (dirError != null)
@@ -591,7 +621,7 @@ namespace MixerThreholdMod_0_0_1.Utils
             Main.logger.Msg(3, "BackupSaveFolder: Finished and cleanup completed");
         }
 
-        private static IEnumerator PerformCleanupCoroutine(string backupDir, float startTime, float timeoutSeconds)
+        public async static void LoadAndApplyMixerThresholds(string saveFolderPath)
         {
             Main.logger.Msg(3, "PerformCleanupCoroutine: Starting cleanup of old backups");
 
@@ -601,17 +631,119 @@ namespace MixerThreholdMod_0_0_1.Utils
 
             try
             {
-                allBackupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
+                Main.logger.Msg(3, $"LoadAndApplyMixerThresholds: Starting for folder: {saveFolderPath ?? "null"}");
+
+                string[] pathsToTry;
+                if (!string.IsNullOrEmpty(saveFolderPath))
+                {
+                    string savePath = Path.Combine(saveFolderPath, "MixerThresholdSave.json").Replace('/', '\\');
+                    string persistentPath = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
+                    pathsToTry = new[] { savePath, persistentPath };
+                }
+                else
+                {
+                    string persistentPath = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
+                    pathsToTry = new[] { persistentPath };
+                }
+
+                foreach (var path in pathsToTry)
+                {
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        Main.logger.Warn(1, "LoadAndApplyMixerThresholds: Empty path in pathsToTry");
+                        continue;
+                    }
+
+                    if (File.Exists(path))
+                    {
+                        try
+                        {
+                            Main.logger.Msg(3, $"LoadAndApplyMixerThresholds: Found file at {path}");
+
+                            string json = FileOperations.SafeReadAllText(path);
+                            if (string.IsNullOrEmpty(json))
+                            {
+                                Main.logger.Warn(1, $"LoadAndApplyMixerThresholds: File exists but content is empty: {path}");
+                                continue;
+                            }
+
+                            MixerThresholdSaveData data = JsonConvert.DeserializeObject<MixerThresholdSaveData>(json);
+                            if (data?.MixerValues == null)
+                            {
+                                Main.logger.Warn(1, $"LoadAndApplyMixerThresholds: Deserialized data is null or MixerValues is null: {path}");
+                                continue;
+                            }
+
+                            foreach (var kvp in data.MixerValues)
+                            {
+                                try
+                                {
+                                    if (SavedMixerValues != null)
+                                    {
+                                        SavedMixerValues[kvp.Key] = kvp.Value;
+                                    }
+                                }
+                                catch (Exception kvpEx)
+                                {
+                                    Main.logger.Err($"LoadAndApplyMixerThresholds: Error processing mixer value {kvp.Key}={kvp.Value}: {kvpEx.Message}");
+                                }
+                            }
+
+                            var trackedMixers = await TrackedMixers.GetAllAsync();
+                            if (trackedMixers != null)
+                            {
+                                foreach (var tm in trackedMixers)
+                                {
+                                    try
+                                    {
+                                        if (tm == null)
+                                        {
+                                            Main.logger.Msg(3, "LoadAndApplyMixerThresholds: Skipping null tracked mixer");
+                                            continue;
+                                        }
+
+                                        if (tm.ConfigInstance?.StartThrehold != null &&
+                                            SavedMixerValues != null &&
+                                            SavedMixerValues.TryGetValue(tm.MixerInstanceID, out float savedValue))
+                                        {
+                                            tm.ConfigInstance.StartThrehold.SetValue(savedValue, true);
+                                            Main.logger.Msg(1, $"Applied saved value {savedValue} to Mixer {tm.MixerInstanceID}");
+                                        }
+                                    }
+                                    catch (Exception tmEx)
+                                    {
+                                        Main.logger.Err($"LoadAndApplyMixerThresholds: Error applying value to mixer {tm?.MixerInstanceID ?? -1}: {tmEx.Message}");
+                                    }
+                                }
+                            }
+
+                            Main.logger.Msg(1, $"Loaded {data.MixerValues.Count} mixer thresholds from: {path}");
+                            return;
+                        }
+                        catch (Exception pathEx)
+                        {
+                            Main.logger.Err($"LoadAndApplyMixerThresholds: Error loading MixerThresholdSave.json from {path}: {pathEx.Message}\n{pathEx.StackTrace}");
+                        }
+                    }
+                    else
+                    {
+                        Main.logger.Msg(3, $"LoadAndApplyMixerThresholds: File does not exist: {path}");
+                    }
+                }
+
+                // Only warn if we're past initial load (e.g., save path was set and we still couldn't find the file)
+                if (!string.IsNullOrEmpty(saveFolderPath))
+                {
+                    Main.logger.Warn(1, "No MixerThresholdSave.json found in any location. Do you have any mixers?");
+                }
+                else
+                {
+                    Main.logger.Msg(3, "LoadAndApplyMixerThresholds: No save folder path provided, using defaults");
+                }
             }
             catch (Exception ex)
             {
-                listError = ex;
-            }
-
-            if (listError != null)
-            {
-                Main.logger.Warn(1, string.Format("PerformCleanupCoroutine: Error getting backup file list: {0}", listError.Message));
-                yield break;
+                Main.logger.Err($"LoadAndApplyMixerThresholds: Critical error: {ex.Message}\n{ex.StackTrace}");
             }
 
             if (allBackupFiles == null || allBackupFiles.Length <= 5)
@@ -657,7 +789,8 @@ namespace MixerThreholdMod_0_0_1.Utils
             Main.logger.Msg(3, "PerformCleanupCoroutine: Cleanup completed");
         }
 
-        private static bool ShouldCreateBackup()
+        [Serializable]
+        public class MixerThresholdSaveData
         {
             Exception backupCheckError = null;
             bool result = false;
