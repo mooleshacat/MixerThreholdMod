@@ -30,37 +30,14 @@ namespace MixerThreholdMod_1_0_0.Core
     /// </summary>
     public class Logger
     {
-<<<<<<< HEAD
-        public bool IsDebugEnabled = true;
-        public int CurrentMsgLogLevel = 3; // 1, 2, or 3
-        public int CurrentWarnLogLevel = 2; // 1 or 2
-        public bool ShowLogLevelCalc = false; // Simplified default
-
-        /// <summary>
-        /// Info (Msg) logging with level filtering
-        /// </summary>
-        public void Msg(int logLevel, string message)
-        {
-            try
-            {
-                if (!IsDebugEnabled || CurrentMsgLogLevel < logLevel) return;
-                
-                var calcAdd = ShowLogLevelCalc ? string.Format("[{0}]>=[{1}]", CurrentMsgLogLevel, logLevel) : "";
-                MelonLogger.Msg(string.Format("[Info]{0} {1}", calcAdd, message ?? "[null message]"));
-            }
-            catch
-            {
-                // Fallback logging - never let logging crash the mod
-                try { MelonLogger.Msg("[ERROR] Logging failure in Logger.Msg"); }
-=======
 #if DEBUG
         public bool IsDebugEnabled = true; // disable for production builds (disables all logging except errors)
 #else
         public bool IsDebugEnabled = false; // disable for production builds (disables all logging except errors)
 #endif
-        public int CurrentMsgLogLevel = ModConstants.LOG_LEVEL_VERBOSE; // current/default dev desired msg log level (1, 2, or 3) (human changes this only)
-        public int CurrentWarnLogLevel = ModConstants.WARN_LEVEL_VERBOSE; // current/default dev desired warn log level (1 or 2) (human changes this only)
-        public bool ShowLogLevelCalc = true; // current/default simplified log level calculation (human changes this only)
+        public int CurrentMsgLogLevel = 3; // current dev desired msg log level (1, 2, or 3)
+        public int CurrentWarnLogLevel = 2; // current dev desired warn log level (1 or 2)
+        public bool ShowLogLevelCalc = true; // Simplified default (leave as true for clarity, for human)
 
         /// <summary>
         /// Info (Msg) logging with level filtering.

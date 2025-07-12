@@ -40,6 +40,9 @@ namespace MixerThreholdMod_0_0_1
         
         public static Dictionary<int, float> savedMixerValues = new Dictionary<int, float>();
         public static string CurrentSavePath = null;
+        public static bool LoadCoroutineStarted = false;
+        private static bool _consoleTestCompleted = false;
+
         public override void OnInitializeMelon()
         {
             base.OnInitializeMelon();
@@ -61,8 +64,75 @@ namespace MixerThreholdMod_0_0_1
             );
             if (constructor == null)
             {
-                logger.Err("Target constructor NOT found!");
-                return;
+                // Test logger immediately - if this fails, we have a fundamental problem
+                try
+                {
+                    logger.Msg(1, "=== LOGGER TEST: MixerThreholdMod v1.0.0 Starting ===");
+                    System.Console.WriteLine("[CONSOLE TEST] MixerThreholdMod v1.0.0 Starting");
+                }
+                catch (Exception logEx)
+                {
+                    // If even basic logging fails, use console directly
+                    System.Console.WriteLine(string.Format("[CRITICAL] Logger failed during startup: {0}", logEx.Message));
+                    throw; // This is fatal - if we can't log, we're in trouble
+                }
+
+                Instance = this;
+                base.OnInitializeMelon();
+                logger.Msg(1, "=== MixerThreholdMod v1.0.0 Initializing ===");
+                logger.Msg(1, string.Format("currentMsgLogLevel: {0}", logger.CurrentMsgLogLevel));
+                logger.Msg(1, string.Format("currentWarnLogLevel: {0}", logger.CurrentWarnLogLevel));
+                logger.Msg(1, "Phase 1: Basic initialization complete");
+
+                try
+                {
+                    logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
+                    var constructor = typeof(MixingStationConfiguration).GetConstructor(
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                        null,
+                        new[] {
+                            typeof(ConfigurationReplicator),
+                            typeof(IConfigurable),
+                            typeof(MixingStation)
+                        },
+                        null
+                    );
+                    if (constructor == null)
+                    {
+                        logger.Err("CRITICAL: Target constructor NOT found! Mod will not function.");
+                        return;
+                    }
+                    logger.Msg(1, "Phase 2: Constructor found successfully");
+
+                    logger.Msg(1, "Phase 3: Applying Harmony patch...");
+                    HarmonyInstance.Patch(
+                        constructor,
+                        prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
+                    );
+                    logger.Msg(1, "Phase 3: Harmony patch applied successfully");
+                    
+                    logger.Msg(1, "Phase 4: Registering console commands...");
+                    Core.Console.RegisterConsoleCommandViaReflection();
+                    logger.Msg(1, "Phase 4a: Basic console hook registered");
+                    
+                    // Also initialize native console integration for game console commands
+                    logger.Msg(1, "Phase 4b: Initializing native game console integration...");
+                    Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
+                    logger.Msg(1, "Phase 4: Console commands registered successfully");
+                    
+                    logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
+                }
+                catch (Exception harmonyEx)
+                {
+                    logger.Err(string.Format("CRITICAL: Harmony/Console setup failed: {0}\n{1}", harmonyEx.Message, harmonyEx.StackTrace));
+                    throw; // Re-throw to ensure initialization failure is visible
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("CRITICAL: OnInitializeMelon failed: {0}\n{1}", ex.Message, ex.StackTrace));
+                // Don't re-throw here to prevent mod loader crash, but log prominently
+                System.Console.WriteLine(string.Format("[CRITICAL] MixerThreholdMod initialization failed: {0}", ex.Message));
             }
             HarmonyInstance.Patch(
                 constructor,
@@ -145,6 +215,33 @@ namespace MixerThreholdMod_0_0_1
         {
             base.OnSceneWasLoaded(buildIndex, sceneName);
             logger.Msg(2, "Scene loaded: " + sceneName);
+            
+            // One-time console command test when main scene loads (to verify commands work)
+            if (sceneName == "Main" && !_consoleTestCompleted)
+            {
+                _consoleTestCompleted = true;
+                logger.Msg(2, "[DEBUG] Running one-time console command test...");
+                
+                // Test console commands to verify they work
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        // Wait a moment for everything to settle
+                        System.Threading.Thread.Sleep(1000);
+                        
+                        logger.Msg(2, "[DEBUG] Testing console commands...");
+                        Core.Console.ProcessManualCommand("msg This is a test message from console command");
+                        Core.Console.ProcessManualCommand("warn This is a test warning from console command");
+                        logger.Msg(2, "[DEBUG] Console command test completed - check logs above for test output");
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Err(string.Format("[DEBUG] Console command test failed: {0}", ex.Message));
+                    }
+                });
+            }
+            
             if (sceneName == "Main")
             {
                 try
@@ -188,15 +285,115 @@ namespace MixerThreholdMod_0_0_1
             MelonCoroutines.Start(MixerSaveManager.LoadMixerValuesWhenReady());
         }
 
+        // Console command implementations for comprehensive testing and debugging
+        public static IEnumerator StressGameSaveTestWithComprehensiveMonitoring(int iterations, float delaySeconds, bool bypassCooldown)
+        {
+            logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
+            
+            var startTime = DateTime.Now;
+            int successCount = 0;
+            int failureCount = 0;
+            
+            for (int i = 1; i <= iterations; i++)
+            {
+                try
+                {
+                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
+                    
+                    // Track timing for this iteration
+                    var iterationStart = DateTime.Now;
+                    
+                    // Perform the save with comprehensive monitoring
+                    yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                    
+                    var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
+                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
+                    successCount++;
+                    
+                    // Add delay if specified
+                    if (delaySeconds > 0f)
+                    {
+                        logger.Msg(3, string.Format("[MONITOR] Waiting {0:F3}s before next iteration...", delaySeconds));
+                        yield return new WaitForSeconds(delaySeconds);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
+                    failureCount++;
+                }
+            }
+            
+            var totalTime = (DateTime.Now - startTime).TotalSeconds;
+            logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
+        }
 
+        public static IEnumerator PerformTransactionalSave()
+        {
+            logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
+            
+            try
+            {
+                // Perform the save operation with comprehensive logging
+                logger.Msg(2, "[TRANSACTION] Performing save operation...");
+                var saveStart = DateTime.Now;
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
+                
+                logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
+                logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
+            }
+        }
 
-
-        // Commented - testing removal - 0 references to this code
-        //[Serializable]
-        //public class MixerThresholdSaveData
-        //{
-        //    public Dictionary<int, float> MixerValues = new Dictionary<int, float>();
-        //}
-
+        public static IEnumerator AdvancedSaveOperationProfiling()
+        {
+            logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
+            
+            try
+            {
+                var profileStart = DateTime.Now;
+                
+                // Phase 1: Pre-save diagnostics
+                logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
+                var phase1Start = DateTime.Now;
+                
+                logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
+                logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
+                logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
+                
+                var phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
+                
+                // Phase 2: Save operation profiling
+                logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
+                var phase2Start = DateTime.Now;
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                var phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
+                
+                // Phase 3: Post-save diagnostics
+                logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
+                var phase3Start = DateTime.Now;
+                
+                logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
+                logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
+                
+                var phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
+                
+                var totalTime = (DateTime.Now - profileStart).TotalMilliseconds;
+                logger.Msg(1, string.Format("[PROFILE] Advanced profiling complete. Total time: {0:F1}ms", totalTime));
+                logger.Msg(1, string.Format("[PROFILE] Breakdown: PreSave={0:F1}ms, Save={1:F1}ms, PostSave={2:F1}ms", 
+                    phase1Time, phase2Time, phase3Time));
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("[PROFILE] Advanced profiling FAILED: {0}", ex.Message));
+            }
+        }
     }
 } // End of namespace
