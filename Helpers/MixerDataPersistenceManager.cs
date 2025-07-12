@@ -24,9 +24,6 @@ namespace MixerThreholdMod_1_0_0.Utils
     /// ⚠️ THREAD SAFETY: All save operations are thread-safe with proper locking mechanisms.
     /// Coroutines are used to prevent blocking Unity's main thread during file operations.
     /// 
-    /// ⚠️ IL2CPP COMPATIBLE: Uses object parameters and reflection for type safety.
-    /// All mixer configuration access uses dynamic type resolution to avoid TypeLoadException.
-    /// 
     /// ⚠️ MAIN THREAD WARNING: Emergency save methods are designed for crash scenarios and 
     /// use blocking I/O. Regular save operations use coroutines to avoid main thread blocking.
     /// 
@@ -35,7 +32,14 @@ namespace MixerThreholdMod_1_0_0.Utils
     /// - Compatible async patterns with proper ConfigureAwait usage
     /// - Manual dictionary operations instead of modern LINQ where needed
     /// - Proper exception handling and resource cleanup
-    /// - IL2CPP-safe reflection patterns throughout
+    /// 
+    /// Key Features:
+    /// - Save cooldown system to prevent corruption from rapid saves
+    /// - Automatic backup creation and cleanup (maintains 5 most recent)
+    /// - Event attachment with multiple fallback strategies
+    /// - Emergency save functionality for crash scenarios
+    /// - Atomic file operations with temp file + rename strategy
+    /// </summary>
     public static class MixerSaveManager
     {
         // Concurrency protection fields

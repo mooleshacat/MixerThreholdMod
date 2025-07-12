@@ -6,25 +6,27 @@ using System.Threading.Tasks;
 namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
-    /// Thread-safe file locking helper for .NET 4.8.1 compatibility
+    /// Thread-safe file locking helper for .NET 4.8.1 compatibility.
+    /// Provides exclusive and shared locking mechanisms to prevent file corruption.
     /// 
-    /// Thread Safety: This class is thread-safe and designed for concurrent use.
-    /// However, be aware of the following:
+    /// ⚠️ THREAD SAFETY: This class is thread-safe and can be used across multiple threads.
+    /// All lock operations are atomic and protected against race conditions.
     /// 
-    /// ⚠️ MAIN THREAD WARNING: 
-    /// - Synchronous methods (AcquireSharedLock, AcquireExclusiveLock) use Thread.Sleep
-    ///   and should NOT be called from the main thread as they can cause UI freezes.
-    /// - Use async methods (AcquireSharedLockAsync, AcquireExclusiveLockAsync) for main thread safety.
+    /// ⚠️ MAIN THREAD WARNING: Synchronous lock methods (AcquireSharedLock, AcquireExclusiveLock) 
+    /// use Thread.Sleep and blocking operations. Do NOT call from Unity's main thread as they 
+    /// can cause UI freezes and deadlocks. Use async alternatives when possible.
     /// 
-    /// .NET 4.8.1 Compatibility: 
-    /// - Uses proper locking mechanisms and ConfigureAwait(false) in async methods
-    /// - Supports cancellation tokens for cooperative cancellation
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses compatible async/await patterns with ConfigureAwait(false)
+    /// - Proper timeout mechanisms instead of infinite blocking
+    /// - Compatible exception handling and resource disposal
+    /// - Thread-safe lock acquisition with retry logic
     /// 
-    /// File Locking Strategy:
-    /// - Creates temporary lock files to coordinate access
-    /// - Shared locks allow multiple concurrent readers
-    /// - Exclusive locks ensure single writer access
-    /// - Automatic cleanup of lock files on disposal
+    /// Locking Strategy:
+    /// - Exclusive locks: For write operations (FileShare.None)
+    /// - Shared locks: For read operations (FileShare.Read)
+    /// - Automatic cleanup and timeout protection
+    /// - Proper IDisposable implementation for resource cleanup
     /// </summary>
     public class FileLockHelper : IDisposable
     {
