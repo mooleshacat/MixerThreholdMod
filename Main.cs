@@ -130,94 +130,69 @@ namespace MixerThreholdMod_0_0_1
                 logger.Msg(1, string.Format("currentWarnLogLevel: {0}", logger.CurrentWarnLogLevel));
                 logger.Msg(1, "Phase 1: Basic initialization complete");
 
-                try
-                {
-                    // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
-                    logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
-                    var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
-                    if (constructor == null)
-                    {
-                        logger.Err("CRITICAL: Target constructor NOT found! This may be due to IL2CPP type loading issues.");
-                        logger.Err("CRITICAL: Mod functionality will be limited but initialization will continue.");
-                        // Don't return here - allow other initialization to continue
-                    }
-                    else
-                    {
-                        logger.Msg(1, "Phase 2: Constructor found successfully via IL2CPP-compatible type resolver");
-                    }
+        /// <summary>
+        /// Queue mixer instance for processing (Harmony prefix patch)
+        /// </summary>
+        private static void QueueInstance(MixingStationConfiguration __instance)
+        {
+            if (isShuttingDown || __instance == null) return;
 
-                    logger.Msg(1, "Phase 3: Applying IL2CPP-compatible Harmony patch...");
-                    // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
-                    HarmonyInstance.Patch(
-                        constructor,
-                        prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
-                    );
-                    logger.Msg(1, "Phase 3: IL2CPP-compatible Harmony patch applied successfully");
-                    
-                    logger.Msg(1, "Phase 4: Registering IL2CPP-compatible console commands...");
-                    Core.Console.RegisterConsoleCommandViaReflection();
-                    logger.Msg(1, "Phase 4a: Basic console hook registered");
-                    
-                    // Also initialize native console integration for game console commands
-                    logger.Msg(1, "Phase 4b: Initializing IL2CPP-compatible native game console integration...");
-                    Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
-                    logger.Msg(1, "Phase 4c: Console commands registered successfully");
-                    
-                    // Initialize game logger bridge for exception monitoring
-                    logger.Msg(1, "Phase 5: Initializing game exception monitoring...");
-                    Core.GameLoggerBridge.InitializeLoggingBridge();
-                    logger.Msg(1, "Phase 5: Game exception monitoring initialized");
-                    
-                    logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
-                }
-                catch (Exception harmonyEx)
-                {
-                    logger.Err(string.Format("CRITICAL: Harmony/Console setup failed: {0}\n{1}", harmonyEx.Message, harmonyEx.StackTrace));
-                    throw; // Re-throw to ensure initialization failure is visible
-                }
+            Exception queueError = null;
+            try
+            {
+                queuedInstances.Add(__instance);
+                logger.Msg(1, "[MAIN] ✓ MIXER DETECTED: Queued new MixingStationConfiguration for processing");
+                logger.Msg(2, string.Format("[MAIN] Queue size now: {0}", queuedInstances.Count));
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("CRITICAL: OnInitializeMelon failed: {0}\n{1}", ex.Message, ex.StackTrace));
-                // Don't re-throw here to prevent mod loader crash, but log prominently
-                System.Console.WriteLine(string.Format("[CRITICAL] MixerThreholdMod initialization failed: {0}", ex.Message));
->>>>>>> aa94715 (performance optimizations, cache manager)
+                queueError = ex;
             }
-            HarmonyInstance.Patch(
-                constructor,
-                prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
-            );
-            logger.Msg(2, "Patched constructor");
-            Console.RegisterConsoleCommandViaReflection();
-        }
-<<<<<<< HEAD
-<<<<<<< HEAD
-        private static void QueueInstance(MixingStationConfiguration __instance)
-=======
 
-        private static void QueueInstance(object __instance)
->>>>>>> aa94715 (performance optimizations, cache manager)
-=======
-
-        private static void QueueInstance(object __instance)
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
-        {
-            queuedInstances.Add(__instance);
-            logger.Msg(3, "Queued new MixingStationConfiguration");
-        }
-        public async override void OnUpdate()
-        {
-            // 🔁 Clean up tracked mixers at the start of each update
-            await TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
-            if (queuedInstances.Count == 0) return;
-            var toProcess = queuedInstances.ToList();
-            foreach (var instance in toProcess)
+            if (queueError != null)
             {
-                // Prevent duplicate processing of the same instance
-                if (await TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
+                logger.Err(string.Format("[MAIN] QueueInstance error: {0}\nStackTrace: {1}", queueError.Message, queueError.StackTrace));
+            }
+        }
+
+        /// <summary>
+        /// Runtime mixer scanner as fallback detection method
+        /// ⚠️ REMOVED: This scanner was causing issues with mixer threshold limits.
+        /// Reverted to constructor-only detection for better reliability.
+        /// </summary>
+
+        /// <summary>
+        /// Main update loop - uses coroutines to prevent blocking Unity thread
+        /// ⚠️ CRASH PREVENTION: All operations designed to not block main thread
+        /// </summary>
+        public override void OnUpdate()
+        {
+            // Keep OnUpdate minimal for .NET 4.8.1 compatibility
+            if (isShuttingDown && mainUpdateCoroutine != null)
+            {
+                MelonCoroutines.Stop(mainUpdateCoroutine);
+                mainUpdateCoroutine = null;
+                logger.Msg(2, "[MAIN] Main update coroutine stopped due to shutdown");
+            }
+        }
+
+        /// <summary>
+        /// Main update coroutine for processing queued mixer instances
+        /// </summary>
+        private IEnumerator UpdateCoroutine()
+        {
+            logger.Msg(2, "[MAIN] UpdateCoroutine started");
+            int frameCount = 0;
+
+            while (!isShuttingDown)
+            {
+                Exception updateError = null;
+                
+                // Clean up null/invalid mixers first - with better error handling
+                var cleanupCoroutine = CleanupNullMixers();
+                if (cleanupCoroutine != null)
                 {
-                    logger.Warn(1, $"Instance already tracked — skipping duplicate: {instance}");
-                    continue;
+                    yield return cleanupCoroutine;
                 }
 
                 // Process queued instances
@@ -260,6 +235,10 @@ namespace MixerThreholdMod_0_0_1
                 try
                 {
                 }
+                
+                try
+                {
+                }
                 catch (Exception ex)
                 {
                     updateError = ex;
@@ -287,14 +266,14 @@ namespace MixerThreholdMod_0_0_1
             List<TrackedMixer> currentMixers = null;
             
             // Get mixers without try/catch to avoid yield return issues
-            var asyncMixerRetrieval = GetAllMixersAsync();
-            if (asyncMixerRetrieval != null)
+            var getMixersCoroutine = GetAllMixersAsync();
+            if (getMixersCoroutine != null)
             {
-                yield return asyncMixerRetrieval;
+                yield return getMixersCoroutine;
                 // Extract result from coroutine
-                if (asyncMixerRetrieval.Current is List<TrackedMixer>)
+                if (getMixersCoroutine.Current is List<TrackedMixer>)
                 {
-                    currentMixers = (List<TrackedMixer>)asyncMixerRetrieval.Current;
+                    currentMixers = (List<TrackedMixer>)getMixersCoroutine.Current;
                 }
             }
             
@@ -351,6 +330,16 @@ namespace MixerThreholdMod_0_0_1
                 yield return new WaitForSeconds(0.1f);
             }
 
+            // Execute async task without try/catch to avoid yield return issues
+            var task = Core.TrackedMixers.GetAllAsync();
+            
+            // Wait for async task with timeout
+            float startTime = Time.time;
+            while (!task.IsCompleted && (Time.time - startTime) < 2f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
             try
             {
                 if (task.IsCompleted && !task.IsFaulted)
@@ -386,14 +375,14 @@ namespace MixerThreholdMod_0_0_1
         private IEnumerator LogMixerDiagnostics(int frameCount)
         {
             Exception diagError = null;
-            object mixerCountFromAsync = null;
+            object mixerCountResult = null;
             
             // Get mixer count without try/catch to avoid yield return issues
-            var asyncMixerCountRetrieval = GetMixerCountAsync();
-            if (asyncMixerCountRetrieval != null)
+            var getMixerCountCoroutine = GetMixerCountAsync();
+            if (getMixerCountCoroutine != null)
             {
-                yield return asyncMixerCountRetrieval;
-                mixerCountFromAsync = asyncMixerCountRetrieval.Current;
+                yield return getMixerCountCoroutine;
+                mixerCountResult = getMixerCountCoroutine.Current;
             }
             
             try
