@@ -891,6 +891,196 @@ namespace MixerThreholdMod_1_0_0
 
             try
             {
+                Exception updateError = null;
+                try
+                {
+                    // Clean up null/invalid mixers first - with better error handling
+                    try
+                    {
+                        yield return CleanupNullMixers();
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        logger.Err(string.Format("[MAIN] UpdateCoroutine: Cleanup error: {0}", cleanupEx.Message));
+                    }
+
+                    // Process queued instances
+                    if (queuedInstances.Count > 0)
+                    {
+                        var toProcess = queuedInstances.ToList();
+                        queuedInstances.Clear();
+
+                        logger.Msg(1, string.Format("[MAIN] ✓ PROCESSING: {0} queued mixer instances", toProcess.Count));
+
+                        foreach (var instance in toProcess)
+                        {
+                            if (isShuttingDown) break;
+
+                            // Process each instance with crash protection
+                            yield return ProcessMixerInstance(instance);
+
+                            // Yield every few operations to prevent frame drops
+                            yield return null;
+                        }
+                    }
+                    else
+                    {
+                        // Log periodically if no mixers found to aid debugging
+                        frameCount++;
+                        if (frameCount % 1000 == 0) // Every ~100 seconds at 10fps
+                        {
+                            yield return LogMixerDiagnostics(frameCount);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    updateError = ex;
+                }
+
+                if (updateError != null)
+                {
+                    logger.Err(string.Format("[MAIN] UpdateCoroutine CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
+                        updateError.Message, updateError.StackTrace));
+                }
+            }
+            catch (Exception ex)
+            {
+                asyncError = ex;
+            }
+
+            if (asyncError != null)
+            {
+                logger.Err(string.Format("[MAIN] GetAllMixersAsync: Error: {0}", asyncError.Message));
+            }
+
+            yield return allMixers;
+        }
+
+        /// <summary>
+        /// Log mixer diagnostics as a coroutine
+        /// </summary>
+        private IEnumerator LogMixerDiagnostics(int frameCount)
+        {
+            Exception diagError = null;
+            try
+            {
+                var mixerCountResult = yield return GetMixerCountAsync();
+                int trackedMixersCount = 0;
+                
+                if (mixerCountResult is int)
+                {
+                    trackedMixersCount = (int)mixerCountResult;
+                }
+
+                logger.Msg(2, string.Format("[MAIN] Diagnostic (frame {0}): Tracked mixers: {1}, Saved values: {2}, Queued: {3}", 
+                    frameCount, trackedMixersCount, savedMixerValues.Count, queuedInstances.Count));
+
+                // Enhanced diagnostics every 2000 frames (~200 seconds)
+                if (frameCount % 2000 == 0)
+                {
+                    logger.Msg(1, string.Format("[MAIN] ENHANCED DIAGNOSTICS:"));
+                    logger.Msg(1, string.Format("  - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
+                    logger.Msg(1, string.Format("  - Current save path: {0}", CurrentSavePath ?? "[none]"));
+                    logger.Msg(1, string.Format("  - Shutdown status: {0}", isShuttingDown));
+                }
+            }
+            catch (Exception ex)
+            {
+                diagError = ex;
+            }
+
+            if (diagError != null)
+            {
+                logger.Err(string.Format("[MAIN] LogMixerDiagnostics: Error: {0}", diagError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Get mixer count via async coroutine
+        /// </summary>
+        private IEnumerator GetMixerCountAsync()
+        {
+            Exception countError = null;
+            int count = 0;
+
+            try
+            {
+                var task = Core.TrackedMixers.CountAsync(tm => tm != null);
+                
+                // Wait for async task with timeout
+                float startTime = Time.time;
+                while (!task.IsCompleted && (Time.time - startTime) < 1f)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+
+                if (task.IsCompleted && !task.IsFaulted)
+                {
+                    count = task.Result;
+                }
+            }
+            catch (Exception ex)
+            {
+                countError = ex;
+            }
+
+            if (countError != null)
+            {
+                logger.Err(string.Format("[MAIN] GetMixerCountAsync: Error: {0}", countError.Message));
+            }
+
+            yield return count;
+        }
+
+        /// <summary>
+        /// Cleanup null mixers using coroutine to prevent blocking
+        /// </summary>
+        private IEnumerator CleanupNullMixers()
+        {
+            Exception cleanupError = null;
+            try
+            {
+                var currentMixers = yield return GetAllMixersAsync();
+                if (currentMixers != null)
+                {
+                    var validMixers = new List<TrackedMixer>();
+                    foreach (var tm in currentMixers)
+                    {
+                        if (tm?.ConfigInstance != null)
+                        {
+                            validMixers.Add(tm);
+                        }
+                    }
+
+                    if (validMixers.Count != currentMixers.Count)
+                    {
+                        logger.Msg(3, string.Format("[MAIN] Cleaned up {0} null mixers", currentMixers.Count - validMixers.Count));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                cleanupError = ex;
+            }
+
+            if (cleanupError != null)
+            {
+                logger.Err(string.Format("[MAIN] CleanupNullMixers: Error: {0}", cleanupError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Get all mixers via async coroutine
+        /// </summary>
+        private IEnumerator GetAllMixersAsync()
+        {
+            var allMixers = new List<TrackedMixer>();
+            Exception asyncError = null;
+            bool taskCompleted = false;
+
+            try
+            {
                 var task = Core.TrackedMixers.GetAllAsync();
                 
                 // Wait for async task with timeout
@@ -1104,6 +1294,89 @@ namespace MixerThreholdMod_1_0_0
                             logger.Warn(1, "OnUpdate: Skipping null instance in queuedInstances");
                             continue;
                         }
+
+        /// <summary>
+        /// Check if mixer is already tracked using coroutine
+        /// </summary>
+        private IEnumerator CheckIfAlreadyTracked(MixingStationConfiguration instance, System.Action<bool> callback)
+        {
+            bool result = false;
+            Exception checkError = null;
+
+            try
+            {
+                var task = Core.TrackedMixers.AnyAsync(tm => tm?.ConfigInstance == instance);
+                
+                // Wait for async task with timeout
+                float startTime = Time.time;
+                while (!task.IsCompleted && (Time.time - startTime) < 1f)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+
+                if (task.IsCompleted && !task.IsFaulted)
+                {
+                    result = task.Result;
+                }
+                else if (task.IsFaulted)
+                {
+                    logger.Err(string.Format("[MAIN] CheckIfAlreadyTracked: Task faulted: {0}", task.Exception?.Message));
+                }
+                else
+                {
+                    logger.Warn(1, "[MAIN] CheckIfAlreadyTracked: Task timed out - assuming not tracked");
+                }
+            }
+            catch (Exception ex)
+            {
+                checkError = ex;
+            }
+
+            if (checkError != null)
+            {
+                logger.Err(string.Format("[MAIN] CheckIfAlreadyTracked: Error: {0}", checkError.Message));
+            }
+
+            callback(result);
+        }
+
+        /// <summary>
+        /// Add tracked mixer using coroutine
+        /// </summary>
+        private IEnumerator AddTrackedMixerAsync(TrackedMixer mixer)
+        {
+            Exception addError = null;
+
+            try
+            {
+                var task = Core.TrackedMixers.AddAsync(mixer);
+                
+                // Wait for async task with timeout
+                float startTime = Time.time;
+                while (!task.IsCompleted && (Time.time - startTime) < 1f)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+
+                if (task.IsFaulted)
+                {
+                    logger.Err(string.Format("[MAIN] AddTrackedMixerAsync: Task faulted: {0}", task.Exception?.Message));
+                }
+                else if (!task.IsCompleted)
+                {
+                    logger.Warn(1, "[MAIN] AddTrackedMixerAsync: Task timed out");
+                }
+            }
+            catch (Exception ex)
+            {
+                addError = ex;
+            }
+
+            if (addError != null)
+            {
+                logger.Err(string.Format("[MAIN] AddTrackedMixerAsync: Error: {0}", addError.Message));
+            }
+        }
 
         /// <summary>
         /// Check if mixer is already tracked using coroutine
