@@ -24,7 +24,7 @@ namespace MixerThreholdMod_0_0_1
 
             try
             {
-                Main.logger.Msg(3, $"LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {__savePath ?? "null"}");
+                Main.logger.Msg(3, string.Format("LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {0}", __savePath ?? "null"));
 
                 if (!string.IsNullOrEmpty(__savePath))
                 {
@@ -39,7 +39,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception countEx)
                     {
-                        Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Error counting mixers: {countEx.Message}");
+                        Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Error counting mixers: {0}", countEx.Message));
                     }
 
                     if (_mixerCount == 0)
@@ -63,7 +63,7 @@ namespace MixerThreholdMod_0_0_1
                         }
                         catch (Exception coroutineEx)
                         {
-                            Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Error starting save coroutine: {coroutineEx.Message}");
+                            Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Error starting save coroutine: {0}", coroutineEx.Message));
                         }
                     }
                 }
@@ -76,8 +76,8 @@ namespace MixerThreholdMod_0_0_1
             {
                 // catchall at patch level, where my DLL interacts with the game and it's engine
                 // hopefully should catch errors in entire project?
-                Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
-                Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Err("LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
+                Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
 
@@ -95,7 +95,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"SaveThresholdsCoroutine: Error: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Err(string.Format("SaveThresholdsCoroutine: Error: {0}\n{1}", ex.Message, ex.StackTrace));
             }
             
             yield return null; // Done

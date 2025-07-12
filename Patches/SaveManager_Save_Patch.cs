@@ -35,46 +35,46 @@ namespace MixerThreholdMod_0_0_1
 
                 string normalizedPath = Utils.NormalizePath(_savePath);
                 Main.CurrentSavePath = normalizedPath;
-                Main.logger.Msg(2, $"Captured Save Folder Path: {normalizedPath}");
+                Main.logger.Msg(2, string.Format("Captured Save Folder Path: {0}", normalizedPath));
 
-                Main.logger.Msg(2, $"Saving preferences file BEFORE backing up!");
+                Main.logger.Msg(2, "Saving preferences file BEFORE backing up!");
 
                 try
                 {
                     // WriteDelayed handles creation of the mixer preferences file - do it _before_ backup!
                     MelonCoroutines.Start(WriteDelayed(normalizedPath));
-                    Main.logger.Warn(2, $"WriteDelayed: started mixer pref file save in SaveManager.Save(string) inside Postfix");
+                    Main.logger.Warn(2, "WriteDelayed: started mixer pref file save in SaveManager.Save(string) inside Postfix");
                 }
                 catch (Exception writeEx)
                 {
-                    Main.logger.Err($"Failed to start WriteDelayed coroutine: {writeEx.Message}\n{writeEx.StackTrace}");
+                    Main.logger.Err(string.Format("Failed to start WriteDelayed coroutine: {0}\n{1}", writeEx.Message, writeEx.StackTrace));
                 }
 
-                Main.logger.Msg(2, $"Attempting backup of savegame directory!");
+                Main.logger.Msg(2, "Attempting backup of savegame directory!");
 
                 try
                 {
                     // Start backup coroutine (Get the parent directory for BackupSave to be located in)
                     MelonCoroutines.Start(BackupSaveFolder(normalizedPath));
-                    Main.logger.Warn(2, $"BackupSaveFolder: started backup coroutine in SaveManager.Save(string) inside Postfix");
+                    Main.logger.Warn(2, "BackupSaveFolder: started backup coroutine in SaveManager.Save(string) inside Postfix");
                 }
                 catch (Exception backupEx)
                 {
-                    Main.logger.Err($"Failed to start BackupSaveFolder coroutine: {backupEx.Message}\n{backupEx.StackTrace}");
+                    Main.logger.Err(string.Format("Failed to start BackupSaveFolder coroutine: {0}\n{1}", backupEx.Message, backupEx.StackTrace));
                 }
             }
             catch (Exception ex)
             {
                 // catchall at patch level, where my DLL interacts with the game and it's engine
                 // hopefully should catch errors in entire project?
-                Main.logger.Err($"SaveManager_Save_Patch: Failed to save game and/or preferences and/or backup");
-                Main.logger.Err($"SaveManager_Save_Patch: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Err("SaveManager_Save_Patch: Failed to save game and/or preferences and/or backup");
+                Main.logger.Err(string.Format("SaveManager_Save_Patch: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
 
         private static IEnumerator BackupSaveFolder(string _saveRoot)
         {
-            Main.logger.Msg(3, $"BackupSaveFolder started for: {_saveRoot}");
+            Main.logger.Msg(3, string.Format("BackupSaveFolder started for: {0}", _saveRoot));
             yield return new WaitForSeconds(1.5f); // Ensure save completes
 
             // Move backup logic to a background task to avoid yield issues
@@ -86,8 +86,8 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger.Err($"BackupSaveFolder: Error in backup task: {ex.Message}\n{ex.StackTrace}");
-                    return BackupResult.CreateFailure($"Backup task failed: {ex.Message}");
+                    Main.logger.Err(string.Format("BackupSaveFolder: Error in backup task: {0}\n{1}", ex.Message, ex.StackTrace));
+                    return BackupResult.CreateFailure(string.Format("Backup task failed: {0}", ex.Message));
                 }
             });
 
@@ -100,7 +100,7 @@ namespace MixerThreholdMod_0_0_1
             var backupResult = backupTask.Result;
             if (!backupResult.Success)
             {
-                Main.logger.Err($"BackupSaveFolder: {backupResult.ErrorMessage}");
+                Main.logger.Err(string.Format("BackupSaveFolder: {0}", backupResult.ErrorMessage));
                 yield break;
             }
 
@@ -109,7 +109,7 @@ namespace MixerThreholdMod_0_0_1
             // Keep only the latest MaxBackups
             yield return MelonCoroutines.Start(CleanupOldBackups(backupResult.BackupRoot, backupResult.SaveRootPrefix));
 
-            Main.logger.Msg(3, $"BackupSaveFolder: Backup operation completed successfully");
+            Main.logger.Msg(3, "BackupSaveFolder: Backup operation completed successfully");
         }
 
         private static BackupResult PerformBackupOperation(string _saveRoot)
