@@ -288,46 +288,53 @@ namespace MixerThreholdMod_1_0_0
             while (!isShuttingDown)
             {
                 Exception updateError = null;
+                
+                // Clean up null/invalid mixers first - with better error handling
+                var cleanupCoroutine = CleanupNullMixers();
+                if (cleanupCoroutine != null)
+                {
+                    yield return cleanupCoroutine;
+                }
+
+                // Process queued instances
+                if (queuedInstances.Count > 0)
+                {
+                    var toProcess = queuedInstances.ToList();
+                    queuedInstances.Clear();
+
+                    logger.Msg(1, string.Format("[MAIN] ✓ PROCESSING: {0} queued mixer instances", toProcess.Count));
+
+                    foreach (var instance in toProcess)
+                    {
+                        if (isShuttingDown) break;
+
+                        // Process each instance with crash protection
+                        var processCoroutine = ProcessMixerInstance(instance);
+                        if (processCoroutine != null)
+                        {
+                            yield return processCoroutine;
+                        }
+
+                        // Yield every few operations to prevent frame drops
+                        yield return null;
+                    }
+                }
+                else
+                {
+                    // Log periodically if no mixers found to aid debugging
+                    frameCount++;
+                    if (frameCount % 1000 == 0) // Every ~100 seconds at 10fps
+                    {
+                        var diagnosticsCoroutine = LogMixerDiagnostics(frameCount);
+                        if (diagnosticsCoroutine != null)
+                        {
+                            yield return diagnosticsCoroutine;
+                        }
+                    }
+                }
+                
                 try
                 {
-                    // Clean up null/invalid mixers first - with better error handling
-                    try
-                    {
-                        yield return CleanupNullMixers();
-                    }
-                    catch (Exception cleanupEx)
-                    {
-                        logger.Err(string.Format("[MAIN] UpdateCoroutine: Cleanup error: {0}", cleanupEx.Message));
-                    }
-
-                    // Process queued instances
-                    if (queuedInstances.Count > 0)
-                    {
-                        var toProcess = queuedInstances.ToList();
-                        queuedInstances.Clear();
-
-                        logger.Msg(1, string.Format("[MAIN] ✓ PROCESSING: {0} queued mixer instances", toProcess.Count));
-
-                        foreach (var instance in toProcess)
-                        {
-                            if (isShuttingDown) break;
-
-                            // Process each instance with crash protection
-                            yield return ProcessMixerInstance(instance);
-
-                            // Yield every few operations to prevent frame drops
-                            yield return null;
-                        }
-                    }
-                    else
-                    {
-                        // Log periodically if no mixers found to aid debugging
-                        frameCount++;
-                        if (frameCount % 1000 == 0) // Every ~100 seconds at 10fps
-                        {
-                            yield return LogMixerDiagnostics(frameCount);
-                        }
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -353,9 +360,22 @@ namespace MixerThreholdMod_1_0_0
         private IEnumerator CleanupNullMixers()
         {
             Exception cleanupError = null;
+            List<TrackedMixer> currentMixers = null;
+            
+            // Get mixers without try/catch to avoid yield return issues
+            var getMixersCoroutine = GetAllMixersAsync();
+            if (getMixersCoroutine != null)
+            {
+                yield return getMixersCoroutine;
+                // Extract result from coroutine
+                if (getMixersCoroutine.Current is List<TrackedMixer>)
+                {
+                    currentMixers = (List<TrackedMixer>)getMixersCoroutine.Current;
+                }
+            }
+            
             try
             {
-                var currentMixers = yield return GetAllMixersAsync();
                 if (currentMixers != null)
                 {
                     var validMixers = new List<TrackedMixer>();
@@ -382,6 +402,8 @@ namespace MixerThreholdMod_1_0_0
             {
                 logger.Err(string.Format("[MAIN] CleanupNullMixers: Error: {0}", cleanupError.Message));
             }
+            
+            yield return null; // Required return for IEnumerator
         }
 
         /// <summary>
@@ -393,17 +415,18 @@ namespace MixerThreholdMod_1_0_0
             Exception asyncError = null;
             bool taskCompleted = false;
 
+            // Execute async task without try/catch to avoid yield return issues
+            var task = Core.TrackedMixers.GetAllAsync();
+            
+            // Wait for async task with timeout
+            float startTime = Time.time;
+            while (!task.IsCompleted && (Time.time - startTime) < 2f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
             try
             {
-                var task = Core.TrackedMixers.GetAllAsync();
-                
-                // Wait for async task with timeout
-                float startTime = Time.time;
-                while (!task.IsCompleted && (Time.time - startTime) < 2f)
-                {
-                    yield return new WaitForSeconds(0.1f);
-                }
-
                 if (task.IsCompleted && !task.IsFaulted)
                 {
                     allMixers.AddRange(task.Result);
@@ -437,9 +460,18 @@ namespace MixerThreholdMod_1_0_0
         private IEnumerator LogMixerDiagnostics(int frameCount)
         {
             Exception diagError = null;
+            object mixerCountResult = null;
+            
+            // Get mixer count without try/catch to avoid yield return issues
+            var getMixerCountCoroutine = GetMixerCountAsync();
+            if (getMixerCountCoroutine != null)
+            {
+                yield return getMixerCountCoroutine;
+                mixerCountResult = getMixerCountCoroutine.Current;
+            }
+            
             try
             {
-                var mixerCountResult = yield return GetMixerCountAsync();
                 int trackedMixersCount = 0;
                 
                 if (mixerCountResult is int)
@@ -468,6 +500,8 @@ namespace MixerThreholdMod_1_0_0
             {
                 logger.Err(string.Format("[MAIN] LogMixerDiagnostics: Error: {0}", diagError.Message));
             }
+            
+            yield return null; // Required return for IEnumerator
         }
 
         /// <summary>
@@ -478,17 +512,18 @@ namespace MixerThreholdMod_1_0_0
             Exception countError = null;
             int count = 0;
 
+            // Execute async task without try/catch to avoid yield return issues
+            var task = Core.TrackedMixers.CountAsync(tm => tm != null);
+            
+            // Wait for async task with timeout
+            float startTime = Time.time;
+            while (!task.IsCompleted && (Time.time - startTime) < 1f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
             try
             {
-                var task = Core.TrackedMixers.CountAsync(tm => tm != null);
-                
-                // Wait for async task with timeout
-                float startTime = Time.time;
-                while (!task.IsCompleted && (Time.time - startTime) < 1f)
-                {
-                    yield return new WaitForSeconds(0.1f);
-                }
-
                 if (task.IsCompleted && !task.IsFaulted)
                 {
                     count = task.Result;
