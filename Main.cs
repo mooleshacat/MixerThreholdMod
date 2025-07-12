@@ -105,6 +105,47 @@ namespace MixerThreholdMod_0_0_1
                     logger.Err(string.Format("CRITICAL: Harmony/Console setup failed: {0}\n{1}", harmonyEx.Message, harmonyEx.StackTrace));
                     throw; // Re-throw to ensure initialization failure is visible
                 }
+
+                if (constructor == null)
+                {
+                    logger.Err("[MAIN] CRITICAL: No suitable MixingStationConfiguration constructor found");
+                    logger.Msg(1, "[MAIN] Will attempt runtime mixer scanning as fallback");
+                    // Don't return - continue with fallback methods
+                }
+                else
+                {
+                    // Attempt to patch the constructor
+                    try
+                    {
+                        var queueMethod = typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic);
+                        if (queueMethod == null)
+                        {
+                            logger.Err("[MAIN] CRITICAL: QueueInstance method not found for patching");
+                        }
+                        else
+                        {
+                            HarmonyInstance.Patch(
+                                constructor,
+                                prefix: new HarmonyMethod(queueMethod)
+                            );
+                            
+                            logger.Msg(1, "[MAIN] ✓ Constructor patch applied successfully");
+                        }
+                    }
+                    catch (Exception patchEx)
+                    {
+                        logger.Err(string.Format("[MAIN] Constructor patch failed: {0}\nStackTrace: {1}", patchEx.Message, patchEx.StackTrace));
+                    }
+                }
+
+                // Register console commands for debugging
+                Core.Console.RegisterConsoleCommandViaReflection();
+                logger.Msg(2, "[MAIN] ✓ Console commands registered");
+
+                // Start the main update coroutine
+                var coroutineObj = MelonCoroutines.Start(UpdateCoroutine());
+                mainUpdateCoroutine = coroutineObj as Coroutine;
+                logger.Msg(1, "[MAIN] ✓ Main update coroutine started successfully");
             }
             catch (Exception ex)
             {
@@ -139,132 +180,38 @@ namespace MixerThreholdMod_0_0_1
             }
         }
 
-        private static bool _isProcessingQueued = false;
+        /// <summary>
+        /// Runtime mixer scanner as fallback detection method
+        /// ⚠️ REMOVED: This scanner was causing issues with mixer threshold limits.
+        /// Reverted to constructor-only detection for better reliability.
+        /// </summary>
 
+        /// <summary>
+        /// Main update loop - uses coroutines to prevent blocking Unity thread
+        /// ⚠️ CRASH PREVENTION: All operations designed to not block main thread
+        /// </summary>
         public override void OnUpdate()
         {
-            // 🔁 Clean up tracked mixers at the start of each update
-            await TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
-            if (queuedInstances.Count == 0) return;
-            var toProcess = queuedInstances.ToList();
-            foreach (var instance in toProcess)
+            // Keep OnUpdate minimal for .NET 4.8.1 compatibility
+            if (isShuttingDown && mainUpdateCoroutine != null)
             {
-                // Prevent multiple concurrent executions of async operations
-                if (_isProcessingQueued || queuedInstances.Count == 0) 
-                    return;
-
-                // Process queued instances on background thread to avoid blocking main thread
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        _isProcessingQueued = true;
-                        await ProcessQueuedInstancesAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Err(string.Format("OnUpdate background processing: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                    }
-                    finally
-                    {
-                        _isProcessingQueued = false;
-                    }
-                });
+                MelonCoroutines.Stop(mainUpdateCoroutine);
+                mainUpdateCoroutine = null;
+                logger.Msg(2, "[MAIN] Main update coroutine stopped due to shutdown");
             }
-            catch (Exception ex)
-            {
-                logger.Err(string.Format("OnUpdate: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-            }
-            queuedInstances.Clear();
         }
 
-        private static async Task ProcessQueuedInstancesAsync()
+        /// <summary>
+        /// Main update coroutine for processing queued mixer instances
+        /// </summary>
+        private IEnumerator UpdateCoroutine()
         {
-            try
+            logger.Msg(2, "[MAIN] UpdateCoroutine started");
+            int frameCount = 0;
+
+            while (!isShuttingDown)
             {
-                logger.Msg(3, "ProcessQueuedInstancesAsync: Starting cleanup and processing");
-                
-                // Clean up null instances
-                await Core.TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
-                
-                var toProcess = queuedInstances.ToList();
-                logger.Msg(3, string.Format("ProcessQueuedInstancesAsync: Processing {0} queued instances", toProcess.Count));
-                
-                foreach (var instance in toProcess)
-                {
-                    try
-                    {
-                        if (instance == null)
-                        {
-                            logger.Warn(1, "ProcessQueuedInstancesAsync: Skipping null instance");
-                            continue;
-                        }
-
-                        if (await Core.TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
-                        {
-                            logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
-                            continue;
-                        }
-                        
-                        if (instance.StartThrehold == null)
-                        {
-                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
-                            continue;
-                        }
-                        
-                        var mixerData = await Core.TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
-                        if (mixerData == null)
-                        {
-                            try
-                            {
-                                logger.Msg(3, "ProcessQueuedInstancesAsync: Configuring new mixer...");
-                                instance.StartThrehold.Configure(1f, 20f, true);
-                                logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
-
-                                var newTrackedMixer = new Core.TrackedMixer
-                                {
-                                    ConfigInstance = instance,
-                                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
-                                };
-                                await Core.TrackedMixers.AddAsync(newTrackedMixer);
-                                logger.Msg(2, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
-
-                                if (!newTrackedMixer.ListenerAdded)
-                                {
-                                    logger.Msg(3, string.Format("Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
-                                    Helpers.Utils.CoroutineHelper.RunCoroutine(Save.CrashResistantSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
-                                    newTrackedMixer.ListenerAdded = true;
-                                }
-                                
-                                // Restore saved value if exists
-                                float savedValue;
-                                if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
-                                {
-                                    logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
-                                    instance.StartThrehold.SetValue(savedValue, true);
-                                }
-                            }
-                            catch (Exception mixerEx)
-                            {
-                                logger.Err(string.Format("Error configuring individual mixer: {0}\n{1}", mixerEx.Message, mixerEx.StackTrace));
-                                // Continue processing other mixers despite this failure
-                            }
-                        }
-                    }
-                    catch (Exception instanceEx)
-                    {
-                        logger.Err(string.Format("Error processing individual instance: {0}\n{1}", instanceEx.Message, instanceEx.StackTrace));
-                        // Continue processing other instances despite this failure
-                    }
-                }
-                
-                queuedInstances.Clear();
-                logger.Msg(3, "ProcessQueuedInstancesAsync: Completed successfully");
-            }
-            catch (Exception ex)
-            {
-                logger.Err(string.Format("ProcessQueuedInstancesAsync: Critical failure: {0}\n{1}", ex.Message, ex.StackTrace));
-                // Ensure we don't leave the system in a bad state
+                Exception updateError = null;
                 try
                 {
                     queuedInstances.Clear();
