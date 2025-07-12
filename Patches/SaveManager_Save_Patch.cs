@@ -1,10 +1,12 @@
+using HarmonyLib;
 using MelonLoader;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Save;
 using ScheduleOne.Persistence;
 using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
-using HarmonyLib;
 
 namespace MixerThreholdMod_1_0_0.Patches
 {
@@ -61,7 +63,6 @@ namespace MixerThreholdMod_1_0_0.Patches
                     Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Save trigger failed: {0}", saveEx.Message));
                     // Don't re-throw - let the game continue
                 }
-            }
             }
             catch (Exception ex)
             {

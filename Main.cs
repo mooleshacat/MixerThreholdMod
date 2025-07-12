@@ -102,7 +102,7 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(2, "[MAIN] Patched MixingStationConfiguration constructor successfully");
 
                 // Register console commands for debugging
-                Console.RegisterConsoleCommandViaReflection();
+                Core.Console.RegisterConsoleCommandViaReflection();
                 logger.Msg(3, "[MAIN] Console commands registered");
 
                 // Start the main update coroutine
@@ -208,7 +208,7 @@ namespace MixerThreholdMod_1_0_0
             while (!isShuttingDown)
             {
                 // Clean up null/invalid mixers first
-                TrackedMixers.RemoveAll(tm => tm?.ConfigInstance == null);
+                Core.TrackedMixers.RemoveAll(tm => tm?.ConfigInstance == null);
 
                 // Process queued instances
                 if (queuedInstances.Count > 0)
@@ -250,7 +250,7 @@ namespace MixerThreholdMod_1_0_0
             try
             {
                 // Check if already tracked
-                bool alreadyTracked = TrackedMixers.Any(tm => tm?.ConfigInstance == instance);
+                bool alreadyTracked = Core.TrackedMixers.Any(tm => tm?.ConfigInstance == instance);
                 if (alreadyTracked)
                 {
                     logger.Warn(2, "[MAIN] Instance already tracked - skipping duplicate");
@@ -270,11 +270,11 @@ namespace MixerThreholdMod_1_0_0
                 newTrackedMixer = new TrackedMixer
                 {
                     ConfigInstance = instance,
-                    MixerInstanceID = MixerIDManager.GetMixerID(instance)
+                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
                 };
 
                 // Add to tracking collection
-                TrackedMixers.Add(newTrackedMixer);
+                Core.TrackedMixers.Add(newTrackedMixer);
                 logger.Msg(2, string.Format("[MAIN] Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
             }
             catch (Exception ex)
@@ -345,7 +345,7 @@ namespace MixerThreholdMod_1_0_0
         {
             try
             {
-                return TrackedMixers.Any(tm => tm.MixerInstanceID == mixerInstanceID);
+                return Core.TrackedMixers.Any(tm => tm.MixerInstanceID == mixerInstanceID);
             }
             catch (Exception ex)
             {
@@ -368,11 +368,11 @@ namespace MixerThreholdMod_1_0_0
                 try
                 {
                     // Reset mixer state for new game session
-                    if (MixerIDManager.MixerInstanceMap != null)
+                    if (Core.MixerIDManager.MixerInstanceMap != null)
                     {
-                        MixerIDManager.MixerInstanceMap.Clear();
+                        Core.MixerIDManager.MixerInstanceMap.Clear();
                     }
-                    MixerIDManager.ResetStableIDCounter();
+                    Core.MixerIDManager.ResetStableIDCounter();
                     savedMixerValues.Clear();
 
                     logger.Msg(2, string.Format("[MAIN] Main scene loaded - save path: {0}", CurrentSavePath ?? "[not available yet]"));
