@@ -23,36 +23,114 @@ A comprehensive mod for **Schedule 1** that enhances the mixer system with crash
 
 ## Console Commands 🎮
 
-The mod provides several powerful console commands for testing, monitoring, and advanced save operations:
+The mod provides 12 powerful console commands for testing, monitoring, debugging, and advanced save operations:
 
 ### Available Commands
 
-#### `savemonitor <count> [delay] [bypass]`
+#### **Mixer Management**
+
+##### `mixer_reset`
+Reset all mixer values and clear tracked data:
+```
+mixer_reset                     # Clears all saved mixer values and resets ID counter
+```
+
+##### `mixer_save` 
+Force immediate save operation:
+```
+mixer_save                      # Triggers save with cooldown protection
+```
+
+##### `mixer_path`
+Display current save path and mixer count:
+```
+mixer_path                      # Shows active save location and tracked mixer count
+```
+
+##### `mixer_emergency`
+Trigger emergency save operation:
+```
+mixer_emergency                 # Immediate save without cooldown checks
+```
+
+#### **Advanced Save Testing**
+
+##### `saveprefstress <count> [delay] [bypass]`
+Stress test mixer preferences saves:
+```
+saveprefstress 10               # 10 saves, no delay, bypass=true
+saveprefstress 5 2.0            # 5 saves, 2s delay, bypass=true
+saveprefstress 20 false         # 20 saves, no delay, bypass=false
+saveprefstress 10 0.1 false     # 10 saves, 0.1s delay, bypass=false
+saveprefstress 5 true 2.0       # 5 saves, 2s delay, bypass=true
+```
+
+##### `savegamestress <count> [delay] [bypass]`
+Stress test game saves (calls SaveManager directly):
+```
+savegamestress 10               # 10 saves, no delay, bypass=true
+savegamestress 5 3.0            # 5 saves, 3s delay, bypass=true
+savegamestress 3 false          # 3 saves, no delay, bypass=false
+savegamestress 5 2.0 false      # 5 saves, 2s delay, bypass=false
+savegamestress 3 true 5.0       # 3 saves, 5s delay, bypass=true
+```
+
+##### `savemonitor <count> [delay] [bypass]`
 Comprehensive save monitoring with multi-method validation:
 ```
-savemonitor 5                    # 5 saves, no delay, bypass cooldown
-savemonitor 3 2.0               # 3 saves, 2s delay, bypass cooldown  
+savemonitor 5                   # 5 saves, no delay, bypass=true
+savemonitor 3 2.0               # 3 saves, 2s delay, bypass=true  
 savemonitor 10 false            # 10 saves, no delay, respect cooldown
 savemonitor 5 1.5 false         # 5 saves, 1.5s delay, respect cooldown
 ```
 
-#### `transactionalsave`
+##### `transactionalsave`
 Performs atomic transactional save operation with timing and error recovery:
 ```
 transactionalsave               # Single save with comprehensive logging
 ```
 
-#### `profile`
+##### `profile`
 Advanced save operation profiling with memory tracking and phase breakdown:
 ```
 profile                         # Full save profiling with detailed metrics
+```
+
+#### **Manual Logging**
+
+##### `msg <message>`
+Log info message with manual tag:
+```
+msg Testing mixer behavior at threshold 0.8
+msg Save operation completed successfully
+```
+
+##### `warn <message>`
+Log warning message with manual tag:
+```
+warn Performance degradation detected during stress test
+warn Memory usage approaching critical levels
+```
+
+##### `err <message>`
+Log error message with manual tag:
+```
+err Critical save failure - investigating corruption
+err Mixer threshold validation failed
 ```
 
 ### Console Access
 
 **In-Game Console**: Open with `F4` (MelonLoader console) or use the game's console system
 **Command Format**: Type command directly (no prefix required)
+**Help Command**: Type any unrecognized command to display the complete help menu
 **Logging**: All commands provide detailed output and error reporting
+
+### Command Categories
+
+- **4 Mixer Management Commands** - Basic mixer operations and path info
+- **5 Advanced Save Testing Commands** - Stress testing and monitoring with dnSpy integration  
+- **3 Manual Logging Commands** - Direct logging for debugging and testing
 
 ### Command Features
 
@@ -61,6 +139,8 @@ profile                         # Full save profiling with detailed metrics
 - **Performance metrics** - Timing and memory usage tracking
 - **Error recovery** - Graceful handling of save failures
 - **Cooldown management** - Bypass or respect save cooldown systems
+- **Parameter flexibility** - Most commands support flexible parameter ordering
+- **Usage validation** - Helpful error messages and examples for incorrect usage
 
 ## Save Backup System 🗃️
 
