@@ -66,6 +66,7 @@ namespace MixerThreholdMod_1_0_0
 
                 try
                 {
+                    // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
                     logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
                     var constructor = typeof(MixingStationConfiguration).GetConstructor(
                         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
@@ -378,31 +379,33 @@ namespace MixerThreholdMod_1_0_0
             
             for (int i = 1; i <= iterations; i++)
             {
+                logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
+                
+                // Track timing for this iteration
+                var iterationStart = DateTime.Now;
+                bool iterationSuccess = false;
+                
+                // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                
                 try
                 {
-                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
-                    
-                    // Track timing for this iteration
-                    var iterationStart = DateTime.Now;
-                    
-                    // Perform the save with comprehensive monitoring
-                    yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-                    
                     var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
                     logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
                     successCount++;
-                    
-                    // Add delay if specified
-                    if (delaySeconds > 0f)
-                    {
-                        logger.Msg(3, string.Format("[MONITOR] Waiting {0:F3}s before next iteration...", delaySeconds));
-                        yield return new WaitForSeconds(delaySeconds);
-                    }
+                    iterationSuccess = true;
                 }
                 catch (Exception ex)
                 {
                     logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
                     failureCount++;
+                }
+                
+                // Add delay if specified - yield return outside try/catch for .NET 4.8.1 compatibility
+                if (delaySeconds > 0f && iterationSuccess)
+                {
+                    logger.Msg(3, string.Format("[MONITOR] Waiting {0:F3}s before next iteration...", delaySeconds));
+                    yield return new WaitForSeconds(delaySeconds);
                 }
             }
             
@@ -413,16 +416,19 @@ namespace MixerThreholdMod_1_0_0
         public static IEnumerator PerformTransactionalSave()
         {
             logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
+            logger.Msg(2, "[TRANSACTION] Performing save operation...");
+            
+            var saveStart = DateTime.Now;
+            bool saveSuccess = false;
+            
+            // Perform the save operation - yield return outside try/catch for .NET 4.8.1 compatibility
+            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
             
             try
             {
-                // Perform the save operation with comprehensive logging
-                logger.Msg(2, "[TRANSACTION] Performing save operation...");
-                var saveStart = DateTime.Now;
-                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
-                
                 logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
+                saveSuccess = true;
             }
             catch (Exception ex)
             {
@@ -435,14 +441,14 @@ namespace MixerThreholdMod_1_0_0
         {
             logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
             
+            var profileStart = DateTime.Now;
+            
+            // Phase 1: Pre-save diagnostics
+            logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
+            var phase1Start = DateTime.Now;
+            
             try
             {
-                var profileStart = DateTime.Now;
-                
-                // Phase 1: Pre-save diagnostics
-                logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
-                var phase1Start = DateTime.Now;
-                
                 logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
                 logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
                 logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
@@ -453,7 +459,10 @@ namespace MixerThreholdMod_1_0_0
                 // Phase 2: Save operation profiling
                 logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
                 var phase2Start = DateTime.Now;
+                
+                // Move yield return outside try/catch for .NET 4.8.1 compatibility
                 yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                
                 var phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
                 

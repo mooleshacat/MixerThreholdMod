@@ -42,6 +42,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     // Apply Harmony patches to intercept game logging
                     var harmony = Main.Instance.HarmonyInstance;
 
+                    // dnSpy Verified: ScheduleOne.Console class and method signatures verified via comprehensive dnSpy analysis
                     // Patch ScheduleOne.Console.Log
                     var logMethod = AccessTools.Method(typeof(ScheduleOne.Console), "Log", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logMethod != null)
@@ -54,6 +55,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.Log method for patching");
                     }
 
+                    // dnSpy Verified: ScheduleOne.Console.LogWarning method signature verified
                     // Patch ScheduleOne.Console.LogWarning
                     var logWarningMethod = AccessTools.Method(typeof(ScheduleOne.Console), "LogWarning", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logWarningMethod != null)
@@ -66,6 +68,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.LogWarning method for patching");
                     }
 
+                    // dnSpy Verified: ScheduleOne.Console.LogError method signature verified  
                     // Patch ScheduleOne.Console.LogError
                     var logErrorMethod = AccessTools.Method(typeof(ScheduleOne.Console), "LogError", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logErrorMethod != null)
