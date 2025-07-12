@@ -1,89 +1,54 @@
+﻿// SaveManagerSavePatch.cs
 using MelonLoader;
-using MixerThreholdMod_1_0_0.Core;
-using MixerThreholdMod_1_0_0.Save;
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+using ScheduleOne.Persistence;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
-using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using HarmonyLib;
 
-namespace MixerThreholdMod_0_0_1.Patches
+namespace MixerThreholdMod_0_0_1
 {
-    /// <summary>
-    /// Harmony patch for SaveManager.Save to capture save folder path and trigger mixer data persistence.
-    /// This patch is critical for the save crash prevention system.
-    /// 
-    /// ⚠️ CRASH PREVENTION FOCUS: This patch intercepts save operations to ensure mixer data 
-    /// is properly saved before the game saves, preventing data loss during crashes.
-    /// 
-    /// ⚠️ THREAD SAFETY: All operations use thread-safe methods and don't block the main thread.
-    /// Error handling prevents patch failures from crashing the save process.
-    /// 
-    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
-    /// 
-    /// .NET 4.8.1 Compatibility:
-    /// - Uses string.Format instead of string interpolation
-    /// - Compatible exception handling patterns
-    /// - Proper async coroutine usage
-    /// </summary>
+    [HarmonyPatch(typeof(SaveManager), nameof(SaveManager.Save), new[] { typeof(string) })]
     public static class SaveManager_Save_Patch
     {
         private const int MaxBackups = 5;
-        private static bool _patchInitialized = false;
-        private static MethodInfo _saveMethod = null;
 
-        /// <summary>
-        /// Initialize the patch using IL2CPP-compatible type resolution
-        /// </summary>
-        public static void Initialize()
+        public static void Postfix(string saveFolderPath)
         {
             try
             {
-                Main.logger.Msg(3, "SaveManager.Save(string) called (Postfix)");
-
                 // Changing saveFolderPath to _savePath causes exception
                 // Confirmed not patching because signature mismatch. Solution is just reassign it :)
                 var _savePath = saveFolderPath;
                 if (string.IsNullOrEmpty(_savePath))
                 {
-                    Main.logger.Warn(1, "[PATCH] Save folder path is null or empty - cannot proceed");
+                    Main.logger.Warn(1, "Save folder path is null or empty — cannot set CurrentSavePath.");
                     return;
                 }
 
-                // Normalize and set current save path
-                string normalizedPath = NormalizePath(saveFolderPath);
+                Main.logger.Msg(3, "SaveManager.Save(string) called (Postfix)");
+                string normalizedPath = _savePath.Replace('/', '\\');
                 Main.CurrentSavePath = normalizedPath;
-                Main.logger.Msg(1, string.Format("[PATCH] Save path captured: {0}", normalizedPath));
+                Main.logger.Msg(2, $"Captured Save Folder Path: {normalizedPath}");
 
                 Main.logger.Msg(2, $"Saving preferences file BEFORE backing up!");
+                // WriteDelayed handles creation of the mixer preferences file - do it _before_ backup!
+                MelonCoroutines.Start(WriteDelayed(normalizedPath));
 
-                try
-                {
-                    MelonCoroutines.Start(Save.CrashResistantSaveManager.TriggerSaveWithCooldown());
-                    Main.logger.Msg(2, "[PATCH] Crash-resistant save triggered successfully");
-                }
-                catch (Exception saveEx)
-                {
-                    Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Save trigger failed: {0}", saveEx.Message));
-                    // Don't re-throw - let the game continue
-                }
-            }
-            }
-            }
-            catch (Exception ex)
-            {
-                patchError = ex;
-            }
+                Main.logger.Warn(2, $"WriteDelayed: written mixer pref file in SaveManager.Save(string) inside Postfix (Main() not locked)");
+                Main.logger.Warn(2, $"WriteDelayed: returned execution to SaveManager.Save(string) inside Postfix (Main() not locked)");
 
                 Main.logger.Msg(2, $"Attempting backup of savegame directory!");
+                // Start backup coroutine (Get the parent directory for BackupSave to be located in)
+                MelonCoroutines.Start(BackupSaveFolder(normalizedPath));
+                // BELOW COMMENT NEVER EXECUTES RELATED TO SAVE CRASH! SUSPECT: MelonCoroutines.Start(BackupSaveFolder())
 
-                try
-                {
-                    normalized = normalized.TrimEnd('\\');
-                }
-                return normalized;
+                Main.logger.Warn(2, $"BackupSaveFolder: returned execution to SaveManager.Save(string) inside Postfix (Main() not locked)");
             }
             catch (Exception ex)
             {
@@ -96,46 +61,10 @@ namespace MixerThreholdMod_0_0_1.Patches
 
         private static IEnumerator BackupSaveFolder(string _saveRoot)
         {
+<<<<<<< HEAD
             Main.logger.Msg(3, $"BackupSaveFolder started for: {_saveRoot}");
             yield return new WaitForSeconds(1.5f); // Ensure save completes
 
-            // Move backup logic to a background task to avoid yield issues
-            var backupTask = Task.Run(() =>
-            {
-                try
-                {
-                    return PerformBackupOperation(_saveRoot);
-                }
-                catch (Exception ex)
-                {
-                    Main.logger.Err($"BackupSaveFolder: Error in backup task: {ex.Message}\n{ex.StackTrace}");
-                    return BackupResult.CreateFailure($"Backup task failed: {ex.Message}");
-                }
-            });
-
-            // Wait for backup task completion
-            while (!backupTask.IsCompleted)
-            {
-                yield return null;
-            }
-
-            var backupResult = backupTask.Result;
-            if (!backupResult.Success)
-            {
-                Main.logger.Err($"BackupSaveFolder: {backupResult.ErrorMessage}");
-                yield break;
-            }
-
-            yield return new WaitForSeconds(0.5f); // Allow file system to settle
-
-            // Keep only the latest MaxBackups
-            yield return MelonCoroutines.Start(CleanupOldBackups(backupResult.BackupRoot, backupResult.SaveRootPrefix));
-
-            Main.logger.Msg(3, $"BackupSaveFolder: Backup operation completed successfully");
-        }
-
-        private static BackupResult PerformBackupOperation(string _saveRoot)
-        {
             try
             {
                 if (string.IsNullOrEmpty(_saveRoot))
@@ -153,44 +82,186 @@ namespace MixerThreholdMod_0_0_1.Patches
 
                 var _backupRoot = Utils.NormalizePath(Path.Combine(parentDir.FullName, "MixerThreholdMod_backup")) + "\\";
                 _saveRoot = _saveRoot.TrimEnd('\\') + "\\";
-
+                    
                 Main.logger.Msg(2, $"BACKUP ROOT: {_backupRoot}");
                 Main.logger.Msg(2, $"SAVE ROOT: {_saveRoot}");
+=======
+            try
+            {
+                yield return new WaitForSeconds(1.5f); // Ensure save completes
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
 
-                if (!Directory.Exists(_saveRoot))
+                if (string.IsNullOrEmpty(_saveRoot))
                 {
+<<<<<<< HEAD
                     Main.logger.Warn(1, $"Save directory not found at {_saveRoot}");
                     return BackupResult.CreateFailure($"Save directory not found at {_saveRoot}");
                 }
 
-                if (!Utils.EnsureDirectoryExists(_backupRoot, "backup directory creation"))
+                if (!Directory.Exists(_backupRoot))
                 {
-                    return BackupResult.CreateFailure("Failed to create backup directory");
+                    Directory.CreateDirectory(_backupRoot);
+                    Main.logger.Msg(1, $"Created backup directory: {_backupRoot}");
                 }
 
                 string _timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
                 string _backupDirName = $"SaveGame_2_backup_{_timestamp}";
                 string _backupPath = Path.Combine(_backupRoot, _backupDirName);
-                string _saveRootPrefix = Path.GetFileName(_saveRoot.TrimEnd('\\'));
+                string _saveRootPrefix = Path.GetFileName(_saveRoot); // directory name
 
-                Main.logger.Msg(2, $"SAVE ROOT PREFIX: {_saveRootPrefix}");
+                Main.logger.Msg(3, $"SAVE ROOT PREFIX: {_saveRootPrefix}");
 
+                // Copy the SaveGame_2 folder to backup location
+                CopyDirectory(_saveRoot, _backupPath);
+                Main.logger.Msg(1, $"Saved backup to: {_backupPath}");
                 try
                 {
                     // Copy the SaveGame_2 folder to backup location
                     CopyDirectory(_saveRoot, _backupPath);
                     Main.logger.Msg(2, $"Saved backup to: {_backupPath}");
+=======
+                    Main.logger.Warn(1, "BackupSaveFolder: _saveRoot is null or empty");
+                    yield break;
+                }
+
+                try
+                {
+                    var _backupRoot = Directory.GetParent(_saveRoot).FullName + "\\MixerThreholdMod_backup\\";
+                    _saveRoot = _saveRoot + "\\";
+                    Main.logger.Msg(1, $"BACKUP ROOT: {_backupRoot}");
+                    Main.logger.Msg(1, $"SAVE ROOT: {_saveRoot}");
+
+                    if (!Directory.Exists(_saveRoot))
+                    {
+                        Main.logger.Warn(1, $"SaveGame_2 directory not found at {_saveRoot}");
+                        yield break;
+                    }
+
+                    if (!Directory.Exists(_backupRoot))
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory(_backupRoot);
+                            Main.logger.Msg(1, $"Created backup directory: {_backupRoot}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Main.logger.Err($"Failed to create backup directory {_backupRoot}: {ex}");
+                            yield break;
+                        }
+                    }
+
+                    string _timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                    string _backupDirName = $"SaveGame_2_backup_{_timestamp}";
+                    string _backupPath = Path.Combine(_backupRoot, _backupDirName);
+                    string _saveRootPrefix = Path.GetFileName(_saveRoot.TrimEnd('\\')); // directory name
+
+                    Main.logger.Msg(3, $"SAVE ROOT PREFIX: {_saveRootPrefix}");
+
+                    // Copy the SaveGame_2 folder to backup location
+                    try
+                    {
+                        CopyDirectory(_saveRoot, _backupPath);
+                        Main.logger.Msg(1, $"Saved backup to: {_backupPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger.Err($"Failed to copy directory during backup: {ex}");
+                        yield break;
+                    }
+
+                    // Keep only the latest MaxBackups - with better error handling
+                    try
+                    {
+                        var _backupRootInfo = new DirectoryInfo(_backupRoot);
+                        if (_backupRootInfo.Exists)
+                        {
+                            var _backupDirs = _backupRootInfo
+                                .GetDirectories($"{_saveRootPrefix}_backup_*")
+                                .OrderByDescending(d => d.Name)
+                                .ToList();
+
+                            Main.logger.Msg(3, $"Filtering to keep latest {MaxBackups} backups from: {_backupRoot}");
+                            
+                            while (_backupDirs.Count > MaxBackups)
+                            {
+                                // CONTEXT: CRASH ON SAVE: WE ARE NOT GETTING HERE, LAST LOG LINE IS ^^^ AND NEXT ONE NEVER SHOWS
+                                // NO EXCEPTIONS BEING THROWN! CONFUSING!
+                                // ISSUE WITH LOOP CONDITION OR DIRECTORY.DELETE - ONE OR OTHER - DOESN'T MAKE IT TO COMMENT AFTER
+                                // ONLY HAPPENS AFTER WAITING THEN SAVING. SAVING IMMEDIATELY AFTER LOAD IS FINE!
+                                
+                                try
+                                {
+                                    var oldestDir = _backupDirs.Last();
+                                    if (oldestDir != null && oldestDir.Exists)
+                                    {
+                                        string dirToDelete = oldestDir.FullName;
+                                        Main.logger.Msg(2, $"Attempting to delete oldest backup: {dirToDelete}");
+                                        
+                                        // Try to delete with retry logic
+                                        bool deleted = false;
+                                        for (int attempt = 0; attempt < 3 && !deleted; attempt++)
+                                        {
+                                            try
+                                            {
+                                                Directory.Delete(dirToDelete, true);
+                                                deleted = true;
+                                                Main.logger.Msg(1, $"Deleted oldest of {MaxBackups} backups: {dirToDelete}");
+                                            }
+                                            catch (IOException ioEx)
+                                            {
+                                                Main.logger.Warn(1, $"IO error deleting {dirToDelete} (attempt {attempt + 1}): {ioEx.Message}");
+                                                if (attempt < 2) // Don't wait on last attempt
+                                                {
+                                                    yield return new WaitForSeconds(0.5f);
+                                                }
+                                            }
+                                            catch (UnauthorizedAccessException uaEx)
+                                            {
+                                                Main.logger.Warn(1, $"Access denied deleting {dirToDelete}: {uaEx.Message}");
+                                                break; // Don't retry for permission issues
+                                            }
+                                        }
+                                        
+                                        if (!deleted)
+                                        {
+                                            Main.logger.Warn(1, $"Failed to delete backup directory after 3 attempts: {dirToDelete}");
+                                        }
+                                    }
+                                    _backupDirs.RemoveAt(_backupDirs.Count - 1);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Main.logger.Err($"Error processing backup directory for deletion: {ex}");
+                                    break; // Exit the while loop on error
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // catchall at backup code, where the suspected crash is
+                        // hopefully should catch errors
+                        Main.logger.Err($"BackupSaveFolder: Failed to delete oldest backup");
+                        Main.logger.Err($"BackupSaveFolder: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    }
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                 }
                 catch (Exception copyEx)
                 {
+<<<<<<< HEAD
                     Main.logger.Err($"Failed to copy directory during backup: {copyEx.Message}\n{copyEx.StackTrace}");
                     return BackupResult.CreateFailure($"Failed to copy directory during backup: {copyEx.Message}");
+=======
+                    Main.logger.Err($"BackupSaveFolder: Error during backup: {ex.Message}\n{ex.StackTrace}");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                 }
 
                 return BackupResult.CreateSuccess(_backupRoot, _saveRootPrefix);
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 Main.logger.Err($"PerformBackupOperation: Critical error during backup: {ex.Message}\n{ex.StackTrace}");
                 return BackupResult.CreateFailure($"Critical error during backup: {ex.Message}");
             }
@@ -217,28 +288,9 @@ namespace MixerThreholdMod_0_0_1.Patches
         private static IEnumerator CleanupOldBackups(string backupRoot, string saveRootPrefix)
         {
             Main.logger.Msg(3, $"Starting backup cleanup process for: {backupRoot}");
-
-            // Move cleanup logic to background task
-            var cleanupTask = Task.Run(() =>
-            {
-                try
-                {
-                    return GetBackupDirectoriesForCleanup(backupRoot, saveRootPrefix);
-                }
-                catch (Exception ex)
-                {
-                    Main.logger.Err($"CleanupOldBackups: Error getting backup directories: {ex.Message}\n{ex.StackTrace}");
-                    return CleanupData.CreateFailure($"Failed to get backup directories: {ex.Message}");
-                }
-            });
-
-            // Wait for cleanup task
-            while (!cleanupTask.IsCompleted)
-            {
-                yield return null;
-            }
-
-            var cleanupData = cleanupTask.Result;
+            
+            // Perform initial validation and get backup directories
+            var cleanupData = GetBackupDirectoriesForCleanup(backupRoot, saveRootPrefix);
             if (!cleanupData.Success)
             {
                 Main.logger.Warn(1, cleanupData.ErrorMessage);
@@ -252,10 +304,10 @@ namespace MixerThreholdMod_0_0_1.Patches
             }
 
             Main.logger.Msg(3, $"Found {cleanupData.BackupDirs.Count} backup directories, keeping latest {MaxBackups}");
-
+            
             int deletionCount = 0;
             var backupDirs = cleanupData.BackupDirs;
-
+            
             while (backupDirs.Count > MaxBackups && deletionCount < 10) // Safety limit
             {
                 var dirToDelete = backupDirs.LastOrDefault();
@@ -266,7 +318,7 @@ namespace MixerThreholdMod_0_0_1.Patches
                 }
 
                 string dirPath = dirToDelete.FullName;
-
+                
                 // Perform the deletion and get the result
                 var deletionResult = DeleteBackupDirectory(dirPath);
                 if (deletionResult.Success)
@@ -274,50 +326,16 @@ namespace MixerThreholdMod_0_0_1.Patches
                     Main.logger.Msg(1, $"Successfully deleted oldest backup ({deletionCount + 1}/{backupDirs.Count - MaxBackups}): {dirPath}");
                     backupDirs.RemoveAt(backupDirs.Count - 1);
                     deletionCount++;
-
-                    // Add small delay to prevent potential filesystem issues
-                    yield return new WaitForSeconds(0.1f);
+                    
+                    }
                 }
-                else if (deletionResult.ShouldContinue)
+                catch (Exception ex)
                 {
-                    // Directory was already deleted or similar non-fatal error
-                    Main.logger.Warn(1, deletionResult.ErrorMessage);
-                    backupDirs.RemoveAt(backupDirs.Count - 1);
-                    continue;
+                    // catchall at backup code, where the suspected crash is
+                    // hopefully should catch errors
+                    Main.logger.Err($"BackupSaveFolder: Failed to delete oldest backup");
+                    Main.logger.Err($"BackupSaveFolder: Caught exception: {ex.Message}\n{ex.StackTrace}");
                 }
-                else
-                {
-                    // Fatal error, stop cleanup
-                    Main.logger.Err(deletionResult.ErrorMessage);
-                    break;
-                }
-            }
-
-            Main.logger.Msg(3, $"Backup cleanup completed. Deleted {deletionCount} old directories.");
-        }
-
-        private static CleanupData GetBackupDirectoriesForCleanup(string backupRoot, string saveRootPrefix)
-        {
-            try
-            {
-                if (!Directory.Exists(backupRoot))
-                {
-                    return CleanupData.CreateFailure($"Backup root directory does not exist: {backupRoot}");
-                }
-
-                var backupRootDir = new DirectoryInfo(backupRoot);
-                if (backupRootDir == null)
-                {
-                    return CleanupData.CreateFailure($"Could not access backup root directory: {backupRoot}");
-                }
-
-                var backupDirs = backupRootDir
-                    .GetDirectories($"{saveRootPrefix}_backup_*")
-                    ?.Where(d => d != null)
-                    ?.OrderByDescending(d => d.Name)
-                    ?.ToList();
-
-                return CleanupData.CreateSuccess(backupDirs);
             }
             catch (Exception ex)
             {
@@ -331,7 +349,7 @@ namespace MixerThreholdMod_0_0_1.Patches
             try
             {
                 Main.logger.Msg(2, $"Attempting to delete backup directory: {dirPath}");
-
+                
                 // Add additional safety checks before deletion
                 if (string.IsNullOrEmpty(dirPath) || !dirPath.Contains("backup"))
                 {
@@ -395,98 +413,54 @@ namespace MixerThreholdMod_0_0_1.Patches
             public static DeletionResult CreateFatal(string errorMessage)
             {
                 return new DeletionResult { Success = false, ShouldContinue = false, ErrorMessage = errorMessage };
+=======
+                Main.logger.Err($"Coroutine continue failure in BackupSaveFolder: {ex}");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
             }
         }
 
         private static void CopyDirectory(string sourceDir, string targetDir)
         {
-            try
+            Directory.CreateDirectory(targetDir);
+
+            foreach (var file in Directory.GetFiles(sourceDir))
             {
-                if (string.IsNullOrEmpty(sourceDir) || string.IsNullOrEmpty(targetDir))
-                {
-                    Main.logger.Warn(1, $"CopyDirectory: Invalid paths - source: {sourceDir}, target: {targetDir}");
-                    return;
-                }
-
-                if (!Directory.Exists(sourceDir))
-                {
-                    Main.logger.Warn(1, $"CopyDirectory: Source directory does not exist: {sourceDir}");
-                    return;
-                }
-
-                Utils.EnsureDirectoryExists(targetDir, "CopyDirectory target directory");
-
-                var sourceFiles = Directory.GetFiles(sourceDir);
-                foreach (var file in sourceFiles)
-                {
-                    try
-                    {
-                        if (string.IsNullOrEmpty(file)) continue;
-
-                        string fileName = Path.GetFileName(file);
-                        if (string.IsNullOrEmpty(fileName)) continue;
-
-                        string destFile = Path.Combine(targetDir, fileName);
-                        File.Copy(file, destFile, overwrite: true);
-                    }
-                    catch (Exception fileEx)
-                    {
-                        Main.logger.Warn(1, $"CopyDirectory: Failed to copy file {file}: {fileEx.Message}");
-                        // Continue with other files
-                    }
-                }
-
-                var sourceDirs = Directory.GetDirectories(sourceDir);
-                foreach (var dir in sourceDirs)
-                {
-                    try
-                    {
-                        if (string.IsNullOrEmpty(dir)) continue;
-
-                        string dirName = Path.GetFileName(dir);
-                        if (string.IsNullOrEmpty(dirName)) continue;
-
-                        string destDir = Path.Combine(targetDir, dirName);
-                        CopyDirectory(dir, destDir);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Main.logger.Warn(1, $"CopyDirectory: Failed to copy directory {dir}: {dirEx.Message}");
-                        // Continue with other directories
-                    }
-                }
-
-                Main.logger.Msg(3, $"CopyDirectory: Successfully copied from {sourceDir} to {targetDir}");
+                string destFile = Path.Combine(targetDir, Path.GetFileName(file));
+                File.Copy(file, destFile, overwrite: true);
             }
-            catch (Exception ex)
+
+            foreach (var dir in Directory.GetDirectories(sourceDir))
             {
-                Main.logger.Err($"CopyDirectory: Critical error during copy operation: {ex.Message}\n{ex.StackTrace}");
-                throw; // Re-throw to allow caller to handle
+                string destDir = Path.Combine(targetDir, Path.GetFileName(dir));
+                CopyDirectory(dir, destDir);
             }
         }
 
         private static IEnumerator WriteDelayed(string _saveRoot)
         {
-            if (string.IsNullOrEmpty(_saveRoot))
-            {
-                Main.logger.Warn(1, "WriteDelayed: _saveRoot is null or empty");
-                yield break;
-            }
-
-            yield return new WaitForSeconds(1.0f);
-
-            // Move coroutine start to background to avoid potential issues
             try
             {
-                MelonCoroutines.Start(MixerSaveManager.WriteMixerValuesAsync(_saveRoot));
+                if (string.IsNullOrEmpty(_saveRoot))
+                {
+                    Main.logger.Warn(1, "WriteDelayed: _saveRoot is null or empty");
+                    yield break;
+                }
+
+                yield return new WaitForSeconds(1.0f);
+                
+                try
+                {
+                    MelonCoroutines.Start(MixerSaveManager.WriteMixerValuesAsync(_saveRoot));
+                }
+                catch (Exception ex)
+                {
+                    Main.logger.Err($"Error starting WriteMixerValuesAsync coroutine: {ex}");
+                }
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"WriteDelayed: Error starting WriteMixerValuesAsync coroutine: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Err($"Coroutine continue failure in WriteDelayed: {ex}");
             }
         }
     }
-}
-
-
 }

@@ -1,9 +1,12 @@
-﻿using HarmonyLib;
+﻿using ScheduleOne.Management;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using HarmonyLib;
 
-namespace MixerThreholdMod_1_0_0.Core
+namespace MixerThreholdMod_0_0_1
 {
     [HarmonyPatch(typeof(EntityConfiguration), "Destroy")]
     public static class EntityConfiguration_Destroy_Patch
@@ -12,10 +15,13 @@ namespace MixerThreholdMod_1_0_0.Core
         {
             try
             {
+<<<<<<< HEAD
                 if (__instance == null)
                 {
+                    // Remove from shared tracked list
                     TrackedMixers.RemoveAsync(mixerData.ConfigInstance).Wait();
-                    Main.logger.Msg(2, string.Format("Removed mixer from tracked list (via EntityConfiguration.Destroy)"));
+
+                    Main.logger.Msg(2, $"Removed mixer from tracked list (via EntityConfiguration.Destroy)");
                 }
 
                 Main.logger.Msg(2, $"EntityConfiguration.Destroy() called for mixer");
@@ -26,19 +32,31 @@ namespace MixerThreholdMod_1_0_0.Core
                     try
                     {
                         // Get a snapshot of tracked mixers
-                        var trackedMixers = await TrackedMixers.ToListAsync().ConfigureAwait(false);
+                        var trackedMixers = await TrackedMixers.ToListAsync();
                         if (trackedMixers == null)
                         {
                             Main.logger.Warn(1, "EntityConfiguration_Destroy_Patch: trackedMixers is null");
                             return;
                         }
+=======
+                Main.logger.Msg(2, $"EntityConfiguration.Destroy() called mixer");
+
+                // Use async helper to properly handle the removal without blocking
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Get a snapshot of tracked mixers
+                        var trackedMixers = await TrackedMixers.ToListAsync().ConfigureAwait(false);
+>>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
 
                         // Find if this instance is tracked
                         var mixerData = trackedMixers.FirstOrDefault(tm => tm != null && tm.ConfigInstance == __instance);
                         if (mixerData != null)
                         {
                             // Remove from shared tracked list
-                            await TrackedMixers.RemoveAsync(mixerData.ConfigInstance).ConfigureAwait(false);
+<<<<<<< HEAD
+                            await TrackedMixers.RemoveAsync(mixerData.ConfigInstance);
                             Main.logger.Msg(2, $"Removed mixer {mixerData.MixerInstanceID} from tracked list (via EntityConfiguration.Destroy)");
                         }
                         else
@@ -49,13 +67,25 @@ namespace MixerThreholdMod_1_0_0.Core
                     catch (Exception asyncEx)
                     {
                         Main.logger.Err($"EntityConfiguration_Destroy_Patch: Error in async cleanup: {asyncEx.Message}\n{asyncEx.StackTrace}");
+=======
+                            await TrackedMixers.RemoveAsync(mixerData.ConfigInstance).ConfigureAwait(false);
+
+                            Main.logger.Msg(2, $"Removed mixer from tracked list (via EntityConfiguration.Destroy)");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger.Err($"Error in async cleanup for EntityConfiguration.Destroy: {ex}");
+>>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
                     }
                 });
             }
             catch (Exception ex)
             {
-                Main.logger.Err(string.Format("EntityConfiguration_Destroy_Patch: Failed to save game and/or preferences and/or backup"));
-                Main.logger.Err(string.Format("EntityConfiguration_Destroy_Patch: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                // catchall at patch level, where my DLL interacts with the game and it's engine
+                // hopefully should catch errors in entire project?
+                Main.logger.Err($"EntityConfiguration_Destroy_Patch: Failed to save game and/or preferences and/or backup");
+                Main.logger.Err($"EntityConfiguration_Destroy_Patch: Caught exception: {ex.Message}\n{ex.StackTrace}");
             }
         }
     }
