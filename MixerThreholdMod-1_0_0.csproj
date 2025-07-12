@@ -104,6 +104,13 @@
     <!-- Threading -->
     <Compile Include="Threading\ThreadSafeCollections.cs" />
     
+    <!-- Restored Critical Helpers -->
+    <Compile Include="Helpers\CancellableIoRunner.cs" />
+    <Compile Include="Helpers\FileLockerHelper.cs" />
+    <Compile Include="Helpers\FileOperations.cs" />
+    <Compile Include="Helpers\MixerSaveManager.cs" />
+    <Compile Include="Helpers\Utils.cs" />
+    
     <!-- Patches -->
     <Compile Include="Patches\SaveManager_Save_Patch.cs" />
     <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
