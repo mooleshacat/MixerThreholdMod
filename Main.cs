@@ -489,6 +489,67 @@ namespace MixerThreholdMod_0_0_1
                 yield break;
             }
 
+            // Check if already tracked using coroutine approach - moved outside try/catch
+            yield return CheckIfAlreadyTracked(instance, (result) => alreadyTracked = result);
+
+            if (alreadyTracked)
+            {
+                if (instance.StartThrehold == null)
+                {
+                    logger.Warn(2, "[MAIN] StartThreshold is null - skipping instance");
+                    yield break;
+                }
+
+                // Configure threshold on main thread (Unity requirement)
+                // CRITICAL: This line sets the mixer threshold range from 1 to 20
+                logger.Msg(1, string.Format("[MAIN] CONFIGURING THRESHOLD: Setting range 1.0f to 20.0f for Mixer Instance"));
+                instance.StartThrehold.Configure(1f, 20f, true);
+                logger.Msg(1, string.Format("[MAIN] THRESHOLD CONFIGURED: Mixer should now support 1-20 range"));
+                
+                needsVerificationDelay = true;
+            }
+            catch (Exception ex)
+            {
+                processingError = ex;
+            }
+
+            if (processingError != null)
+            {
+                logger.Err(string.Format("[MAIN] ProcessMixerInstance CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
+                    processingError.Message, processingError.StackTrace));
+                yield break;
+            }
+
+            // Add delay for verification if needed - moved outside try/catch
+            if (needsVerificationDelay)
+            {
+                yield return null;
+            }
+
+            // Verify configuration and create tracker
+            try
+            {
+                // Log the actual configured values for debugging
+                var thresholdValue = instance.StartThrehold.Value;
+                logger.Msg(1, string.Format("[MAIN] THRESHOLD VERIFICATION: Current value is {0}", thresholdValue));
+
+                // Create tracked mixer
+                newTrackedMixer = new TrackedMixer
+                {
+                    ConfigInstance = instance,
+                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
+                };
+
+                // Add to tracking collection (thread-safe) - use synchronous version
+                Core.TrackedMixers.Add(newTrackedMixer);
+                logger.Msg(1, string.Format("[MAIN] ✓ MIXER PROCESSED: Created mixer with ID: {0}", newTrackedMixer.MixerInstanceID));
+            }
+            catch (Exception verifyEx)
+            {
+                logger.Warn(1, string.Format("[MAIN] Could not verify threshold value or create tracker: {0}", verifyEx.Message));
+                yield break;
+            }
+
             try
             {
                 if (instance.StartThrehold == null)
@@ -1605,15 +1666,31 @@ namespace MixerThreholdMod_0_0_1
         private static bool TestWritePermissionBasic(string path)
         {
             bool result = false;
-            string testFile = Path.Combine(path, "WriteTest_Mod_Enhanced.txt");
+            Exception checkError = null;
+            
+            // Start async task outside try/catch
+            var task = Core.TrackedMixers.AnyAsync(tm => tm?.ConfigInstance == instance);
+            
+            // Wait for async task with timeout - moved outside try/catch
+            float startTime = Time.time;
+            while (!task.IsCompleted && (Time.time - startTime) < 1f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
 
             try
             {
-                File.WriteAllText(testFile, "Enhanced write permission test for MixerThresholdMod");
-                if (File.Exists(testFile))
+                if (task.IsCompleted && !task.IsFaulted)
                 {
-                    result = true;
-                    File.Delete(testFile); // Cleanup
+                    result = task.Result;
+                }
+                else if (task.IsFaulted)
+                {
+                    logger.Err(string.Format("[MAIN] CheckIfAlreadyTracked: Task faulted: {0}", task.Exception?.Message));
+                }
+                else
+                {
+                    logger.Warn(1, "[MAIN] CheckIfAlreadyTracked: Task timed out - assuming not tracked");
                 }
             }
             catch (Exception ex)
