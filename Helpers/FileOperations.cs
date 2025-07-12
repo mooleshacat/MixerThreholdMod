@@ -7,29 +7,6 @@ using MixerThreholdMod_1_0_0.Helpers;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
-    /// <summary>
-    /// Thread-safe file operations with comprehensive locking for .NET 4.8.1 compatibility.
-    /// Provides safe file I/O operations that prevent corruption and deadlocks.
-    /// 
-    /// ⚠️ THREAD SAFETY: All file operations use exclusive/shared locks to prevent corruption.
-    /// Operations are designed to be thread-safe and can be called from multiple threads safely.
-    /// 
-    /// ⚠️ MAIN THREAD WARNING: Synchronous methods (SafeWriteAllText, SafeReadAllText) use 
-    /// blocking operations and should NOT be called from Unity's main thread as they can 
-    /// cause UI freezes and deadlocks. Use async alternatives when possible.
-    /// 
-    /// .NET 4.8.1 Compatibility:
-    /// - Uses ConfigureAwait(false) to prevent deadlocks
-    /// - Proper exception handling with detailed logging
-    /// - Cancellation token support for cooperative cancellation
-    /// - Compatible async/await patterns throughout
-    /// 
-    /// Key Features:
-    /// - Atomic file operations with temp file + rename strategy
-    /// - Comprehensive error handling and retry logic
-    /// - File locking to prevent concurrent access issues
-    /// - Timeout protection to prevent infinite blocking
-    /// </summary>
     public static class FileOperations
     {
         private const int DefaultTimeoutMs = 5000;
