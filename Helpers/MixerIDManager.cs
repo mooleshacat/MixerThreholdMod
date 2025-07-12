@@ -31,7 +31,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"ResetStableIDCounter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("ResetStableIDCounter: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -44,13 +44,14 @@ namespace MixerThreholdMod_0_0_1
                 {
                     const string errorMsg = "Cannot assign ID to null MixingStationConfiguration";
                     Main.logger?.Err(errorMsg);
-                    throw new ArgumentNullException(nameof(instance), errorMsg);
+                    throw new ArgumentNullException("instance", errorMsg); // .NET 4.8.1 compatible
                 }
 
                 // Try to get existing ID first
-                if (MixerInstanceMap.TryGetValue(instance, out int existingId))
+                int existingId;
+                if (MixerInstanceMap.TryGetValue(instance, out existingId))
                 {
-                    Main.logger?.Warn(2, $"Instance already has ID {existingId}: {instance}");
+                    Main.logger?.Warn(2, string.Format("Instance already has ID {0}: {1}", existingId, instance));
                     return existingId;
                 }
 
@@ -62,11 +63,11 @@ namespace MixerThreholdMod_0_0_1
 
                 if (actualId == newId)
                 {
-                    Main.logger?.Msg(3, $"Assigned new ID {newId} to instance: {instance}");
+                    Main.logger?.Msg(3, string.Format("Assigned new ID {0} to instance: {1}", newId, instance));
                 }
                 else
                 {
-                    Main.logger?.Warn(2, $"Another thread assigned ID {actualId} to instance: {instance}");
+                    Main.logger?.Warn(2, string.Format("Another thread assigned ID {0} to instance: {1}", actualId, instance));
                 }
 
                 return actualId;
@@ -77,7 +78,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"GetMixerID: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("GetMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -97,7 +98,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"TryGetMixerID: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("TryGetMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -112,21 +113,22 @@ namespace MixerThreholdMod_0_0_1
                     return false;
                 }
 
-                bool removed = MixerInstanceMap.TryRemove(instance, out int removedId);
+                int removedId;
+                bool removed = MixerInstanceMap.TryRemove(instance, out removedId);
                 if (removed)
                 {
-                    Main.logger?.Msg(3, $"Removed mixer ID {removedId} for instance: {instance}");
+                    Main.logger?.Msg(3, string.Format("Removed mixer ID {0} for instance: {1}", removedId, instance));
                 }
                 else
                 {
-                    Main.logger?.Warn(2, $"Failed to remove mixer ID for instance: {instance}");
+                    Main.logger?.Warn(2, string.Format("Failed to remove mixer ID for instance: {0}", instance));
                 }
 
                 return removed;
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"RemoveMixerID: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("RemoveMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -139,7 +141,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"GetMixerCount: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("GetMixerCount: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return 0;
             }
         }

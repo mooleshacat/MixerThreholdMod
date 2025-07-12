@@ -21,7 +21,7 @@ namespace MixerThreholdMod_0_0_1
                 if (string.IsNullOrWhiteSpace(path))
                 {
                     Main.logger?.Err("SafeWriteAllTextAsync: path is null or empty");
-                    throw new ArgumentException("Path cannot be null or empty", nameof(path));
+                    throw new ArgumentException("Path cannot be null or empty", "path"); // .NET 4.8.1 compatible
                 }
 
                 if (output == null)
@@ -51,14 +51,14 @@ namespace MixerThreholdMod_0_0_1
                     }
                     else
                     {
-                        Main.logger?.Warn(1, $"FileOperations.SafeWriteAllTextAsync: Could not acquire exclusive lock on [{path}]");
-                        throw new TimeoutException($"Could not acquire exclusive lock on file: {path}");
+                        Main.logger?.Warn(1, string.Format("FileOperations.SafeWriteAllTextAsync: Could not acquire exclusive lock on [{0}]", path));
+                        throw new TimeoutException(string.Format("Could not acquire exclusive lock on file: {0}", path));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeWriteAllTextAsync: Caught exception for [{path}]: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeWriteAllTextAsync: Caught exception for [{0}]: {1}\n{2}", path, ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -73,12 +73,12 @@ namespace MixerThreholdMod_0_0_1
                 if (string.IsNullOrWhiteSpace(path))
                 {
                     Main.logger?.Err("SafeReadAllTextAsync: path is null or empty");
-                    throw new ArgumentException("Path cannot be null or empty", nameof(path));
+                    throw new ArgumentException("Path cannot be null or empty", "path"); // .NET 4.8.1 compatible
                 }
 
                 if (!File.Exists(path))
                 {
-                    Main.logger?.Warn(2, $"SafeReadAllTextAsync: File does not exist: {path}");
+                    Main.logger?.Warn(2, string.Format("SafeReadAllTextAsync: File does not exist: {0}", path));
                     return string.Empty;
                 }
 
@@ -95,14 +95,14 @@ namespace MixerThreholdMod_0_0_1
                     }
                     else
                     {
-                        Main.logger?.Warn(1, $"FileOperations.SafeReadAllTextAsync: Could not acquire shared lock on [{path}]");
-                        throw new TimeoutException($"Could not acquire shared lock on file: {path}");
+                        Main.logger?.Warn(1, string.Format("FileOperations.SafeReadAllTextAsync: Could not acquire shared lock on [{0}]", path));
+                        throw new TimeoutException(string.Format("Could not acquire shared lock on file: {0}", path));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeReadAllTextAsync: Caught exception for [{path}]: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeReadAllTextAsync: Caught exception for [{0}]: {1}\n{2}", path, ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -122,7 +122,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeWriteAllText: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeWriteAllText: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -142,7 +142,7 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeReadAllText: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeReadAllText: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -161,12 +161,12 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (OperationCanceledException)
             {
-                Main.logger?.Msg(2, $"Write operation canceled for: {path}");
+                Main.logger?.Msg(2, string.Format("Write operation canceled for: {0}", path));
                 throw;
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeWriteAllTextWithCancellationAsync: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeWriteAllTextWithCancellationAsync: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -181,19 +181,19 @@ namespace MixerThreholdMod_0_0_1
                 if (string.IsNullOrWhiteSpace(sourceFile))
                 {
                     Main.logger?.Warn(1, "SafeCopyAsync: sourceFile is null or empty");
-                    throw new ArgumentException("Source file path cannot be null or empty", nameof(sourceFile));
+                    throw new ArgumentException("Source file path cannot be null or empty", "sourceFile"); // .NET 4.8.1 compatible
                 }
 
                 if (string.IsNullOrWhiteSpace(targetFile))
                 {
                     Main.logger?.Warn(1, "SafeCopyAsync: targetFile is null or empty");
-                    throw new ArgumentException("Target file path cannot be null or empty", nameof(targetFile));
+                    throw new ArgumentException("Target file path cannot be null or empty", "targetFile"); // .NET 4.8.1 compatible
                 }
 
                 if (!File.Exists(sourceFile))
                 {
-                    Main.logger?.Warn(1, $"SafeCopyAsync: Source file does not exist: {sourceFile}");
-                    throw new FileNotFoundException($"Source file not found: {sourceFile}");
+                    Main.logger?.Warn(1, string.Format("SafeCopyAsync: Source file does not exist: {0}", sourceFile));
+                    throw new FileNotFoundException(string.Format("Source file not found: {0}", sourceFile));
                 }
 
                 using (var locker = new FileLockHelper(sourceFile + ".lock"))
@@ -212,14 +212,14 @@ namespace MixerThreholdMod_0_0_1
                     }
                     else
                     {
-                        Main.logger?.Warn(1, $"FileOperations.SafeCopyAsync: Could not acquire shared lock on [{sourceFile}] for copying.");
-                        throw new TimeoutException($"Could not acquire shared lock on source file: {sourceFile}");
+                        Main.logger?.Warn(1, string.Format("FileOperations.SafeCopyAsync: Could not acquire shared lock on [{0}] for copying.", sourceFile));
+                        throw new TimeoutException(string.Format("Could not acquire shared lock on source file: {0}", sourceFile));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeCopyAsync: Caught exception copying [{sourceFile}] to [{targetFile}]: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeCopyAsync: Caught exception copying [{0}] to [{1}]: {2}\n{3}", sourceFile, targetFile, ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -238,8 +238,81 @@ namespace MixerThreholdMod_0_0_1
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeCopy: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeCopy: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 throw;
+            }
+        }
+    }
+
+    // Add the missing FileLockHelper class for .NET 4.8.1 compatibility
+    public class FileLockHelper : IDisposable
+    {
+        private readonly string _lockFilePath;
+        private FileStream _lockStream;
+        private bool _disposed = false;
+
+        public FileLockHelper(string lockFilePath)
+        {
+            _lockFilePath = lockFilePath ?? throw new ArgumentNullException("lockFilePath");
+        }
+
+        public async Task<bool> AcquireExclusiveLockAsync(int timeoutMs, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return await TryAcquireLockAsync(FileAccess.Write, FileShare.None, timeoutMs, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<bool> AcquireSharedLockAsync(int timeoutMs, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return await TryAcquireLockAsync(FileAccess.Read, FileShare.Read, timeoutMs, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<bool> TryAcquireLockAsync(FileAccess access, FileShare share, int timeoutMs, CancellationToken cancellationToken)
+        {
+            var startTime = DateTime.Now;
+            var timeout = TimeSpan.FromMilliseconds(timeoutMs);
+
+            while (DateTime.Now - startTime < timeout && !cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    _lockStream = new FileStream(_lockFilePath, FileMode.Create, access, share);
+                    return true;
+                }
+                catch (IOException)
+                {
+                    // File is locked, wait and retry
+                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Permission denied, wait and retry
+                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            return false;
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                try
+                {
+                    _lockStream?.Dispose();
+                    if (File.Exists(_lockFilePath))
+                    {
+                        File.Delete(_lockFilePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Warn(1, string.Format("FileLockHelper.Dispose: Error cleaning up lock file: {0}", ex.Message));
+                }
+                finally
+                {
+                    _disposed = true;
+                }
             }
         }
     }
