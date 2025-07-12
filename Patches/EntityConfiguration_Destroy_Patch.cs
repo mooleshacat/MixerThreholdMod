@@ -2,7 +2,7 @@
 using System;
 using HarmonyLib;
 
-namespace MixerThreholdMod_1_0_0.Patches
+namespace MixerThreholdMod_0_0_1.Patches
 {
     /// <summary>
     /// Harmony patch for EntityConfiguration.Destroy to handle mixer cleanup.

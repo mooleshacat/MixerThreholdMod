@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MixerThreholdMod_1_0_0.Threading;
+using MixerThreholdMod_0_0_1.Threading;
 
-namespace MixerThreholdMod_1_0_0.Core
+namespace MixerThreholdMod_0_0_1.Core
 {
     /// <summary>
     /// Simplified mixer tracking system with thread-safe operations.

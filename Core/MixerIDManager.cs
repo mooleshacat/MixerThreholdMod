@@ -2,7 +2,7 @@ using ScheduleOne.Management;
 using System;
 using System.Collections.Concurrent;
 
-namespace MixerThreholdMod_1_0_0.Core
+namespace MixerThreholdMod_0_0_1.Core
 {
     /// <summary>
     /// Thread-safe mixer ID management system for .NET 4.8.1 compatibility.

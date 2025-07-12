@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MixerThreholdMod_1_0_0.Threading
+namespace MixerThreholdMod_0_0_1.Threading
 {
     /// <summary>
     /// Thread-safe list implementation for .NET 4.8.1 compatibility.

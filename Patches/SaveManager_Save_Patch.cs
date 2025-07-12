@@ -1,4 +1,3 @@
-using HarmonyLib;
 using MelonLoader;
 using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Save;
@@ -7,11 +6,10 @@ using MixerThreholdMod_1_0_0.Save;
 using System;
 using System.Collections;
 using System.IO;
-using System.Reflection;
 using UnityEngine;
 using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 
-namespace MixerThreholdMod_1_0_0.Patches
+namespace MixerThreholdMod_0_0_1.Patches
 {
     /// <summary>
     /// Harmony patch for SaveManager.Save to capture save folder path and trigger mixer data persistence.
@@ -23,57 +21,17 @@ namespace MixerThreholdMod_1_0_0.Patches
     /// ⚠️ THREAD SAFETY: All operations use thread-safe methods and don't block the main thread.
     /// Error handling prevents patch failures from crashing the save process.
     /// 
-    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
-    /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses string.Format instead of string interpolation
     /// - Compatible exception handling patterns
     /// - Proper async coroutine usage
     /// </summary>
+    [HarmonyPatch(typeof(SaveManager), nameof(SaveManager.Save), new[] { typeof(string) })]
     public static class SaveManager_Save_Patch
     {
         private const int MaxBackups = 5;
         private static bool _patchInitialized = false;
         private static MethodInfo _saveMethod = null;
-
-        /// <summary>
-        /// Initialize the patch using IL2CPP-compatible type resolution
-        /// </summary>
-        public static void Initialize()
-        {
-            try
-            {
-                if (_patchInitialized) return;
-
-                var saveManagerType = IL2CPPTypeResolver.GetSaveManagerType();
-                if (saveManagerType == null)
-                {
-                    Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[PATCH] SaveManager type not found - patch will not be applied");
-                    return;
-                }
-
-                _saveMethod = saveManagerType.GetMethod("Save", new[] { typeof(string) });
-                if (_saveMethod == null)
-                {
-                    Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[PATCH] SaveManager.Save method not found - patch will not be applied");
-                    return;
-                }
-
-                // Apply Harmony patch dynamically
-                // FIX: Use correct HarmonyLib v2 syntax
-                var harmony = new HarmonyLib.Harmony("MixerThreholdMod.SaveManager_Save_Patch");
-                var postfixMethod = typeof(SaveManager_Save_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
-
-                harmony.Patch(_saveMethod, null, new HarmonyMethod(postfixMethod));
-                
-                Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[PATCH] IL2CPP-compatible SaveManager.Save patch applied successfully");
-                _patchInitialized = true;
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("[PATCH] Failed to initialize SaveManager_Save_Patch: {0}", ex.Message));
-            }
-        }
 
         /// <summary>
         /// Postfix patch that runs after SaveManager.Save completes.
@@ -84,11 +42,11 @@ namespace MixerThreholdMod_1_0_0.Patches
             Exception patchError = null;
             try
             {
-                Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[PATCH] SaveManager.Save postfix triggered");
+                Main.logger.Msg(2, "[PATCH] SaveManager.Save postfix triggered");
 
                 if (string.IsNullOrEmpty(saveFolderPath))
                 {
-                    Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[PATCH] Save folder path is null or empty - cannot proceed");
+                    Main.logger.Warn(1, "[PATCH] Save folder path is null or empty - cannot proceed");
                     return;
                 }
 
@@ -101,7 +59,7 @@ namespace MixerThreholdMod_1_0_0.Patches
                 try
                 {
                     MelonCoroutines.Start(Save.CrashResistantSaveManager.TriggerSaveWithCooldown());
-                    Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[PATCH] Crash-resistant save triggered successfully");
+                    Main.logger.Msg(2, "[PATCH] Crash-resistant save triggered successfully");
                 }
                 catch (Exception saveEx)
                 {
@@ -137,6 +95,59 @@ namespace MixerThreholdMod_1_0_0.Patches
                     normalized = normalized.TrimEnd('\\');
                 }
                 return normalized;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
+                return path; // Return original on error
+            }
+    }
+}
+
+                var parentDir = Directory.GetParent(_saveRoot);
+                if (parentDir == null)
+                {
+                    Main.logger.Warn(1, $"Could not get parent directory of save root: {_saveRoot}");
+                    return BackupResult.CreateFailure($"Could not get parent directory of save root: {_saveRoot}");
+                }
+
+                var _backupRoot = Utils.NormalizePath(Path.Combine(parentDir.FullName, "MixerThreholdMod_backup")) + "\\";
+                _saveRoot = _saveRoot.TrimEnd('\\') + "\\";
+
+                Main.logger.Msg(2, $"BACKUP ROOT: {_backupRoot}");
+                Main.logger.Msg(2, $"SAVE ROOT: {_saveRoot}");
+
+                if (!Directory.Exists(_saveRoot))
+                {
+                    Main.logger.Warn(1, $"Save directory not found at {_saveRoot}");
+                    return BackupResult.CreateFailure($"Save directory not found at {_saveRoot}");
+                }
+
+                if (!Utils.EnsureDirectoryExists(_backupRoot, "backup directory creation"))
+                {
+                    return BackupResult.CreateFailure("Failed to create backup directory");
+                }
+
+                string _timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+                string _backupDirName = $"SaveGame_2_backup_{_timestamp}";
+                string _backupPath = Path.Combine(_backupRoot, _backupDirName);
+                string _saveRootPrefix = Path.GetFileName(_saveRoot.TrimEnd('\\'));
+
+                Main.logger.Msg(2, $"SAVE ROOT PREFIX: {_saveRootPrefix}");
+
+                try
+                {
+                    // Copy the SaveGame_2 folder to backup location
+                    CopyDirectory(_saveRoot, _backupPath);
+                    Main.logger.Msg(2, $"Saved backup to: {_backupPath}");
+                }
+                catch (Exception copyEx)
+                {
+                    Main.logger.Err($"Failed to copy directory during backup: {copyEx.Message}\n{copyEx.StackTrace}");
+                    return BackupResult.CreateFailure($"Failed to copy directory during backup: {copyEx.Message}");
+                }
+
+                return BackupResult.CreateSuccess(_backupRoot, _saveRootPrefix);
             }
             catch (Exception ex)
             {
