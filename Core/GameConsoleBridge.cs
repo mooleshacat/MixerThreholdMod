@@ -52,17 +52,31 @@ namespace MixerThreholdMod_1_0_0.Core
                 try
                 {
                     Main.logger?.Msg(2, "[BRIDGE] Initializing native console integration");
+                    Main.logger?.Msg(3, "[BRIDGE] Searching for ScheduleOne.Console class...");
 
                     // Find the game's Console class and commands dictionary using reflection
                     var consoleType = System.Type.GetType("ScheduleOne.Console, Assembly-CSharp");
+                    Main.logger?.Msg(3, string.Format("[BRIDGE] ScheduleOne.Console type found: {0}", consoleType != null ? "YES" : "NO"));
+                    
                     if (consoleType != null)
                     {
+                        Main.logger?.Msg(3, string.Format("[BRIDGE] Console type full name: {0}", consoleType.FullName));
+                        Main.logger?.Msg(3, "[BRIDGE] Searching for commands field...");
+                        
                         var commandsField = consoleType.GetField("commands", BindingFlags.Public | BindingFlags.Static);
+                        Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field found: {0}", commandsField != null ? "YES" : "NO"));
+                        
                         if (commandsField != null)
                         {
+                            Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field type: {0}", commandsField.FieldType));
+                            
                             var commandsDict = commandsField.GetValue(null) as System.Collections.IDictionary;
+                            Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary retrieved: {0}", commandsDict != null ? "YES" : "NO"));
+                            
                             if (commandsDict != null)
                             {
+                                Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary count: {0}", commandsDict.Count));
+                                
                                 // Add mod commands to game's native console using reflection-based approach
                                 AddModCommandsToGameConsole(commandsDict, consoleType);
 
@@ -72,16 +86,22 @@ namespace MixerThreholdMod_1_0_0.Core
                             else
                             {
                                 Main.logger?.Warn(1, "[BRIDGE] Could not access game's commands dictionary - may not be initialized yet");
+                                // Try alternative approaches
+                                TryAlternativeConsoleIntegration(consoleType);
                             }
                         }
                         else
                         {
                             Main.logger?.Warn(1, "[BRIDGE] Could not find commands field in Console class");
+                            // List available fields for debugging
+                            LogAvailableFields(consoleType);
                         }
                     }
                     else
                     {
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console class");
+                        // Try to find any Console class
+                        TryFindAnyConsoleClass();
                     }
                 }
                 catch (Exception ex)
@@ -94,6 +114,106 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Err(string.Format("[BRIDGE] Native console integration failed: {0}\nStackTrace: {1}",
                         integrationError.Message, integrationError.StackTrace));
                 }
+                
+                // Regardless of native integration success, provide fallback information
+                Main.logger?.Msg(1, "[BRIDGE] Console commands available through manual processing:");
+                Main.logger?.Msg(1, "[BRIDGE] Use Core.Console.ProcessManualCommand(\"command\") for testing");
+            }
+        }
+
+        /// <summary>
+        /// Log available fields in the console type for debugging
+        /// </summary>
+        private static void LogAvailableFields(Type consoleType)
+        {
+            Exception fieldError = null;
+            try
+            {
+                Main.logger?.Msg(3, "[BRIDGE] Available fields in Console class:");
+                var fields = consoleType.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+                foreach (var field in fields)
+                {
+                    Main.logger?.Msg(3, string.Format("[BRIDGE]   - {0} ({1})", field.Name, field.FieldType.Name));
+                }
+            }
+            catch (Exception ex)
+            {
+                fieldError = ex;
+            }
+            
+            if (fieldError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] LogAvailableFields error: {0}", fieldError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Try to find any console class in the game assemblies
+        /// </summary>
+        private static void TryFindAnyConsoleClass()
+        {
+            Exception findError = null;
+            try
+            {
+                Main.logger?.Msg(3, "[BRIDGE] Searching for any Console class in loaded assemblies...");
+                
+                var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assembly in assemblies)
+                {
+                    try
+                    {
+                        var types = assembly.GetTypes();
+                        foreach (var type in types)
+                        {
+                            if (type.Name.Contains("Console"))
+                            {
+                                Main.logger?.Msg(3, string.Format("[BRIDGE] Found Console-like class: {0} in {1}", type.FullName, assembly.GetName().Name));
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Skip assemblies that can't be reflected over
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                findError = ex;
+            }
+            
+            if (findError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] TryFindAnyConsoleClass error: {0}", findError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Try alternative console integration approaches
+        /// </summary>
+        private static void TryAlternativeConsoleIntegration(Type consoleType)
+        {
+            Exception altError = null;
+            try
+            {
+                Main.logger?.Msg(2, "[BRIDGE] Attempting alternative console integration...");
+                
+                // Try to find any methods that might be used for command registration
+                var methods = consoleType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                Main.logger?.Msg(3, "[BRIDGE] Available static methods in Console class:");
+                foreach (var method in methods)
+                {
+                    Main.logger?.Msg(3, string.Format("[BRIDGE]   - {0}", method.Name));
+                }
+            }
+            catch (Exception ex)
+            {
+                altError = ex;
+            }
+            
+            if (altError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] TryAlternativeConsoleIntegration error: {0}", altError.Message));
             }
         }
 

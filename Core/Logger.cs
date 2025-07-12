@@ -22,7 +22,11 @@ namespace MixerThreholdMod_1_0_0.Core
     /// </summary>
     public class Logger
     {
+#if DEBUG
         public bool IsDebugEnabled = true; // disable for production builds (disables all logging except errors)
+#else
+        public bool IsDebugEnabled = false; // disable for production builds (disables all logging except errors)
+#endif
         public int CurrentMsgLogLevel = 3; // current dev desired msg log level (1, 2, or 3)
         public int CurrentWarnLogLevel = 2; // current dev desired warn log level (1 or 2)
         public bool ShowLogLevelCalc = true; // Simplified default (leave as true for clarity, for human)

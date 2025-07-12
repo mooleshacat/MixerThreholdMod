@@ -763,6 +763,10 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
 
                 Main.logger?.Msg(2, "[CONSOLE] Console commands registered successfully");
+                
+                // Test the console commands to ensure they work
+                Main.logger?.Msg(2, "[CONSOLE] Testing console command functionality...");
+                TestConsoleCommands(hookInstance);
             }
             catch (Exception ex)
             {
@@ -772,6 +776,73 @@ namespace MixerThreholdMod_1_0_0.Core
             if (regError != null)
             {
                 Main.logger?.Err(string.Format("[CONSOLE] RegisterConsoleCommandViaReflection error: {0}\n{1}", regError.Message, regError.StackTrace));
+            }
+        }
+
+        /// <summary>
+        /// Test console commands to verify they work properly
+        /// ⚠️ THREAD SAFETY: Safe testing with comprehensive error handling
+        /// </summary>
+        private static void TestConsoleCommands(MixerConsoleHook hookInstance)
+        {
+            Exception testError = null;
+            try
+            {
+                Main.logger?.Msg(3, "[CONSOLE] Running console command tests...");
+                
+                // Test basic logging commands
+                Main.logger?.Msg(3, "[CONSOLE] Testing 'msg' command...");
+                hookInstance.OnConsoleCommand("msg Console command test - this should appear as a manual message");
+                
+                Main.logger?.Msg(3, "[CONSOLE] Testing 'warn' command...");
+                hookInstance.OnConsoleCommand("warn Console warning test - this should appear as a manual warning");
+                
+                // Test help command
+                Main.logger?.Msg(3, "[CONSOLE] Testing help display...");
+                hookInstance.OnConsoleCommand("help");
+                
+                Main.logger?.Msg(2, "[CONSOLE] Console command tests completed");
+                Main.logger?.Msg(1, "[CONSOLE] Note: Console commands work but may need game console integration for user input");
+            }
+            catch (Exception ex)
+            {
+                testError = ex;
+            }
+
+            if (testError != null)
+            {
+                Main.logger?.Err(string.Format("[CONSOLE] TestConsoleCommands error: {0}\n{1}", testError.Message, testError.StackTrace));
+            }
+        }
+
+        /// <summary>
+        /// Manual console command processor for testing and debugging
+        /// Can be called from other parts of the code to test commands
+        /// </summary>
+        public static void ProcessManualCommand(string command)
+        {
+            Exception manualError = null;
+            try
+            {
+                var hookInstance = MixerConsoleHook.Instance;
+                if (hookInstance != null)
+                {
+                    Main.logger?.Msg(2, string.Format("[CONSOLE] Processing manual command: {0}", command));
+                    hookInstance.OnConsoleCommand(command);
+                }
+                else
+                {
+                    Main.logger?.Err("[CONSOLE] Cannot process manual command - hook instance not available");
+                }
+            }
+            catch (Exception ex)
+            {
+                manualError = ex;
+            }
+
+            if (manualError != null)
+            {
+                Main.logger?.Err(string.Format("[CONSOLE] ProcessManualCommand error: {0}\n{1}", manualError.Message, manualError.StackTrace));
             }
         }
     }

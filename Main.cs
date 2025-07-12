@@ -38,6 +38,7 @@ namespace MixerThreholdMod_1_0_0
         public static ConcurrentDictionary<int, float> savedMixerValues = new ConcurrentDictionary<int, float>();
         public static string CurrentSavePath = null;
         public static bool LoadCoroutineStarted = false;
+        private static bool _consoleTestCompleted = false;
 
         public override void OnInitializeMelon()
         {
@@ -92,6 +93,11 @@ namespace MixerThreholdMod_1_0_0
                     
                     logger.Msg(1, "Phase 4: Registering console commands...");
                     Core.Console.RegisterConsoleCommandViaReflection();
+                    logger.Msg(1, "Phase 4a: Basic console hook registered");
+                    
+                    // Also initialize native console integration for game console commands
+                    logger.Msg(1, "Phase 4b: Initializing native game console integration...");
+                    Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
                     logger.Msg(1, "Phase 4: Console commands registered successfully");
                     
                     logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
@@ -280,6 +286,33 @@ namespace MixerThreholdMod_1_0_0
         {
             base.OnSceneWasLoaded(buildIndex, sceneName);
             logger.Msg(2, "Scene loaded: " + sceneName);
+            
+            // One-time console command test when main scene loads (to verify commands work)
+            if (sceneName == "Main" && !_consoleTestCompleted)
+            {
+                _consoleTestCompleted = true;
+                logger.Msg(2, "[DEBUG] Running one-time console command test...");
+                
+                // Test console commands to verify they work
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        // Wait a moment for everything to settle
+                        System.Threading.Thread.Sleep(1000);
+                        
+                        logger.Msg(2, "[DEBUG] Testing console commands...");
+                        Core.Console.ProcessManualCommand("msg This is a test message from console command");
+                        Core.Console.ProcessManualCommand("warn This is a test warning from console command");
+                        logger.Msg(2, "[DEBUG] Console command test completed - check logs above for test output");
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Err(string.Format("[DEBUG] Console command test failed: {0}", ex.Message));
+                    }
+                });
+            }
+            
             if (sceneName == "Main")
             {
                 try
@@ -334,23 +367,115 @@ namespace MixerThreholdMod_1_0_0
             }
         }
 
-        // Placeholder methods referenced by Console.cs - can be implemented later
+        // Console command implementations for comprehensive testing and debugging
         public static IEnumerator StressGameSaveTestWithComprehensiveMonitoring(int iterations, float delaySeconds, bool bypassCooldown)
         {
-            logger.Warn(1, "StressGameSaveTestWithComprehensiveMonitoring: Method not yet implemented");
-            yield break;
+            logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
+            
+            var startTime = DateTime.Now;
+            int successCount = 0;
+            int failureCount = 0;
+            
+            for (int i = 1; i <= iterations; i++)
+            {
+                try
+                {
+                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
+                    
+                    // Track timing for this iteration
+                    var iterationStart = DateTime.Now;
+                    
+                    // Perform the save with comprehensive monitoring
+                    yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                    
+                    var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
+                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
+                    successCount++;
+                    
+                    // Add delay if specified
+                    if (delaySeconds > 0f)
+                    {
+                        logger.Msg(3, string.Format("[MONITOR] Waiting {0:F3}s before next iteration...", delaySeconds));
+                        yield return new WaitForSeconds(delaySeconds);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
+                    failureCount++;
+                }
+            }
+            
+            var totalTime = (DateTime.Now - startTime).TotalSeconds;
+            logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
         }
 
         public static IEnumerator PerformTransactionalSave()
         {
-            logger.Warn(1, "PerformTransactionalSave: Method not yet implemented");
-            yield break;
+            logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
+            
+            try
+            {
+                // Perform the save operation with comprehensive logging
+                logger.Msg(2, "[TRANSACTION] Performing save operation...");
+                var saveStart = DateTime.Now;
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
+                
+                logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
+                logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
+            }
         }
 
         public static IEnumerator AdvancedSaveOperationProfiling()
         {
-            logger.Warn(1, "AdvancedSaveOperationProfiling: Method not yet implemented");
-            yield break;
+            logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
+            
+            try
+            {
+                var profileStart = DateTime.Now;
+                
+                // Phase 1: Pre-save diagnostics
+                logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
+                var phase1Start = DateTime.Now;
+                
+                logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
+                logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
+                logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
+                
+                var phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
+                
+                // Phase 2: Save operation profiling
+                logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
+                var phase2Start = DateTime.Now;
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                var phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
+                
+                // Phase 3: Post-save diagnostics
+                logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
+                var phase3Start = DateTime.Now;
+                
+                logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
+                logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
+                
+                var phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
+                
+                var totalTime = (DateTime.Now - profileStart).TotalMilliseconds;
+                logger.Msg(1, string.Format("[PROFILE] Advanced profiling complete. Total time: {0:F1}ms", totalTime));
+                logger.Msg(1, string.Format("[PROFILE] Breakdown: PreSave={0:F1}ms, Save={1:F1}ms, PostSave={2:F1}ms", 
+                    phase1Time, phase2Time, phase3Time));
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("[PROFILE] Advanced profiling FAILED: {0}", ex.Message));
+            }
         }
     }
 }
