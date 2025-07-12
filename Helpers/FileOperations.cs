@@ -1,316 +1,246 @@
-﻿using MelonLoader.Utils;
-using ScheduleOne.Properties;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MixerThreholdMod_0_0_1
 {
-    internal class FileOperations
+    public static class FileOperations
     {
-        public static readonly string LockFilePath = Path.Combine(MelonEnvironment.UserDataDirectory, ".mixersavelock").Replace('/', '\\');
-        public static readonly string TempFilePath = Path.Combine(MelonEnvironment.UserDataDirectory, ".mixersave.tmp").Replace('/', '\\');
-        public const int DefaultTimeoutMs = 1000;
-        public const int MaxRetries = 3;
-        public const int RetryDelayMs = 500;
+        private const int DefaultTimeoutMs = 5000;
+        private const int BufferSize = 4096;
 
         /// <summary>
-        /// Writes text to a file with exclusive lock, async with retry.
+        /// Writes text to a file with exclusive lock (async version).
         /// </summary>
-        public static async Task SafeWriteAllTextAsync(string path, string output, CancellationToken ct = default)
+        public static async Task SafeWriteAllTextAsync(string path, string output, CancellationToken cancellationToken = default(CancellationToken))
         {
-            string tempFile = null;
-            for (int attempt = 1; attempt <= MaxRetries; attempt++)
+            try
             {
-                try
+                if (string.IsNullOrWhiteSpace(path))
                 {
-                    using (var locker = new FileLockHelper(LockFilePath))
-                    {
-                        bool acquired = await locker.AcquireExclusiveLockAsync(ct, DefaultTimeoutMs);
-                        if (!acquired)
-                        {
-                            if (attempt < MaxRetries)
-                            {
-                                Main.logger.Warn(1, $"FileOperations.SafeWriteAllText: Failed to acquire exclusive lock for [{path}] (attempt {attempt}). Retrying...");
-                                await Task.Delay(RetryDelayMs * attempt, ct);
-                                continue;
-                            }
-                            else
-                            {
-                                Main.logger.Warn(1, $"FileOperations.SafeWriteAllText: Failed to acquire exclusive lock for [{path}] after {MaxRetries} attempts.");
-                                return;
-                            }
-                        }
+                    Main.logger?.Err("SafeWriteAllTextAsync: path is null or empty");
+                    throw new ArgumentException("Path cannot be null or empty", nameof(path));
+                }
 
-                        // Write to temp file first
-                        tempFile = Path.GetTempFileName();
-                        using (var writer = new StreamWriter(tempFile, false, Encoding.UTF8))
-                        {
-                            await writer.WriteAsync(output);
-                        }
-                        // Safely move to final destination
-                        SafeMove(tempFile, path);
-                    }
-                    return; // Success
-                }
-                catch (Exception ex) when (!ct.IsCancellationRequested)
+                if (output == null)
                 {
-                    Main.logger.Warn(1, $"Caught exception while writing to [{path}] in FileOperations.SafeWriteAllTextAsync: {ex}");
-                    if (tempFile != null && File.Exists(tempFile))
-                        File.Delete(tempFile);
-                    await Task.Delay(RetryDelayMs * attempt, ct);
+                    Main.logger?.Warn(2, "SafeWriteAllTextAsync: output is null, treating as empty string");
+                    output = string.Empty;
                 }
+
+                // Ensure directory exists
+                var directory = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                using (var locker = new FileLockHelper(path + ".lock"))
+                {
+                    if (await locker.AcquireExclusiveLockAsync(DefaultTimeoutMs, cancellationToken).ConfigureAwait(false))
+                    {
+                        // Use async file operations to avoid blocking the main thread
+                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, FileOptions.SequentialScan))
+                        using (var writer = new StreamWriter(fileStream, Encoding.UTF8))
+                        {
+                            await writer.WriteAsync(output).ConfigureAwait(false);
+                            await writer.FlushAsync().ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        Main.logger?.Warn(1, $"FileOperations.SafeWriteAllTextAsync: Could not acquire exclusive lock on [{path}]");
+                        throw new TimeoutException($"Could not acquire exclusive lock on file: {path}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err($"SafeWriteAllTextAsync: Caught exception for [{path}]: {ex.Message}\n{ex.StackTrace}");
+                throw;
             }
         }
 
         /// <summary>
-        /// Reads text from a file with shared lock, async with retry.
+        /// Reads text from a file with shared lock (async version).
         /// </summary>
-        public static async Task<string> SafeReadAllTextAsync(string path, CancellationToken ct = default)
+        public static async Task<string> SafeReadAllTextAsync(string path, CancellationToken cancellationToken = default(CancellationToken))
         {
-            for (int attempt = 1; attempt <= MaxRetries; attempt++)
+            try
             {
-                try
+                if (string.IsNullOrWhiteSpace(path))
                 {
-                    using (var locker = new FileLockHelper(LockFilePath))
+                    Main.logger?.Err("SafeReadAllTextAsync: path is null or empty");
+                    throw new ArgumentException("Path cannot be null or empty", nameof(path));
+                }
+
+                if (!File.Exists(path))
+                {
+                    Main.logger?.Warn(2, $"SafeReadAllTextAsync: File does not exist: {path}");
+                    return string.Empty;
+                }
+
+                using (var locker = new FileLockHelper(path + ".lock"))
+                {
+                    if (await locker.AcquireSharedLockAsync(DefaultTimeoutMs, cancellationToken).ConfigureAwait(false))
                     {
-                        bool acquired = await locker.AcquireSharedLockAsync(ct, DefaultTimeoutMs);
-                        if (!acquired)
+                        // Use async file operations to avoid blocking the main thread
+                        using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.SequentialScan))
+                        using (var reader = new StreamReader(fileStream, Encoding.UTF8))
                         {
-                            if (attempt < MaxRetries)
-                            {
-                                Main.logger.Warn(1, $"FileOperations.SafeReadAllText: Failed to acquire shared lock for [{path}] (attempt {attempt}). Retrying...");
-                                await Task.Delay(RetryDelayMs * attempt, ct);
-                                continue;
-                            }
-                            else
-                            {
-                                Main.logger.Warn(1, $"FileOperations.SafeReadAllText: Failed to acquire shared lock for [{path}] after {MaxRetries} attempts.");
-                                return null;
-                            }
-                        }
-                        using (var reader = new StreamReader(path))
-                        {
-                            return await reader.ReadToEndAsync();
+                            return await reader.ReadToEndAsync().ConfigureAwait(false);
                         }
                     }
-                }
-                catch (Exception ex) when (!ct.IsCancellationRequested)
-                {
-                    Main.logger.Warn(1, $"Caught exception while reading from [{path}] in FileOperations.SafeReadAllTextAsync: {ex}");
-                    await Task.Delay(RetryDelayMs * attempt, ct);
+                    else
+                    {
+                        Main.logger?.Warn(1, $"FileOperations.SafeReadAllTextAsync: Could not acquire shared lock on [{path}]");
+                        throw new TimeoutException($"Could not acquire shared lock on file: {path}");
+                    }
                 }
             }
-
-            return null;
+            catch (Exception ex)
+            {
+                Main.logger?.Err($"SafeReadAllTextAsync: Caught exception for [{path}]: {ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
         }
+
         /// <summary>
-        /// Writes text to a file with exclusive lock (sync version).
+        /// Writes text to a file with exclusive lock (sync version - use sparingly).
         /// </summary>
         public static void SafeWriteAllText(string path, string output)
         {
             try
             {
-                SafeWriteAllTextAsync(path, output).ConfigureAwait(false).GetAwaiter().GetResult();
+                // Run on thread pool to avoid blocking main thread
+                Task.Run(async () => await SafeWriteAllTextAsync(path, output).ConfigureAwait(false))
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"Error in SafeWriteAllText sync wrapper: {ex}");
+                Main.logger?.Err($"SafeWriteAllText: Caught exception: {ex.Message}\n{ex.StackTrace}");
                 throw;
             }
         }
 
         /// <summary>
-        /// Reads text from a file with shared lock (sync version).
+        /// Reads text from a file with shared lock (sync version - use sparingly).
         /// </summary>
         public static string SafeReadAllText(string path)
         {
             try
             {
-                return SafeReadAllTextAsync(path).ConfigureAwait(false).GetAwaiter().GetResult();
+                // Run on thread pool to avoid blocking main thread
+                return Task.Run(async () => await SafeReadAllTextAsync(path).ConfigureAwait(false))
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"Error in SafeReadAllText sync wrapper: {ex}");
+                Main.logger?.Err($"SafeReadAllText: Caught exception: {ex.Message}\n{ex.StackTrace}");
                 throw;
             }
         }
 
         /// <summary>
-        /// Safe write text to a file with cancellation.
+        /// Writes text to a file with exclusive lock and cancellation support.
         /// </summary>
         public static async Task SafeWriteAllTextWithCancellationAsync(
             string path,
             string output,
-            CancellationToken ct,
-            Action<int, string> logger = null)
+            CancellationToken cancellationToken)
         {
-            for (int attempt = 1; attempt <= MaxRetries; attempt++)
+            try
             {
-                if (ct.IsCancellationRequested)
-                {
-                    logger?.Invoke(1, $"Operation canceled during SafeWriteAllTextWithCancellation for [{path}]");
-                    ct.ThrowIfCancellationRequested();
-                }
-
-                try
-                {
-                    using (var locker = new FileLockHelper(LockFilePath))
-                    {
-                        if (!await locker.AcquireExclusiveLockAsync())
-                        {
-                            if (attempt < MaxRetries)
-                            {
-                                logger?.Invoke(1, $"Could not acquire lock for [{path}], retrying...");
-                                Thread.Sleep(RetryDelayMs * attempt);
-                                continue;
-                            }
-                            else
-                            {
-                                logger?.Invoke(1, $"Failed to acquire lock after {MaxRetries} attempts for [{path}]");
-                                return;
-                            }
-                        }
-
-                        File.WriteAllText(path, output);
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger?.Invoke(1, $"Error writing to file [{path}]: {ex}");
-                    if (attempt < MaxRetries)
-                    {
-                        Thread.Sleep(RetryDelayMs * attempt);
-                    }
-                }
+                await SafeWriteAllTextAsync(path, output, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                Main.logger?.Msg(2, $"Write operation canceled for: {path}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err($"SafeWriteAllTextWithCancellationAsync: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                throw;
             }
         }
 
-
-
-
         /// <summary>
         /// Copies a file with shared lock on source.
+        /// </summary>
+        public static async Task SafeCopyAsync(string sourceFile, string targetFile, bool overwrite, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(sourceFile))
+                {
+                    Main.logger?.Warn(1, "SafeCopyAsync: sourceFile is null or empty");
+                    throw new ArgumentException("Source file path cannot be null or empty", nameof(sourceFile));
+                }
+
+                if (string.IsNullOrWhiteSpace(targetFile))
+                {
+                    Main.logger?.Warn(1, "SafeCopyAsync: targetFile is null or empty");
+                    throw new ArgumentException("Target file path cannot be null or empty", nameof(targetFile));
+                }
+
+                if (!File.Exists(sourceFile))
+                {
+                    Main.logger?.Warn(1, $"SafeCopyAsync: Source file does not exist: {sourceFile}");
+                    throw new FileNotFoundException($"Source file not found: {sourceFile}");
+                }
+
+                using (var locker = new FileLockHelper(sourceFile + ".lock"))
+                {
+                    if (await locker.AcquireSharedLockAsync(DefaultTimeoutMs, cancellationToken).ConfigureAwait(false))
+                    {
+                        // Ensure target directory exists
+                        var targetDir = Path.GetDirectoryName(targetFile);
+                        if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
+                        {
+                            Directory.CreateDirectory(targetDir);
+                        }
+
+                        // Perform copy operation on thread pool
+                        await Task.Run(() => File.Copy(sourceFile, targetFile, overwrite), cancellationToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Main.logger?.Warn(1, $"FileOperations.SafeCopyAsync: Could not acquire shared lock on [{sourceFile}] for copying.");
+                        throw new TimeoutException($"Could not acquire shared lock on source file: {sourceFile}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err($"SafeCopyAsync: Caught exception copying [{sourceFile}] to [{targetFile}]: {ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Copies a file with shared lock on source (sync version).
         /// </summary>
         public static void SafeCopy(string sourceFile, string targetFile, bool overwrite)
         {
             try
             {
-<<<<<<< HEAD
-                if (string.IsNullOrEmpty(sourceFile) || string.IsNullOrEmpty(targetFile))
-                {
-                    Main.logger.Warn(1, $"FileOperations.SafeCopy: Invalid file paths - source: {sourceFile}, target: {targetFile}");
-                    return;
-                }
-
-                if (!File.Exists(sourceFile))
-                {
-                    Main.logger.Warn(1, $"FileOperations.SafeCopy: Source file does not exist: {sourceFile}");
-                    return;
-                }
-
-                string lockFile = sourceFile + ".lock";
-                using (var locker = new FileLockHelper(lockFile))
-                {
-                    bool lockAcquired = locker.AcquireSharedLock();
-                    if (!lockAcquired)
-                    {
-                        // Try once more
-                        lockAcquired = locker.AcquireSharedLock();
-                    }
-
-                    if (!lockAcquired)
-                    {
-                        Main.logger.Warn(1, $"FileOperations.SafeCopy: Could not acquire shared lock on [{sourceFile}] for copying.");
-                        return;
-                    }
-
-                    string targetDir = Path.GetDirectoryName(targetFile);
-                    if (!string.IsNullOrEmpty(targetDir))
-                    {
-                        Utils.EnsureDirectoryExists(targetDir, "SafeCopy target directory");
-                    }
-
-                    File.Copy(sourceFile, targetFile, overwrite);
-                    Main.logger.Msg(3, $"FileOperations.SafeCopy: Successfully copied {sourceFile} to {targetFile}");
-=======
-                if (string.IsNullOrEmpty(sourceFile))
-                {
-                    Main.logger.Warn(1, "SafeCopy: sourceFile is null or empty");
-                    return;
-                }
-                
-                if (string.IsNullOrEmpty(targetFile))
-                {
-                    Main.logger.Warn(1, "SafeCopy: targetFile is null or empty");
-                    return;
-                }
-
-                using (var locker = new FileLockHelper(sourceFile + ".lock"))
-                {
-                    if (!locker.AcquireSharedLock())
-                    {
-                        Main.logger.Warn(1, $"FileOperations.SafeCopy: Could not acquire shared lock on [{sourceFile}] for copying.");
-                        return;
-                    }
-
-                    // Ensure target directory exists
-                    var targetDir = Path.GetDirectoryName(targetFile);
-                    if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
-                    {
-                        Directory.CreateDirectory(targetDir);
-                    }
-
-                    File.Copy(sourceFile, targetFile, overwrite);
->>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
-                }
+                Task.Run(async () => await SafeCopyAsync(sourceFile, targetFile, overwrite).ConfigureAwait(false))
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, $"Caught exception while copying [{sourceFile} → {targetFile}] in FileOperations.SafeCopy: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err($"SafeCopy: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                throw;
             }
         }
-
-
-        /// <summary>
-        /// Safely deletes a file.
-        /// </summary>
-        public static void SafeDelete(string path)
-        {
-            try
-            {
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Warn(1, $"Caught exception while deleting [{path}] in FileOperations.SafeDelete: {ex}");
-            }
-        }
-
-        /// <summary>
-        /// Safely moves a file using a temporary file as buffer.
-        /// </summary>
-        public static void SafeMove(string sourceFile, string targetFile)
-        {
-            try
-            {
-                SafeCopy(sourceFile, targetFile, true);
-                SafeDelete(sourceFile);
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Warn(1, $"caught exception while moving [{sourceFile} → {targetFile}] in FileOperations.SafeMove: {ex}");
-            }
-        }
-
     }
 }

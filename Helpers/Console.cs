@@ -14,97 +14,193 @@ namespace MixerThreholdMod_0_0_1
         // --- Console and Debug Support ---
         public class MixerConsoleHook : MonoBehaviour
         {
-            public static MixerConsoleHook Instance { get; private set; }
+            private static MixerConsoleHook _instance;
+            private static readonly object _instanceLock = new object();
+
+            public static MixerConsoleHook Instance
+            {
+                get
+                {
+                    try
+                    {
+                        lock (_instanceLock)
+                        {
+                            return _instance;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger?.Err($"MixerConsoleHook.Instance getter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        return null;
+                    }
+                }
+                private set
+                {
+                    try
+                    {
+                        lock (_instanceLock)
+                        {
+                            _instance = value;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger?.Err($"MixerConsoleHook.Instance setter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    }
+                }
+            }
+
             private void Awake()
             {
                 try
                 {
-                    if (Instance != null)
+                    lock (_instanceLock)
                     {
-                        Destroy(this);
-                        return;
+                        if (_instance != null && _instance != this)
+                        {
+                            Destroy(this);
+                            return;
+                        }
+                        _instance = this;
+                        DontDestroyOnLoad(gameObject);
                     }
-                    Instance = this;
-                    DontDestroyOnLoad(gameObject);
                 }
                 catch (Exception ex)
                 {
-                    Main.logger.Err($"MixerConsoleHook.Awake: Error: {ex.Message}");
+                    Main.logger?.Err($"MixerConsoleHook.Awake: Caught exception: {ex.Message}\n{ex.StackTrace}");
                 }
             }
+
             private void Update()
             {
-                Utils.SafeExecute(() => {
+                try
+                {
                     // Optional: handle key input for console if needed
-                }, "MixerConsoleHook.Update");
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"MixerConsoleHook.Update: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
             }
+
             public void OnConsoleCommand(string command)
             {
-                if (string.IsNullOrEmpty(command))
-                    return;
-                    
-                // Convert to lowercase for case-insensitive comparison
-                string lowerCommand = command.ToLowerInvariant();
-                
-                switch (lowerCommand)
+                try
                 {
-                    case "resetmixervalues":
-                        try
-                        {
-                            Main.userSetValues.Clear();
-                            Main.savedMixerValues.Clear();
-                            // Optional: Reset the saved JSON file
-                            string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
-                            if (File.Exists(path))
-                                File.Delete(path);
-                            // msgLogLevel = 1 because user initiated something, user wants to see results
-                            Main.logger.Msg(1, "MixerThreholdMod: All mixer values reset and ID counter restarted.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Main.logger.Err($"Error resetting mixer values: {ex}");
-                        }
-                        break;
-                        
-                    case "printsavepath":
-                        try
-                        {
-                            // msgLogLevel = 1 because user initiated something, user wants to see results
-                            Main.logger.Msg(1, "Current Save Path: " + (Main.CurrentSavePath ?? "[null]"));
-                        }
-                        catch (Exception ex)
-                        {
-                            Main.logger.Err($"Error printing save path: {ex}");
-                        }
-                        break;
-                        
-                    default:
-                        // Handle commands that start with specific prefixes
-                        if (lowerCommand.StartsWith("resetmixervalues"))
-                        {
-                            goto case "resetmixervalues";
-                        }
-                        break;
+                    if (string.IsNullOrWhiteSpace(command))
+                    {
+                        Main.logger?.Warn(2, "OnConsoleCommand: Received null or empty command");
+                        return;
+                    }
+
+                    // Convert to lowercase for case-insensitive comparison
+                    string lowerCommand = command.ToLowerInvariant().Trim();
+
+                    // Run command processing on thread pool to avoid blocking Unity main thread
+                    Task.Run(() => ProcessCommand(lowerCommand));
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"OnConsoleCommand: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+
+            private void ProcessCommand(string lowerCommand)
+            {
+                try
+                {
+                    switch (lowerCommand)
+                    {
+                        case "resetmixervalues":
+                            ResetMixerValues();
+                            break;
+
+                        case "printsavepath":
+                            PrintSavePath();
+                            break;
+
+                        default:
+                            // Handle commands that start with specific prefixes
+                            if (lowerCommand.StartsWith("resetmixervalues"))
+                            {
+                                ResetMixerValues();
+                            }
+                            else
+                            {
+                                Main.logger?.Warn(1, $"Unknown console command: {lowerCommand}");
+                            }
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"ProcessCommand: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+
+            private void ResetMixerValues()
+            {
+                try
+                {
+                    if (Main.userSetValues != null)
+                        Main.userSetValues.Clear();
+
+                    if (Main.savedMixerValues != null)
+                        Main.savedMixerValues.Clear();
+
+                    // Optional: Reset the saved JSON file
+                    string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+
+                    // msgLogLevel = 1 because user initiated something, user wants to see results
+                    Main.logger?.Msg(1, "MixerThreholdMod: All mixer values reset and ID counter restarted.");
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"ResetMixerValues: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+
+            private void PrintSavePath()
+            {
+                try
+                {
+                    // msgLogLevel = 1 because user initiated something, user wants to see results
+                    string currentPath = Main.CurrentSavePath ?? "[null]";
+                    Main.logger?.Msg(1, $"Current Save Path: {currentPath}");
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"PrintSavePath: Caught exception: {ex.Message}\n{ex.StackTrace}");
                 }
             }
         }
+
         public static void RegisterConsoleCommandViaReflection()
         {
             try
             {
-                Main.logger.Msg(3, "RegisterConsoleCommandViaReflection: Starting console hook initialization");
-                
+                if (MixerConsoleHook.Instance != null)
+                {
+                    Main.logger?.Warn(2, "Console command hook already initialized");
+                    return;
+                }
+
                 GameObject hookObj = new GameObject("MixerConsoleHook");
                 if (hookObj == null)
                 {
-                    Main.logger.Err("RegisterConsoleCommandViaReflection: Failed to create GameObject");
+                    Main.logger?.Err("Failed to create MixerConsoleHook GameObject");
                     return;
                 }
 
                 MixerConsoleHook hook = hookObj.AddComponent<MixerConsoleHook>();
                 if (hook == null)
                 {
-                    Main.logger.Err("RegisterConsoleCommandViaReflection: Failed to add MixerConsoleHook component");
+                    Main.logger?.Err("Failed to add MixerConsoleHook component");
+                    if (hookObj != null) GameObject.Destroy(hookObj);
                     return;
                 }
 
@@ -115,23 +211,20 @@ namespace MixerThreholdMod_0_0_1
                         if (type == LogType.Log && !string.IsNullOrEmpty(condition) && condition.StartsWith("Exec: "))
                         {
                             string command = condition.Substring(6); // Strip off "Exec: "
-                            if (hook != null)
-                            {
-                                hook.OnConsoleCommand(command);
-                            }
+                            hook?.OnConsoleCommand(command);
                         }
                     }
-                    catch (Exception logEx)
+                    catch (Exception ex)
                     {
-                        Main.logger.Err($"RegisterConsoleCommandViaReflection: Error in log message handler: {logEx.Message}");
+                        Main.logger?.Err($"Error in console log message handler: {ex.Message}");
                     }
                 };
-                
-                Main.logger.Msg(2, "Console command hook initialized.");
+
+                Main.logger?.Msg(2, "Console command hook initialized.");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                Main.logger.Err("Failed to register console hook: " + ex.Message + "\n" + ex.StackTrace);
+                Main.logger?.Err($"RegisterConsoleCommandViaReflection: Caught exception: {ex.Message}\n{ex.StackTrace}");
             }
         }
     }

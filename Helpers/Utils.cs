@@ -10,131 +10,53 @@ using UnityEngine;
 
 namespace MixerThreholdMod_0_0_1
 {
-    public class Utils
+    public static class Utils
     {
-        /// <summary>
-        /// Normalizes a path by replacing forward slashes with backslashes (Windows-style)
-        /// </summary>
-        public static string NormalizePath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-                return path;
-            
-            return path.Replace('/', '\\');
-        }
-
-        /// <summary>
-        /// Safely executes an action with error logging
-        /// </summary>
-        public static void SafeExecute(Action action, string operationName = "operation")
-        {
-            try
-            {
-                action?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"{operationName}: Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Safely executes an async action with error logging
-        /// </summary>
-        public static async Task SafeExecuteAsync(Func<Task> asyncAction, string operationName = "async operation")
-        {
-            try
-            {
-                if (asyncAction != null)
-                    await asyncAction();
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"{operationName}: Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Safely gets a value with null checking and error handling
-        /// </summary>
-        public static T SafeGet<T>(Func<T> getter, T defaultValue = default(T), string operationName = "get operation")
-        {
-            try
-            {
-                return getter != null ? getter() : defaultValue;
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"{operationName}: Error: {ex.Message}");
-                return defaultValue;
-            }
-        }
-
-        /// <summary>
-        /// Validates that a directory exists and creates it if it doesn't
-        /// </summary>
-        public static bool EnsureDirectoryExists(string path, string operationName = "directory operation")
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(path))
-                {
-                    Main.logger.Warn(1, $"{operationName}: Path is null or empty");
-                    return false;
-                }
-
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                    Main.logger.Msg(3, $"{operationName}: Created directory: {path}");
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"{operationName}: Failed to ensure directory exists at {path}: {ex.Message}");
-                return false;
-            }
-        }
         public class CoroutineHelper : MonoBehaviour
         {
             private static CoroutineHelper _instance;
+            private static readonly object _instanceLock = new object();
+
             public static CoroutineHelper Instance
             {
                 get
                 {
                     try
                     {
-                        if (_instance == null)
+                        lock (_instanceLock)
                         {
-                            var go = new GameObject("CoroutineHelper");
-<<<<<<< HEAD
-                            if (go != null)
+                            if (_instance == null)
                             {
-                                _instance = go.AddComponent<CoroutineHelper>();
-                                if (_instance != null)
+                                var go = new GameObject("CoroutineHelper");
+                                if (go != null)
                                 {
-                                    DontDestroyOnLoad(go);
+                                    _instance = go.AddComponent<CoroutineHelper>();
+                                    if (_instance != null)
+                                    {
+                                        DontDestroyOnLoad(go);
+                                    }
+                                    else
+                                    {
+                                        Main.logger?.Err("Failed to add CoroutineHelper component");
+                                        if (go != null) Destroy(go);
+                                    }
+                                }
+                                else
+                                {
+                                    Main.logger?.Err("Failed to create CoroutineHelper GameObject");
                                 }
                             }
-=======
-                            _instance = go.AddComponent<CoroutineHelper>();
-                            DontDestroyOnLoad(go);
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+                            return _instance;
                         }
-                        return _instance;
                     }
                     catch (Exception ex)
                     {
-<<<<<<< HEAD
-                        Main.logger.Err($"CoroutineHelper.Instance: Error creating instance: {ex.Message}");
-=======
-                        Main.logger.Err($"Error creating CoroutineHelper instance: {ex}");
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+                        Main.logger?.Err($"CoroutineHelper.Instance: Caught exception: {ex.Message}\n{ex.StackTrace}");
                         return null;
                     }
                 }
             }
+
             // Static wrapper to safely start coroutines from anywhere
             public static void RunCoroutine(System.Collections.IEnumerator routine)
             {
@@ -142,90 +64,85 @@ namespace MixerThreholdMod_0_0_1
                 {
                     if (routine == null)
                     {
-<<<<<<< HEAD
-                        Main.logger.Warn(1, "CoroutineHelper.RunCoroutine: Routine is null");
-=======
-                        Main.logger.Warn(1, "RunCoroutine: routine is null");
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+                        Main.logger?.Warn(1, "RunCoroutine: routine is null");
                         return;
                     }
 
                     var instance = Instance;
                     if (instance != null)
                     {
-<<<<<<< HEAD
-                        instance.StartCoroutine(routine);
-                    }
-                    else
-                    {
-                        Main.logger.Warn(1, "CoroutineHelper.RunCoroutine: Instance is null, cannot start coroutine");
-=======
                         instance.StartCoroutine(SafeCoroutineWrapper(routine));
                     }
                     else
                     {
-                        Main.logger.Err("CoroutineHelper instance is null, cannot start coroutine");
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+                        Main.logger?.Err("CoroutineHelper instance is null, cannot start coroutine");
                     }
                 }
                 catch (Exception ex)
                 {
-<<<<<<< HEAD
-                    Main.logger.Err($"CoroutineHelper.RunCoroutine: Error starting coroutine: {ex.Message}");
-=======
-                    Main.logger.Err($"Error in RunCoroutine: {ex}");
+                    Main.logger?.Err($"CoroutineHelper.RunCoroutine: Caught exception: {ex.Message}\n{ex.StackTrace}");
                 }
             }
 
             private static System.Collections.IEnumerator SafeCoroutineWrapper(System.Collections.IEnumerator routine)
             {
-                if (routine == null) yield break;
+                if (routine == null)
+                {
+                    Main.logger?.Warn(1, "SafeCoroutineWrapper: routine is null");
+                    yield break;
+                }
 
                 bool hasMore = true;
                 while (hasMore)
                 {
+                    object current = null;
                     try
                     {
                         hasMore = routine.MoveNext();
                         if (hasMore)
                         {
-                            yield return routine.Current;
+                            current = routine.Current;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Main.logger.Err($"Coroutine continue failure in SafeCoroutineWrapper: {ex}");
+                        Main.logger?.Err($"SafeCoroutineWrapper: Caught exception: {ex.Message}\n{ex.StackTrace}");
                         hasMore = false;
                     }
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+                    if (hasMore)
+                    {
+                        yield return current;
+                    }
                 }
             }
         }
+
         public static void RunCoroutine(System.Collections.IEnumerator routine)
         {
             try
             {
-<<<<<<< HEAD
                 if (routine == null)
                 {
-                    Main.logger.Warn(1, "Utils.RunCoroutine: Routine is null");
+                    Main.logger?.Warn(1, "Utils.RunCoroutine: routine is null");
                     return;
                 }
 
-                CoroutineHelper.Instance?.StartCoroutine(routine);
+                var instance = CoroutineHelper.Instance;
+                if (instance != null)
+                {
+                    instance.StartCoroutine(routine);
+                }
+                else
+                {
+                    Main.logger?.Err("CoroutineHelper.Instance is null in Utils.RunCoroutine");
+                }
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"Utils.RunCoroutine: Error: {ex.Message}");
-=======
-                CoroutineHelper.Instance.StartCoroutine(routine);
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err($"Error in Utils.RunCoroutine: {ex}");
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+                Main.logger?.Err($"Utils.RunCoroutine: Caught exception: {ex.Message}\n{ex.StackTrace}");
             }
         }
+
         public static void PrintFileExistsStatus()
         {
             try
@@ -233,28 +150,68 @@ namespace MixerThreholdMod_0_0_1
                 string saveDir = !string.IsNullOrEmpty(Main.CurrentSavePath)
                     ? Path.GetFullPath(Main.CurrentSavePath)
                     : MelonEnvironment.UserDataDirectory;
-                    
+
                 if (string.IsNullOrEmpty(saveDir))
                 {
-                    Main.logger.Warn(1, "PrintFileExistsStatus: Save directory is null or empty");
+                    Main.logger?.Warn(1, "PrintFileExistsStatus: Unable to determine save directory");
                     return;
                 }
 
-                string path = NormalizePath(Path.Combine(saveDir, "MixerThresholdSave.json"));
+                string path = Path.Combine(saveDir, "MixerThresholdSave.json").Replace('/', '\\');
                 bool exists = File.Exists(path);
-                Main.logger.Msg(3, $"File exists at '{path}': {exists}");
+                Main.logger?.Msg(3, $"File exists at '{path}': {exists}");
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"PrintFileExistsStatus: Error checking file status: {ex.Message}");
+                Main.logger?.Err($"PrintFileExistsStatus: Caught exception: {ex.Message}\n{ex.StackTrace}");
             }
         }
-        public string GetFullTimestamp()
-        {
-            return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-        }
-        // Appears we are not referencing GetNextID , only ResetIDCounter (from Main())
-        // meaning it is never used. We got the ID's to be stable somehow ...
 
+        public static string GetFullTimestamp()
+        {
+            try
+            {
+                return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err($"GetFullTimestamp: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                return "[TIMESTAMP_ERROR]";
+            }
+        }
+
+        // Thread-safe file existence check
+        public static bool SafeFileExists(string path)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(path))
+                    return false;
+
+                return File.Exists(path);
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err($"SafeFileExists: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                return false;
+            }
+        }
+
+        // Thread-safe directory existence check
+        public static bool SafeDirectoryExists(string path)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(path))
+                    return false;
+
+                return Directory.Exists(path);
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err($"SafeDirectoryExists: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                return false;
+            }
+        }
     }
 }
