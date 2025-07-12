@@ -107,11 +107,6 @@
     <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
     <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
     
-    <!-- Legacy helpers (to be phased out) -->
-    <Compile Include="Helpers\CancellableIoRunner.cs" />
-    <Compile Include="Helpers\FileOperations.cs" />
-    <Compile Include="Helpers\FileLockerHelper.cs" />
-    
     <!-- Main entry point -->
     <Compile Include="Main.cs" />
     <Compile Include="GlobalSuppressions.cs" />
