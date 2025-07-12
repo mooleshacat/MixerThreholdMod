@@ -235,10 +235,6 @@ namespace MixerThreholdMod_0_0_1
                 try
                 {
                 }
-                
-                try
-                {
-                }
                 catch (Exception ex)
                 {
                     updateError = ex;
@@ -323,6 +319,16 @@ namespace MixerThreholdMod_0_0_1
             // Execute async task without try/catch to avoid yield return issues
             var task = Core.TrackedMixers.GetAllAsync();
 
+            // Wait for async task with timeout
+            float startTime = Time.time;
+            while (!task.IsCompleted && (Time.time - startTime) < 2f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            // Execute async task without try/catch to avoid yield return issues
+            var task = Core.TrackedMixers.GetAllAsync();
+            
             // Wait for async task with timeout
             float startTime = Time.time;
             while (!task.IsCompleted && (Time.time - startTime) < 2f)
