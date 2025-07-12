@@ -27,9 +27,9 @@ namespace MixerThreholdMod_0_0_1.Core
         private static int _nextStableID = 1;
         private static readonly object _counterLock = new object();
 
-        // Thread-safe dictionary for .NET 4.8.1 - IL2CPP COMPATIBLE: Use object instead of specific type
-        public static readonly ConcurrentDictionary<object, int> MixerInstanceMap =
-            new ConcurrentDictionary<object, int>();
+        // Thread-safe dictionary for .NET 4.8.1
+        public static readonly ConcurrentDictionary<MixingStationConfiguration, int> MixerInstanceMap =
+            new ConcurrentDictionary<MixingStationConfiguration, int>();
 
         /// <summary>
         /// Reset the stable ID counter to 1. Used when starting new game sessions.
@@ -65,10 +65,10 @@ namespace MixerThreholdMod_0_0_1.Core
                 {
                     const string errorMsg = "Cannot assign ID to null MixingStationConfiguration";
                     Main.logger?.Err(errorMsg);
-                    throw new ArgumentNullException("instance", errorMsg); // .NET 4.8.1 compatible
+                    throw new ArgumentNullException("instance", errorMsg);
                 }
 
-                // Try to get existing ID first - .NET 4.8.1 compatible
+                // Try to get existing ID first
                 int existingId;
                 if (MixerInstanceMap.TryGetValue(instance, out existingId))
                 {
@@ -99,7 +99,7 @@ namespace MixerThreholdMod_0_0_1.Core
             }
             catch (ArgumentNullException)
             {
-                throw; // Re-throw argument exceptions
+                throw;
             }
             catch (Exception ex)
             {
