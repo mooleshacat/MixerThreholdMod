@@ -132,19 +132,7 @@ namespace MixerThreholdMod_0_0_1
 
                 try
                 {
-                    // IL2CPP COMPATIBLE: Use typeof() for compile-time safe type resolution instead of dynamic reflection
                     // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
-                    logger.Msg(1, "Phase 2: Initializing IL2CPP-compatible type resolution...");
-                    
-                    // Log comprehensive type availability for debugging
-                    Core.IL2CPPTypeResolver.LogTypeAvailability();
-                    
-                    // IL2CPP-specific memory analysis after type loading
-                    if (Core.IL2CPPTypeResolver.IsIL2CPPBuild)
-                    {
-                    Core.AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis("POST_TYPE_LOADING");
-                    }
-                    
                     logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
                     var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
                     if (constructor == null)
@@ -549,15 +537,9 @@ namespace MixerThreholdMod_0_0_1
             {
                 logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
                 
-                // Track timing and system performance for this iteration
+                // Track timing for this iteration
                 var iterationStart = DateTime.Now;
                 bool iterationSuccess = false;
-                
-                // Log system state before critical operation (every 5th iteration to avoid spam)
-                if (i % 5 == 1 || iterations <= 5)
-                {
-                    SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
-                }
                 
                 // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
                 yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
@@ -566,13 +548,6 @@ namespace MixerThreholdMod_0_0_1
                 {
                     var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
                     logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
-                    
-                    // Log system state after critical operation (every 5th iteration)
-                    if (i % 5 == 0 || i == iterations || iterations <= 5)
-                    {
-                        SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
-                    }
-                    
                     successCount++;
                     iterationSuccess = true;
                 }
@@ -606,10 +581,8 @@ namespace MixerThreholdMod_0_0_1
             logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
             logger.Msg(2, "[TRANSACTION] Performing save operation...");
             
-            // Log system state before transaction
-            SystemMonitor.LogCurrentPerformance("TRANSACTION_START");
-            
             var saveStart = DateTime.Now;
+            bool saveSuccess = false;
             
             // Perform the save operation - yield return outside try/catch for .NET 4.8.1 compatibility
             yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
@@ -617,11 +590,8 @@ namespace MixerThreholdMod_0_0_1
             try
             {
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
-                
-                // Log system state after successful transaction
-                SystemMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
-                
                 logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
+                saveSuccess = true;
             }
             catch (Exception ex)
             {
@@ -639,17 +609,9 @@ namespace MixerThreholdMod_0_0_1
             
             var profileStart = DateTime.Now;
             
-            // Initial system state capture
-            SystemMonitor.LogCurrentPerformance("PROFILE_START");
-            
             // Phase 1: Pre-save diagnostics
             logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
             var phase1Start = DateTime.Now;
-            
-            double phase1Time = 0;
-            double phase2Time = 0;
-            double phase3Time = 0;
-            Exception profileError = null;
             
             try
             {
@@ -659,21 +621,15 @@ namespace MixerThreholdMod_0_0_1
                 
                 phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
-            }
-            catch (Exception ex)
-            {
-                profileError = ex;
-            }
-            
-            // Phase 2: Save operation profiling - yield return outside try/catch for .NET 4.8.1 compatibility
-            logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
-            var phase2Start = DateTime.Now;
-            
-            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-            
-            try
-            {
-                phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
+                
+                // Phase 2: Save operation profiling
+                logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
+                var phase2Start = DateTime.Now;
+                
+                // Move yield return outside try/catch for .NET 4.8.1 compatibility
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+                
+                var phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
                 
                 // System state after save operation
