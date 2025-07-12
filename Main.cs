@@ -12,7 +12,33 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 
-// Assembly attributes must come first, before namespace
+/*
+ * ASYNC USAGE EXPLANATION:
+ * 
+ * Q: "Why so many async calls?"
+ * A: The extensive use of async/await patterns in this mod serves several critical purposes:
+ * 
+ * 1. THREAD SAFETY: The TrackedMixers collection is accessed from multiple threads (Unity main thread,
+ *    background file operations, coroutines). The AsyncLocker ensures thread-safe access without
+ *    blocking the main Unity thread, which would cause frame drops and stuttering.
+ * 
+ * 2. NON-BLOCKING FILE I/O: File operations (reading/writing mixer save data) can be slow, especially
+ *    with the file locking system in place. Running these on background threads prevents Unity from
+ *    freezing during saves/loads.
+ * 
+ * 3. COROUTINE SAFETY: Unity coroutines run on the main thread. By using async operations within
+ *    coroutines, we can yield execution properly and avoid blocking Unity's frame rendering.
+ * 
+ * 4. RACE CONDITION PREVENTION: Multiple mixers can be created/destroyed simultaneously. Async locks
+ *    ensure that collection modifications are atomic and prevent data corruption.
+ * 
+ * 5. GRACEFUL DEGRADATION: If file operations fail or take too long, the async pattern with
+ *    cancellation tokens allows the mod to continue functioning rather than hard-locking the game.
+ * 
+ * The async pattern is NOT overused here - it's necessary for a stable, performant mod that handles
+ * file I/O and collection management safely in Unity's threading model.
+ */
+
 [assembly: MelonInfo(typeof(MixerThreholdMod_0_0_1.Main), "MixerThreholdMod", "0.0.1", "mooleshacat")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
@@ -299,6 +325,7 @@ namespace MixerThreholdMod_1_0_0
                 Exception listenerError = null;
                 try
                 {
+<<<<<<< HEAD
                     await TrackedMixers.RemoveAllAsync(tm => tm?.ConfigInstance == null);
                 }
                 catch (Exception listenerEx)
@@ -313,10 +340,23 @@ namespace MixerThreholdMod_1_0_0
             }
 
                 var toProcess = queuedInstances?.ToList() ?? new List<MixingStationConfiguration>();
+=======
+                    await TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
+                }
+                catch (Exception ex)
+                {
+                    logger.Err($"Error cleaning up tracked mixers: {ex}");
+                }
+
+                if (queuedInstances.Count == 0) return;
+                
+                var toProcess = queuedInstances.ToList();
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                 foreach (var instance in toProcess)
                 {
                     try
                     {
+<<<<<<< HEAD
                         if (instance == null)
                         {
                             logger.Warn(1, "OnUpdate: Skipping null instance in queuedInstances");
@@ -339,6 +379,23 @@ namespace MixerThreholdMod_1_0_0
 
                         var existingMixerData = await TrackedMixers.FirstOrDefaultAsync(tm => tm?.ConfigInstance == instance);
                         if (existingMixerData == null)
+=======
+                        // Prevent duplicate processing of the same instance
+                        if (await TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
+                        {
+                            logger.Warn(1, $"Instance already tracked — skipping duplicate: {instance}");
+                            continue;
+                        }
+                        
+                        if (instance.StartThrehold == null)
+                        {
+                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
+                            continue;
+                        }
+                        
+                        var mixerData = await TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
+                        if (mixerData == null)
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                         {
                             try
                             {
@@ -350,7 +407,10 @@ namespace MixerThreholdMod_1_0_0
                                     ConfigInstance = instance,
                                     MixerInstanceID = MixerIDManager.GetMixerID(instance)
                                 };
-
+<<<<<<< HEAD
+                                
+=======
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                                 await TrackedMixers.AddAsync(newTrackedMixer);
                                 logger.Msg(3, $"Created mixer with Stable ID: {newTrackedMixer.MixerInstanceID}");
 
@@ -363,20 +423,31 @@ namespace MixerThreholdMod_1_0_0
                                         Utils.CoroutineHelper.RunCoroutine(MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
                                         newTrackedMixer.ListenerAdded = true;
                                     }
+<<<<<<< HEAD
                                     catch (Exception listenerEx)
                                     {
-                                        logger.Err($"OnUpdate: Failed to start listener attachment coroutine for Mixer {newTrackedMixer.MixerInstanceID}: {listenerEx.Message}");
+                                        logger.Err($"OnUpdate: Failed to start listener attachment coroutine: {listenerEx.Message}");
+=======
+                                    catch (Exception ex)
+                                    {
+                                        logger.Err($"Error starting AttachListenerWhenReady coroutine for Mixer {newTrackedMixer.MixerInstanceID}: {ex}");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                                     }
                                 }
 
                                 // Restore saved value if exists
+<<<<<<< HEAD
                                 if (savedMixerValues != null && savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out float savedValue))
+=======
+                                if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out float savedValue))
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                                 {
                                     try
                                     {
                                         logger.Msg(2, $"Restoring Mixer {newTrackedMixer.MixerInstanceID} to {savedValue}");
                                         instance.StartThrehold.SetValue(savedValue, true);
                                     }
+<<<<<<< HEAD
                                     catch (Exception restoreEx)
                                     {
                                         logger.Err($"OnUpdate: Failed to restore saved value for Mixer {newTrackedMixer.MixerInstanceID}: {restoreEx.Message}");
@@ -385,12 +456,24 @@ namespace MixerThreholdMod_1_0_0
                             }
                             catch (Exception configEx)
                             {
-                                Main.logger.Err($"OnUpdate: Error configuring mixer: {configEx.Message}\n{configEx.StackTrace}");
+                                Main.logger.Err("Error configuring mixer: " + configEx.Message + "\n" + configEx.StackTrace);
+=======
+                                    catch (Exception ex)
+                                    {
+                                        logger.Err($"Error restoring saved value for Mixer {newTrackedMixer.MixerInstanceID}: {ex}");
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Main.logger.Err("Error configuring mixer: " + ex);
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                             }
                         }
                     }
                     catch (Exception instanceEx)
                     {
+<<<<<<< HEAD
                         logger.Err($"OnUpdate: Error processing mixer instance: {instanceEx.Message}\n{instanceEx.StackTrace}");
                     }
                 }
@@ -400,6 +483,16 @@ namespace MixerThreholdMod_1_0_0
             catch (Exception ex)
             {
                 logger.Err($"OnUpdate: Critical error in main update loop: {ex.Message}\n{ex.StackTrace}");
+=======
+                        logger.Err($"Error processing mixer instance: {ex}");
+                    }
+                }
+                queuedInstances.Clear();
+            }
+            catch (Exception ex)
+            {
+                logger.Err($"Critical error in OnUpdate: {ex}");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
             }
         }
 
@@ -435,7 +528,8 @@ namespace MixerThreholdMod_1_0_0
             {
                 base.OnSceneWasLoaded(buildIndex, sceneName);
                 logger.Msg(2, "Scene loaded: " + sceneName);
-
+                
+<<<<<<< HEAD
                 if (sceneName == "Main")
                 {
                     // Reset mixer state
@@ -483,13 +577,40 @@ namespace MixerThreholdMod_1_0_0
                                 {
                                     string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
                                     string targetFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
+                                    
+=======
+                switch (sceneName)
+                {
+                    case "Main":
+                        try
+                        {
+                            // Reset mixer IDs
+                            MixerIDManager.MixerInstanceMap.Clear();
+                            MixerIDManager.ResetStableIDCounter();
 
+                            // Clear previous mixer values
+                            savedMixerValues.Clear();
+                            logger.Msg(3, "Current Save Path at scene load: " + (Main.CurrentSavePath ?? "[not available yet]"));
+
+                            // Start coroutine to wait for save path
+                            StartLoadCoroutine();
+                            
+                            // Force-refresh file copy to save folder
+                            if (!string.IsNullOrEmpty(Main.CurrentSavePath))
+                            {
+                                try
+                                {
+                                    string persistentPath = MelonEnvironment.UserDataDirectory;
+                                    string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
+                                    string targetFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                                     if (File.Exists(sourceFile))
                                     {
                                         FileOperations.SafeCopy(sourceFile, targetFile, overwrite: true);
                                         logger.Msg(3, "Copied MixerThresholdSave.json from persistent to save folder");
                                     }
                                 }
+<<<<<<< HEAD
                             }
                             catch (Exception copyEx)
                             {
@@ -502,6 +623,24 @@ namespace MixerThreholdMod_1_0_0
             catch (Exception ex)
             {
                 Main.logger.Err($"OnSceneWasLoaded: Critical error: {ex.Message}\n{ex.StackTrace}");
+=======
+                                catch (Exception ex)
+                                {
+                                    logger.Err($"Error copying MixerThresholdSave.json: {ex}");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Main.logger.Err($"OnSceneWasLoaded: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        }
+                        break;
+                }
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"Critical error in OnSceneWasLoaded: {ex}");
             }
         }
 
@@ -512,7 +651,8 @@ namespace MixerThreholdMod_1_0_0
             Exception startError = null;
             try
             {
-                if (_coroutineStarted)
+<<<<<<< HEAD
+                if (_coroutineStarted) 
                 {
                     logger.Msg(3, "StartLoadCoroutine: Already started, skipping");
                     return;
@@ -520,12 +660,21 @@ namespace MixerThreholdMod_1_0_0
 
                 _coroutineStarted = true;
                 logger.Msg(3, "StartLoadCoroutine: Starting MixerSaveManager.LoadMixerValuesWhenReady");
+=======
+                if (_coroutineStarted) return;
+                _coroutineStarted = true;
+
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                 MelonCoroutines.Start(MixerSaveManager.LoadMixerValuesWhenReady());
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 logger.Err($"StartLoadCoroutine: Error starting coroutine: {ex.Message}\n{ex.StackTrace}");
                 _coroutineStarted = false; // Reset flag on error
+=======
+                logger.Err($"Error starting LoadMixerValuesWhenReady coroutine: {ex}");
+>>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
             }
         }
 
