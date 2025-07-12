@@ -120,10 +120,6 @@ namespace MixerThreholdMod_1_0_0
             {
                 logger.Err(string.Format("OnInitializeMelon: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
-            else
-            {
-                logger.Msg(1, "[MAIN] MixerThresholdMod initialization completed successfully");
-            }
             HarmonyInstance.Patch(
                 constructor,
                 prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))

@@ -57,10 +57,6 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
         }
-=======
-        #endregion
-
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     }
 
 }
