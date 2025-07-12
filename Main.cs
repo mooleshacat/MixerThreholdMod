@@ -39,6 +39,33 @@ using UnityEngine;
  * file I/O and collection management safely in Unity's threading model.
  */
 
+/*
+ * ASYNC USAGE EXPLANATION:
+ * 
+ * Q: "Why so many async calls?"
+ * A: The extensive use of async/await patterns in this mod serves several critical purposes:
+ * 
+ * 1. THREAD SAFETY: The TrackedMixers collection is accessed from multiple threads (Unity main thread,
+ *    background file operations, coroutines). The AsyncLocker ensures thread-safe access without
+ *    blocking the main Unity thread, which would cause frame drops and stuttering.
+ * 
+ * 2. NON-BLOCKING FILE I/O: File operations (reading/writing mixer save data) can be slow, especially
+ *    with the file locking system in place. Running these on background threads prevents Unity from
+ *    freezing during saves/loads.
+ * 
+ * 3. COROUTINE SAFETY: Unity coroutines run on the main thread. By using async operations within
+ *    coroutines, we can yield execution properly and avoid blocking Unity's frame rendering.
+ * 
+ * 4. RACE CONDITION PREVENTION: Multiple mixers can be created/destroyed simultaneously. Async locks
+ *    ensure that collection modifications are atomic and prevent data corruption.
+ * 
+ * 5. GRACEFUL DEGRADATION: If file operations fail or take too long, the async pattern with
+ *    cancellation tokens allows the mod to continue functioning rather than hard-locking the game.
+ * 
+ * The async pattern is NOT overused here - it's necessary for a stable, performant mod that handles
+ * file I/O and collection management safely in Unity's threading model.
+ */
+
 [assembly: MelonInfo(typeof(MixerThreholdMod_0_0_1.Main), "MixerThreholdMod", "0.0.1", "mooleshacat")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 

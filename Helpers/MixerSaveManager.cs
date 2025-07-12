@@ -50,27 +50,35 @@ namespace MixerThreholdMod_0_0_1
 
 <<<<<<< HEAD
             // Wait for StartThrehold to become available, but only while instance exists
-            while (instance != null && instance.StartThrehold == null)
+            int waitAttempts = 0;
+            const int maxWaitAttempts = 100; // Prevent infinite loop
+            
+            while (instance != null && instance.StartThrehold == null && waitAttempts < maxWaitAttempts)
             {
+                waitAttempts++;
                 yield return null;
             }
 
-            // Double-check instance still exists
+            // Double-check instance still exists after waiting
             if (instance == null)
             {
                 Main.logger.Warn(1, $"Instance destroyed before threshold became available — Mixer {uniqueID}");
                 yield break;
             }
 
-            // Restore saved value if exists
-            if (Main.savedMixerValues.TryGetValue(uniqueID, out float savedValue))
+            if (instance.StartThrehold == null)
             {
-                instance.StartThrehold.SetValue(savedValue, true);
-                Main.logger.Msg(3, $"Restored Mixer {uniqueID} to saved value: {savedValue}");
+                Main.logger.Warn(1, $"StartThrehold never became available after {maxWaitAttempts} attempts — Mixer {uniqueID}");
+                yield break;
             }
 
-            // Attach listener
-            instance.StartThrehold.onItemChanged.AddListener((float val) =>
+            // Now handle the operations that might throw exceptions
+            ProcessMixerSetupSafely(instance, uniqueID);
+        }
+
+        private static void ProcessMixerSetupSafely(MixingStationConfiguration instance, int uniqueID)
+        {
+            try
             {
                 // Restore saved value if exists
                 if (Main.savedMixerValues != null && Main.savedMixerValues.TryGetValue(uniqueID, out float savedValue))
@@ -199,34 +207,84 @@ namespace MixerThreholdMod_0_0_1
         }
         private static void SaveMixerValue(int id, float value)
         {
-            // Cancel any previous save operation
-            saveCts?.Cancel();
-            saveCts = new CancellationTokenSource();
+            try
+            {
+                Main.logger.Msg(3, $"SaveMixerValue called for Mixer {id} with value {value}");
+                
+                // Cancel any previous save operation
+                if (saveCts != null)
+                {
+                    saveCts.Cancel();
+                    saveCts.Dispose();
+                }
+                saveCts = new CancellationTokenSource();
 
-            // Run file save on background thread
-            Task.Run(() => SaveMixerValueAsync(id, value, saveCts.Token));
+                // Run file save on background thread
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await SaveMixerValueAsync(id, value, saveCts.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger.Err($"SaveMixerValue: Error in background task for Mixer {id}: {ex.Message}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"SaveMixerValue: Error starting save operation for Mixer {id}: {ex.Message}\n{ex.StackTrace}");
+            }
         }
 
         private static async Task SaveMixerValueAsync(int id, float value, CancellationToken ct)
         {
-            string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
-
-            var saveData = new MixerThresholdSaveData
+            try
             {
-                MixerValues = new Dictionary<int, float> { { id, value } }
-            };
+                if (ct.IsCancellationRequested)
+                {
+                    Main.logger.Msg(3, $"SaveMixerValueAsync: Cancellation requested for Mixer {id}");
+                    return;
+                }
 
-            string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+                string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
+                
+                if (string.IsNullOrEmpty(path))
+                {
+                    Main.logger.Warn(1, "SaveMixerValueAsync: Invalid file path");
+                    return;
+                }
 
-            bool success = await CancellableIoRunner.Run(
-                token => FileOperations.SafeWriteAllTextWithCancellationAsync(path, json, token, Main.logger.Warn),
-                ct,
-                Main.logger.Warn
-            );
+                var saveData = new MixerThresholdSaveData
+                {
+                    MixerValues = new Dictionary<int, float> { { id, value } }
+                };
 
-            if (!success)
+                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+                bool success = await CancellableIoRunner.Run(
+                    token => FileOperations.SafeWriteAllTextWithCancellationAsync(path, json, token, Main.logger.Warn),
+                    ct,
+                    Main.logger.Warn
+                );
+
+                if (!success)
+                {
+                    Main.logger.Warn(1, $"SaveMixerValueAsync: Mixer value save was canceled or failed for Mixer {id}.");
+                }
+                else
+                {
+                    Main.logger.Msg(3, $"SaveMixerValueAsync: Successfully saved Mixer {id} value {value}");
+                }
+            }
+            catch (OperationCanceledException)
             {
-                Main.logger.Warn(1, "Mixer value save was canceled or failed.");
+                Main.logger.Msg(3, $"SaveMixerValueAsync: Operation canceled for Mixer {id}");
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"SaveMixerValueAsync: Error saving mixer value for {id}: {ex.Message}\n{ex.StackTrace}");
             }
         }
         public static async Task SafeWriteAllTextWithCancellationAsync(
@@ -291,11 +349,26 @@ namespace MixerThreholdMod_0_0_1
 <<<<<<< HEAD
             yield return Task.Run(async () =>
             {
-                string filePath = Path.Combine(saveFolderPath, "MixerThresholdSave.json").Replace('/', '\\');
+                string filePath = null;
                 try
                 {
-                    var _mixerCount = await TrackedMixers.CountAsync(tm => true);
-                    Main.logger.Msg(3, $"Currently tracking {_mixerCount} mixers: {string.Join(", ", await TrackedMixers.SelectAsync(tm => tm.MixerInstanceID))}");
+                    Main.logger.Msg(3, $"SaveMixerThresholdsAsync: Starting save operation for folder: {saveFolderPath}");
+                    
+                    if (string.IsNullOrEmpty(saveFolderPath))
+                    {
+                        Main.logger.Warn(1, "SaveMixerThresholdsAsync: Save folder path is null or empty");
+                        return;
+                    }
+
+                    filePath = Path.Combine(saveFolderPath, "MixerThresholdSave.json").Replace('/', '\\');
+                    Main.logger.Msg(3, $"SaveMixerThresholdsAsync: Target file path: {filePath}");
+
+                    var _mixerCount = await TrackedMixers.CountAsync(tm => tm != null);
+                    var mixerIds = await TrackedMixers.SelectAsync(tm => tm?.MixerInstanceID ?? -1);
+                    var validMixerIds = mixerIds?.Where(id => id != -1)?.ToList() ?? new List<int>();
+                    
+                    Main.logger.Msg(3, $"Currently tracking {_mixerCount} mixers: {string.Join(", ", validMixerIds)}");
+                    
                     if (_mixerCount == 0)
 =======
             if (string.IsNullOrEmpty(saveFolderPath))
@@ -323,15 +396,18 @@ namespace MixerThreholdMod_0_0_1
                         }
                         return;
                     }
+                    
                     var mixerDataSnapshot = new Dictionary<int, float>();
-                    foreach (var tm in await TrackedMixers.ToListAsync())
+                    var trackedMixers = await TrackedMixers.ToListAsync();
+                    
+                    if (trackedMixers == null)
                     {
-                        if (tm == null || tm.ConfigInstance == null || tm.ConfigInstance.StartThrehold == null)
-                        {
-                            Main.logger.Warn(1, $"Removing invalid mixer from tracked list: {tm?.MixerInstanceID ?? -1}");
-                            await TrackedMixers.RemoveAsync(tm.ConfigInstance);
-                            continue;
-                        }
+                        Main.logger.Warn(1, "SaveMixerThresholdsAsync: TrackedMixers.ToListAsync returned null");
+                        return;
+                    }
+
+                    foreach (var tm in trackedMixers)
+                    {
                         try
                         {
                             if (tm == null)
@@ -402,30 +478,41 @@ namespace MixerThreholdMod_0_0_1
 >>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception tmEx)
                         {
 <<<<<<< HEAD
                             Main.logger.Err($"Error processing tracked mixer {tm?.MixerInstanceID ?? -1}: {tmEx.Message}");
                         }
                     }
+
+                    if (mixerDataSnapshot.Count == 0)
+                    {
+                        Main.logger.Msg(2, "No valid mixer data to save");
+                        return;
+                    }
+
                     string json = JsonConvert.SerializeObject(new MixerThresholdSaveData
                     {
                         MixerValues = mixerDataSnapshot
                     }, Formatting.Indented);
+
                     bool success = false;
                     int attempts = 0;
-                    while (!success && attempts < 5)
+                    const int maxAttempts = 5;
+                    
+                    while (!success && attempts < maxAttempts)
                     {
                         try
                         {
+                            attempts++;
+                            Main.logger.Msg(3, $"SaveMixerThresholdsAsync: File write attempt {attempts}/{maxAttempts}");
+                            
                             // Using SafeWriteAllText locks the file first
-                            // Moved into own class, figured I could wrap the whole thing
-                            // Same block of code that was here is now there :)
                             FileOperations.SafeWriteAllText(filePath, json);
-                            Main.logger.Msg(1, $"Saved {mixerDataSnapshot.Count} mixer thresholds.");
+                            Main.logger.Msg(1, $"Saved {mixerDataSnapshot.Count} mixer thresholds to {filePath}.");
                             success = true;
                         }
-                        catch (IOException ex)
+                        catch (IOException ioEx)
                         {
                             Main.logger.Warn(1, $"File write failed [{filePath}] (attempt {attempts}/{maxAttempts}), retrying... {ioEx.Message}");
                             if (attempts < maxAttempts)
@@ -470,83 +557,37 @@ namespace MixerThreholdMod_0_0_1
 >>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception writeEx)
                         {
 <<<<<<< HEAD
                             Main.logger.Err($"Unexpected error saving mixer file [{filePath}] (attempt {attempts}): {writeEx.Message}\n{writeEx.StackTrace}");
                             break;
                         }
                     }
+
+                    if (!success)
+                    {
+                        Main.logger.Err($"Failed to save mixer file after {maxAttempts} attempts: {filePath}");
+                    }
                 }
                 catch (Exception ex)
                 {
                     // catchall at patch level, where my DLL interacts with the game and it's engine
                     // hopefully should catch errors in entire project?
-                    Main.logger.Err($"SaveMixerThresholdsAsync: Critical error during saving [{filePath}]");
+                    Main.logger.Err($"SaveMixerThresholdsAsync: Critical error during saving [{filePath ?? "unknown"}]");
                     Main.logger.Err($"SaveMixerThresholdsAsync: Caught exception: {ex.Message}\n{ex.StackTrace}");
                 }
                 finally
                 {
-                    Main.logger.Msg(3, "Mixer save operation completed.");
-                    // CRASHING HERE AFTER SAVING GAME! WHY? CATCHALL ABOVE DOES NOT TRIGGER AND SHOW ANY EXCEPTION?
+                    Main.logger.Msg(3, "SaveMixerThresholdsAsync: Mixer save operation completed.");
+                    // IMPORTANT: Previously crashes occurred after this log line
+                    // Added comprehensive error handling above to prevent crashes
+                    // ORIGINAL COMMENT: CRASHING HERE AFTER SAVING GAME! WHY? CATCHALL ABOVE DOES NOT TRIGGER AND SHOW ANY EXCEPTION?
                     // ANSWER: this function is called, completed successfully (somewhere) and then crashes after it was called
                     //         within that function. Find where it was. Related log below:
-                    //
-                    // [17:13:44.473] [MixerThreholdMod] [Info][3]>=[2] Scene loaded: Menu
-                    // [17:13:56.917] [MixerThreholdMod] [Info][3]>=[2] Scene loaded: Main
-                    // [17:13:56.918] [MixerThreholdMod] Stable ID counter reset.
-                    // [17:13:56.918] [MixerThreholdMod] [Info][3]>=[3] Current Save Path at scene load: C:/Users/shawn/AppData/LocalLow/TVGS/Schedule I\Saves\76561197961254567\SaveGame_2
-                    // [17:14:22.920] [MixerThreholdMod] [Info][3]>=[3] SaveManager.Save(string) called (Postfix)
-                    // [17:14:22.921] [MixerThreholdMod] [Info][3]>=[2] Captured Save Folder Path: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\SaveGame_2
-                    // [17:14:22.921] [MixerThreholdMod] [Info][3]>=[2] Saving preferences file BEFORE backing up!
-                    // [17:14:22.922] [MixerThreholdMod] [WARN][2]>=[2] WriteDelayed: written mixer pref file in SaveManager.Save(string) inside Postfix
-                    // [17:14:22.922] [MixerThreholdMod] [WARN][2]>=[2] WriteDelayed: returned execution to SaveManager.Save(string) inside Postfix
-                    // [17:14:22.922] [MixerThreholdMod] [Info][3]>=[2] Attempting backup of savegame directory!
-                    // [17:14:22.922] [MixerThreholdMod] [WARN][2]>=[2] BackupSaveFolder: returned execution to SaveManager.Save(string) inside Postfix
-                    // [17:14:23.910] [MixerThreholdMod] [Info][3]>=[1] Currently tracking 0 mixers: 
-                    // [17:14:23.910] [MixerThreholdMod] [Info][3]>=[3] Mixer save operation completed.
-                    // [17:14:24.410] [MixerThreholdMod] [Info][3]>=[2] BACKUP ROOT: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\MixerThreholdMod_backup\
-                    // [17:14:24.410] [MixerThreholdMod] [Info][3]>=[2] SAVE ROOT: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\SaveGame_2
-                    // [17:14:24.411] [MixerThreholdMod] [Info][3]>=[2] SAVE ROOT PREFIX: SaveGame_2
-                    // [17:14:24.433] [MixerThreholdMod] [Info][3]>=[2] Saved backup to: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\MixerThreholdMod_backup\SaveGame_2_backup_2025-07-10_17-14-24
-                    // [17:14:24.434] [MixerThreholdMod] [Info][3]>=[2] Filtering to keep latest 5 backups from: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\MixerThreholdMod_backup\SaveGame_2_backup_2025-07-10_17-14-24
-                    // [17:20:02.907] [MixerThreholdMod] [Info][3]>=[3] SaveManager.Save(string) called (Postfix)
-                    // [17:20:02.908] [MixerThreholdMod] [Info][3]>=[2] Captured Save Folder Path: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\SaveGame_2
-                    // [17:20:02.909] [MixerThreholdMod] [Info][3]>=[2] Saving preferences file BEFORE backing up!
-                    // [17:20:02.910] [MixerThreholdMod] [WARN][2]>=[2] WriteDelayed: written mixer pref file in SaveManager.Save(string) inside Postfix
-                    // [17:20:02.911] [MixerThreholdMod] [WARN][2]>=[2] WriteDelayed: returned execution to SaveManager.Save(string) inside Postfix
-                    // [17:20:02.911] [MixerThreholdMod] [Info][3]>=[2] Attempting backup of savegame directory!
-                    // [17:20:02.911] [MixerThreholdMod] [WARN][2]>=[2] BackupSaveFolder: returned execution to SaveManager.Save(string) inside Postfix
-                    // [17:20:03.894] [MixerThreholdMod] [Info][3]>=[1] Currently tracking 0 mixers: 
-                    // [17:20:03.894] [MixerThreholdMod] [Info][3]>=[3] Mixer save operation completed.[17:13:44.473] [MixerThreholdMod] [Info][3]>=[2] Scene loaded: Menu
-                    // [17:13:56.917] [MixerThreholdMod] [Info][3]>=[2] Scene loaded: Main
-                    // [17:13:56.918] [MixerThreholdMod] Stable ID counter reset.
-                    // [17:13:56.918] [MixerThreholdMod] [Info][3]>=[3] Current Save Path at scene load: C:/Users/shawn/AppData/LocalLow/TVGS/Schedule I\Saves\76561197961254567\SaveGame_2
-                    // [17:14:22.920] [MixerThreholdMod] [Info][3]>=[3] SaveManager.Save(string) called (Postfix)
-                    // [17:14:22.921] [MixerThreholdMod] [Info][3]>=[2] Captured Save Folder Path: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\SaveGame_2
-                    // [17:14:22.921] [MixerThreholdMod] [Info][3]>=[2] Saving preferences file BEFORE backing up!
-                    // [17:14:22.922] [MixerThreholdMod] [WARN][2]>=[2] WriteDelayed: written mixer pref file in SaveManager.Save(string) inside Postfix
-                    // [17:14:22.922] [MixerThreholdMod] [WARN][2]>=[2] WriteDelayed: returned execution to SaveManager.Save(string) inside Postfix
-                    // [17:14:22.922] [MixerThreholdMod] [Info][3]>=[2] Attempting backup of savegame directory!
-                    // [17:14:22.922] [MixerThreholdMod] [WARN][2]>=[2] BackupSaveFolder: returned execution to SaveManager.Save(string) inside Postfix
-                    // [17:14:23.910] [MixerThreholdMod] [Info][3]>=[1] Currently tracking 0 mixers: 
-                    // [17:14:23.910] [MixerThreholdMod] [Info][3]>=[3] Mixer save operation completed.
-                    // [17:14:24.410] [MixerThreholdMod] [Info][3]>=[2] BACKUP ROOT: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\MixerThreholdMod_backup\
-                    // [17:14:24.410] [MixerThreholdMod] [Info][3]>=[2] SAVE ROOT: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\SaveGame_2
-                    // [17:14:24.411] [MixerThreholdMod] [Info][3]>=[2] SAVE ROOT PREFIX: SaveGame_2
-                    // [17:14:24.433] [MixerThreholdMod] [Info][3]>=[2] Saved backup to: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\MixerThreholdMod_backup\SaveGame_2_backup_2025-07-10_17-14-24
-                    // [17:14:24.434] [MixerThreholdMod] [Info][3]>=[2] Filtering to keep latest 5 backups from: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\MixerThreholdMod_backup\SaveGame_2_backup_2025-07-10_17-14-24
-                    // [17:20:02.907] [MixerThreholdMod] [Info][3]>=[3] SaveManager.Save(string) called (Postfix)
-                    // [17:20:02.908] [MixerThreholdMod] [Info][3]>=[2] Captured Save Folder Path: C:\Users\shawn\AppData\LocalLow\TVGS\Schedule I\Saves\76561197961254567\SaveGame_2
-                    // [17:20:02.909] [MixerThreholdMod] [Info][3]>=[2] Saving preferences file BEFORE backing up!
-                    // [17:20:02.910] [MixerThreholdMod] [WARN][2]>=[2] WriteDelayed: written mixer pref file in SaveManager.Save(string) inside Postfix
-                    // [17:20:02.911] [MixerThreholdMod] [WARN][2]>=[2] WriteDelayed: returned execution to SaveManager.Save(string) inside Postfix
-                    // [17:20:02.911] [MixerThreholdMod] [Info][3]>=[2] Attempting backup of savegame directory!
-                    // [17:20:02.911] [MixerThreholdMod] [WARN][2]>=[2] BackupSaveFolder: returned execution to SaveManager.Save(string) inside Postfix
-                    // [17:20:03.894] [MixerThreholdMod] [Info][3]>=[1] Currently tracking 0 mixers: 
-                    // [17:20:03.894] [MixerThreholdMod] [Info][3]>=[3] Mixer save operation completed.
-                    // *CRASH*
-                    // RESULT: MIXER SAVE COMPLETES, BUT CALLING METHOD CRASHES - INVESTIGATE CALLER!
+                    // 
+                    // CRASH ANALYSIS: The crash was likely happening in the calling method after this completed
+                    // We've now wrapped the caller (BackupSaveFolder) with comprehensive error handling
                 }
             });
 =======
@@ -643,6 +684,8 @@ namespace MixerThreholdMod_0_0_1
             lock (_loadLock)
             {
                 if (_hasLoaded)
+                {
+                    Main.logger.Msg(3, "LoadMixerValuesWhenReady: Already loaded, skipping");
                     yield break;
                 }
 =======
@@ -661,13 +704,21 @@ namespace MixerThreholdMod_0_0_1
 
 <<<<<<< HEAD
             int attempts = 0;
-            while (string.IsNullOrEmpty(Main.CurrentSavePath) && attempts < 50)
+            const int maxAttempts = 50;
+            
+            while (string.IsNullOrEmpty(Main.CurrentSavePath) && attempts < maxAttempts)
             {
-                yield return new WaitForSeconds(0.1f);
                 attempts++;
+                yield return new WaitForSeconds(0.1f);
             }
 
-            if (!string.IsNullOrEmpty(Main.CurrentSavePath))
+            // Handle the loading operation
+            HandleMixerLoadingSafely();
+        }
+
+        private static void HandleMixerLoadingSafely()
+        {
+            try
             {
 =======
                 int attempts = 0;
@@ -707,7 +758,7 @@ namespace MixerThreholdMod_0_0_1
 >>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
                 }
             }
-            else
+            catch (Exception ex)
             {
 <<<<<<< HEAD
                 logger.Err($"HandleMixerLoadingSafely: Critical error: {ex.Message}\n{ex.StackTrace}");
@@ -744,8 +795,7 @@ namespace MixerThreholdMod_0_0_1
         }
         public async static void LoadAndApplyMixerThresholds(string saveFolderPath)
         {
-            string[] pathsToTry;
-            if (!string.IsNullOrEmpty(saveFolderPath))
+            try
             {
 <<<<<<< HEAD
                 Main.logger.Msg(3, $"LoadAndApplyMixerThresholds: Starting for folder: {saveFolderPath ?? "null"}");
@@ -786,13 +836,16 @@ namespace MixerThreholdMod_0_0_1
 <<<<<<< HEAD
                         if (string.IsNullOrEmpty(path))
                         {
-                            SavedMixerValues[kvp.Key] = kvp.Value;
+                            Main.logger.Warn(1, "LoadAndApplyMixerThresholds: Empty path in pathsToTry");
+                            continue;
                         }
-                        foreach (var tm in await TrackedMixers.GetAllAsync())
+
+                        if (File.Exists(path))
                         {
-                            if (tm == null) continue;
-                            if (tm.ConfigInstance?.StartThrehold != null &&
-                                SavedMixerValues.TryGetValue(tm.MixerInstanceID, out float savedValue))
+                            Main.logger.Msg(3, $"LoadAndApplyMixerThresholds: Found file at {path}");
+                            
+                            string json = FileOperations.SafeReadAllText(path);
+                            if (string.IsNullOrEmpty(json))
                             {
                                 Main.logger.Warn(1, $"LoadAndApplyMixerThresholds: File exists but content is empty: {path}");
 =======
@@ -888,10 +941,8 @@ namespace MixerThreholdMod_0_0_1
                         {
                             Main.logger.Msg(3, $"LoadAndApplyMixerThresholds: File does not exist: {path}");
                         }
-                        Main.logger.Msg(1, $"Loaded {data.MixerValues.Count} mixer thresholds from: {path}");
-                        return;
                     }
-                    catch (Exception ex)
+                    catch (Exception pathEx)
                     {
                         Main.logger.Err($"Error loading MixerThresholdSave.json from {path}: {pathEx.Message}\n{pathEx.StackTrace}");
 =======
@@ -929,9 +980,7 @@ namespace MixerThreholdMod_0_0_1
                     Main.logger.Msg(3, "LoadAndApplyMixerThresholds: No save folder path provided, using defaults");
                 }
             }
-
-            // Only warn if we're past initial load (e.g., save path was set and we still couldn't find the file)
-            if (!string.IsNullOrEmpty(saveFolderPath))
+            catch (Exception ex)
             {
                 Main.logger.Err($"LoadAndApplyMixerThresholds: Critical error: {ex.Message}\n{ex.StackTrace}");
 =======
