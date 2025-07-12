@@ -90,22 +90,32 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helpers\CancellableIoRunner.cs" />
-    <Compile Include="Helpers\ThreadSafeList.cs" />
-    <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
-    <Compile Include="Helpers\FileLockerHelper.cs" />
-    <Compile Include="Helpers\FileOperations.cs" />
-    <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
-    <Compile Include="Main.cs" />
-    <Compile Include="Helpers\Console.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Helpers\Logger.cs" />
-    <Compile Include="Helpers\MixerIDManager.cs" />
-    <Compile Include="Helpers\MixerSaveManager.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <!-- Core Components -->
+    <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\MixerIDManager.cs" />
+    <Compile Include="Core\TrackedMixer.cs" />
+    <Compile Include="Core\Console.cs" />
+    
+    <!-- Save System -->
+    <Compile Include="Save\CrashResistantSaveManager.cs" />
+    
+    <!-- Threading -->
+    <Compile Include="Threading\ThreadSafeCollections.cs" />
+    
+    <!-- Patches -->
     <Compile Include="Patches\SaveManager_Save_Patch.cs" />
-    <Compile Include="Helpers\TrackedMixer.cs" />
-    <Compile Include="Helpers\Utils.cs" />
+    <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
+    <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
+    
+    <!-- Legacy helpers (to be phased out) -->
+    <Compile Include="Helpers\CancellableIoRunner.cs" />
+    <Compile Include="Helpers\FileOperations.cs" />
+    <Compile Include="Helpers\FileLockerHelper.cs" />
+    
+    <!-- Main entry point -->
+    <Compile Include="Main.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />

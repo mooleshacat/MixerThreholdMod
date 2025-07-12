@@ -1,103 +1,126 @@
+﻿// SaveManagerSavePatch.cs
 using MelonLoader;
 using ScheduleOne.Persistence;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using HarmonyLib;
 
-namespace MixerThreholdMod_0_0_1.Patches
+namespace MixerThreholdMod_0_0_1
 {
-    /// <summary>
-    /// Harmony patch for SaveManager.Save to capture save folder path and trigger mixer data persistence.
-    /// This patch is critical for the save crash prevention system.
-    /// 
-    /// ⚠️ CRASH PREVENTION FOCUS: This patch intercepts save operations to ensure mixer data 
-    /// is properly saved before the game saves, preventing data loss during crashes.
-    /// 
-    /// ⚠️ THREAD SAFETY: All operations use thread-safe methods and don't block the main thread.
-    /// Error handling prevents patch failures from crashing the save process.
-    /// 
-    /// .NET 4.8.1 Compatibility:
-    /// - Uses string.Format instead of string interpolation
-    /// - Compatible exception handling patterns
-    /// - Proper async coroutine usage
-    /// </summary>
     [HarmonyPatch(typeof(SaveManager), nameof(SaveManager.Save), new[] { typeof(string) })]
     public static class SaveManager_Save_Patch
     {
         private const int MaxBackups = 5;
 
-        /// <summary>
-        /// Postfix patch that runs after SaveManager.Save completes.
-        /// ⚠️ CRASH PREVENTION: This is the critical entry point for preventing save crashes.
-        /// </summary>
         public static void Postfix(string saveFolderPath)
         {
-            Exception patchError = null;
             try
             {
-                Main.logger.Msg(2, "[PATCH] SaveManager.Save postfix triggered");
+                Main.logger.Msg(3, "SaveManager.Save(string) called (Postfix)");
 
-                if (string.IsNullOrEmpty(saveFolderPath))
+                // Changing saveFolderPath to _savePath causes exception
+                // Confirmed not patching because signature mismatch. Solution is just reassign it :)
+                var _savePath = saveFolderPath;
+                if (string.IsNullOrEmpty(_savePath))
                 {
-                    Main.logger.Warn(1, "[PATCH] Save folder path is null or empty - cannot proceed");
+                    Main.logger.Warn(1, "Save folder path is null or empty — cannot set CurrentSavePath.");
                     return;
                 }
 
-                // Normalize and set current save path
-                string normalizedPath = NormalizePath(saveFolderPath);
+                string normalizedPath = Utils.NormalizePath(_savePath);
                 Main.CurrentSavePath = normalizedPath;
-                Main.logger.Msg(1, string.Format("[PATCH] Save path captured: {0}", normalizedPath));
+                Main.logger.Msg(2, string.Format("Captured Save Folder Path: {0}", normalizedPath));
 
-                // Trigger crash-resistant save immediately after game save
+                Main.logger.Msg(2, "Saving preferences file BEFORE backing up!");
+
                 try
                 {
-                    MelonCoroutines.Start(Save.CrashResistantSaveManager.TriggerSaveWithCooldown());
-                    Main.logger.Msg(2, "[PATCH] Crash-resistant save triggered successfully");
+                    // WriteDelayed handles creation of the mixer preferences file - do it _before_ backup!
+                    MelonCoroutines.Start(WriteDelayed(normalizedPath));
+                    Main.logger.Warn(2, "WriteDelayed: started mixer pref file save in SaveManager.Save(string) inside Postfix");
                 }
-                catch (Exception saveEx)
+                catch (Exception writeEx)
                 {
-                    Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Save trigger failed: {0}", saveEx.Message));
-                    // Don't re-throw - let the game continue
+                    Main.logger.Err(string.Format("Failed to start WriteDelayed coroutine: {0}\n{1}", writeEx.Message, writeEx.StackTrace));
+                }
+
+                Main.logger.Msg(2, "Attempting backup of savegame directory!");
+
+                try
+                {
+                    // Start backup coroutine (Get the parent directory for BackupSave to be located in)
+                    MelonCoroutines.Start(BackupSaveFolder(normalizedPath));
+                    Main.logger.Warn(2, "BackupSaveFolder: started backup coroutine in SaveManager.Save(string) inside Postfix");
+                }
+                catch (Exception backupEx)
+                {
+                    Main.logger.Err(string.Format("Failed to start BackupSaveFolder coroutine: {0}\n{1}", backupEx.Message, backupEx.StackTrace));
                 }
             }
             catch (Exception ex)
             {
-                patchError = ex;
-            }
-
-            if (patchError != null)
-            {
-                Main.logger.Err(string.Format("[PATCH] SaveManager_Save_Patch CRASH PREVENTION: Patch error: {0}\nStackTrace: {1}", patchError.Message, patchError.StackTrace));
-                // CRITICAL: Never let patch failures crash the game's save process
+                // catchall at patch level, where my DLL interacts with the game and it's engine
+                // hopefully should catch errors in entire project?
+                Main.logger.Err("SaveManager_Save_Patch: Failed to save game and/or preferences and/or backup");
+                Main.logger.Err(string.Format("SaveManager_Save_Patch: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
 
-        /// <summary>
-        /// Simple path normalization for .NET 4.8.1 compatibility
-        /// </summary>
-        private static string NormalizePath(string path)
+        private static IEnumerator BackupSaveFolder(string _saveRoot)
+        {
+            Main.logger.Msg(3, string.Format("BackupSaveFolder started for: {0}", _saveRoot));
+            yield return new WaitForSeconds(1.5f); // Ensure save completes
+
+            // Move backup logic to a background task to avoid yield issues
+            var backupTask = Task.Run(() =>
+            {
+                try
+                {
+                    return PerformBackupOperation(_saveRoot);
+                }
+                catch (Exception ex)
+                {
+                    Main.logger.Err(string.Format("BackupSaveFolder: Error in backup task: {0}\n{1}", ex.Message, ex.StackTrace));
+                    return BackupResult.CreateFailure(string.Format("Backup task failed: {0}", ex.Message));
+                }
+            });
+
+            // Wait for backup task completion
+            while (!backupTask.IsCompleted)
+            {
+                yield return null;
+            }
+
+            var backupResult = backupTask.Result;
+            if (!backupResult.Success)
+            {
+                Main.logger.Err(string.Format("BackupSaveFolder: {0}", backupResult.ErrorMessage));
+                yield break;
+            }
+
+            yield return new WaitForSeconds(0.5f); // Allow file system to settle
+
+            // Keep only the latest MaxBackups
+            yield return MelonCoroutines.Start(CleanupOldBackups(backupResult.BackupRoot, backupResult.SaveRootPrefix));
+
+            Main.logger.Msg(3, "BackupSaveFolder: Backup operation completed successfully");
+        }
+
+        private static BackupResult PerformBackupOperation(string _saveRoot)
         {
             try
             {
-                if (string.IsNullOrEmpty(path)) return string.Empty;
-                
-                // Basic normalization - convert forward slashes and trim
-                string normalized = path.Replace('/', '\\').Trim();
-                if (normalized.EndsWith("\\") && normalized.Length > 1)
+                if (string.IsNullOrEmpty(_saveRoot))
                 {
-                    normalized = normalized.TrimEnd('\\');
+                    Main.logger.Warn(1, "Save root is null or empty, cannot proceed with backup");
+                    return BackupResult.CreateFailure("Save root is null or empty");
                 }
-                return normalized;
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
-                return path; // Return original on error
-            }
-    }
-}
 
                 var parentDir = Directory.GetParent(_saveRoot);
                 if (parentDir == null)

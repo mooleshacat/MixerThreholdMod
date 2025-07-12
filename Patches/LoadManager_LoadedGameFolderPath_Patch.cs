@@ -1,83 +1,95 @@
 ﻿using HarmonyLib;
-using MelonLoader;
 using ScheduleOne.Persistence;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_0_0_1.Patches
 {
+    /// <summary>
+    /// Harmony patch for LoadManager.StartGame to capture load operations and initialize save path.
+    /// 
+    /// ⚠️ CRASH PREVENTION FOCUS: This patch ensures save path is properly captured during game loading
+    /// and triggers the load of mixer values when a save is loaded.
+    /// 
+    /// ⚠️ THREAD SAFETY: All operations are designed to be thread-safe and not block the main thread.
+    /// Error handling prevents patch failures from affecting game loading.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses string.Format instead of string interpolation
+    /// - Compatible exception handling patterns
+    /// - Proper null checking
+    /// </summary>
     [HarmonyPatch(typeof(LoadManager), "StartGame")]
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
+        /// <summary>
+        /// Postfix patch that runs after LoadManager.StartGame completes
+        /// </summary>
         public static void Postfix(LoadManager __instance, SaveInfo info, bool allowLoadStacking)
         {
-            if (info == null || string.IsNullOrEmpty(info.SavePath))
-                return;
-
-            string __savePath = info?.SavePath;
-
+            Exception patchError = null;
             try
             {
-                Main.logger.Msg(3, string.Format("LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {0}", __savePath ?? "null"));
-
-                if (!string.IsNullOrEmpty(__savePath))
+                if (info == null || string.IsNullOrEmpty(info.SavePath))
                 {
-                    Main.CurrentSavePath = __savePath;
-
-                    string path = Utils.NormalizePath(Path.Combine(__savePath, "MixerThresholdSave.json"));
-                    
-                    int _mixerCount = 0;
-                    try
-                    {
-                        _mixerCount = TrackedMixers.Count(tm => tm != null);
-                    }
-                    catch (Exception countEx)
-                    {
-                        Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Error counting mixers: {0}", countEx.Message));
-                    }
-
-                    if (_mixerCount == 0)
-                    {
-                        // Use the same flag, so when one triggers it suppresses the other :)
-                        if (!MixerSaveManager._hasLoggedZeroMixers)
-                        {
-                            Main.logger.Msg(2, "No mixers tracked (maybe you have none?) — skipping mixer threshold prefs save/create.");
-                            Main.logger.Warn(1, "No mixers tracked (maybe you have none?) — suppressing future logs until reload save.");
-                            MixerSaveManager._hasLoggedZeroMixers = true;
-                        }
-                        return;
-                    }
-
-                    if (!string.IsNullOrEmpty(path) && !File.Exists(path))
-                    {
-                        try
-                        {
-                            Main.logger.Warn(1, "MixerThresholdSave.json missing on load — creating it now.");
-                            Utils.CoroutineHelper.RunCoroutine(SaveThresholdsCoroutine(__savePath));
-                        }
-                        catch (Exception coroutineEx)
-                        {
-                            Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Error starting save coroutine: {0}", coroutineEx.Message));
-                        }
-                    }
+                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: No save info or path");
+                    return;
                 }
-                else
+
+                string savePath = info.SavePath;
+                Main.logger.Msg(2, string.Format("[PATCH] LoadManager postfix: Game loading from {0}", savePath));
+
+                // Set current save path for the save system
+                Main.CurrentSavePath = NormalizePath(savePath);
+                
+                // Trigger load of mixer values when game loads
+                try
                 {
-                    Main.logger.Warn(1, "LoadedGameFolderPath is null or empty — cannot track save path.");
+                    MelonCoroutines.Start(Save.CrashResistantSaveManager.LoadMixerValuesWhenReady());
+                    Main.logger.Msg(2, "[PATCH] Load mixer values coroutine started");
+                }
+                catch (Exception loadEx)
+                {
+                    Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Load trigger failed: {0}", loadEx.Message));
+                    // Don't re-throw - let the game continue
                 }
             }
             catch (Exception ex)
             {
-                // catchall at patch level, where my DLL interacts with the game and it's engine
-                // hopefully should catch errors in entire project?
-                Main.logger.Err("LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
-                Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                patchError = ex;
+            }
+
+            if (patchError != null)
+            {
+                Main.logger.Err(string.Format("[PATCH] LoadManager_LoadedGameFolderPath_Patch CRASH PREVENTION: Patch error: {0}\nStackTrace: {1}", 
+                    patchError.Message, patchError.StackTrace));
+                // CRITICAL: Never let patch failures crash the game's load process
+            }
+        }
+
+        /// <summary>
+        /// Simple path normalization for .NET 4.8.1 compatibility
+        /// </summary>
+        private static string NormalizePath(string path)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(path)) return string.Empty;
+                
+                string normalized = path.Replace('/', '\\').Trim();
+                if (normalized.EndsWith("\\") && normalized.Length > 1)
+                {
+                    normalized = normalized.TrimEnd('\\');
+                }
+                return normalized;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
+                return path;
+            }
+        }
+    }
+}
             }
         }
 
