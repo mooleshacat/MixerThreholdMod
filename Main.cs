@@ -52,103 +52,47 @@ namespace MixerThreholdMod_0_0_1
 
         public override void OnInitializeMelon()
         {
-            base.OnInitializeMelon();
-            // Test log
-            Logger logger = new Logger();
-            logger.Msg(1, "MixerThreholdMod initializing...");
-            logger.Msg(1, $"currentMsgLogLevel: {logger.CurrentMsgLogLevel}");
-            logger.Msg(1, $"currentWarnLogLevel: {logger.CurrentWarnLogLevel}");
-            // Patch constructor to queue instance
-            var constructor = typeof(MixingStationConfiguration).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new[] {
-                    typeof(ConfigurationReplicator),
-                    typeof(IConfigurable),
-                    typeof(MixingStation)
-                },
-                null
-            );
-            if (constructor == null)
+            try
             {
-                Instance = this;
-                base.OnInitializeMelon();
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.MOD_INIT_HEADER);
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.CURRENT_MSG_LOG_LEVEL_TEMPLATE, logger.CurrentMsgLogLevel));
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.CURRENT_WARN_LOG_LEVEL_TEMPLATE, logger.CurrentWarnLogLevel));
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.BASIC_INIT_COMPLETE);
-
                 // Test logger immediately - if this fails, we have a fundamental problem
                 try
                 {
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.LOGGER_TEST_MESSAGE);
-                    System.Console.WriteLine(ModConstants.CONSOLE_TEST_MESSAGE);
+                    logger.Msg(1, "=== LOGGER TEST: MixerThreholdMod v1.0.0 Starting ===");
+                    System.Console.WriteLine("[CONSOLE TEST] MixerThreholdMod v1.0.0 Starting");
                 }
-                if (instance.StartThrehold == null)
+                catch (Exception logEx)
                 {
                     // If even basic logging fails, use console directly
-                    System.Console.WriteLine(string.Format(ModConstants.CRITICAL_LOGGER_FAILURE_TEMPLATE, logEx.Message));
+                    System.Console.WriteLine(string.Format("[CRITICAL] Logger failed during startup: {0}", logEx.Message));
                     throw; // This is fatal - if we can't log, we're in trouble
                 }
 
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.DIRECTORY_DETECTION_START);
-                // ⚠️ ASYNC JUSTIFICATION: Game API access can take 50-200ms but prevents 20+ second filesystem recursion
-                // Uses game's own SaveManager/LoadManager APIs for instant path resolution
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        // Configure threshold
-                        instance.StartThrehold.Configure(1f, 20f, true);
-
-                        // Log key findings for user benefit
-                        logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.GAME_DIRECTORY_DETECTION_TEMPLATE, directoryInfo.ToString()));
-
-                        if (directoryInfo.MelonLoaderLogFound)
-                        {
-                            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.MELON_LOADER_LOG_READY_TEMPLATE, directoryInfo.MelonLoaderLogFile));
-                        }
-
-                        // Now safely add listener
-                        if (!mixerData.ListenerAdded)
-                        {
-                            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.GAME_SAVES_DIRECTORY_TEMPLATE, directoryInfo.SavesDirectory));
-                        }
-                    }
-                    catch (Exception dirEx)
-                    {
-                        logger.Err(string.Format(ModConstants.DIRECTORY_DETECTION_FAILURE_TEMPLATE, dirEx.Message));
-                    }
-                });
-                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.DIRECTORY_DETECTION_COMPLETE);
+                Instance = this;
+                base.OnInitializeMelon();
+                logger.Msg(1, "=== MixerThreholdMod v1.0.0 Initializing ===");
+                logger.Msg(1, string.Format("currentMsgLogLevel: {0}", logger.CurrentMsgLogLevel));
+                logger.Msg(1, string.Format("currentWarnLogLevel: {0}", logger.CurrentWarnLogLevel));
+                logger.Msg(1, "Phase 1: Basic initialization complete");
 
                 try
                 {
-                    // IL2CPP COMPATIBLE: Use IL2CPPTypeResolver for safe type resolution in both MONO and IL2CPP builds
-                    // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.TYPE_RESOLUTION_START);
-
-                    // Log comprehensive type availability for debugging
-                    Core.IL2CPPTypeResolver.LogTypeAvailability();
-
-                    // IL2CPP-specific memory analysis after type loading
-                    if (Core.IL2CPPTypeResolver.IsIL2CPPBuild)
-                    {
-                        Core.AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis(ModConstants.PERF_TAG_POST_TYPE_LOADING);
-                    }
-
-                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSTRUCTOR_LOOKUP);
-                    var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
+                    logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
+                    var constructor = typeof(MixingStationConfiguration).GetConstructor(
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                        null,
+                        new[] {
+                            typeof(ConfigurationReplicator),
+                            typeof(IConfigurable),
+                            typeof(MixingStation)
+                        },
+                        null
+                    );
                     if (constructor == null)
                     {
-                        logger.Err(ModConstants.CONSTRUCTOR_NOT_FOUND_ERROR);
-                        logger.Err(ModConstants.LIMITED_FUNCTIONALITY_WARNING);
-                        // Don't return here - allow other initialization to continue
+                        logger.Err("CRITICAL: Target constructor NOT found! Mod will not function.");
+                        return;
                     }
-                    else
-                    {
-                        logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSTRUCTOR_FOUND);
-                    }
+                    logger.Msg(1, "Phase 2: Constructor found successfully");
 
                     logger.Msg(1, "Phase 3: Applying Harmony patch...");
                     HarmonyInstance.Patch(
@@ -159,47 +103,40 @@ namespace MixerThreholdMod_0_0_1
                     
                     logger.Msg(1, "Phase 4: Registering console commands...");
                     Core.Console.RegisterConsoleCommandViaReflection();
-                    logger.Msg(1, "Phase 4a: Basic console hook registered");
-                    
-                    // Also initialize native console integration for game console commands
-                    logger.Msg(1, "Phase 4b: Initializing native game console integration...");
-                    Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
                     logger.Msg(1, "Phase 4: Console commands registered successfully");
                     
                     logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
                 {
-                    logger.Err(string.Format(ModConstants.HARMONY_CONSOLE_FAILURE_TEMPLATE, harmonyEx.Message, harmonyEx.StackTrace));
+                    logger.Err(string.Format("CRITICAL: Harmony/Console setup failed: {0}\n{1}", harmonyEx.Message, harmonyEx.StackTrace));
                     throw; // Re-throw to ensure initialization failure is visible
                 }
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format(ModConstants.ON_INIT_MELON_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
+                logger.Err(string.Format("CRITICAL: OnInitializeMelon failed: {0}\n{1}", ex.Message, ex.StackTrace));
                 // Don't re-throw here to prevent mod loader crash, but log prominently
-                System.Console.WriteLine(string.Format(ModConstants.CRITICAL_INIT_FAILURE_TEMPLATE, ex.Message));
+                System.Console.WriteLine(string.Format("[CRITICAL] MixerThreholdMod initialization failed: {0}", ex.Message));
             }
         }
 
-        //⚠️ REFLECTION REFERENCE: Called via typeof(Main).GetMethod("QueueInstance") in 
-        //⚠️ OnInitializeMelon() - DO NOT DELETE
-        private static void QueueInstance(object __instance)
+        private static void QueueInstance(MixingStationConfiguration __instance)
         {
             try
             {
                 if (__instance == null)
                 {
-                    logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.QUEUE_INSTANCE_NULL_WARNING);
+                    logger.Warn(1, "QueueInstance: Received null instance - ignoring");
                     return;
                 }
-
+                
                 queuedInstances.Add(__instance);
-                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.QUEUE_INSTANCE_SUCCESS_TEMPLATE, queuedInstances.Count));
+                logger.Msg(3, string.Format("QueueInstance: Successfully queued MixingStationConfiguration (Total: {0})", queuedInstances.Count));
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format(ModConstants.QUEUE_INSTANCE_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
+                logger.Err(string.Format("QueueInstance: Critical failure - {0}\n{1}", ex.Message, ex.StackTrace));
                 // Don't re-throw to prevent Harmony patch failure from crashing the game
             }
         }
@@ -211,15 +148,10 @@ namespace MixerThreholdMod_0_0_1
             try
             {
                 // Prevent multiple concurrent executions of async operations
-                if (_isProcessingQueued || queuedInstances.Count == 0)
+                if (_isProcessingQueued || queuedInstances.Count == 0) 
                     return;
 
-                // ⚠️ ASYNC JUSTIFICATION: ProcessQueuedInstancesAsync() contains:
-                // - Thread-safe collection operations that could block main thread for 10-50ms
-                // - Reflection-based property access that can take 5-20ms per instance
-                // - Potential database-like operations in MixerConfigurationTracker (up to 100ms)
-                // - File I/O for coroutine-based save operations (50-200ms)
-                // Task.Run prevents Unity main thread blocking which would cause frame drops
+                // Process queued instances on background thread to avoid blocking main thread
                 Task.Run(async () =>
                 {
                     try
@@ -229,7 +161,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception ex)
                     {
-                        logger.Err(string.Format(ModConstants.BACKGROUND_PROCESSING_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
+                        logger.Err(string.Format("OnUpdate background processing: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                     }
                     finally
                     {
@@ -244,7 +176,104 @@ namespace MixerThreholdMod_0_0_1
             queuedInstances.Clear();
         }
 
+        private static async Task ProcessQueuedInstancesAsync()
+        {
+            try
+            {
+                logger.Msg(3, "ProcessQueuedInstancesAsync: Starting cleanup and processing");
+                
+                // Clean up null instances
+                await Core.TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
+                
+                var toProcess = queuedInstances.ToList();
+                logger.Msg(3, string.Format("ProcessQueuedInstancesAsync: Processing {0} queued instances", toProcess.Count));
+                
+                foreach (var instance in toProcess)
+                {
+                    try
+                    {
+                        if (instance == null)
+                        {
+                            logger.Warn(1, "ProcessQueuedInstancesAsync: Skipping null instance");
+                            continue;
+                        }
 
+                        if (await Core.TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
+                        {
+                            logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
+                            continue;
+                        }
+                        
+                        if (instance.StartThrehold == null)
+                        {
+                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
+                            continue;
+                        }
+                        
+                        var mixerData = await Core.TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
+                        if (mixerData == null)
+                        {
+                            try
+                            {
+                                logger.Msg(3, "ProcessQueuedInstancesAsync: Configuring new mixer...");
+                                instance.StartThrehold.Configure(1f, 20f, true);
+                                logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
+
+                                var newTrackedMixer = new Core.TrackedMixer
+                                {
+                                    ConfigInstance = instance,
+                                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
+                                };
+                                await Core.TrackedMixers.AddAsync(newTrackedMixer);
+                                logger.Msg(2, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
+
+                                if (!newTrackedMixer.ListenerAdded)
+                                {
+                                    logger.Msg(3, string.Format("Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
+                                    Helpers.Utils.CoroutineHelper.RunCoroutine(Save.CrashResistantSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
+                                    newTrackedMixer.ListenerAdded = true;
+                                }
+                                
+                                // Restore saved value if exists
+                                float savedValue;
+                                if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
+                                {
+                                    logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
+                                    instance.StartThrehold.SetValue(savedValue, true);
+                                }
+                            }
+                            catch (Exception mixerEx)
+                            {
+                                logger.Err(string.Format("Error configuring individual mixer: {0}\n{1}", mixerEx.Message, mixerEx.StackTrace));
+                                // Continue processing other mixers despite this failure
+                            }
+                        }
+                    }
+                    catch (Exception instanceEx)
+                    {
+                        logger.Err(string.Format("Error processing individual instance: {0}\n{1}", instanceEx.Message, instanceEx.StackTrace));
+                        // Continue processing other instances despite this failure
+                    }
+                }
+                
+                queuedInstances.Clear();
+                logger.Msg(3, "ProcessQueuedInstancesAsync: Completed successfully");
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("ProcessQueuedInstancesAsync: Critical failure: {0}\n{1}", ex.Message, ex.StackTrace));
+                // Ensure we don't leave the system in a bad state
+                try
+                {
+                    queuedInstances.Clear();
+                }
+                catch 
+                {
+                    // Even clearing failed - something is seriously wrong
+                    logger.Err("ProcessQueuedInstancesAsync: Even queue clearing failed!");
+                }
+            }
+        }
 
         public async static Task<bool> MixerExists(int mixerInstanceID)
         {

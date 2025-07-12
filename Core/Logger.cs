@@ -98,7 +98,7 @@ namespace MixerThreholdMod_1_0_0.Core
             {
                 // Fallback for caught exception (can we rely on custom logging here? It may be broken!)
                 // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
-                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Warn exception while logging warning: {0} Exception: {1}\nStack Trace: {2}", warningMessage ?? ModConstants.NULL_COMMAND_FALLBACK, ex.Message, ex.StackTrace)); }
+                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Warn exception while logging warning: {0} Exception: {1}\nStack Trace: {2}", warningMessage ?? "null", ex.Message, ex.StackTrace)); }
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }
@@ -118,7 +118,7 @@ namespace MixerThreholdMod_1_0_0.Core
             {
                 // Fallback for caught exception (can we rely on custom logging here? It may be broken!)
                 // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
-                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Err exception while logging error: {0} Exception: {1}\nStack Trace: {2}", errorMessage ?? ModConstants.NULL_COMMAND_FALLBACK, ex.Message, ex.StackTrace)); }
+                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Err exception while logging error: {0} Exception: {1}\nStack Trace: {2}", errorMessage ?? "null", ex.Message, ex.StackTrace)); }
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }
