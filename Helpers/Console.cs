@@ -1,0 +1,231 @@
+﻿using MelonLoader.Utils;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace MixerThreholdMod_0_0_1
+{
+    public class Console
+    {
+        // --- Console and Debug Support ---
+        public class MixerConsoleHook : MonoBehaviour
+        {
+            private static MixerConsoleHook _instance;
+            private static readonly object _instanceLock = new object();
+
+            public static MixerConsoleHook Instance
+            {
+                get
+                {
+                    try
+                    {
+                        lock (_instanceLock)
+                        {
+                            return _instance;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger?.Err($"MixerConsoleHook.Instance getter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        return null;
+                    }
+                }
+                private set
+                {
+                    try
+                    {
+                        lock (_instanceLock)
+                        {
+                            _instance = value;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger?.Err($"MixerConsoleHook.Instance setter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    }
+                }
+            }
+
+            private void Awake()
+            {
+                try
+                {
+                    lock (_instanceLock)
+                    {
+                        if (_instance != null && _instance != this)
+                        {
+                            Destroy(this);
+                            return;
+                        }
+                        _instance = this;
+                        DontDestroyOnLoad(gameObject);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"MixerConsoleHook.Awake: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+
+            private void Update()
+            {
+                try
+                {
+                    // Optional: handle key input for console if needed
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"MixerConsoleHook.Update: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+
+            public void OnConsoleCommand(string command)
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(command))
+                    {
+                        Main.logger?.Warn(2, "OnConsoleCommand: Received null or empty command");
+                        return;
+                    }
+
+                    // Convert to lowercase for case-insensitive comparison
+                    string lowerCommand = command.ToLowerInvariant().Trim();
+
+                    // Run command processing on thread pool to avoid blocking Unity main thread
+                    Task.Run(() => ProcessCommand(lowerCommand));
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"OnConsoleCommand: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+
+            private void ProcessCommand(string lowerCommand)
+            {
+                try
+                {
+                    switch (lowerCommand)
+                    {
+                        case "resetmixervalues":
+                            ResetMixerValues();
+                            break;
+
+                        case "printsavepath":
+                            PrintSavePath();
+                            break;
+
+                        default:
+                            // Handle commands that start with specific prefixes
+                            if (lowerCommand.StartsWith("resetmixervalues"))
+                            {
+                                ResetMixerValues();
+                            }
+                            else
+                            {
+                                Main.logger?.Warn(1, $"Unknown console command: {lowerCommand}");
+                            }
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"ProcessCommand: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+
+            private void ResetMixerValues()
+            {
+                try
+                {
+                    if (Main.userSetValues != null)
+                        Main.userSetValues.Clear();
+
+                    if (Main.savedMixerValues != null)
+                        Main.savedMixerValues.Clear();
+
+                    // Optional: Reset the saved JSON file
+                    string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+
+                    // msgLogLevel = 1 because user initiated something, user wants to see results
+                    Main.logger?.Msg(1, "MixerThreholdMod: All mixer values reset and ID counter restarted.");
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"ResetMixerValues: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+
+            private void PrintSavePath()
+            {
+                try
+                {
+                    // msgLogLevel = 1 because user initiated something, user wants to see results
+                    string currentPath = Main.CurrentSavePath ?? "[null]";
+                    Main.logger?.Msg(1, $"Current Save Path: {currentPath}");
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err($"PrintSavePath: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                }
+            }
+        }
+
+        public static void RegisterConsoleCommandViaReflection()
+        {
+            try
+            {
+                if (MixerConsoleHook.Instance != null)
+                {
+                    Main.logger?.Warn(2, "Console command hook already initialized");
+                    return;
+                }
+
+                GameObject hookObj = new GameObject("MixerConsoleHook");
+                if (hookObj == null)
+                {
+                    Main.logger?.Err("Failed to create MixerConsoleHook GameObject");
+                    return;
+                }
+
+                MixerConsoleHook hook = hookObj.AddComponent<MixerConsoleHook>();
+                if (hook == null)
+                {
+                    Main.logger?.Err("Failed to add MixerConsoleHook component");
+                    if (hookObj != null) GameObject.Destroy(hookObj);
+                    return;
+                }
+
+                Application.logMessageReceived += (condition, stackTrace, type) =>
+                {
+                    try
+                    {
+                        if (type == LogType.Log && !string.IsNullOrEmpty(condition) && condition.StartsWith("Exec: "))
+                        {
+                            string command = condition.Substring(6); // Strip off "Exec: "
+                            hook?.OnConsoleCommand(command);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger?.Err($"Error in console log message handler: {ex.Message}");
+                    }
+                };
+
+                Main.logger?.Msg(2, "Console command hook initialized.");
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err($"RegisterConsoleCommandViaReflection: Caught exception: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+    }
+}
