@@ -732,22 +732,24 @@ namespace MixerThreholdMod_1_0_0.Save
             int trackedMixersCount = 0;
             int queuedInstancesCount = 0;
 
+            // Get basic counts safely
+            queuedInstancesCount = Main.queuedInstances.Count;
+
+            // Try to get tracked mixers count with timeout protection - outside try/catch
+            var countTask = Core.TrackedMixers.CountAsync(tm => tm != null);
+            float startTime = Time.time;
+            while (!countTask.IsCompleted && (Time.time - startTime) < 2f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            // Process the result in try/catch
             try
             {
-                // Basic counts
-                queuedInstancesCount = Main.queuedInstances.Count;
-                
-                // Try to get tracked mixers count with timeout protection
-                var countTask = Core.TrackedMixers.CountAsync(tm => tm != null);
-                float startTime = Time.time;
-                while (!countTask.IsCompleted && (Time.time - startTime) < 2f)
-                {
-                    yield return new WaitForSeconds(0.1f);
-                }
-
                 if (countTask.IsCompleted && !countTask.IsFaulted)
                 {
                     trackedMixersCount = countTask.Result;
+                    Main.logger.Msg(3, "[SAVE] DIAGNOSIS: Successfully retrieved TrackedMixers count");
                 }
                 else
                 {
@@ -763,7 +765,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? "[null]"));
                 Main.logger.Warn(1, string.Format("[SAVE] - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
                 Main.logger.Warn(1, string.Format("[SAVE] - Load coroutine started: {0}", Main.LoadCoroutineStarted));
-                
+
                 // Analysis based on results
                 if (trackedMixersCount == 0 && queuedInstancesCount == 0)
                 {
@@ -802,7 +804,7 @@ namespace MixerThreholdMod_1_0_0.Save
 
             if (diagError != null)
             {
-                Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
+                Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}",
                     diagError.Message, diagError.StackTrace));
             }
         }

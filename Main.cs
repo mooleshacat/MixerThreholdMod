@@ -409,6 +409,9 @@ namespace MixerThreholdMod_1_0_0
         /// <summary>
         /// Get all mixers via async coroutine
         /// </summary>
+        /// <summary>
+        /// Get all mixers via async coroutine
+        /// </summary>
         private IEnumerator GetAllMixersAsync()
         {
             var allMixers = new List<TrackedMixer>();
@@ -416,7 +419,7 @@ namespace MixerThreholdMod_1_0_0
 
             // Execute async task without try/catch to avoid yield return issues
             var task = Core.TrackedMixers.GetAllAsync();
-            
+
             // Wait for async task with timeout
             float startTime = Time.time;
             while (!task.IsCompleted && (Time.time - startTime) < 2f)
@@ -429,7 +432,7 @@ namespace MixerThreholdMod_1_0_0
                 if (task.IsCompleted && !task.IsFaulted)
                 {
                     allMixers.AddRange(task.Result);
-                    taskCompleted = true;
+                    logger.Msg(3, "[MAIN] GetAllMixersAsync: Successfully retrieved mixer list");
                 }
                 else if (task.IsFaulted)
                 {
