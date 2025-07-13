@@ -106,6 +106,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                     Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
 
                     string json = await ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
+<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
                     if (!string.IsNullOrEmpty(json))
                     {
                         var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
@@ -146,6 +147,8 @@ namespace MixerThreholdMod_1_0_0.Utils
                     Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
 
                     string json = await ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
+========
+>>>>>>>> aa94715 (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
                     if (!string.IsNullOrEmpty(json))
                     {
                         var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
@@ -561,7 +564,11 @@ namespace MixerThreholdMod_1_0_0.Utils
 
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
 
+<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
                 await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
+========
+                await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
+>>>>>>>> aa94715 (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
 
                 Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
 
@@ -570,6 +577,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                 if (!string.IsNullOrEmpty(persistentPath))
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
+<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
                     await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
@@ -654,6 +662,8 @@ namespace MixerThreholdMod_1_0_0.Utils
                 if (!string.IsNullOrEmpty(persistentPath))
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
+========
+>>>>>>>> aa94715 (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
                     await ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }

@@ -32,6 +32,7 @@ namespace MixerThreholdMod_1_0_0.Core
         private static readonly object _counterLock = new object();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         // Thread-safe dictionary for .NET 4.8.1
         public static readonly ConcurrentDictionary<MixingStationConfiguration, int> MixerInstanceMap =
             new ConcurrentDictionary<MixingStationConfiguration, int>();
@@ -40,6 +41,11 @@ namespace MixerThreholdMod_1_0_0.Core
         public static readonly ConcurrentDictionary<object, int> MixerInstanceMap =
             new ConcurrentDictionary<object, int>();
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+        // Thread-safe dictionary for .NET 4.8.1 - IL2CPP COMPATIBLE: Use object instead of specific type
+        public static readonly ConcurrentDictionary<object, int> MixerInstanceMap =
+            new ConcurrentDictionary<object, int>();
+>>>>>>> aa94715 (performance optimizations, cache manager)
 
         /// <summary>
         /// Reset the stable ID counter to 1. Used when starting new game sessions.

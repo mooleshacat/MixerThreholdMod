@@ -3,11 +3,16 @@ using MelonLoader;
 using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Save;
 <<<<<<< HEAD
+<<<<<<< HEAD
 using ScheduleOne.Persistence;
 =======
 // IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+>>>>>>> aa94715 (performance optimizations, cache manager)
 using System;
 using System.Collections;
 using System.IO;
@@ -38,6 +43,47 @@ namespace MixerThreholdMod_1_0_0.Patches
         private const int MaxBackups = 5;
         private static bool _patchInitialized = false;
         private static MethodInfo _saveMethod = null;
+<<<<<<< HEAD
+=======
+
+        /// <summary>
+        /// Initialize the patch using IL2CPP-compatible type resolution
+        /// </summary>
+        public static void Initialize()
+        {
+            try
+            {
+                if (_patchInitialized) return;
+
+                var saveManagerType = IL2CPPTypeResolver.GetSaveManagerType();
+                if (saveManagerType == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] SaveManager type not found - patch will not be applied");
+                    return;
+                }
+
+                _saveMethod = saveManagerType.GetMethod("Save", new[] { typeof(string) });
+                if (_saveMethod == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] SaveManager.Save method not found - patch will not be applied");
+                    return;
+                }
+
+                // Apply Harmony patch dynamically
+                var harmony = new Harmony("MixerThreholdMod.SaveManager_Save_Patch");
+                var postfixMethod = typeof(SaveManager_Save_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
+                
+                harmony.Patch(_saveMethod, null, new HarmonyMethod(postfixMethod));
+                
+                Main.logger.Msg(1, "[PATCH] IL2CPP-compatible SaveManager.Save patch applied successfully");
+                _patchInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("[PATCH] Failed to initialize SaveManager_Save_Patch: {0}", ex.Message));
+            }
+        }
+>>>>>>> aa94715 (performance optimizations, cache manager)
 
         /// <summary>
         /// Initialize the patch using IL2CPP-compatible type resolution
