@@ -5,10 +5,11 @@ using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Helpers;
 using MixerThreholdMod_1_0_0.Save;
 using Newtonsoft.Json;
-using ScheduleOne.Management;
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using ScheduleOne.Noise;
 using ScheduleOne.ObjectScripts;
-using ScheduleOne.Persistence;
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -69,9 +70,10 @@ namespace MixerThreholdMod_1_0_0
         public static MelonPreferences_Entry<int> currentWarnLogLevelEntry;
         public static readonly Core.Logger logger = new Core.Logger();
         
-        // IL2CPP COMPATIBLE: Use compile-time known collection types with proper generic constraints
-        public static List<MixingStationConfiguration> queuedInstances = new List<MixingStationConfiguration>();
-        public static Dictionary<MixingStationConfiguration, float> userSetValues = new Dictionary<MixingStationConfiguration, float>();
+        // IL2CPP COMPATIBLE: Use object instead of specific types to avoid TypeLoadException in IL2CPP builds
+        // Types will be resolved dynamically using IL2CPPTypeResolver when needed
+        public static List<object> queuedInstances = new List<object>();
+        public static Dictionary<object, float> userSetValues = new Dictionary<object, float>();
         public static ConcurrentDictionary<int, float> savedMixerValues = new ConcurrentDictionary<int, float>();
         
         public static string CurrentSavePath = null;
@@ -104,33 +106,42 @@ namespace MixerThreholdMod_1_0_0
 
                 try
                 {
-                    // IL2CPP COMPATIBLE: Use typeof() for compile-time safe type resolution instead of dynamic reflection
+                    // IL2CPP COMPATIBLE: Use IL2CPPTypeResolver for safe type resolution in both MONO and IL2CPP builds
                     // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
+                    logger.Msg(1, "Phase 2: Initializing IL2CPP-compatible type resolution...");
+                    
+                    // Log comprehensive type availability for debugging
+                    Core.IL2CPPTypeResolver.LogTypeAvailability();
+                    
                     logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
-                    var constructor = typeof(MixingStationConfiguration).GetConstructor(
-                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                        null,
-                        new[] {
-                            typeof(ConfigurationReplicator),
-                            typeof(IConfigurable),
-                            typeof(MixingStation)
-                        },
-                        null
-                    );
+                    var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
                     if (constructor == null)
                     {
-                        logger.Err("CRITICAL: Target constructor NOT found! Mod will not function.");
-                        return;
+                        logger.Err("CRITICAL: Target constructor NOT found! This may be due to IL2CPP type loading issues.");
+                        logger.Err("CRITICAL: Mod functionality will be limited but initialization will continue.");
+                        // Don't return here - allow other initialization to continue
                     }
-                    logger.Msg(1, "Phase 2: Constructor found successfully");
+                    else
+                    {
+                        logger.Msg(1, "Phase 2: Constructor found successfully via IL2CPP-compatible type resolver");
+                    }
 
                     logger.Msg(1, "Phase 3: Applying IL2CPP-compatible Harmony patch...");
-                    // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
-                    HarmonyInstance.Patch(
-                        constructor,
-                        prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
-                    );
-                    logger.Msg(1, "Phase 3: IL2CPP-compatible Harmony patch applied successfully");
+                    // IL2CPP COMPATIBLE: Only apply Harmony patch if constructor is available
+                    if (constructor != null)
+                    {
+                        // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
+                        HarmonyInstance.Patch(
+                            constructor,
+                            prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
+                        );
+                        logger.Msg(1, "Phase 3: IL2CPP-compatible Harmony patch applied successfully");
+                    }
+                    else
+                    {
+                        logger.Warn(1, "Phase 3: Skipping Harmony patch - constructor not available (IL2CPP type loading issue)");
+                        logger.Warn(1, "Phase 3: Mod will operate in limited mode without automatic mixer detection");
+                    }
                     
                     logger.Msg(1, "Phase 4: Registering IL2CPP-compatible console commands...");
                     Core.Console.RegisterConsoleCommandViaReflection();
@@ -141,15 +152,21 @@ namespace MixerThreholdMod_1_0_0
                     Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
                     logger.Msg(1, "Phase 4c: IL2CPP-compatible console commands registered successfully");
                     
+                    // Initialize IL2CPP-compatible patches
+                    logger.Msg(1, "Phase 6: Initializing IL2CPP-compatible patches...");
+                    Patches.SaveManager_Save_Patch.Initialize();
+                    Patches.LoadManager_LoadedGameFolderPath_Patch.Initialize();
+                    logger.Msg(1, "Phase 6: IL2CPP-compatible patches initialized");
+                    
                     // Initialize game logger bridge for exception monitoring
-                    logger.Msg(1, "Phase 5: Initializing game exception monitoring...");
+                    logger.Msg(1, "Phase 7: Initializing game exception monitoring...");
                     Core.GameLoggerBridge.InitializeLoggingBridge();
-                    logger.Msg(1, "Phase 5: Game exception monitoring initialized");
+                    logger.Msg(1, "Phase 7: Game exception monitoring initialized");
                     
                     // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
-                    logger.Msg(1, "Phase 6: Initializing advanced system monitoring with memory leak detection...");
+                    logger.Msg(1, "Phase 8: Initializing advanced system monitoring with memory leak detection...");
                     Core.SystemMonitor.Initialize();
-                    logger.Msg(1, "Phase 6: Advanced system monitoring with memory leak detection initialized");
+                    logger.Msg(1, "Phase 8: Advanced system monitoring with memory leak detection initialized");
                     
                     logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
                 }
@@ -167,7 +184,7 @@ namespace MixerThreholdMod_1_0_0
             }
         }
 
-        private static void QueueInstance(MixingStationConfiguration __instance)
+        private static void QueueInstance(object __instance)
         {
             try
             {
@@ -249,7 +266,16 @@ namespace MixerThreholdMod_1_0_0
                             continue;
                         }
                         
-                        if (instance.StartThrehold == null)
+                        // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property safely
+                        var startThresholdProperty = instance.GetType().GetProperty("StartThrehold");
+                        if (startThresholdProperty == null)
+                        {
+                            logger.Warn(1, "StartThrehold property not found for instance. Skipping.");
+                            continue;
+                        }
+
+                        var startThreshold = startThresholdProperty.GetValue(instance, null);
+                        if (startThreshold == null)
                         {
                             logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
                             continue;
@@ -261,8 +287,19 @@ namespace MixerThreholdMod_1_0_0
                             try
                             {
                                 logger.Msg(3, "ProcessQueuedInstancesAsync: Configuring new mixer...");
-                                instance.StartThrehold.Configure(1f, 20f, true);
-                                logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
+                                
+                                // IL2CPP COMPATIBLE: Use reflection to call Configure method safely
+                                var configureMethod = startThreshold.GetType().GetMethod("Configure", new[] { typeof(float), typeof(float), typeof(bool) });
+                                if (configureMethod != null)
+                                {
+                                    configureMethod.Invoke(startThreshold, new object[] { 1f, 20f, true });
+                                    logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
+                                }
+                                else
+                                {
+                                    logger.Warn(1, "Configure method not found on StartThrehold. Skipping configuration.");
+                                    continue;
+                                }
 
                                 var newTrackedMixer = new Core.TrackedMixer
                                 {
@@ -284,7 +321,17 @@ namespace MixerThreholdMod_1_0_0
                                 if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
                                 {
                                     logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
-                                    instance.StartThrehold.SetValue(savedValue, true);
+                                    
+                                    // IL2CPP COMPATIBLE: Use reflection to call SetValue method safely
+                                    var setValueMethod = startThreshold.GetType().GetMethod("SetValue", new[] { typeof(float), typeof(bool) });
+                                    if (setValueMethod != null)
+                                    {
+                                        setValueMethod.Invoke(startThreshold, new object[] { savedValue, true });
+                                    }
+                                    else
+                                    {
+                                        logger.Warn(1, "SetValue method not found on StartThrehold. Cannot restore saved value.");
+                                    }
                                 }
                             }
                             catch (Exception mixerEx)

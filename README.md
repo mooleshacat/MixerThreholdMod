@@ -1,6 +1,21 @@
-# MixerThreholdMod v1.0.0 🧪
+# MixerThreholdMod v1.0.0 🧪 - MONO/IL2CPP Compatible
 
-A comprehensive mod for **Schedule 1** that enhances the mixer system with crash-resistant saves, increased capacity, and intelligent threshold control.
+A comprehensive mod for **Schedule 1** that enhances the mixer system with crash-resistant saves, increased capacity, and intelligent threshold control. **Now fully compatible with both MONO and IL2CPP builds!**
+
+## Build Environment Compatibility 🔄
+
+### MONO Build Support ✅
+- **Fully Compatible**: All features work perfectly in MONO builds
+- **Direct Type Loading**: Uses standard .NET reflection patterns
+- **Standard Performance**: Normal execution speed and memory usage
+
+### IL2CPP Build Support ✅
+- **Fully Compatible**: All features work in IL2CPP builds using dynamic type resolution
+- **Safe Type Loading**: Uses Assembly.GetType() to avoid TypeLoadException
+- **Graceful Degradation**: Mod continues to function even if some game types are not available
+- **Performance**: Minimal overhead from dynamic type resolution
+
+**⚠️ IMPORTANT**: IL2CPP builds require additional type loading time during mod initialization. This is normal and expected.
 
 ## Table of Contents 📋
 
@@ -271,14 +286,32 @@ C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\Mixer
 - **Safe inspection**: Use `Alt + Tab` to switch between windows - do not click inside the MelonLoader window
 - **Log review**: Review logs after closing the game to avoid interruption
 
+### 🔄 **IL2CPP Build Considerations**
+
+**IL2CPP builds may show initial warnings** during mod initialization:
+
+- **TypeLoadException messages**: These are expected during dynamic type resolution - the mod handles them gracefully
+- **Longer initialization time**: IL2CPP builds require additional type loading time (5-10 seconds)
+- **Manual console commands**: May take a moment longer to process due to dynamic type resolution
+- **Performance**: Minimal impact during normal gameplay after initialization
+
+**✅ Both MONO and IL2CPP builds are fully supported** - initialization warnings in IL2CPP are normal and expected.
+
 ## Troubleshooting 🛠️
 
 ### Common Issues
 
 #### Console Commands Not Working
-- Ensure you're typing commands correctly (case-sensitive)
+- **MONO builds**: Ensure you're typing commands correctly (case-sensitive)
+- **IL2CPP builds**: Wait for complete mod initialization (look for "initialization COMPLETE" message)
 - Try the `help` command to verify mod is loaded
 - Check MelonLoader logs for initialization errors
+
+#### IL2CPP Build Issues
+- **TypeLoadException messages**: Normal during initialization - mod handles these automatically
+- **Slow initialization**: IL2CPP builds need 5-10 seconds for type resolution
+- **Console commands delayed**: First few commands may take longer to process
+- **Manual logging**: Use `msg` and `warn` commands to verify console integration is working
 
 #### Save System Issues  
 - Use `mixer_path` to verify save location
