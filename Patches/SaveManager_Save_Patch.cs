@@ -1,35 +1,53 @@
-﻿// SaveManagerSavePatch.cs
+using HarmonyLib;
 using MelonLoader;
-using ScheduleOne.Persistence;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Save;
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using UnityEngine;
-using HarmonyLib;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0.Patches
 {
-    [HarmonyPatch(typeof(SaveManager), nameof(SaveManager.Save), new[] { typeof(string) })]
+    /// <summary>
+    /// Harmony patch for SaveManager.Save to capture save folder path and trigger mixer data persistence.
+    /// This patch is critical for the save crash prevention system.
+    /// 
+    /// ⚠️ CRASH PREVENTION FOCUS: This patch intercepts save operations to ensure mixer data 
+    /// is properly saved before the game saves, preventing data loss during crashes.
+    /// 
+    /// ⚠️ THREAD SAFETY: All operations use thread-safe methods and don't block the main thread.
+    /// Error handling prevents patch failures from crashing the save process.
+    /// 
+    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses string.Format instead of string interpolation
+    /// - Compatible exception handling patterns
+    /// - Proper async coroutine usage
+    /// </summary>
     public static class SaveManager_Save_Patch
     {
         private const int MaxBackups = 5;
+        private static bool _patchInitialized = false;
+        private static MethodInfo _saveMethod = null;
 
-        public static void Postfix(string saveFolderPath)
+        /// <summary>
+        /// Initialize the patch using IL2CPP-compatible type resolution
+        /// </summary>
+        public static void Initialize()
         {
             try
             {
-                Main.logger.Msg(3, "SaveManager.Save(string) called (Postfix)");
+                if (_patchInitialized) return;
 
-                // Changing saveFolderPath to _savePath causes exception
-                // Confirmed not patching because signature mismatch. Solution is just reassign it :)
-                var _savePath = saveFolderPath;
-                if (string.IsNullOrEmpty(_savePath))
+                var saveManagerType = IL2CPPTypeResolver.GetSaveManagerType();
+                if (saveManagerType == null)
                 {
-                    Main.logger.Warn(1, "Save folder path is null or empty — cannot set CurrentSavePath.");
+                    Main.logger.Warn(1, "[PATCH] SaveManager type not found - patch will not be applied");
                     return;
                 }
 
@@ -114,16 +132,12 @@ namespace MixerThreholdMod_0_0_1
 
         private static BackupResult PerformBackupOperation(string _saveRoot)
         {
+            Exception patchError = null;
             try
             {
-                if (string.IsNullOrEmpty(_saveRoot))
-                {
-                    Main.logger.Warn(1, "Save root is null or empty, cannot proceed with backup");
-                    return BackupResult.CreateFailure("Save root is null or empty");
-                }
+                Main.logger.Msg(2, "[PATCH] SaveManager.Save postfix triggered");
 
-                var parentDir = Directory.GetParent(_saveRoot);
-                if (parentDir == null)
+                if (string.IsNullOrEmpty(saveFolderPath))
                 {
                     Main.logger.Warn(1, string.Format("Could not get parent directory of save root: {0}", _saveRoot));
                     return BackupResult.CreateFailure(string.Format("Could not get parent directory of save root: {0}", _saveRoot));
@@ -195,10 +209,7 @@ namespace MixerThreholdMod_0_0_1
         private static IEnumerator CleanupOldBackups(string backupRoot, string saveRootPrefix)
         {
             Main.logger.Msg(3, string.Format("Starting backup cleanup process for: {0}", backupRoot));
-
-            // Move cleanup logic to background task
-            var cleanupTask = Task.Run(() =>
-            {
+                // Trigger crash-resistant save immediately after game save
                 try
                 {
                     return GetBackupDirectoriesForCleanup(backupRoot, saveRootPrefix);
@@ -263,14 +274,12 @@ namespace MixerThreholdMod_0_0_1
                     backupDirs.RemoveAt(backupDirs.Count - 1);
                     continue;
                 }
-                else
+                catch (Exception saveEx)
                 {
-                    // Fatal error, stop cleanup
-                    Main.logger.Err(deletionResult.ErrorMessage);
-                    break;
+                    Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Save trigger failed: {0}", saveEx.Message));
+                    // Don't re-throw - let the game continue
                 }
             }
-
             Main.logger.Msg(3, string.Format("Backup cleanup completed. Deleted {0} old directories.", deletionCount));
         }
 
@@ -302,7 +311,7 @@ namespace MixerThreholdMod_0_0_1
                 Main.logger.Err(string.Format("GetBackupDirectoriesForCleanup: Failed during backup cleanup process: {0}\n{1}", ex.Message, ex.StackTrace));
                 return CleanupData.CreateFailure(string.Format("Exception during backup directory enumeration: {0}", ex.Message));
             }
-        }
+
 
         private static DeletionResult DeleteBackupDirectory(string dirPath)
         {
@@ -337,46 +346,10 @@ namespace MixerThreholdMod_0_0_1
             }
         }
 
-        private class CleanupData
-        {
-            public bool Success { get; set; }
-            public string ErrorMessage { get; set; }
-            public List<DirectoryInfo> BackupDirs { get; set; }
-
-            public static CleanupData CreateSuccess(List<DirectoryInfo> backupDirs)
-            {
-                return new CleanupData { Success = true, BackupDirs = backupDirs };
-            }
-
-            public static CleanupData CreateFailure(string errorMessage)
-            {
-                return new CleanupData { Success = false, ErrorMessage = errorMessage };
-            }
-        }
-
-        private class DeletionResult
-        {
-            public bool Success { get; set; }
-            public bool ShouldContinue { get; set; }
-            public string ErrorMessage { get; set; }
-
-            public static DeletionResult CreateSuccess()
-            {
-                return new DeletionResult { Success = true };
-            }
-
-            public static DeletionResult CreateContinue(string errorMessage)
-            {
-                return new DeletionResult { Success = false, ShouldContinue = true, ErrorMessage = errorMessage };
-            }
-
-            public static DeletionResult CreateFatal(string errorMessage)
-            {
-                return new DeletionResult { Success = false, ShouldContinue = false, ErrorMessage = errorMessage };
-            }
-        }
-
-        private static void CopyDirectory(string sourceDir, string targetDir)
+        /// <summary>
+        /// Simple path normalization for .NET 4.8.1 compatibility
+        /// </summary>
+        private static string NormalizePath(string path)
         {
             try
             {

@@ -1,0 +1,207 @@
+﻿using System;
+using UnityEngine.Rendering;
+
+namespace UnityEngine.PostProcessing
+{
+	// Token: 0x02000075 RID: 117
+	public sealed class AmbientOcclusionComponent : PostProcessingComponentCommandBuffer<AmbientOcclusionModel>
+	{
+		// Token: 0x17000036 RID: 54
+		// (get) Token: 0x06000271 RID: 625 RVA: 0x0000DCB8 File Offset: 0x0000BEB8
+		private AmbientOcclusionComponent.OcclusionSource occlusionSource
+		{
+			get
+			{
+				if (this.context.isGBufferAvailable && !base.model.settings.forceForwardCompatibility)
+				{
+					return AmbientOcclusionComponent.OcclusionSource.GBuffer;
+				}
+				if (base.model.settings.highPrecision && (!this.context.isGBufferAvailable || base.model.settings.forceForwardCompatibility))
+				{
+					return AmbientOcclusionComponent.OcclusionSource.DepthTexture;
+				}
+				return AmbientOcclusionComponent.OcclusionSource.DepthNormalsTexture;
+			}
+		}
+
+		// Token: 0x17000037 RID: 55
+		// (get) Token: 0x06000272 RID: 626 RVA: 0x0000DD1C File Offset: 0x0000BF1C
+		private bool ambientOnlySupported
+		{
+			get
+			{
+				return this.context.isHdr && base.model.settings.ambientOnly && this.context.isGBufferAvailable && !base.model.settings.forceForwardCompatibility;
+			}
+		}
+
+		// Token: 0x17000038 RID: 56
+		// (get) Token: 0x06000273 RID: 627 RVA: 0x0000DD6A File Offset: 0x0000BF6A
+		public override bool active
+		{
+			get
+			{
+				return base.model.enabled && base.model.settings.intensity > 0f && !this.context.interrupted;
+			}
+		}
+
+		// Token: 0x06000274 RID: 628 RVA: 0x0000DDA0 File Offset: 0x0000BFA0
+		public override DepthTextureMode GetCameraFlags()
+		{
+			DepthTextureMode depthTextureMode = DepthTextureMode.None;
+			if (this.occlusionSource == AmbientOcclusionComponent.OcclusionSource.DepthTexture)
+			{
+				depthTextureMode |= DepthTextureMode.Depth;
+			}
+			if (this.occlusionSource != AmbientOcclusionComponent.OcclusionSource.GBuffer)
+			{
+				depthTextureMode |= DepthTextureMode.DepthNormals;
+			}
+			return depthTextureMode;
+		}
+
+		// Token: 0x06000275 RID: 629 RVA: 0x0000DDC9 File Offset: 0x0000BFC9
+		public override string GetName()
+		{
+			return "Ambient Occlusion";
+		}
+
+		// Token: 0x06000276 RID: 630 RVA: 0x0000DDD0 File Offset: 0x0000BFD0
+		public override CameraEvent GetCameraEvent()
+		{
+			if (!this.ambientOnlySupported || this.context.profile.debugViews.IsModeActive(BuiltinDebugViewsModel.Mode.AmbientOcclusion))
+			{
+				return CameraEvent.BeforeImageEffectsOpaque;
+			}
+			return CameraEvent.BeforeReflections;
+		}
+
+		// Token: 0x06000277 RID: 631 RVA: 0x0000DDF8 File Offset: 0x0000BFF8
+		public override void PopulateCommandBuffer(CommandBuffer cb)
+		{
+			AmbientOcclusionModel.Settings settings = base.model.settings;
+			Material mat = this.context.materialFactory.Get("Hidden/Post FX/Blit");
+			Material material = this.context.materialFactory.Get("Hidden/Post FX/Ambient Occlusion");
+			material.shaderKeywords = null;
+			material.SetFloat(AmbientOcclusionComponent.Uniforms._Intensity, settings.intensity);
+			material.SetFloat(AmbientOcclusionComponent.Uniforms._Radius, settings.radius);
+			material.SetFloat(AmbientOcclusionComponent.Uniforms._Downsample, settings.downsampling ? 0.5f : 1f);
+			material.SetInt(AmbientOcclusionComponent.Uniforms._SampleCount, (int)settings.sampleCount);
+			if (!this.context.isGBufferAvailable && RenderSettings.fog)
+			{
+				material.SetVector(AmbientOcclusionComponent.Uniforms._FogParams, new Vector3(RenderSettings.fogDensity, RenderSettings.fogStartDistance, RenderSettings.fogEndDistance));
+				switch (RenderSettings.fogMode)
+				{
+				case FogMode.Linear:
+					material.EnableKeyword("FOG_LINEAR");
+					break;
+				case FogMode.Exponential:
+					material.EnableKeyword("FOG_EXP");
+					break;
+				case FogMode.ExponentialSquared:
+					material.EnableKeyword("FOG_EXP2");
+					break;
+				}
+			}
+			else
+			{
+				material.EnableKeyword("FOG_OFF");
+			}
+			int width = this.context.width;
+			int height = this.context.height;
+			int num = settings.downsampling ? 2 : 1;
+			int nameID = AmbientOcclusionComponent.Uniforms._OcclusionTexture1;
+			cb.GetTemporaryRT(nameID, width / num, height / num, 0, FilterMode.Bilinear, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
+			cb.Blit(null, nameID, material, (int)this.occlusionSource);
+			int occlusionTexture = AmbientOcclusionComponent.Uniforms._OcclusionTexture2;
+			cb.GetTemporaryRT(occlusionTexture, width, height, 0, FilterMode.Bilinear, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
+			cb.SetGlobalTexture(AmbientOcclusionComponent.Uniforms._MainTex, nameID);
+			cb.Blit(nameID, occlusionTexture, material, (this.occlusionSource == AmbientOcclusionComponent.OcclusionSource.GBuffer) ? 4 : 3);
+			cb.ReleaseTemporaryRT(nameID);
+			nameID = AmbientOcclusionComponent.Uniforms._OcclusionTexture;
+			cb.GetTemporaryRT(nameID, width, height, 0, FilterMode.Bilinear, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
+			cb.SetGlobalTexture(AmbientOcclusionComponent.Uniforms._MainTex, occlusionTexture);
+			cb.Blit(occlusionTexture, nameID, material, 5);
+			cb.ReleaseTemporaryRT(occlusionTexture);
+			if (this.context.profile.debugViews.IsModeActive(BuiltinDebugViewsModel.Mode.AmbientOcclusion))
+			{
+				cb.SetGlobalTexture(AmbientOcclusionComponent.Uniforms._MainTex, nameID);
+				cb.Blit(nameID, BuiltinRenderTextureType.CameraTarget, material, 8);
+				this.context.Interrupt();
+			}
+			else if (this.ambientOnlySupported)
+			{
+				cb.SetRenderTarget(this.m_MRT, BuiltinRenderTextureType.CameraTarget);
+				cb.DrawMesh(GraphicsUtils.quad, Matrix4x4.identity, material, 0, 7);
+			}
+			else
+			{
+				RenderTextureFormat format = this.context.isHdr ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+				int tempRT = AmbientOcclusionComponent.Uniforms._TempRT;
+				cb.GetTemporaryRT(tempRT, this.context.width, this.context.height, 0, FilterMode.Bilinear, format);
+				cb.Blit(BuiltinRenderTextureType.CameraTarget, tempRT, mat, 0);
+				cb.SetGlobalTexture(AmbientOcclusionComponent.Uniforms._MainTex, tempRT);
+				cb.Blit(tempRT, BuiltinRenderTextureType.CameraTarget, material, 6);
+				cb.ReleaseTemporaryRT(tempRT);
+			}
+			cb.ReleaseTemporaryRT(nameID);
+		}
+
+		// Token: 0x04000299 RID: 665
+		private const string k_BlitShaderString = "Hidden/Post FX/Blit";
+
+		// Token: 0x0400029A RID: 666
+		private const string k_ShaderString = "Hidden/Post FX/Ambient Occlusion";
+
+		// Token: 0x0400029B RID: 667
+		private readonly RenderTargetIdentifier[] m_MRT = new RenderTargetIdentifier[]
+		{
+			BuiltinRenderTextureType.GBuffer0,
+			BuiltinRenderTextureType.CameraTarget
+		};
+
+		// Token: 0x02000076 RID: 118
+		private static class Uniforms
+		{
+			// Token: 0x0400029C RID: 668
+			internal static readonly int _Intensity = Shader.PropertyToID("_Intensity");
+
+			// Token: 0x0400029D RID: 669
+			internal static readonly int _Radius = Shader.PropertyToID("_Radius");
+
+			// Token: 0x0400029E RID: 670
+			internal static readonly int _FogParams = Shader.PropertyToID("_FogParams");
+
+			// Token: 0x0400029F RID: 671
+			internal static readonly int _Downsample = Shader.PropertyToID("_Downsample");
+
+			// Token: 0x040002A0 RID: 672
+			internal static readonly int _SampleCount = Shader.PropertyToID("_SampleCount");
+
+			// Token: 0x040002A1 RID: 673
+			internal static readonly int _OcclusionTexture1 = Shader.PropertyToID("_OcclusionTexture1");
+
+			// Token: 0x040002A2 RID: 674
+			internal static readonly int _OcclusionTexture2 = Shader.PropertyToID("_OcclusionTexture2");
+
+			// Token: 0x040002A3 RID: 675
+			internal static readonly int _OcclusionTexture = Shader.PropertyToID("_OcclusionTexture");
+
+			// Token: 0x040002A4 RID: 676
+			internal static readonly int _MainTex = Shader.PropertyToID("_MainTex");
+
+			// Token: 0x040002A5 RID: 677
+			internal static readonly int _TempRT = Shader.PropertyToID("_TempRT");
+		}
+
+		// Token: 0x02000077 RID: 119
+		private enum OcclusionSource
+		{
+			// Token: 0x040002A7 RID: 679
+			DepthTexture,
+			// Token: 0x040002A8 RID: 680
+			DepthNormalsTexture,
+			// Token: 0x040002A9 RID: 681
+			GBuffer
+		}
+	}
+}

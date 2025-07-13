@@ -1,104 +1,162 @@
 ﻿using HarmonyLib;
 using MelonLoader;
-using ScheduleOne.Persistence;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Save;
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+using System.Reflection;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0.Patches
 {
-    [HarmonyPatch(typeof(LoadManager), "StartGame")]
+    /// <summary>
+    /// Harmony patch for LoadManager.StartGame to capture load operations and initialize save path.
+    /// 
+    /// ⚠️ CRASH PREVENTION FOCUS: This patch ensures save path is properly captured during game loading
+    /// and triggers the load of mixer values when a save is loaded.
+    /// 
+    /// ⚠️ THREAD SAFETY: All operations are designed to be thread-safe and not block the main thread.
+    /// Error handling prevents patch failures from affecting game loading.
+    /// 
+    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses string.Format instead of string interpolation
+    /// - Compatible exception handling patterns
+    /// - Proper null checking
+    /// </summary>
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
-        public static void Postfix(LoadManager __instance, SaveInfo info, bool allowLoadStacking)
+        private static bool _patchInitialized = false;
+        private static MethodInfo _startGameMethod = null;
+
+        /// <summary>
+        /// Initialize the patch using IL2CPP-compatible type resolution
+        /// </summary>
+        public static void Initialize()
         {
-            if (info == null || string.IsNullOrEmpty(info.SavePath))
-                return;
-
-            string __savePath = info?.SavePath;
-
             try
             {
-                Main.logger.Msg(3, $"LoadManager_LoadedGameFolderPath_Patch: Postfix called with result: {__savePath ?? "null"}");
+                if (_patchInitialized) return;
 
-                if (!string.IsNullOrEmpty(__savePath))
+                // Get LoadManager type via reflection to avoid IL2CPP issues
+                var loadManagerType = IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Persistence.LoadManager");
+                if (loadManagerType == null)
                 {
-                    Main.CurrentSavePath = __savePath;
-
-                    string path = Utils.NormalizePath(Path.Combine(__savePath, "MixerThresholdSave.json"));
-                    
-                    int _mixerCount = 0;
-                    try
-                    {
-                        _mixerCount = TrackedMixers.Count(tm => tm != null);
-                    }
-                    catch (Exception countEx)
-                    {
-                        Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Error counting mixers: {countEx.Message}");
-                    }
-
-                    if (_mixerCount == 0)
-                    {
-                        // Use the same flag, so when one triggers it suppresses the other :)
-                        if (!MixerSaveManager._hasLoggedZeroMixers)
-                        {
-                            Main.logger.Msg(2, "No mixers tracked (maybe you have none?) — skipping mixer threshold prefs save/create.");
-                            Main.logger.Warn(1, "No mixers tracked (maybe you have none?) — suppressing future logs until reload save.");
-                            MixerSaveManager._hasLoggedZeroMixers = true;
-                        }
-                        return;
-                    }
-
-                    if (!string.IsNullOrEmpty(path) && !File.Exists(path))
-                    {
-                        try
-                        {
-                            Main.logger.Warn(1, "MixerThresholdSave.json missing on load — creating it now.");
-                            Utils.CoroutineHelper.RunCoroutine(SaveThresholdsCoroutine(__savePath));
-                        }
-                        catch (Exception coroutineEx)
-                        {
-                            Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Error starting save coroutine: {coroutineEx.Message}");
-                        }
-                    }
+                    Main.logger.Warn(1, "[PATCH] LoadManager type not found - patch will not be applied");
+                    return;
                 }
-                else
+
+                // Get SaveInfo type via reflection
+                var saveInfoType = IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Persistence.SaveInfo");
+                if (saveInfoType == null)
                 {
-                    Main.logger.Warn(1, "LoadedGameFolderPath is null or empty — cannot track save path.");
+                    Main.logger.Warn(1, "[PATCH] SaveInfo type not found - patch will not be applied");
+                    return;
+                }
+
+                _startGameMethod = loadManagerType.GetMethod("StartGame", new[] { saveInfoType, typeof(bool) });
+                if (_startGameMethod == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] LoadManager.StartGame method not found - patch will not be applied");
+                    return;
+                }
+
+                // Apply Harmony patch dynamically
+                var harmony = new Harmony("MixerThreholdMod.LoadManager_LoadedGameFolderPath_Patch");
+                var postfixMethod = typeof(LoadManager_LoadedGameFolderPath_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
+                
+                harmony.Patch(_startGameMethod, null, new HarmonyMethod(postfixMethod));
+                
+                Main.logger.Msg(1, "[PATCH] IL2CPP-compatible LoadManager.StartGame patch applied successfully");
+                _patchInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("[PATCH] Failed to initialize LoadManager_LoadedGameFolderPath_Patch: {0}", ex.Message));
+            }
+        }
+        /// <summary>
+        /// Postfix patch that runs after LoadManager.StartGame completes
+        /// IL2CPP COMPATIBLE: Uses dynamic types to avoid TypeLoadException
+        /// </summary>
+        public static void Postfix(object __instance, object info, bool allowLoadStacking)
+        {
+            Exception patchError = null;
+            try
+            {
+                if (info == null)
+                {
+                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: No save info");
+                    return;
+                }
+
+                // Use reflection to get SavePath property from SaveInfo object
+                var savePathProperty = info.GetType().GetProperty("SavePath");
+                if (savePathProperty == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] LoadManager postfix: SavePath property not found on SaveInfo");
+                    return;
+                }
+
+                var savePath = savePathProperty.GetValue(info, null) as string;
+                if (string.IsNullOrEmpty(savePath))
+                {
+                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: Save path is empty");
+                    return;
+                }
+
+                Main.logger.Msg(2, string.Format("[PATCH] LoadManager postfix: Game loading from {0}", savePath));
+
+                // Set current save path for the save system
+                Main.CurrentSavePath = NormalizePath(savePath);
+                
+                // Trigger load of mixer values when game loads
+                try
+                {
+                    MelonCoroutines.Start(Save.CrashResistantSaveManager.LoadMixerValuesWhenReady());
+                    Main.logger.Msg(2, "[PATCH] Load mixer values coroutine started");
+                }
+                catch (Exception loadEx)
+                {
+                    Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Load trigger failed: {0}", loadEx.Message));
+                    // Don't re-throw - let the game continue
                 }
             }
             catch (Exception ex)
             {
-                // catchall at patch level, where my DLL interacts with the game and it's engine
-                // hopefully should catch errors in entire project?
-                Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
-                Main.logger.Err($"LoadManager_LoadedGameFolderPath_Patch: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                patchError = ex;
+            }
+
+            if (patchError != null)
+            {
+                Main.logger.Err(string.Format("[PATCH] LoadManager_LoadedGameFolderPath_Patch CRASH PREVENTION: Patch error: {0}\nStackTrace: {1}", 
+                    patchError.Message, patchError.StackTrace));
+                // CRITICAL: Never let patch failures crash the game's load process
             }
         }
 
-        private static IEnumerator SaveThresholdsCoroutine(string savePath)
+        /// <summary>
+        /// Simple path normalization for .NET 4.8.1 compatibility
+        /// </summary>
+        private static string NormalizePath(string path)
         {
             try
             {
-                if (string.IsNullOrEmpty(savePath))
+                if (string.IsNullOrEmpty(path)) return string.Empty;
+                
+                string normalized = path.Replace('/', '\\').Trim();
+                if (normalized.EndsWith("\\") && normalized.Length > 1)
                 {
-                    Main.logger.Warn(1, "SaveThresholdsCoroutine: savePath is null or empty");
-                    yield break;
+                    normalized = normalized.TrimEnd('\\');
                 }
-                // This will run the async save logic safely
-                MixerSaveManager.SaveMixerThresholds(savePath);
+                return normalized;
             }
             catch (Exception ex)
             {
-                Main.logger.Err($"SaveThresholdsCoroutine: Error: {ex.Message}\n{ex.StackTrace}");
+                Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
+                return path;
             }
-            
-            yield return null; // Done
         }
     }
 }

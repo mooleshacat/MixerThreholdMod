@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MixerThreholdMod-0_0_1")]
+[assembly: AssemblyTitle("MixerThreholdMod-1_0_0")]
 [assembly: AssemblyDescription("Schedule 1 MixerThreholdMod")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MixerThreholdMod-0_0_1")]
-[assembly: AssemblyCopyright("Copyright ©  2025 mooleshacat")]
+[assembly: AssemblyProduct("MixerThreholdMod-1_0_0")]
+[assembly: AssemblyCopyright("Copyright ï¿½  2025 mooleshacat")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

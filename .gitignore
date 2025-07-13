@@ -8,3 +8,6 @@ obj\*
 /.vs/MixerThreholdMod-0_0_1.csproj.dtbcache.json
 /bin/x64/Debug
 /obj
+/bin
+!packages/**/*.dll
+!ForCopilot/*

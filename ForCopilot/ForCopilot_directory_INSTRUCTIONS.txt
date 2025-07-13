@@ -1,0 +1,38 @@
+Welcome to your personal data input folder!
+
+In here I will paste up to 3 types of files.
+
+- No longer will you delete anything in this directory, human will manually confirm changes
+and remove files no longer necessary.
+
+
+I have decompiled exported the ENTIRE Assembly-CSharp.dll library. It forced me to put it inside a project
+instead of a txt file. If you need it for reference, here it is. Only consult it if we need to work on patching
+correct methods.
+
+- DO NOT reference these files contents in the code base (except comments)
+- DO NOT UNDER ANY circumstances let this DLL or it's dnSpy decompile get into the master/development branches.
+- Human will check before making draft public (and remove the ForCopilot directory temporarily for merge)
+- Try your best to NOT leak the dnSpy directory in commits, source files, comments, PR's, etc.
+- Listing methods/signatures/variables/objects in the game which we have accessed (for reference, is legal and acceptable)
+- NOTE: ALL DLL FILES PROVIDED are legally licensed to the mod developer/gamer for purchasing the game on Steam.
+- NOTE: Schedule 1 / TVGS are 100% open to the modding community doing what we do. They are planning to make modding
+        framework eventually so we do not have to reverse engineer. It's just that is something you leave until it is
+        fully working. Game was released earlier this year. We will have framework soon :)
+
+=================================================================================================================
+
+Please note the filename prefixes and possibility for multiple files.
+
+- dnSpy full decompile entire assembly (inside folder: "Assembly-CSharp.dll\" there is solution / files/folders)
+- dnSpy file name "dnSpyFromHuman_IMPORTANT.txt" read!!! then search your dnspy solution :) (IF FILES EXIST!)
+- compileErrors: list of compile errors from last test. (filename prefix: compileErrors)
+- filname is only a date/timestamp: logging from mod (filename has no prefix, look for date/timestamp as filename, compare files in ForCopilot over each git commit on the current active PR you working on, shows in mod log)
+
+You should be able to compare files changed and diffs from the PR to figure out which logs are new/recent. Sometimes the first run will crash but second run loads, then crashes after delay. Hence 2 logs. I try to get as much for you as possible. 
+
+Not all files will exist all the time. If you need logs, ask for recent logs. If you need any other dnSpy code, ask human, and inform what patterns to look for.
+
+=================================================================================================================
+
+Keeping the contents of dnSpyFromHuman_IMPORTANT.txt and folder Assembly-CSharp.dll\ project (dnSpy data) in mind, please process users last comments and complete the task / instructions that were assigned to you.

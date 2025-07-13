@@ -1,66 +1,91 @@
 ﻿using ScheduleOne.Management;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HarmonyLib;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0.Core
 {
+    /// <summary>
+    /// Harmony patch for EntityConfiguration.Destroy to handle mixer cleanup.
+    /// Ensures proper cleanup when mixer entities are destroyed to prevent memory leaks.
+    /// 
+    /// ⚠️ CRASH PREVENTION FOCUS: This patch ensures cleanup operations don't crash
+    /// the game when entities are destroyed. All cleanup is done safely in background.
+    /// 
+    /// ⚠️ THREAD SAFETY: Cleanup operations are performed asynchronously to not block
+    /// the main thread during entity destruction.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses string.Format instead of string interpolation
+    /// - Compatible exception handling patterns
+    /// - Safe async cleanup patterns
+    /// </summary>
     [HarmonyPatch(typeof(EntityConfiguration), "Destroy")]
     public static class EntityConfiguration_Destroy_Patch
     {
+        /// <summary>
+        /// Prefix patch that runs before EntityConfiguration.Destroy
+        /// </summary>
         public static void Prefix(EntityConfiguration __instance)
         {
+            Exception patchError = null;
             try
             {
                 if (__instance == null)
                 {
-                    Main.logger.Warn(1, "EntityConfiguration_Destroy_Patch: __instance is null");
+                    Main.logger.Warn(2, "[PATCH] EntityConfiguration_Destroy_Patch: Instance is null");
                     return;
                 }
 
-                Main.logger.Msg(2, $"EntityConfiguration.Destroy() called for mixer");
+                Main.logger.Msg(3, "[PATCH] EntityConfiguration.Destroy() called - checking for mixer cleanup");
 
-                // Use fire-and-forget async to avoid blocking the game thread
-                Task.Run(async () =>
+                // Check if this is a mixer configuration that needs cleanup
+                var mixerConfig = __instance as MixingStationConfiguration;
+                if (mixerConfig != null)
                 {
-                    try
+                    // Safe cleanup using background task to not block destruction
+                    System.Threading.Tasks.Task.Run(async () =>
                     {
-                        // Get a snapshot of tracked mixers
-                        var trackedMixers = await TrackedMixers.ToListAsync().ConfigureAwait(false);
-                        if (trackedMixers == null)
+                        Exception cleanupError = null;
+                        try
                         {
-                            Main.logger.Warn(1, "EntityConfiguration_Destroy_Patch: trackedMixers is null");
-                            return;
+                            // Remove from tracked mixers safely
+                            bool removed = await TrackedMixers.RemoveAsync(mixerConfig);
+                            if (removed)
+                            {
+                                Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");
+                            }
+
+                            // Remove from ID manager
+                            bool idRemoved = Core.MixerIDManager.RemoveMixerID(mixerConfig);
+                            if (idRemoved)
+                            {
+                                Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from ID manager");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            cleanupError = ex;
                         }
 
-                        // Find if this instance is tracked
-                        var mixerData = trackedMixers.FirstOrDefault(tm => tm != null && tm.ConfigInstance == __instance);
-                        if (mixerData != null)
+                        if (cleanupError != null)
                         {
-                            // Remove from shared tracked list
-                            await TrackedMixers.RemoveAsync(mixerData.ConfigInstance).ConfigureAwait(false);
-                            Main.logger.Msg(2, $"Removed mixer {mixerData.MixerInstanceID} from tracked list (via EntityConfiguration.Destroy)");
+                            Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Cleanup error: {0}", cleanupError.Message));
+                            // Don't re-throw - let cleanup fail gracefully
                         }
-                        else
-                        {
-                            Main.logger.Msg(3, "EntityConfiguration_Destroy_Patch: No matching mixer found in tracked list");
-                        }
-                    }
-                    catch (Exception asyncEx)
-                    {
-                        Main.logger.Err($"EntityConfiguration_Destroy_Patch: Error in async cleanup: {asyncEx.Message}\n{asyncEx.StackTrace}");
-                    }
-                });
+                    });
+                }
             }
             catch (Exception ex)
             {
-                // catchall at patch level, where my DLL interacts with the game and it's engine
-                // hopefully should catch errors in entire project?
-                Main.logger.Err($"EntityConfiguration_Destroy_Patch: Failed during mixer cleanup");
-                Main.logger.Err($"EntityConfiguration_Destroy_Patch: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                patchError = ex;
+            }
+
+            if (patchError != null)
+            {
+                Main.logger.Err(string.Format("[PATCH] EntityConfiguration_Destroy_Patch CRASH PREVENTION: Patch error: {0}\nStackTrace: {1}", 
+                    patchError.Message, patchError.StackTrace));
+                // CRITICAL: Never let patch failures crash entity destruction
             }
         }
     }
