@@ -63,7 +63,7 @@ namespace MixerThreholdMod_0_0_1.Patches
                 }
 
                 // Apply Harmony patch dynamically
-                var harmony = new Harmony("MixerThreholdMod.LoadManager_LoadedGameFolderPath_Patch");
+                var harmony = new HarmonyLib.Harmony("MixerThreholdMod.LoadManager_LoadedGameFolderPath_Patch");
                 var postfixMethod = typeof(LoadManager_LoadedGameFolderPath_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
                 
                 harmony.Patch(_startGameMethod, null, new HarmonyMethod(postfixMethod));
