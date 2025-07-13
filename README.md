@@ -7,7 +7,8 @@ A comprehensive mod for **Schedule 1** that enhances the mixer system with crash
 - [Critical Features](#critical-features-🚀)
 - [Installation](#installation-📥)
 - [Console Commands](#console-commands-🎮)
-- [Troubleshooting](#troubleshooting-🛠️) **⚠️ IMPORTANT**
+- [Known Issues](#known-issues-⚠️) **⚠️ IMPORTANT** 
+- [Troubleshooting](#troubleshooting-🛠️)
 - [Technical Implementation](#technical-implementation-⚙️)
 - [Development & Contributions](#development--contributions-👥)
 - [Reporting Issues](#reporting-issues-🐛)
@@ -67,30 +68,52 @@ mixer_emergency                 # Immediate save without cooldown checks
 
 ##### `saveprefstress <count> [delay] [bypass]`
 Stress test mixer preferences saves:
+
+**Parameters:**
+- `count` - Number of save iterations (required, positive integer)
+- `delay` - Delay between saves in seconds (optional, default: 0)
+- `bypass` - Cooldown behavior (optional, default: true)
+  - `true` (bypass) - Ignores game's 2-second save cooldown for rapid testing
+  - `false` (respect cooldown) - Waits for game's natural save cooldown, safer for production
+
 ```
-saveprefstress 10               # 10 saves, no delay, bypass=true
+saveprefstress 10               # 10 saves, no delay, bypass=true (rapid testing)
 saveprefstress 5 2.0            # 5 saves, 2s delay, bypass=true
-saveprefstress 20 false         # 20 saves, no delay, bypass=false
-saveprefstress 10 0.1 false     # 10 saves, 0.1s delay, bypass=false
-saveprefstress 5 true 2.0       # 5 saves, 2s delay, bypass=true
+saveprefstress 20 false         # 20 saves, no delay, respect cooldown (safer)
+saveprefstress 10 0.1 false     # 10 saves, 0.1s delay, respect cooldown
 ```
 
 ##### `savegamestress <count> [delay] [bypass]`
 Stress test game saves (calls SaveManager directly):
+
+**Parameters:**
+- `count` - Number of save iterations (required, positive integer) 
+- `delay` - Delay between saves in seconds (optional, default: 0)
+- `bypass` - Cooldown behavior (optional, default: true)
+  - `true` (bypass) - Ignores game's 2-second save cooldown for rapid testing
+  - `false` (respect cooldown) - Waits for game's natural save cooldown, safer for production
+
 ```
-savegamestress 10               # 10 saves, no delay, bypass=true
+savegamestress 10               # 10 saves, no delay, bypass=true (rapid testing)
 savegamestress 5 3.0            # 5 saves, 3s delay, bypass=true
-savegamestress 3 false          # 3 saves, no delay, bypass=false
-savegamestress 5 2.0 false      # 5 saves, 2s delay, bypass=false
-savegamestress 3 true 5.0       # 3 saves, 5s delay, bypass=true
+savegamestress 3 false          # 3 saves, no delay, respect cooldown (safer)
+savegamestress 5 2.0 false      # 5 saves, 2s delay, respect cooldown
 ```
 
 ##### `savemonitor <count> [delay] [bypass]`
 Comprehensive save monitoring with multi-method validation:
+
+**Parameters:**
+- `count` - Number of save iterations (required, positive integer)
+- `delay` - Delay between saves in seconds (optional, default: 0)
+- `bypass` - Cooldown behavior (optional, default: true)
+  - `true` (bypass) - Ignores game's 2-second save cooldown for rapid testing
+  - `false` (respect cooldown) - Waits for game's natural save cooldown, safer for production
+
 ```
-savemonitor 5                   # 5 saves, no delay, bypass=true
+savemonitor 5                   # 5 saves, no delay, bypass=true (rapid testing)
 savemonitor 3 2.0               # 3 saves, 2s delay, bypass=true  
-savemonitor 10 false            # 10 saves, no delay, respect cooldown
+savemonitor 10 false            # 10 saves, no delay, respect cooldown (safer)
 savemonitor 5 1.5 false         # 5 saves, 1.5s delay, respect cooldown
 ```
 
@@ -237,7 +260,7 @@ C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\Mixer
 - **Target**: .NET Framework 4.8.1
 - **Conflicts**: Compatible with most mods (extensive defensive programming)
 
-## Troubleshooting 🛠️
+## Known Issues ⚠️
 
 ### ⚠️ **Critical MelonLoader Window Warning** ⚠️
 
@@ -247,6 +270,8 @@ C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\Mixer
 - **To resume**: Press `Space` or `Enter` key, but damage may already be done
 - **Safe inspection**: Use `Alt + Tab` to switch between windows - do not click inside the MelonLoader window
 - **Log review**: Review logs after closing the game to avoid interruption
+
+## Troubleshooting 🛠️
 
 ### Common Issues
 

@@ -1034,8 +1034,8 @@ namespace MixerThreholdMod_1_0_0.Save
                     // Call game's save system using reflection to avoid namespace issues
                     try
                     {
-                        // Find SaveManager using reflection
-                        var saveManagerType = System.Type.GetType("ScheduleOne.Management.SaveManager, Assembly-CSharp");
+                        // Find SaveManager using reflection - dnSpy verified namespace: ScheduleOne.Persistence.SaveManager
+                        var saveManagerType = System.Type.GetType("ScheduleOne.Persistence.SaveManager, Assembly-CSharp");
                         if (saveManagerType != null)
                         {
                             // Find Singleton<SaveManager>.Instance using reflection
