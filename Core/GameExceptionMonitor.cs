@@ -40,6 +40,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(2, "[BRIDGE] Initializing GameLoggerBridge patches");
 
                     // Apply Harmony patches to intercept game logging
+<<<<<<< HEAD
                     var harmony = Main.Instance.HarmonyInstance;
 
 <<<<<<< HEAD
@@ -106,6 +107,10 @@ namespace MixerThreholdMod_1_0_0.Core
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     // dnSpy Verified: ScheduleOne.Console class and method signatures verified via comprehensive dnSpy analysis
+=======
+                    var harmony = Main.HarmonyInstance;
+
+>>>>>>> aa94715 (performance optimizations, cache manager)
                     // Patch ScheduleOne.Console.Log
                     var logMethod = AccessTools.Method(typeof(ScheduleOne.Console), "Log", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logMethod != null)
@@ -118,7 +123,10 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.Log method for patching");
                     }
 
+<<<<<<< HEAD
                     // dnSpy Verified: ScheduleOne.Console.LogWarning method signature verified
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
                     // Patch ScheduleOne.Console.LogWarning
                     var logWarningMethod = AccessTools.Method(typeof(ScheduleOne.Console), "LogWarning", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logWarningMethod != null)
@@ -131,7 +139,10 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.LogWarning method for patching");
                     }
 
+<<<<<<< HEAD
                     // dnSpy Verified: ScheduleOne.Console.LogError method signature verified  
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
                     // Patch ScheduleOne.Console.LogError
                     var logErrorMethod = AccessTools.Method(typeof(ScheduleOne.Console), "LogError", new Type[] { typeof(object), typeof(UnityEngine.Object) });
                     if (logErrorMethod != null)
@@ -143,9 +154,12 @@ namespace MixerThreholdMod_1_0_0.Core
                     {
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.LogError method for patching");
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
                     }
 
                     _isInitialized = true;
@@ -157,9 +171,12 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
 
                 if (initError != null)
                 {
@@ -167,9 +184,12 @@ namespace MixerThreholdMod_1_0_0.Core
                         initError.Message, initError.StackTrace));
                 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
             }
         }
 

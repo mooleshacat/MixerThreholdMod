@@ -1,13 +1,17 @@
 ﻿using MelonLoader;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
 using MelonLoader.Utils;
 using Newtonsoft.Json;
 using ScheduleOne.Management;
 using System;
 using System.Collections;
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 using MelonLoader.TinyJSON;
@@ -23,18 +27,24 @@ using System.Collections.Concurrent;
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 namespace MixerThreholdMod_1_0_0.Utils
 =======
@@ -61,6 +71,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
 =======
 namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+namespace MixerThreholdMod_1_0_0.Helpers
+>>>>>>> aa94715 (performance optimizations, cache manager)
 {
     /// <summary>
     /// Comprehensive mixer save/load management system with crash prevention focus.
@@ -92,8 +105,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
     {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
         // Concurrency protection fields
         private static bool isBackupInProgress = false;
         private static readonly object backupLock = new object();
@@ -114,6 +130,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             Main.logger.Msg(3, string.Format("LoadMixerValuesWhenReady: Save path available: {0}", Main.CurrentSavePath));
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
         private static CancellationTokenSource saveCts = new CancellationTokenSource();
@@ -205,6 +222,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
             // Perform loading on background thread to avoid blocking main thread
             bool loadCompleted = false;
             Exception loadError = null;
@@ -438,8 +457,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         OnValueChanged(mixerID, currentValue);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
                     }
                     else
                     {
@@ -457,6 +479,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             Main.logger.Msg(3, string.Format("PollValueChanges: Started polling for Mixer {0}", mixerID));
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
@@ -514,6 +537,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
             float lastKnownValue = -1f;
             bool hasInitialValue = false;
 
@@ -527,14 +552,18 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     currentValue = GetCurrentValue(config.StartThrehold);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
                 }
                 catch (Exception ex)
                 {
                     pollError = ex;
                 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
@@ -574,6 +603,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
                 if (pollError == null && currentValue.HasValue)
                 {
                     if (!hasInitialValue)
@@ -924,14 +955,18 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 return false;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
             }
         }
 
         // Emergency save method for crash scenarios - NO coroutines here
         public static void EmergencySave()
         {
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
@@ -967,6 +1002,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
             try
             {
                 if (Main.savedMixerValues.Count == 0) return;
@@ -980,8 +1017,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 foreach (var kvp in Main.savedMixerValues)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
                 {
                     mixerValuesDict[kvp.Key] = kvp.Value;
                 }
@@ -1003,6 +1043,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger.Err(string.Format("Emergency save failed: {0}", ex.Message));
             }
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
@@ -1796,5 +1837,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> aa94715 (performance optimizations, cache manager)
     }
 }
