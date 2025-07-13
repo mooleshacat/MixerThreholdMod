@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.microsoft.com/packaging/2010/07/manifest" Target="/Lib.Harmony.nuspec" Id="R5DD46F89F437A049" />
+  <Relationship Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="/package/services/metadata/core-properties/e76b2aa11d824800afc9b19153e7dee8.psmdcp" Id="R4B30BDC4C8ED9E5C" />
+</Relationships>

@@ -3,8 +3,36 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
+<<<<<<< HEAD:Helpers/FileLockerHelper.cs
 namespace MixerThreholdMod_0_0_1
 {
+=======
+namespace MixerThreholdMod_1_0_0.Helpers
+{
+    /// <summary>
+    /// Thread-safe file locking helper for .NET 4.8.1 compatibility.
+    /// Provides exclusive and shared locking mechanisms to prevent file corruption.
+    /// 
+    /// ⚠️ THREAD SAFETY: This class is thread-safe and can be used across multiple threads.
+    /// All lock operations are atomic and protected against race conditions.
+    /// 
+    /// ⚠️ MAIN THREAD WARNING: Synchronous lock methods (AcquireSharedLock, AcquireExclusiveLock) 
+    /// use Thread.Sleep and blocking operations. Do NOT call from Unity's main thread as they 
+    /// can cause UI freezes and deadlocks. Use async alternatives when possible.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses compatible async/await patterns with ConfigureAwait(false)
+    /// - Proper timeout mechanisms instead of infinite blocking
+    /// - Compatible exception handling and resource disposal
+    /// - Thread-safe lock acquisition with retry logic
+    /// 
+    /// Locking Strategy:
+    /// - Exclusive locks: For write operations (FileShare.None)
+    /// - Shared locks: For read operations (FileShare.Read)
+    /// - Automatic cleanup and timeout protection
+    /// - Proper IDisposable implementation for resource cleanup
+    /// </summary>
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/SafeFileLockingSystem.cs
     public class FileLockHelper : IDisposable
     {
         private readonly string _lockFilePath;

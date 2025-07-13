@@ -5,7 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+<<<<<<< HEAD
 namespace MixerThreholdMod_0_0_1.Threading
+=======
+namespace MixerThreholdMod_1_0_0.Threading
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 {
     /// <summary>
     /// Thread-safe list implementation for .NET 4.8.1 compatibility.

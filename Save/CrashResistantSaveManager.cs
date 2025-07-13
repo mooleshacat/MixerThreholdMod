@@ -1,8 +1,12 @@
 using MelonLoader;
 using MelonLoader.Utils;
 using Newtonsoft.Json;
+<<<<<<< HEAD
 // IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
 // using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+=======
+using ScheduleOne.Management;
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -12,7 +16,11 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
+<<<<<<< HEAD
 namespace MixerThreholdMod_0_0_1.Save
+=======
+namespace MixerThreholdMod_1_0_0.Save
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 {
     /// <summary>
     /// Robust save management system focused on preventing crashes during save operations.
@@ -28,8 +36,11 @@ namespace MixerThreholdMod_0_0_1.Save
     /// ⚠️ MAIN THREAD WARNING: Synchronous methods should NOT be called from Unity's main
     /// thread as they can cause UI freezes. Use async alternatives when possible.
     /// 
+<<<<<<< HEAD
     /// ⚠️ IL2CPP COMPATIBLE: Uses object parameters and reflection for type safety.
     /// 
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// .NET 4.8.1 Compatibility:
     /// - Uses compatible async/await patterns
     /// - Proper exception handling for crash prevention
@@ -46,9 +57,13 @@ namespace MixerThreholdMod_0_0_1.Save
     {
         // Save state management
         private static bool isSaveInProgress = false;
+<<<<<<< HEAD
 #pragma warning disable CS0414 // Field assigned but never used: Thread-safe backup flag used in async operations
         private static volatile bool isBackupInProgress = false;
 #pragma warning restore CS0414
+=======
+        private static bool isBackupInProgress = false;
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         private static readonly object saveLock = new object();
         private static readonly object backupLock = new object();
         private static DateTime lastSaveTime = DateTime.MinValue;
@@ -138,9 +153,14 @@ namespace MixerThreholdMod_0_0_1.Save
         /// <summary>
         /// Attach value change listener to mixer configuration.
         /// ⚠️ CRASH PREVENTION: Multiple fallback strategies for event attachment.
+<<<<<<< HEAD
         /// ⚠️ IL2CPP COMPATIBLE: Uses object parameter and reflection for type safety.
         /// </summary>
         public static IEnumerator AttachListenerWhenReady(object config, int mixerID)
+=======
+        /// </summary>
+        public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         {
             Main.logger.Msg(3, string.Format("[SAVE] AttachListenerWhenReady: Starting for Mixer {0}", mixerID));
 
@@ -148,6 +168,7 @@ namespace MixerThreholdMod_0_0_1.Save
             float startTime = Time.time;
             const float ATTACH_TIMEOUT = 10f;
 
+<<<<<<< HEAD
             // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property
             object startThreshold = null;
             while (startThreshold == null && (Time.time - startTime) < ATTACH_TIMEOUT)
@@ -175,6 +196,14 @@ namespace MixerThreholdMod_0_0_1.Save
             }
 
             if (startThreshold == null)
+=======
+            while (config?.StartThrehold == null && (Time.time - startTime) < ATTACH_TIMEOUT)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            if (config?.StartThrehold == null)
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             {
                 Main.logger.Warn(1, string.Format("[SAVE] AttachListenerWhenReady: Timeout - StartThreshold not available for Mixer {0}", mixerID));
                 yield break;
@@ -186,6 +215,7 @@ namespace MixerThreholdMod_0_0_1.Save
 
             try
             {
+<<<<<<< HEAD
                 // Strategy 1: Direct event attachment (most reliable) - IL2CPP COMPATIBLE
                 var onItemChangedField = startThreshold.GetType().GetField("onItemChanged", BindingFlags.Public | BindingFlags.Instance);
                 if (onItemChangedField != null)
@@ -223,6 +253,22 @@ namespace MixerThreholdMod_0_0_1.Save
                 if (!eventAttached)
                 {
                     var numberFieldType = startThreshold.GetType();
+=======
+                // Strategy 1: Direct event attachment (most reliable)
+                if (config.StartThrehold.onItemChanged != null)
+                {
+                    config.StartThrehold.onItemChanged.AddListener((float val) =>
+                    {
+                        HandleValueChange(mixerID, val);
+                    });
+                    eventAttached = true;
+                    Main.logger.Msg(2, string.Format("[SAVE] AttachListenerWhenReady: Direct event attached for Mixer {0}", mixerID));
+                }
+                // Strategy 2: Reflection-based attachment (fallback)
+                else
+                {
+                    var numberFieldType = config.StartThrehold.GetType();
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     var eventNames = new[] { "OnValueChanged", "ValueChanged", "onValueChanged" };
 
                     foreach (var eventName in eventNames)
@@ -233,7 +279,11 @@ namespace MixerThreholdMod_0_0_1.Save
                             var handler = CreateEventHandler(eventInfo.EventHandlerType, mixerID);
                             if (handler != null)
                             {
+<<<<<<< HEAD
                                 eventInfo.AddEventHandler(startThreshold, handler);
+=======
+                                eventInfo.AddEventHandler(config.StartThrehold, handler);
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                                 eventAttached = true;
                                 Main.logger.Msg(2, string.Format("[SAVE] AttachListenerWhenReady: Reflection event {0} attached for Mixer {1}", eventName, mixerID));
                                 break;
@@ -530,6 +580,7 @@ namespace MixerThreholdMod_0_0_1.Save
                 Main.logger.Warn(1, "[SAVE] PerformCrashResistantSave: No save path available");
                 yield break;
             }
+<<<<<<< HEAD
             
             if (Main.savedMixerValues.Count == 0)
             {
@@ -552,6 +603,15 @@ namespace MixerThreholdMod_0_0_1.Save
                     Main.logger.Warn(1, "[SAVE] DIAGNOSIS: Mixers are tracked but no values captured - event attachment may have failed");
                 }
                 
+=======
+
+            if (Main.savedMixerValues.Count == 0)
+            {
+                // Provide detailed diagnostics using timeout-safe approaches
+                Main.logger.Warn(1, "[SAVE] PerformCrashResistantSave: No mixer data to save. Gathering diagnostics...");
+
+                yield return GatherDetailedDiagnostics();
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 yield break;
             }
 
@@ -789,6 +849,7 @@ namespace MixerThreholdMod_0_0_1.Save
             int trackedMixersCount = 0;
             int queuedInstancesCount = 0;
 
+<<<<<<< HEAD
             try
             {
                 // Basic counts
@@ -805,6 +866,26 @@ namespace MixerThreholdMod_0_0_1.Save
                 if (countTask.IsCompleted && !countTask.IsFaulted)
                 {
                     trackedMixersCount = countTask.Result;
+=======
+            // Get basic counts safely
+            queuedInstancesCount = Main.queuedInstances.Count;
+
+            // Try to get tracked mixers count with timeout protection - outside try/catch
+            var countTask = Core.TrackedMixers.CountAsync(tm => tm != null);
+            float startTime = Time.time;
+            while (!countTask.IsCompleted && (Time.time - startTime) < 2f)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            // Process the result in try/catch
+            try
+            {
+                if (countTask.IsCompleted && !countTask.IsFaulted)
+                {
+                    trackedMixersCount = countTask.Result;
+                    Main.logger.Msg(3, "[SAVE] DIAGNOSIS: Successfully retrieved TrackedMixers count");
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
                 else
                 {
@@ -820,7 +901,11 @@ namespace MixerThreholdMod_0_0_1.Save
                 Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? "[null]"));
                 Main.logger.Warn(1, string.Format("[SAVE] - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
                 Main.logger.Warn(1, string.Format("[SAVE] - Load coroutine started: {0}", Main.LoadCoroutineStarted));
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 // Analysis based on results
                 if (trackedMixersCount == 0 && queuedInstancesCount == 0)
                 {
@@ -859,9 +944,374 @@ namespace MixerThreholdMod_0_0_1.Save
 
             if (diagError != null)
             {
+<<<<<<< HEAD
                 Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
                     diagError.Message, diagError.StackTrace));
             }
         }
+=======
+                Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}",
+                    diagError.Message, diagError.StackTrace));
+            }
+        }
+
+        /// <summary>
+        /// Stress test mixer preferences save operations for crash prevention validation
+        /// ⚠️ CRASH PREVENTION: This method can optionally bypass cooldowns for testing mixer pref saves
+        /// Thread-safe operation with comprehensive error tracking and recovery
+        /// </summary>
+        /// <param name="iterations">Number of mixer preferences save operations to perform</param>
+        /// <param name="delaySeconds">Delay between operations in seconds (supports decimals for milliseconds)</param>
+        /// <param name="bypassCooldown">Whether to bypass the 2-second save cooldown (default: true)</param>
+        public static IEnumerator StressSaveTest(int iterations, float delaySeconds = 0f, bool bypassCooldown = true)
+        {
+            if (iterations <= 0)
+            {
+                Main.logger.Warn(1, "[SAVE] StressSaveTest: Invalid iteration count, must be > 0");
+                yield break;
+            }
+
+            if (delaySeconds < 0f)
+            {
+                Main.logger.Warn(1, "[SAVE] StressSaveTest: Invalid delay, using 0 seconds");
+                delaySeconds = 0f;
+            }
+
+            Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFERENCES StressSaveTest: Starting stress test - {0} iterations with {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
+
+            // Track stress test statistics
+            int successCount = 0;
+            int failureCount = 0;
+            int skippedCount = 0;
+            float totalTime = 0f;
+            var startTime = Time.time;
+
+            // Store original cooldown for restoration
+            var originalLastSaveTime = lastSaveTime;
+
+            try
+            {
+                for (int i = 1; i <= iterations; i++)
+                {
+                    var iterationStartTime = Time.time;
+                    bool iterationSkipped = false;
+
+                    // Handle setup and checks WITHOUT try-catch to avoid yield return issues
+                    Main.logger.Msg(2, string.Format("[SAVE] MIXER PREFS StressSaveTest: Iteration {0}/{1}", i, iterations));
+
+                    // Conditionally bypass cooldown for stress testing
+                    if (bypassCooldown)
+                    {
+                        lock (saveLock)
+                        {
+                            lastSaveTime = DateTime.MinValue;
+                        }
+                        Main.logger.Msg(3, string.Format("[SAVE] StressSaveTest: Bypassed cooldown for iteration {0}", i));
+                    }
+                    else
+                    {
+                        // Check if we need to skip due to cooldown
+                        if (DateTime.Now - lastSaveTime < SAVE_COOLDOWN)
+                        {
+                            Main.logger.Msg(3, string.Format("[SAVE] StressSaveTest: Iteration {0} skipped due to cooldown", i));
+                            iterationSkipped = true;
+                            skippedCount++;
+                        }
+                    }
+
+                    // Perform save operation OUTSIDE try-catch to avoid yield return restrictions
+                    if (!iterationSkipped)
+                    {
+                        Exception iterationError = null;
+
+                        // Execute the save operation OUTSIDE try-catch
+                        yield return PerformStressSaveIteration(i);
+
+                        // Handle results with try-catch AFTER yield return
+                        try
+                        {
+                            successCount++;
+
+                            var iterationTime = Time.time - iterationStartTime;
+                            Main.logger.Msg(3, string.Format("[SAVE] MIXER PREFS StressSaveTest: Iteration {0} completed in {1:F3}s", i, iterationTime));
+                        }
+                        catch (Exception ex)
+                        {
+                            iterationError = ex;
+                            failureCount++;
+                        }
+
+                        if (iterationError != null)
+                        {
+                            Main.logger.Err(string.Format("[SAVE] MIXER PREFS StressSaveTest: Iteration {0} FAILED: {1}", i, iterationError.Message));
+                        }
+                    }
+
+                    // Progress reporting every 10 iterations or on last iteration
+                    if (i % 10 == 0 || i == iterations)
+                    {
+                        float currentTime = Time.time - startTime;
+                        float avgTimePerSave = currentTime / i;
+                        Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Progress {0}/{1} - Success: {2}, Failed: {3}, Skipped: {4}, Avg: {5:F3}s/iteration",
+                            i, iterations, successCount, failureCount, skippedCount, avgTimePerSave));
+                    }
+
+                    // Apply delay between iterations if specified - OUTSIDE try-catch
+                    if (delaySeconds > 0f && i < iterations)
+                    {
+                        yield return new WaitForSeconds(delaySeconds);
+                    }
+
+                    // Yield every iteration to prevent frame drops - OUTSIDE try-catch
+                    yield return null;
+                }
+
+                totalTime = Time.time - startTime;
+
+                // Final statistics
+                Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ===== MIXER PREFERENCES STRESS TEST COMPLETED =====");
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Total iterations: {0}", iterations));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Successful saves: {0}", successCount));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Failed saves: {0}", failureCount));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Skipped saves (cooldown): {0}", skippedCount));
+
+                if ((iterations - skippedCount) > 0)
+                {
+                    Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Success rate: {0:F1}%", (successCount / (float)(iterations - skippedCount)) * 100f));
+                }
+
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Total time: {0:F3}s", totalTime));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Average time per iteration: {0:F3}s", totalTime / iterations));
+                Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Bypass cooldown: {0}", bypassCooldown));
+
+                if (delaySeconds > 0f)
+                {
+                    float actualSaveTime = totalTime - (delaySeconds * (iterations - 1));
+                    Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Actual save time (excluding delays): {0:F3}s", actualSaveTime));
+                    Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Average save time (excluding delays): {0:F3}s", actualSaveTime / iterations));
+                }
+
+                Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ==========================================");
+
+                // Performance warnings
+                if (failureCount > 0)
+                {
+                    Main.logger.Warn(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: ⚠️ {0} save operations failed - check logs for details", failureCount));
+                }
+
+                if (skippedCount > 0 && !bypassCooldown)
+                {
+                    Main.logger.Warn(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: ⚠️ {0} saves skipped due to cooldown - consider enabling bypass or increasing delay", skippedCount));
+                }
+
+                if (totalTime / iterations > 1.0f)
+                {
+                    Main.logger.Warn(1, "[SAVE] MIXER PREFS StressSaveTest: ⚠️ Average time per iteration > 1 second - performance issue detected");
+                }
+
+                if (successCount == iterations)
+                {
+                    Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ✅ All mixer preferences save operations completed successfully!");
+                }
+                else if (successCount + skippedCount == iterations)
+                {
+                    Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ✅ All attempted mixer preferences save operations completed successfully!");
+                }
+            }
+            finally
+            {
+                // Restore original cooldown state
+                lock (saveLock)
+                {
+                    lastSaveTime = originalLastSaveTime;
+                    isSaveInProgress = false; // Ensure save lock is released
+                }
+
+                Main.logger.Msg(2, "[SAVE] MIXER PREFS StressSaveTest: Stress test cleanup completed");
+            }
+        }
+
+        /// <summary>
+        /// Helper method to perform a single stress save iteration
+        /// Separated to avoid yield return in try-catch issues
+        /// </summary>
+        /// <param name="iterationNumber">Current iteration number for logging</param>
+        private static IEnumerator PerformStressSaveIteration(int iterationNumber)
+        {
+            Main.logger.Msg(3, string.Format("[SAVE] PerformStressSaveIteration: Starting iteration {0}", iterationNumber));
+
+            // Perform the mixer preferences save operation
+            yield return TriggerSaveWithCooldown();
+
+            Main.logger.Msg(3, string.Format("[SAVE] PerformStressSaveIteration: Completed iteration {0}", iterationNumber));
+        }
+
+        /// <summary>
+        /// Stress test game save operations by calling SaveManager directly
+        /// ⚠️ CRASH PREVENTION: This method calls the game's save system directly with comprehensive monitoring
+        /// Thread-safe operation with comprehensive error tracking and recovery
+        /// </summary>
+        /// <param name="iterations">Number of game save operations to perform</param>
+        /// <param name="delaySeconds">Delay between operations in seconds (supports decimals for milliseconds)</param>
+        /// <param name="bypassCooldown">Whether to bypass any game cooldowns (note: this may not affect game's internal cooldown)</param>
+        public static IEnumerator StressGameSaveTest(int iterations, float delaySeconds = 0f, bool bypassCooldown = true)
+        {
+            if (iterations <= 0)
+            {
+                Main.logger.Warn(1, "[SAVE] StressGameSaveTest: Invalid iteration count, must be > 0");
+                yield break;
+            }
+
+            if (delaySeconds < 0f)
+            {
+                Main.logger.Warn(1, "[SAVE] StressGameSaveTest: Invalid delay, using 0 seconds");
+                delaySeconds = 0f;
+            }
+
+            Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Starting stress test - {0} iterations with {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
+
+            // Track stress test statistics
+            int successCount = 0;
+            int failureCount = 0;
+            float totalTime = 0f;
+            var startTime = Time.time;
+
+            try
+            {
+                for (int i = 1; i <= iterations; i++)
+                {
+                    var iterationStartTime = Time.time;
+                    Exception saveError = null;
+
+                    Main.logger.Msg(2, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Iteration {0}/{1}", i, iterations));
+
+                    // Call game's save system using reflection to avoid namespace issues
+                    try
+                    {
+                        // Find SaveManager using reflection - dnSpy verified namespace: ScheduleOne.Persistence.SaveManager
+                        var saveManagerType = System.Type.GetType("ScheduleOne.Persistence.SaveManager, Assembly-CSharp");
+                        if (saveManagerType != null)
+                        {
+                            // Find Singleton<SaveManager>.Instance using reflection
+                            var singletonType = saveManagerType.Assembly.GetTypes()
+                                .FirstOrDefault(t => t.Name == "Singleton`1");
+
+                            if (singletonType != null)
+                            {
+                                var genericSingletonType = singletonType.MakeGenericType(saveManagerType);
+                                var instanceProperty = genericSingletonType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+
+                                if (instanceProperty != null)
+                                {
+                                    var saveManagerInstance = instanceProperty.GetValue(null, null);
+                                    if (saveManagerInstance != null)
+                                    {
+                                        var saveMethod = saveManagerType.GetMethod("Save", BindingFlags.Public | BindingFlags.Instance);
+                                        if (saveMethod != null)
+                                        {
+                                            saveMethod.Invoke(saveManagerInstance, null);
+                                            successCount++;
+
+                                            var iterationTime = Time.time - iterationStartTime;
+                                            Main.logger.Msg(3, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Iteration {0} completed in {1:F3}s", i, iterationTime));
+                                        }
+                                        else
+                                        {
+                                            Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: Save method not found on SaveManager for iteration {0}", i));
+                                            failureCount++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: SaveManager instance is null for iteration {0}", i));
+                                        failureCount++;
+                                    }
+                                }
+                                else
+                                {
+                                    Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: Instance property not found on Singleton for iteration {0}", i));
+                                    failureCount++;
+                                }
+                            }
+                            else
+                            {
+                                Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: Singleton type not found for iteration {0}", i));
+                                failureCount++;
+                            }
+                        }
+                        else
+                        {
+                            Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: SaveManager type not found for iteration {0}", i));
+                            failureCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        saveError = ex;
+                        failureCount++;
+                    }
+
+                    if (saveError != null)
+                    {
+                        Main.logger.Err(string.Format("[SAVE] GAME SAVE StressGameSaveTest: Iteration {0} FAILED: {1}\nStackTrace: {2}",
+                            i, saveError.Message, saveError.StackTrace));
+                    }
+
+                    // Progress reporting every 5 iterations or on last iteration (more frequent for game saves)
+                    if (i % 5 == 0 || i == iterations)
+                    {
+                        float currentTime = Time.time - startTime;
+                        float avgTimePerSave = currentTime / i;
+                        Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Progress {0}/{1} - Success: {2}, Failed: {3}, Avg: {4:F3}s/iteration",
+                            i, iterations, successCount, failureCount, avgTimePerSave));
+                    }
+
+                    // Apply delay between iterations if specified
+                    if (delaySeconds > 0f && i < iterations)
+                    {
+                        yield return new WaitForSeconds(delaySeconds);
+                    }
+
+                    // Yield every iteration to prevent frame drops
+                    yield return null;
+                }
+
+                totalTime = Time.time - startTime;
+
+                // Final statistics
+                Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ===== GAME SAVE STRESS TEST COMPLETED =====");
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Total iterations: {0}", iterations));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Successful saves: {0}", successCount));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Failed saves: {0}", failureCount));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Success rate: {0:F1}%", (successCount / (float)iterations) * 100f));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Total time: {0:F3}s", totalTime));
+                Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Average time per iteration: {0:F3}s", totalTime / iterations));
+
+                if (delaySeconds > 0f)
+                {
+                    float actualSaveTime = totalTime - (delaySeconds * (iterations - 1));
+                    Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Actual save time (excluding delays): {0:F3}s", actualSaveTime));
+                    Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Average save time (excluding delays): {0:F3}s", actualSaveTime / iterations));
+                }
+
+                Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ==========================================");
+
+                // Performance warnings
+                if (failureCount > 0)
+                {
+                    Main.logger.Warn(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: ⚠️ {0} save operations failed - check logs for details", failureCount));
+                }
+
+                if (successCount == iterations)
+                {
+                    Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ✅ All game save operations completed successfully!");
+                }
+            }
+            finally
+            {
+                Main.logger.Msg(2, "[SAVE] GAME SAVE StressGameSaveTest: Stress test cleanup completed");
+            }
+        }
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     }
 }
