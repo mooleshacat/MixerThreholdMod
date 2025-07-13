@@ -2,7 +2,7 @@
 
 ## Core Development Rules (Limit: 6)
 
-1. **🎯 .NET 4.8.1 Compatibility**: Always use .NET 4.8.1 compatible syntax. Use `string.Format()` instead of string interpolation, explicit type declarations, and `default(CancellationToken)` instead of `default`. Never use yield return in try/catch blocks.
+1. **🎯 .NET 4.8.1 Compatibility**: Always use IL2CPP compatible & .NET 4.8.1 compatible syntax. Use `string.Format()` instead of string interpolation, explicit type declarations, and `default(CancellationToken)` instead of `default`. Never use yield return in try/catch blocks.
 
 2. **🛡️ Thread Safety First**: All operations must be thread-safe. Never block Unity's main thread with synchronous file I/O or Thread.Sleep. Use async/await patterns with `ConfigureAwait(false)` and proper cancellation tokens.
 
