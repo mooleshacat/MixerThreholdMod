@@ -1,12 +1,12 @@
-﻿using ScheduleOne.Management;
+﻿using HarmonyLib;
 using System;
 using System.Linq;
-using HarmonyLib;
+using System.Reflection;
 
-namespace MixerThreholdMod_1_0_0.Core
+namespace MixerThreholdMod_1_0_0.Patches
 {
     /// <summary>
-    /// Harmony patch for EntityConfiguration.Destroy to handle mixer cleanup.
+    /// IL2CPP COMPATIBLE: Harmony patch for EntityConfiguration.Destroy to handle mixer cleanup.
     /// Ensures proper cleanup when mixer entities are destroyed to prevent memory leaks.
     /// 
     /// ⚠️ CRASH PREVENTION FOCUS: This patch ensures cleanup operations don't crash
@@ -15,33 +15,79 @@ namespace MixerThreholdMod_1_0_0.Core
     /// ⚠️ THREAD SAFETY: Cleanup operations are performed asynchronously to not block
     /// the main thread during entity destruction.
     /// 
+    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
+    /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses string.Format instead of string interpolation
     /// - Compatible exception handling patterns
     /// - Safe async cleanup patterns
     /// </summary>
-    [HarmonyPatch(typeof(EntityConfiguration), "Destroy")]
     public static class EntityConfiguration_Destroy_Patch
     {
+        private static bool _patchInitialized = false;
+        private static MethodInfo _destroyMethod = null;
+
+        /// <summary>
+        /// Initialize the patch using IL2CPP-compatible type resolution
+        /// </summary>
+        public static void Initialize()
+        {
+            try
+            {
+                if (_patchInitialized) return;
+
+                // Get EntityConfiguration type via reflection to avoid IL2CPP issues
+                var entityConfigType = MixerThreholdMod_1_0_0.Core.IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Management.EntityConfiguration");
+                if (entityConfigType == null)
+                {
+                    MixerThreholdMod_1_0_0.Main.logger.Warn(1, "[PATCH] EntityConfiguration type not found - patch will not be applied");
+                    return;
+                }
+
+                _destroyMethod = entityConfigType.GetMethod("Destroy", BindingFlags.Public | BindingFlags.Instance);
+                if (_destroyMethod == null)
+                {
+                    MixerThreholdMod_1_0_0.Main.logger.Warn(1, "[PATCH] EntityConfiguration.Destroy method not found - patch will not be applied");
+                    return;
+                }
+
+                // Apply Harmony patch dynamically
+                var harmony = new HarmonyLib.Harmony("MixerThreholdMod.EntityConfiguration_Destroy_Patch");
+                var prefixMethod = typeof(EntityConfiguration_Destroy_Patch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public);
+
+                harmony.Patch(_destroyMethod, new HarmonyMethod(prefixMethod), null);
+
+                MixerThreholdMod_1_0_0.Main.logger.Msg(1, "[PATCH] IL2CPP-compatible EntityConfiguration.Destroy patch applied successfully");
+                _patchInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                MixerThreholdMod_1_0_0.Main.logger.Err(string.Format("[PATCH] Failed to initialize EntityConfiguration_Destroy_Patch: {0}", ex.Message));
+            }
+        }
+
         /// <summary>
         /// Prefix patch that runs before EntityConfiguration.Destroy
+        /// IL2CPP COMPATIBLE: Uses dynamic types to avoid TypeLoadException
         /// </summary>
-        public static void Prefix(EntityConfiguration __instance)
+        public static void Prefix(object __instance)
         {
             Exception patchError = null;
             try
             {
                 if (__instance == null)
                 {
-                    Main.logger.Warn(2, "[PATCH] EntityConfiguration_Destroy_Patch: Instance is null");
+                    MixerThreholdMod_1_0_0.Main.logger.Warn(2, "[PATCH] EntityConfiguration_Destroy_Patch: Instance is null");
                     return;
                 }
 
-                Main.logger.Msg(3, "[PATCH] EntityConfiguration.Destroy() called - checking for mixer cleanup");
+                MixerThreholdMod_1_0_0.Main.logger.Msg(3, "[PATCH] EntityConfiguration.Destroy() called - checking for mixer cleanup");
 
-                // Check if this is a mixer configuration that needs cleanup
-                var mixerConfig = __instance as MixingStationConfiguration;
-                if (mixerConfig != null)
+                // Check if this is a mixer configuration that needs cleanup using reflection
+                var instanceType = __instance.GetType();
+                var mixingStationConfigType = MixerThreholdMod_1_0_0.Core.IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Management.MixingStationConfiguration");
+
+                if (mixingStationConfigType != null && mixingStationConfigType.IsAssignableFrom(instanceType))
                 {
                     // Safe cleanup using background task to not block destruction
                     System.Threading.Tasks.Task.Run(async () =>
@@ -50,17 +96,17 @@ namespace MixerThreholdMod_1_0_0.Core
                         try
                         {
                             // Remove from tracked mixers safely
-                            bool removed = await TrackedMixers.RemoveAsync(mixerConfig);
+                            bool removed = await MixerThreholdMod_1_0_0.Core.MixerConfigurationTracker.RemoveAsync(__instance);
                             if (removed)
                             {
-                                Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");
+                                MixerThreholdMod_1_0_0.Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");
                             }
 
                             // Remove from ID manager
-                            bool idRemoved = Core.MixerIDManager.RemoveMixerID(mixerConfig);
+                            bool idRemoved = MixerThreholdMod_1_0_0.Core.MixerIDManager.RemoveMixerID(__instance);
                             if (idRemoved)
                             {
-                                Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from ID manager");
+                                MixerThreholdMod_1_0_0.Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from ID manager");
                             }
                         }
                         catch (Exception ex)
@@ -70,7 +116,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
                         if (cleanupError != null)
                         {
-                            Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Cleanup error: {0}", cleanupError.Message));
+                            MixerThreholdMod_1_0_0.Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Cleanup error: {0}", cleanupError.Message));
                             // Don't re-throw - let cleanup fail gracefully
                         }
                     });
@@ -83,7 +129,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
             if (patchError != null)
             {
-                Main.logger.Err(string.Format("[PATCH] EntityConfiguration_Destroy_Patch CRASH PREVENTION: Patch error: {0}\nStackTrace: {1}", 
+                MixerThreholdMod_1_0_0.Main.logger.Err(string.Format("[PATCH] EntityConfiguration_Destroy_Patch CRASH PREVENTION: Patch error: {0}\nStackTrace: {1}",
                     patchError.Message, patchError.StackTrace));
                 // CRITICAL: Never let patch failures crash entity destruction
             }
