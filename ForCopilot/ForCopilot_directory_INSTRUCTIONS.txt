@@ -7,7 +7,8 @@ and remove files no longer necessary.
 
 
 I have decompiled exported the ENTIRE Assembly-CSharp.dll library. It forced me to put it inside a project
-instead of a txt file. If you need it for reference, here it is.
+instead of a txt file. If you need it for reference, here it is. Only consult it if we need to work on patching
+correct methods.
 
 - DO NOT reference these files contents in the code base (except comments)
 - DO NOT UNDER ANY circumstances let this DLL or it's dnSpy decompile get into the master/development branches.
