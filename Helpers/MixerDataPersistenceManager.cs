@@ -1,5 +1,6 @@
 ﻿using MelonLoader;
 <<<<<<< HEAD
+<<<<<<< HEAD
 using MelonLoader.TinyJSON;
 using MelonLoader.Utils;
 using Newtonsoft.Json;
@@ -11,15 +12,21 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 using MelonLoader.Utils;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD:Helpers/MixerSaveManager.cs
 using System.Text;
@@ -41,13 +48,18 @@ namespace MixerThreholdMod_0_0_1
 namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 
 namespace MixerThreholdMod_1_0_0.Utils
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 {
     /// <summary>
     /// Comprehensive mixer save/load management system with crash prevention focus.
@@ -77,6 +89,7 @@ namespace MixerThreholdMod_1_0_0.Utils
     /// </summary>
     public static class MixerSaveManager
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
         private static CancellationTokenSource saveCts = new CancellationTokenSource();
         public static ConcurrentDictionary<int, float> SavedMixerValues = new ConcurrentDictionary<int, float>();
@@ -165,6 +178,8 @@ namespace MixerThreholdMod_1_0_0.Utils
                         Main.logger.Msg(3, $"Successfully attached listener for Mixer {uniqueID}");
 =======
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         // Concurrency protection fields
         private static bool isBackupInProgress = false;
         private static readonly object backupLock = new object();
@@ -186,7 +201,10 @@ namespace MixerThreholdMod_1_0_0.Utils
 
             Main.logger.Msg(3, string.Format("LoadMixerValuesWhenReady: Save path available: {0}", Main.CurrentSavePath));
 
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             // Perform loading on background thread to avoid blocking main thread
             bool loadCompleted = false;
             Exception loadError = null;
@@ -217,10 +235,14 @@ namespace MixerThreholdMod_1_0_0.Utils
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             Main.logger.Msg(3, "LoadMixerValuesWhenReady: Finished");
 =======
             Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "LoadMixerValuesWhenReady: Finished");
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "LoadMixerValuesWhenReady: Finished");
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         }
 
         private static async Task LoadMixerValuesFromFileAsync()
@@ -235,7 +257,11 @@ namespace MixerThreholdMod_1_0_0.Utils
 
                     string json = await ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 <<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
                     if (!string.IsNullOrEmpty(json))
                     {
@@ -279,7 +305,12 @@ namespace MixerThreholdMod_1_0_0.Utils
                     string json = await ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
 ========
 >>>>>>>> aa94715 (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+========
+>>>>>>>> 2bf7ffe (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                     if (!string.IsNullOrEmpty(json))
                     {
                         var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
@@ -315,10 +346,14 @@ namespace MixerThreholdMod_1_0_0.Utils
 
             // Wait until the StartThrehold is properly initialized - NO try-catch around yield
 <<<<<<< HEAD
+<<<<<<< HEAD
             while (config?.StartThrehold == null)
 =======
             while (!HasValidStartThreshold(config))
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+            while (!HasValidStartThreshold(config))
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             {
                 yield return new WaitForSeconds(0.1f);
             }
@@ -473,6 +508,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                         float currentValue = (float)valueProperty.GetValue(sender, null);
                         OnValueChanged(mixerID, currentValue);
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
                     }
                     else
@@ -530,6 +566,8 @@ namespace MixerThreholdMod_1_0_0.Utils
 
             while (config?.StartThrehold != null)
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                     }
                     else
                     {
@@ -552,7 +590,10 @@ namespace MixerThreholdMod_1_0_0.Utils
 
             // IL2CPP COMPATIBLE: Use helper method instead of direct property access
             while (HasValidStartThreshold(config))
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             {
                 Exception pollError = null;
                 float? currentValue = null;
@@ -560,6 +601,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                 try
                 {
                     currentValue = GetCurrentValue(config.StartThrehold);
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
                 }
@@ -596,13 +638,18 @@ namespace MixerThreholdMod_1_0_0.Utils
 >>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
 =======
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 }
                 catch (Exception ex)
                 {
                     pollError = ex;
                 }
 
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 if (pollError == null && currentValue.HasValue)
                 {
                     if (!hasInitialValue)
@@ -676,10 +723,14 @@ namespace MixerThreholdMod_1_0_0.Utils
             if (DateTime.Now - lastSaveTime < SAVE_COOLDOWN)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger.Msg(3, "SaveMixerValues: Skipping save due to cooldown period");
 =======
                 Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Skipping save due to cooldown period");
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Skipping save due to cooldown period");
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 yield break;
             }
 
@@ -698,27 +749,37 @@ namespace MixerThreholdMod_1_0_0.Utils
             if (!canProceed)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger.Warn(1, "SaveMixerValues: Already in progress, skipping duplicate call");
                 yield break;
             }
 
             Main.logger.Msg(3, "SaveMixerValues: Started");
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "SaveMixerValues: Already in progress, skipping duplicate call");
                 yield break;
             }
 
             Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Started");
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 
             // Pre-validate before any yield returns
             if (string.IsNullOrEmpty(Main.CurrentSavePath))
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger.Warn(1, "SaveMixerValues: CurrentSavePath is null/empty, cannot save");
 =======
                 Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "SaveMixerValues: CurrentSavePath is null/empty, cannot save");
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "SaveMixerValues: CurrentSavePath is null/empty, cannot save");
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 lock (saveLock)
                 {
                     isSaveInProgress = false;
@@ -729,10 +790,14 @@ namespace MixerThreholdMod_1_0_0.Utils
             if (Main.savedMixerValues.Count == 0)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger.Msg(3, "SaveMixerValues: No mixer values to save");
 =======
                 Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: No mixer values to save");
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: No mixer values to save");
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 lock (saveLock)
                 {
                     isSaveInProgress = false;
@@ -746,6 +811,7 @@ namespace MixerThreholdMod_1_0_0.Utils
             if (needsBackup)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger.Msg(3, "SaveMixerValues: Starting backup coroutine");
                 // NO try-catch around yield return for .NET 4.8.1
                 yield return MelonCoroutines.Start(BackupSaveFolder());
@@ -755,6 +821,8 @@ namespace MixerThreholdMod_1_0_0.Utils
             {
                 Main.logger.Msg(3, "SaveMixerValues: Skipping backup (recent backup exists)");
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Starting backup coroutine");
                 // NO try-catch around yield return for .NET 4.8.1
                 yield return MelonCoroutines.Start(BackupSaveFolder());
@@ -763,7 +831,10 @@ namespace MixerThreholdMod_1_0_0.Utils
             else
             {
                 Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Skipping backup (recent backup exists)");
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             }
 
             // Perform save on background thread
@@ -802,8 +873,11 @@ namespace MixerThreholdMod_1_0_0.Utils
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             Main.logger.Msg(3, "SaveMixerValues: Finished and cleanup completed");
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Finished and cleanup completed");
         }
 
@@ -830,10 +904,20 @@ namespace MixerThreholdMod_1_0_0.Utils
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
 
 <<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
+<<<<<<< HEAD
+=======
+<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
 ========
                 await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
 >>>>>>>> aa94715 (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
+<<<<<<< HEAD
+=======
+========
+                await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
+>>>>>>>> 2bf7ffe (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 
                 Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
 
@@ -843,6 +927,10 @@ namespace MixerThreholdMod_1_0_0.Utils
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
 <<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
+<<<<<<< HEAD
+=======
+<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                     await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
@@ -852,7 +940,10 @@ namespace MixerThreholdMod_1_0_0.Utils
                 Main.logger.Err(string.Format("SaveMixerValuesToFileAsync error: {0}", ex));
                 throw;
             }
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         }
 
         private static async Task SaveMixerValuesToFileAsync()
@@ -898,7 +989,10 @@ namespace MixerThreholdMod_1_0_0.Utils
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         private static async Task SaveMixerValuesToFileAsync()
         {
             try
@@ -932,6 +1026,11 @@ namespace MixerThreholdMod_1_0_0.Utils
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
 ========
 >>>>>>>> aa94715 (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
+<<<<<<< HEAD
+=======
+========
+>>>>>>>> 2bf7ffe (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                     await ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
@@ -943,7 +1042,10 @@ namespace MixerThreholdMod_1_0_0.Utils
             }
         }
 
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         public static IEnumerator BackupSaveFolder()
         {
             // Prevent multiple concurrent backup operations
@@ -960,27 +1062,37 @@ namespace MixerThreholdMod_1_0_0.Utils
             if (!canProceed)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger.Warn(1, "BackupSaveFolder: Already in progress, skipping duplicate call");
                 yield break;
             }
 
             Main.logger.Msg(3, "BackupSaveFolder: Started");
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "BackupSaveFolder: Already in progress, skipping duplicate call");
                 yield break;
             }
 
             Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "BackupSaveFolder: Started");
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 
             // Pre-validate before any yield returns
             if (string.IsNullOrEmpty(Main.CurrentSavePath))
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger.Warn(1, "BackupSaveFolder: CurrentSavePath is null/empty, cannot backup");
 =======
                 Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "BackupSaveFolder: CurrentSavePath is null/empty, cannot backup");
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "BackupSaveFolder: CurrentSavePath is null/empty, cannot backup");
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 lock (backupLock)
                 {
                     isBackupInProgress = false;
@@ -1093,6 +1205,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                 Main.logger.Warn(1, string.Format("ShouldCreateBackup: Error checking backup status: {0}", ex.Message));
                 return false;
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
             }
         }
@@ -1126,6 +1239,8 @@ namespace MixerThreholdMod_1_0_0.Utils
             try
             {
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             }
         }
 
@@ -1134,7 +1249,10 @@ namespace MixerThreholdMod_1_0_0.Utils
         {
             try
             {
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 if (Main.savedMixerValues.Count == 0) return;
 
                 string persistentPath = MelonEnvironment.UserDataDirectory;
@@ -1144,6 +1262,7 @@ namespace MixerThreholdMod_1_0_0.Utils
 
                 var mixerValuesDict = new Dictionary<int, float>();
                 foreach (var kvp in Main.savedMixerValues)
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
                 {
@@ -1933,6 +2052,8 @@ namespace MixerThreholdMod_1_0_0.Utils
         {
             public Dictionary<int, float> MixerValues = new Dictionary<int, float>();
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 {
                     mixerValuesDict[kvp.Key] = kvp.Value;
                 }
@@ -1953,7 +2074,10 @@ namespace MixerThreholdMod_1_0_0.Utils
             {
                 Main.logger.Err(string.Format("Emergency save failed: {0}", ex.Message));
             }
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         }
     }
 }

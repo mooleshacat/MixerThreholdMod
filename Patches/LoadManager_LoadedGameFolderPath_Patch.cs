@@ -102,9 +102,12 @@ namespace MixerThreholdMod_1_0_0.Patches
                     Main.logger.Warn(1, "[PATCH] LoadManager type not found - patch will not be applied");
                     return;
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 }
 
                 // Get SaveInfo type via reflection
