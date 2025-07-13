@@ -59,10 +59,9 @@ namespace MixerThreholdMod_0_0_1.Patches
                 }
 
                 // Apply Harmony patch dynamically
-                // FIX: Use correct HarmonyLib v2 syntax
-                var harmony = new HarmonyLib.Harmony("MixerThreholdMod.SaveManager_Save_Patch");
+                var harmony = new Harmony("MixerThreholdMod.SaveManager_Save_Patch");
                 var postfixMethod = typeof(SaveManager_Save_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
-
+                
                 harmony.Patch(_saveMethod, null, new HarmonyMethod(postfixMethod));
                 
                 Main.logger.Msg(1, "[PATCH] IL2CPP-compatible SaveManager.Save patch applied successfully");

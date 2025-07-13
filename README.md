@@ -32,6 +32,21 @@ A comprehensive mod for **Schedule 1** that enhances the mixer system with crash
 
 **⚠️ IMPORTANT**: IL2CPP builds require additional type loading time during mod initialization. This is normal and expected.
 
+## Build Environment Compatibility 🔄
+
+### MONO Build Support ✅
+- **Fully Compatible**: All features work perfectly in MONO builds
+- **Direct Type Loading**: Uses standard .NET reflection patterns
+- **Standard Performance**: Normal execution speed and memory usage
+
+### IL2CPP Build Support ✅
+- **Fully Compatible**: All features work in IL2CPP builds using dynamic type resolution
+- **Safe Type Loading**: Uses Assembly.GetType() to avoid TypeLoadException
+- **Graceful Degradation**: Mod continues to function even if some game types are not available
+- **Performance**: Minimal overhead from dynamic type resolution
+
+**⚠️ IMPORTANT**: IL2CPP builds require additional type loading time during mod initialization. This is normal and expected.
+
 ## Critical Features 🚀
 
 ### 🛡️ **Save Crash Prevention** (Primary Focus)
