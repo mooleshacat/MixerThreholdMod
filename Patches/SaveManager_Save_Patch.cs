@@ -3,11 +3,16 @@ using MelonLoader;
 using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Save;
 <<<<<<< HEAD
+<<<<<<< HEAD
 using ScheduleOne.Persistence;
 =======
 // IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 using System;
 using System.Collections;
 using System.IO;
@@ -353,6 +358,7 @@ namespace MixerThreholdMod_1_0_0.Patches
         private static IEnumerator CleanupOldBackups(string backupRoot, string saveRootPrefix)
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
             Main.logger.Msg(3, $"Starting backup cleanup process for: {backupRoot}");
 
             // Move cleanup logic to background task
@@ -362,6 +368,10 @@ namespace MixerThreholdMod_1_0_0.Patches
             Main.logger.Msg(3, string.Format("Starting backup cleanup process for: {0}", backupRoot));
                 // Trigger crash-resistant save immediately after game save
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+            Main.logger.Msg(3, string.Format("Starting backup cleanup process for: {0}", backupRoot));
+                // Trigger crash-resistant save immediately after game save
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 try
                 {
                     return GetBackupDirectoriesForCleanup(backupRoot, saveRootPrefix);
@@ -433,9 +443,12 @@ namespace MixerThreholdMod_1_0_0.Patches
                 }
             }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
             Main.logger.Msg(3, $"Backup cleanup completed. Deleted {deletionCount} old directories.");
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             Main.logger.Msg(3, string.Format("Backup cleanup completed. Deleted {0} old directories.", deletionCount));
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         }
@@ -504,6 +517,7 @@ namespace MixerThreholdMod_1_0_0.Patches
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         private class CleanupData
         {
             public bool Success { get; set; }
@@ -548,11 +562,16 @@ namespace MixerThreholdMod_1_0_0.Patches
 
         private static void CopyDirectory(string sourceDir, string targetDir)
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         /// <summary>
         /// Simple path normalization for .NET 4.8.1 compatibility
         /// </summary>
         private static string NormalizePath(string path)
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         {
             try
             {

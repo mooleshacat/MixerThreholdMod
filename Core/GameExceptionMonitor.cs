@@ -43,6 +43,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     var harmony = Main.Instance.HarmonyInstance;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                     // ✅ ULTRA-SAFE: Patch ScheduleOne.Console.Log with comprehensive null checking
                     try
                     {
@@ -102,6 +103,8 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Err(string.Format("[BRIDGE] Failed to patch Console.LogError: {0}", errorPatchEx.Message));
                         // Continue even if this patch fails
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     // dnSpy Verified: ScheduleOne.Console class and method signatures verified via comprehensive dnSpy analysis
                     // Patch ScheduleOne.Console.Log
                     var logMethod = AccessTools.Method(typeof(ScheduleOne.Console), "Log", new Type[] { typeof(object), typeof(UnityEngine.Object) });
@@ -139,7 +142,10 @@ namespace MixerThreholdMod_1_0_0.Core
                     else
                     {
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.LogError method for patching");
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     }
 
                     _isInitialized = true;
@@ -150,14 +156,20 @@ namespace MixerThreholdMod_1_0_0.Core
                     initError = ex;
                 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
                 if (initError != null)
                 {
                     Main.logger?.Err(string.Format("[BRIDGE] GameLoggerBridge initialization FAILED: {0}\nStackTrace: {1}",
                         initError.Message, initError.StackTrace));
                 }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
         }
 

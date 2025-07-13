@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 namespace MixerThreholdMod_0_0_1.Core
 {
     /// <summary>
@@ -21,6 +22,8 @@ namespace MixerThreholdMod_0_0_1.Core
     /// - Compatible exception handling patterns
     /// - Thread-safe collections and operations
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
@@ -43,7 +46,10 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Compatible exception handling patterns with comprehensive logging
     /// - Thread-safe collections and operations using framework-appropriate patterns
     /// - Proper resource cleanup and disposal patterns
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// </summary>
     public class TrackedMixer
     {
@@ -63,6 +69,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
     /// <summary>
 <<<<<<< HEAD
+<<<<<<< HEAD
     /// Thread-safe collection manager for TrackedMixer instances.
     /// Provides async operations for managing tracked mixers.
     /// 
@@ -74,6 +81,8 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Compatible with framework's async patterns
     /// - Proper exception handling and logging
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// IL2CPP COMPATIBLE: Thread-safe collection manager for TrackedMixer instances.
     /// Provides async operations for managing tracked mixers with AOT-safe patterns.
     /// 
@@ -93,7 +102,10 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Compatible with framework's async patterns and cancellation
     /// - Proper exception handling and logging throughout all operations
     /// - Memory-efficient collection operations with leak prevention
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// </summary>
     public static class MixerConfigurationTracker
     {
@@ -168,10 +180,14 @@ namespace MixerThreholdMod_1_0_0.Core
         /// Remove a specific tracked mixer by ConfigInstance asynchronously
         /// </summary>
 <<<<<<< HEAD
+<<<<<<< HEAD
         public static async Task<bool> RemoveAsync(MixingStationConfiguration configInstance)
 =======
         public static async Task<bool> RemoveAsync(object configInstance)
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+        public static async Task<bool> RemoveAsync(object configInstance)
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         {
             try
             {

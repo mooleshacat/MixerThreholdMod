@@ -1,5 +1,6 @@
 using MelonLoader;
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 namespace MixerThreholdMod_0_0_1.Core
 =======
@@ -7,6 +8,11 @@ using System;
 
 namespace MixerThreholdMod_1_0_0.Core
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+using System;
+
+namespace MixerThreholdMod_1_0_0.Core
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 {
     /// <summary>
     /// Centralized logging system with configurable verbosity levels.
@@ -16,13 +22,19 @@ namespace MixerThreholdMod_1_0_0.Core
     /// All methods are designed to prevent exceptions and provide fallback behavior.
     /// 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// ⚠️ MODIFICATION WARNING: This logging helper is critical for crash prevention and debugging.
     /// Be extremely careful when modifying this class as it provides fallback logging when other
     /// systems fail. Recent issues occurred when Copilot accidentally inverted the logging logic,
     /// causing no output. Always test logging functionality after modifications.
     /// 
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// .NET 4.8.1 Compatibility:
     /// - Uses string.Format instead of string interpolation
     /// - Compatible with framework's threading model
@@ -30,6 +42,7 @@ namespace MixerThreholdMod_1_0_0.Core
     /// </summary>
     public class Logger
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
         public bool IsDebugEnabled = true;
         public int CurrentMsgLogLevel = 3; // 1, 2, or 3
@@ -53,6 +66,8 @@ namespace MixerThreholdMod_1_0_0.Core
                 // Fallback logging - never let logging crash the mod
                 try { MelonLogger.Msg("[ERROR] Logging failure in Logger.Msg"); }
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 #if DEBUG
         public bool IsDebugEnabled = true; // disable for production builds (disables all logging except errors)
 #else
@@ -94,12 +109,16 @@ namespace MixerThreholdMod_1_0_0.Core
             catch (Exception ex)
             {
                 try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Msg exception while logging message: {0} Exception: {1}\nStack Trace: {2}", message ?? "null", ex.Message, ex.StackTrace)); }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }
 
         /// <summary>
+<<<<<<< HEAD
 <<<<<<< HEAD
         /// Warning (Warn) logging with level filtering
         /// </summary>
@@ -116,6 +135,8 @@ namespace MixerThreholdMod_1_0_0.Core
             {
                 try { MelonLogger.Warning("[ERROR] Logging failure in Logger.Warn"); }
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         /// Warning (Warn) logging with level filtering.
         /// Each call requires the log level of submitted warning to be specified (1 or 2).
         /// Only logs when debug mode is enabled and the warning level is within current thresholds.
@@ -145,12 +166,16 @@ namespace MixerThreholdMod_1_0_0.Core
                 // Fallback for caught exception (can we rely on custom logging here? It may be broken!)
                 // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
                 try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Warn exception while logging warning: {0} Exception: {1}\nStack Trace: {2}", warningMessage ?? "null", ex.Message, ex.StackTrace)); }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }
 
         /// <summary>
+<<<<<<< HEAD
 <<<<<<< HEAD
         /// Error logging (always active, highest priority)
         /// </summary>
@@ -165,6 +190,8 @@ namespace MixerThreholdMod_1_0_0.Core
                 // Last resort - try basic console output
                 try { System.Console.WriteLine("[CRITICAL] Logger.Err failed: " + (message ?? "null")); }
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         /// Error logging (always active, highest priority).
         /// Logs error messages regardless of debug mode or log level settings.
         /// </summary>
@@ -180,7 +207,10 @@ namespace MixerThreholdMod_1_0_0.Core
                 // Fallback for caught exception (can we rely on custom logging here? It may be broken!)
                 // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
                 try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Err exception while logging error: {0} Exception: {1}\nStack Trace: {2}", errorMessage ?? "null", ex.Message, ex.StackTrace)); }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }

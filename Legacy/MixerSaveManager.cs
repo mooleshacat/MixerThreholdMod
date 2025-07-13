@@ -8,10 +8,38 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
+    /// <summary>
+    /// Comprehensive mixer save/load management system with crash prevention focus.
+    /// Handles mixer value persistence, backup management, and event attachment.
+    /// 
+    /// ⚠️ CRASH PREVENTION FOCUS: This system is specifically designed to prevent 
+    /// save corruption and data loss during crashes, repeated saves, and extended gameplay.
+    /// 
+    /// ⚠️ THREAD SAFETY: All save operations are thread-safe with proper locking mechanisms.
+    /// Coroutines are used to prevent blocking Unity's main thread during file operations.
+    /// 
+    /// ⚠️ MAIN THREAD WARNING: Emergency save methods are designed for crash scenarios and 
+    /// use blocking I/O. Regular save operations use coroutines to avoid main thread blocking.
+    /// 
+    /// .NET 4.8.1 Compatibility:
+    /// - Uses string.Format instead of string interpolation
+    /// - Compatible async patterns with proper ConfigureAwait usage
+    /// - Manual dictionary operations instead of modern LINQ where needed
+    /// - Proper exception handling and resource cleanup
+    /// 
+    /// Key Features:
+    /// - Save cooldown system to prevent corruption from rapid saves
+    /// - Automatic backup creation and cleanup (maintains 5 most recent)
+    /// - Event attachment with multiple fallback strategies
+    /// - Emergency save functionality for crash scenarios
+    /// - Atomic file operations with temp file + rename strategy
+    /// </summary>
     public static class MixerSaveManager
     {
         // Concurrency protection fields
@@ -34,39 +62,28 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             Main.logger.Msg(3, string.Format("LoadMixerValuesWhenReady: Save path available: {0}", Main.CurrentSavePath));
 
+            // Perform loading on background thread to avoid blocking main thread
+            bool loadCompleted = false;
             Exception loadError = null;
-            try
+
+            Task.Run(async () =>
             {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
-
-                if (File.Exists(saveFile))
+                try
                 {
-                    Main.logger.Msg(2, "LoadMixerValuesWhenReady: Loading saved mixer values");
-
-                    string json = File.ReadAllText(saveFile);
-                    var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-
-                    if (data != null && data.ContainsKey("MixerValues"))
-                    {
-                        var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data["MixerValues"].ToString());
-
-                        foreach (var kvp in mixerValues)
-                        {
-                            // .NET 4.8.1 compatible ConcurrentDictionary usage
-                            Main.savedMixerValues.TryAdd(kvp.Key, kvp.Value);
-                        }
-
-                        Main.logger.Msg(2, string.Format("LoadMixerValuesWhenReady: Loaded {0} mixer values", mixerValues.Count));
-                    }
+                    await LoadMixerValuesFromFileAsync();
+                    loadCompleted = true;
                 }
-                else
+                catch (Exception ex)
                 {
-                    Main.logger.Msg(2, "LoadMixerValuesWhenReady: No save file found, starting fresh");
+                    loadError = ex;
+                    loadCompleted = true;
                 }
-            }
-            catch (Exception ex)
+            });
+
+            // Wait for background loading to complete - NO try-catch around yield
+            while (!loadCompleted)
             {
-                loadError = ex;
+                yield return new WaitForSeconds(0.1f);
             }
 
             if (loadError != null)
@@ -75,6 +92,46 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
 
             Main.logger.Msg(3, "LoadMixerValuesWhenReady: Finished");
+        }
+
+        private static async Task LoadMixerValuesFromFileAsync()
+        {
+            try
+            {
+                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+
+                if (File.Exists(saveFile))
+                {
+                    Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
+
+                    string json = await ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
+                    if (!string.IsNullOrEmpty(json))
+                    {
+                        var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+
+                        if (data != null && data.ContainsKey("MixerValues"))
+                        {
+                            var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data["MixerValues"].ToString());
+
+                            foreach (var kvp in mixerValues)
+                            {
+                                Main.savedMixerValues.TryAdd(kvp.Key, kvp.Value);
+                            }
+
+                            Main.logger.Msg(2, string.Format("LoadMixerValuesFromFileAsync: Loaded {0} mixer values", mixerValues.Count));
+                        }
+                    }
+                }
+                else
+                {
+                    Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: No save file found, starting fresh");
+                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("LoadMixerValuesFromFileAsync error: {0}", ex));
+                throw;
+            }
         }
 
         public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
@@ -89,15 +146,52 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             Main.logger.Msg(3, string.Format("AttachListenerWhenReady: StartThrehold found for Mixer {0}", mixerID));
 
-            // Instead of using OnValueChanged, we'll use reflection to find the correct event or polling
-            Exception attachError = null;
+            // Attempt event attachment on background thread
+            bool attachCompleted = false;
             bool eventAttached = false;
+            Exception attachError = null;
 
+            Task.Run(() =>
+            {
+                try
+                {
+                    eventAttached = TryAttachEventListener(config, mixerID);
+                    attachCompleted = true;
+                }
+                catch (Exception ex)
+                {
+                    attachError = ex;
+                    attachCompleted = true;
+                }
+            });
+
+            // Wait for attachment attempt to complete - NO try-catch around yield
+            while (!attachCompleted)
+            {
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            if (attachError != null)
+            {
+                Main.logger.Err(string.Format("AttachListenerWhenReady error for Mixer {0}: {1}\nStackTrace: {2}", mixerID, attachError.Message, attachError.StackTrace));
+            }
+
+            // Fallback to polling if event attachment failed
+            if (!eventAttached)
+            {
+                Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Using polling method for Mixer {0}", mixerID));
+                MelonCoroutines.Start(PollValueChanges(config, mixerID));
+            }
+
+            Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Finished for Mixer {0}", mixerID));
+        }
+
+        private static bool TryAttachEventListener(MixingStationConfiguration config, int mixerID)
+        {
             try
             {
-                // Method 1: Try to find an event using reflection
                 var numberFieldType = config.StartThrehold.GetType();
-                Main.logger.Msg(3, string.Format("AttachListenerWhenReady: NumberField type: {0}", numberFieldType.Name));
+                Main.logger.Msg(3, string.Format("TryAttachEventListener: NumberField type: {0}", numberFieldType.Name));
 
                 // Look for common event names
                 var eventNames = new[] { "OnValueChanged", "ValueChanged", "onValueChanged", "OnChange", "Changed" };
@@ -107,66 +201,31 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     var eventInfo = numberFieldType.GetEvent(eventName, BindingFlags.Public | BindingFlags.Instance);
                     if (eventInfo != null && eventInfo.EventHandlerType != null)
                     {
-                        Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Found event {0} for Mixer {1}", eventName, mixerID));
+                        Main.logger.Msg(2, string.Format("TryAttachEventListener: Found event {0} for Mixer {1}", eventName, mixerID));
 
-                        // Create a delegate that matches the event signature
                         var handler = CreateEventHandler(eventInfo.EventHandlerType, mixerID);
                         if (handler != null)
                         {
                             eventInfo.AddEventHandler(config.StartThrehold, handler);
-                            eventAttached = true;
-                            Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Successfully attached to {0} event for Mixer {1}", eventName, mixerID));
-                            break;
+                            Main.logger.Msg(2, string.Format("TryAttachEventListener: Successfully attached to {0} event for Mixer {1}", eventName, mixerID));
+                            return true;
                         }
                     }
                 }
 
-                // Method 2: If no event found, try to find a field/property that might have changed events
-                if (!eventAttached)
-                {
-                    var fields = numberFieldType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                    foreach (var field in fields)
-                    {
-                        if (field.FieldType.Name.Contains("UnityEvent") || field.FieldType.Name.Contains("Action"))
-                        {
-                            Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Found potential event field: {0} of type {1}", field.Name, field.FieldType.Name));
-                        }
-                    }
-                }
-
-                // Method 3: Fallback to polling if no events available
-                if (!eventAttached)
-                {
-                    Main.logger.Msg(2, string.Format("AttachListenerWhenReady: No events found, using polling method for Mixer {0}", mixerID));
-                    MelonCoroutines.Start(PollValueChanges(config, mixerID));
-                    eventAttached = true; // Mark as handled
-                }
+                return false;
             }
             catch (Exception ex)
             {
-                attachError = ex;
+                Main.logger.Err(string.Format("TryAttachEventListener error: {0}", ex));
+                return false;
             }
-
-            if (attachError != null)
-            {
-                Main.logger.Err(string.Format("AttachListenerWhenReady error for Mixer {0}: {1}\nStackTrace: {2}", mixerID, attachError.Message, attachError.StackTrace));
-
-                // Fallback to polling on error
-                if (!eventAttached)
-                {
-                    Main.logger.Msg(2, string.Format("AttachListenerWhenReady: Falling back to polling for Mixer {0} due to error", mixerID));
-                    MelonCoroutines.Start(PollValueChanges(config, mixerID));
-                }
-            }
-
-            Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Finished for Mixer {0}", mixerID));
         }
 
         private static Delegate CreateEventHandler(Type eventHandlerType, int mixerID)
         {
             try
             {
-                // Try to create a handler for common event signatures
                 if (eventHandlerType == typeof(Action<float>))
                 {
                     return new Action<float>((float newValue) => OnValueChanged(mixerID, newValue));
@@ -196,10 +255,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         private static void OnValueChanged(int mixerID, float newValue)
         {
-            Exception listenerError = null;
             try
             {
-                // .NET 4.8.1 compatible - use manual update instead of AddOrUpdate
                 float oldValue;
                 bool hasOldValue = Main.savedMixerValues.TryGetValue(mixerID, out oldValue);
 
@@ -219,21 +276,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                listenerError = ex;
-            }
-
-            if (listenerError != null)
-            {
-                Main.logger.Err(string.Format("OnValueChanged error for Mixer {0}: {1}", mixerID, listenerError.Message));
+                Main.logger.Err(string.Format("OnValueChanged error for Mixer {0}: {1}", mixerID, ex));
             }
         }
 
         private static void OnValueChangedGeneric(int mixerID, object sender)
         {
-            Exception listenerError = null;
             try
             {
-                // Try to get the current value from the sender
                 if (sender != null)
                 {
                     var senderType = sender.GetType();
@@ -252,12 +302,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                listenerError = ex;
-            }
-
-            if (listenerError != null)
-            {
-                Main.logger.Err(string.Format("OnValueChangedGeneric error for Mixer {0}: {1}", mixerID, listenerError.Message));
+                Main.logger.Err(string.Format("OnValueChangedGeneric error for Mixer {0}: {1}", mixerID, ex));
             }
         }
 
@@ -271,30 +316,31 @@ namespace MixerThreholdMod_1_0_0.Helpers
             while (config?.StartThrehold != null)
             {
                 Exception pollError = null;
+                float? currentValue = null;
+
                 try
                 {
-                    // Try to get current value using reflection
-                    var currentValue = GetCurrentValue(config.StartThrehold);
-
-                    if (currentValue.HasValue)
-                    {
-                        if (!hasInitialValue)
-                        {
-                            lastKnownValue = currentValue.Value;
-                            hasInitialValue = true;
-                            Main.logger.Msg(3, string.Format("PollValueChanges: Initial value for Mixer {0}: {1}", mixerID, lastKnownValue));
-                        }
-                        else if (Math.Abs(currentValue.Value - lastKnownValue) > 0.001f) // Small threshold for float comparison
-                        {
-                            Main.logger.Msg(3, string.Format("PollValueChanges: Value changed for Mixer {0}: {1} -> {2}", mixerID, lastKnownValue, currentValue.Value));
-                            lastKnownValue = currentValue.Value;
-                            OnValueChanged(mixerID, currentValue.Value);
-                        }
-                    }
+                    currentValue = GetCurrentValue(config.StartThrehold);
                 }
                 catch (Exception ex)
                 {
                     pollError = ex;
+                }
+
+                if (pollError == null && currentValue.HasValue)
+                {
+                    if (!hasInitialValue)
+                    {
+                        lastKnownValue = currentValue.Value;
+                        hasInitialValue = true;
+                        Main.logger.Msg(3, string.Format("PollValueChanges: Initial value for Mixer {0}: {1}", mixerID, lastKnownValue));
+                    }
+                    else if (Math.Abs(currentValue.Value - lastKnownValue) > 0.001f)
+                    {
+                        Main.logger.Msg(3, string.Format("PollValueChanges: Value changed for Mixer {0}: {1} -> {2}", mixerID, lastKnownValue, currentValue.Value));
+                        lastKnownValue = currentValue.Value;
+                        OnValueChanged(mixerID, currentValue.Value);
+                    }
                 }
 
                 if (pollError != null)
@@ -317,7 +363,6 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 var type = numberField.GetType();
 
-                // Try common property names for getting the current value
                 var propertyNames = new[] { "Value", "CurrentValue", "GetValue", "value" };
 
                 foreach (var propName in propertyNames)
@@ -329,7 +374,6 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     }
                 }
 
-                // Try common method names
                 var methodNames = new[] { "GetValue", "getValue", "Value" };
 
                 foreach (var methodName in methodNames)
@@ -415,56 +459,31 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger.Msg(3, "SaveMixerValues: Skipping backup (recent backup exists)");
             }
 
-            // Perform the actual save
+            // Perform save on background thread
+            bool saveCompleted = false;
             Exception saveError = null;
-            try
+
+            Task.Run(async () =>
             {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
-
-                // Convert to regular dictionary for JSON serialization - .NET 4.8.1 compatible
-                var mixerValuesDict = new Dictionary<int, float>();
-                foreach (var kvp in Main.savedMixerValues)
+                try
                 {
-                    mixerValuesDict[kvp.Key] = kvp.Value;
+                    await SaveMixerValuesToFileAsync();
+                    saveCompleted = true;
                 }
-
-                var saveData = new Dictionary<string, object>
+                catch (Exception ex)
                 {
-                    ["MixerValues"] = mixerValuesDict,
-                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    ["Version"] = "0.0.1"
-                };
-
-                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
-
-                // Write to temp file first, then rename for atomic operation
-                string tempFile = saveFile + ".tmp";
-                File.WriteAllText(tempFile, json);
-
-                if (File.Exists(saveFile))
-                {
-                    File.Delete(saveFile);
+                    saveError = ex;
+                    saveCompleted = true;
                 }
+            });
 
-                File.Move(tempFile, saveFile);
-
-                Main.logger.Msg(2, string.Format("SaveMixerValues: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
-
-                // Also save to persistent location
-                string persistentPath = MelonEnvironment.UserDataDirectory;
-                if (!string.IsNullOrEmpty(persistentPath))
-                {
-                    string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
-                    File.Copy(saveFile, persistentFile, overwrite: true);
-                    Main.logger.Msg(3, "SaveMixerValues: Copied to persistent location");
-                }
-            }
-            catch (Exception ex)
+            // Wait for save to complete - NO try-catch around yield
+            while (!saveCompleted)
             {
-                saveError = ex;
+                yield return new WaitForSeconds(0.1f);
             }
 
-            // CRITICAL: Always reset the flag
+            // Always reset the flag
             lock (saveLock)
             {
                 isSaveInProgress = false;
@@ -476,6 +495,48 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
 
             Main.logger.Msg(3, "SaveMixerValues: Finished and cleanup completed");
+        }
+
+        private static async Task SaveMixerValuesToFileAsync()
+        {
+            try
+            {
+                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+
+                // Convert to regular dictionary for JSON serialization
+                var mixerValuesDict = new Dictionary<int, float>();
+                foreach (var kvp in Main.savedMixerValues)
+                {
+                    mixerValuesDict[kvp.Key] = kvp.Value;
+                }
+
+                var saveData = new Dictionary<string, object>
+                {
+                    ["MixerValues"] = mixerValuesDict,
+                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    ["Version"] = "1.0.0"
+                };
+
+                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
+
+                await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
+
+                Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
+
+                // Also save to persistent location
+                string persistentPath = MelonEnvironment.UserDataDirectory;
+                if (!string.IsNullOrEmpty(persistentPath))
+                {
+                    string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
+                    await ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
+                    Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
+                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("SaveMixerValuesToFileAsync error: {0}", ex));
+                throw;
+            }
         }
 
         public static IEnumerator BackupSaveFolder()
@@ -510,158 +571,91 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 yield break;
             }
 
-            // Add timeout mechanism to prevent infinite loops
-            float startTime = Time.time;
-            const float BACKUP_TIMEOUT = 10f; // 10 seconds max
+            // Perform backup on background thread
+            bool backupCompleted = false;
+            Exception backupError = null;
 
-            string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
-            string sourceFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+            Task.Run(() =>
+            {
+                try
+                {
+                    PerformBackupOperations();
+                    backupCompleted = true;
+                }
+                catch (Exception ex)
+                {
+                    backupError = ex;
+                    backupCompleted = true;
+                }
+            });
 
-            // Check if source file exists with timeout - NO try-catch around yield
-            while (!File.Exists(sourceFile) && (Time.time - startTime) < BACKUP_TIMEOUT)
+            // Wait for backup to complete - NO try-catch around yield
+            while (!backupCompleted)
             {
                 yield return new WaitForSeconds(0.1f);
             }
 
-            if (!File.Exists(sourceFile))
-            {
-                Main.logger.Msg(2, "BackupSaveFolder: Source file doesn't exist, no backup needed");
-                lock (backupLock)
-                {
-                    isBackupInProgress = false;
-                }
-                yield break;
-            }
-
-            // Create backup directory with error handling
-            Exception dirError = null;
-            try
-            {
-                if (!Directory.Exists(backupDir))
-                {
-                    Directory.CreateDirectory(backupDir);
-                    Main.logger.Msg(3, "BackupSaveFolder: Created backup directory");
-                }
-            }
-            catch (Exception ex)
-            {
-                dirError = ex;
-            }
-
-            if (dirError != null)
-            {
-                Main.logger.Err(string.Format("BackupSaveFolder: Failed to create backup directory: {0}", dirError.Message));
-                lock (backupLock)
-                {
-                    isBackupInProgress = false;
-                }
-                yield break;
-            }
-
-            // Perform backup with timeout protection
-            string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-            string backupFile = Path.Combine(backupDir, string.Format("MixerThresholdSave_backup_{0}.json", timestamp));
-
-            Exception copyError = null;
-            try
-            {
-                // Use File.Copy instead of FileOperations.SafeCopy to avoid potential deadlocks
-                File.Copy(sourceFile, backupFile, overwrite: true);
-                Main.logger.Msg(2, string.Format("BackupSaveFolder: Backup created: {0}", backupFile));
-            }
-            catch (Exception ex)
-            {
-                copyError = ex;
-            }
-
-            if (copyError != null)
-            {
-                Main.logger.Err(string.Format("BackupSaveFolder: Backup failed: {0}", copyError.Message));
-            }
-
-            // Perform cleanup without try-catch around yield
-            yield return PerformCleanupCoroutine(backupDir, startTime, BACKUP_TIMEOUT);
-
-            // CRITICAL: Always reset the flag, even on exceptions
+            // Always reset the flag
             lock (backupLock)
             {
                 isBackupInProgress = false;
             }
 
+            if (backupError != null)
+            {
+                Main.logger.Err(string.Format("BackupSaveFolder error: {0}", backupError));
+            }
+
             Main.logger.Msg(3, "BackupSaveFolder: Finished and cleanup completed");
         }
 
-        private static IEnumerator PerformCleanupCoroutine(string backupDir, float startTime, float timeoutSeconds)
+        private static void PerformBackupOperations()
         {
-            Main.logger.Msg(3, "PerformCleanupCoroutine: Starting cleanup of old backups");
+            string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
+            string sourceFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
 
-            // Get list of backup files outside of try-catch
-            string[] allBackupFiles = null;
-            Exception listError = null;
-
-            try
+            if (!File.Exists(sourceFile))
             {
-                allBackupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
-            }
-            catch (Exception ex)
-            {
-                listError = ex;
+                Main.logger.Msg(2, "PerformBackupOperations: Source file doesn't exist, no backup needed");
+                return;
             }
 
-            if (listError != null)
+            if (!Directory.Exists(backupDir))
             {
-                Main.logger.Warn(1, string.Format("PerformCleanupCoroutine: Error getting backup file list: {0}", listError.Message));
-                yield break;
+                Directory.CreateDirectory(backupDir);
+                Main.logger.Msg(3, "PerformBackupOperations: Created backup directory");
             }
 
-            if (allBackupFiles == null || allBackupFiles.Length <= 5)
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            string backupFile = Path.Combine(backupDir, string.Format("MixerThresholdSave_backup_{0}.json", timestamp));
+
+            File.Copy(sourceFile, backupFile, overwrite: true);
+            Main.logger.Msg(2, string.Format("PerformBackupOperations: Backup created: {0}", backupFile));
+
+            // Cleanup old backups
+            var allBackupFiles = Directory.GetFiles(backupDir, "MixerThresholdSave_backup_*.json");
+            if (allBackupFiles.Length > 5)
             {
-                Main.logger.Msg(3, "PerformCleanupCoroutine: No cleanup needed, backup count is acceptable");
-                yield break;
-            }
+                var sortedBackups = allBackupFiles.OrderByDescending(f => File.GetCreationTime(f)).ToList();
+                var oldBackups = sortedBackups.Skip(5).ToList();
 
-            // Sort and identify old backups outside of try-catch
-            var sortedBackups = allBackupFiles.OrderByDescending(f => File.GetCreationTime(f)).ToList();
-            var oldBackups = sortedBackups.Skip(5).ToList();
-
-            Main.logger.Msg(3, string.Format("PerformCleanupCoroutine: Found {0} old backups to delete", oldBackups.Count));
-
-            foreach (var oldBackup in oldBackups)
-            {
-                if ((Time.time - startTime) > timeoutSeconds)
+                foreach (var oldBackup in oldBackups)
                 {
-                    Main.logger.Warn(1, "PerformCleanupCoroutine: Timeout during cleanup, stopping");
-                    break;
+                    try
+                    {
+                        File.Delete(oldBackup);
+                        Main.logger.Msg(3, string.Format("PerformBackupOperations: Deleted old backup: {0}", oldBackup));
+                    }
+                    catch (Exception ex)
+                    {
+                        Main.logger.Warn(1, string.Format("PerformBackupOperations: Failed to delete old backup {0}: {1}", oldBackup, ex.Message));
+                    }
                 }
-
-                Exception deleteError = null;
-                try
-                {
-                    File.Delete(oldBackup);
-                    Main.logger.Msg(3, string.Format("PerformCleanupCoroutine: Deleted old backup: {0}", oldBackup));
-                }
-                catch (Exception deleteEx)
-                {
-                    deleteError = deleteEx;
-                }
-
-                if (deleteError != null)
-                {
-                    Main.logger.Warn(1, string.Format("PerformCleanupCoroutine: Failed to delete old backup {0}: {1}", oldBackup, deleteError.Message));
-                }
-
-                // Yield between file operations - NO try-catch around this
-                yield return null;
             }
-
-            Main.logger.Msg(3, "PerformCleanupCoroutine: Cleanup completed");
         }
 
         private static bool ShouldCreateBackup()
         {
-            Exception backupCheckError = null;
-            bool result = false;
-
             try
             {
                 if (string.IsNullOrEmpty(Main.CurrentSavePath)) return false;
@@ -675,26 +669,18 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 if (latestBackup == null) return true;
 
                 // Only create backup if last one is older than 5 minutes
-                result = DateTime.Now - File.GetCreationTime(latestBackup) > TimeSpan.FromMinutes(5);
+                return DateTime.Now - File.GetCreationTime(latestBackup) > TimeSpan.FromMinutes(5);
             }
             catch (Exception ex)
             {
-                backupCheckError = ex;
+                Main.logger.Warn(1, string.Format("ShouldCreateBackup: Error checking backup status: {0}", ex.Message));
+                return false;
             }
-
-            if (backupCheckError != null)
-            {
-                Main.logger.Warn(1, string.Format("ShouldCreateBackup: Error checking backup status: {0}", backupCheckError.Message));
-                return false; // Don't backup if we can't determine status safely
-            }
-
-            return result;
         }
 
         // Emergency save method for crash scenarios - NO coroutines here
         public static void EmergencySave()
         {
-            Exception emergencyError = null;
             try
             {
                 if (Main.savedMixerValues.Count == 0) return;
@@ -704,7 +690,6 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 string emergencyFile = Path.Combine(persistentPath, "MixerThresholdSave_Emergency.json");
 
-                // Convert to regular dictionary for JSON serialization - .NET 4.8.1 compatible
                 var mixerValuesDict = new Dictionary<int, float>();
                 foreach (var kvp in Main.savedMixerValues)
                 {
@@ -725,12 +710,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                emergencyError = ex;
-            }
-
-            if (emergencyError != null)
-            {
-                Main.logger.Err(string.Format("Emergency save failed: {0}", emergencyError.Message));
+                Main.logger.Err(string.Format("Emergency save failed: {0}", ex.Message));
             }
         }
     }

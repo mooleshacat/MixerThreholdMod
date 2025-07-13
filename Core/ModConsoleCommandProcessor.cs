@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 using System;
 using System.IO;
 using System.Reflection;
@@ -21,6 +22,8 @@ namespace MixerThreholdMod_0_0_1.Core
     /// - Compatible reflection patterns
     /// - Proper exception handling
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 using MelonLoader;
 using MelonLoader.Utils;
 using System;
@@ -50,7 +53,10 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Compatible reflection patterns with minimal usage and proper error handling
     /// - Proper exception handling throughout all console operations
     /// - Framework-appropriate async patterns and resource management
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// </summary>
     public static class Console
     {
@@ -130,19 +136,27 @@ namespace MixerThreholdMod_1_0_0.Core
             /// <summary>
             /// Handle console command input
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             /// ⚠️ COMPREHENSIVE LOGGING: Logs full command details including all parameters, system context, and error information
             /// Enhanced with system monitoring integration and complete command breakdown
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+            /// ⚠️ COMPREHENSIVE LOGGING: Logs full command details including all parameters, system context, and error information
+            /// Enhanced with system monitoring integration and complete command breakdown
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             /// </summary>
             public void OnConsoleCommand(string command)
             {
                 Exception commandError = null;
 <<<<<<< HEAD
+<<<<<<< HEAD
                 try
                 {
                     if (string.IsNullOrEmpty(command)) return;
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 var commandStartTime = DateTime.UtcNow;
                 
                 try
@@ -152,7 +166,10 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[CONSOLE] Empty command received - no action taken");
                         return;
                     }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
                     // Enhanced comprehensive command logging with system context
                     Main.logger?.Msg(2, string.Format("[CONSOLE] === COMMAND RECEIVED ==="));
@@ -265,6 +282,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] OnConsoleCommand error: {0}\n{1}", commandError.Message, commandError.StackTrace));
 <<<<<<< HEAD
+<<<<<<< HEAD
                 }
             }
 
@@ -272,26 +290,37 @@ namespace MixerThreholdMod_1_0_0.Core
             /// Process specific console commands
             /// </summary>
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? "[null]"));
                     Main.logger?.Err(string.Format("[CONSOLE] Command processing failed after {0:F3}ms", (DateTime.UtcNow - commandStartTime).TotalMilliseconds));
                 }
             }
 
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             private void ProcessCommand(string lowerCommand)
             {
                 Exception processError = null;
                 try
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     switch (lowerCommand)
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     // Handle commands with parameters
                     var parts = lowerCommand.Split(' ');
                     var baseCommand = parts[0];
 
                     switch (baseCommand)
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     {
                         case "mixer_reset":
                             ResetMixerValues();
@@ -308,6 +337,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         case "mixer_saveprefstress":
                         case "saveprefstress":
 <<<<<<< HEAD
+<<<<<<< HEAD
                             HandleStressSavePrefCommand(parts);
                             break;
                         case "mixer_savegamestress":
@@ -318,6 +348,8 @@ namespace MixerThreholdMod_1_0_0.Core
                         case "savemonitor":
                             HandleComprehensiveSaveMonitoringCommand(parts);
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                             if (parts.Length < 2)
                             {
                                 Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: count");
@@ -351,7 +383,10 @@ namespace MixerThreholdMod_1_0_0.Core
                             {
                                 HandleComprehensiveSaveMonitoringCommand(parts);
                             }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                             break;
                         case "transactionalsave":
                         case "mixer_transactional":
@@ -362,6 +397,7 @@ namespace MixerThreholdMod_1_0_0.Core
                             HandleProfileCommand();
                             break;
                         case "msg":
+<<<<<<< HEAD
 <<<<<<< HEAD
                             HandleSingleLogCommand("msg", parts, lowerCommand);
                             break;
@@ -394,6 +430,8 @@ namespace MixerThreholdMod_1_0_0.Core
                         default:
                             Main.logger?.Msg(1, string.Format("[CONSOLE] Available commands: mixer_reset, mixer_save, mixer_path, mixer_emergency"));
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                             if (parts.Length < 2)
                             {
                                 Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: message");
@@ -440,7 +478,10 @@ namespace MixerThreholdMod_1_0_0.Core
                                 Main.logger?.Warn(1, string.Format("[CONSOLE] Unknown command: '{0}'", baseCommand));
                                 Main.logger?.Msg(1, "[CONSOLE] Type 'help' to see available commands");
                             }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                             break;
                     }
                 }
@@ -456,7 +497,10 @@ namespace MixerThreholdMod_1_0_0.Core
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             /// <summary>
             /// Show help for specific command when parameters are missing
             /// ⚠️ THREAD SAFETY: Safe logging operations with comprehensive error handling
@@ -582,7 +626,10 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             private void ShowHelpMessage()
             {
                 Exception helpError = null;
@@ -591,12 +638,15 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(1, "[CONSOLE] Available commands:");
                     Main.logger?.Msg(1, "[CONSOLE] ");
 <<<<<<< HEAD
+<<<<<<< HEAD
                     Main.logger?.Msg(1, "[CONSOLE] === SYSTEM COMMANDS ===");
                     Main.logger?.Msg(1, "[CONSOLE]   detectdirs - Detect and display game directories");
                     Main.logger?.Msg(1, "[CONSOLE]   directories - Alias for detectdirs");
                     Main.logger?.Msg(1, "[CONSOLE]   paths - Alias for detectdirs");
 =======
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     Main.logger?.Msg(1, "[CONSOLE] === MIXER MANAGEMENT ===");
                     Main.logger?.Msg(1, "[CONSOLE]   mixer_reset - Reset all mixer values");
                     Main.logger?.Msg(1, "[CONSOLE]   mixer_save - Force immediate save");
@@ -634,6 +684,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             // Add this method to the MixerConsoleHook class:
             /// <summary>
@@ -720,6 +771,8 @@ namespace MixerThreholdMod_1_0_0.Core
 
 =======
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             /// <summary>
             /// Handle single-type logging commands (msg, warn, err)
             /// ⚠️ THREAD SAFETY: Safe logging operations with comprehensive error handling
@@ -1254,12 +1307,18 @@ namespace MixerThreholdMod_1_0_0.Core
 
                 Main.logger?.Msg(2, "[CONSOLE] Console commands registered successfully");
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 
                 // Test the console commands to ensure they work
                 Main.logger?.Msg(2, "[CONSOLE] Testing console command functionality...");
                 TestConsoleCommands(hookInstance);
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
             catch (Exception ex)
             {
@@ -1272,7 +1331,10 @@ namespace MixerThreholdMod_1_0_0.Core
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
         /// <summary>
         /// Test console commands to verify they work properly
@@ -1340,6 +1402,9 @@ namespace MixerThreholdMod_1_0_0.Core
                 Main.logger?.Err(string.Format("[CONSOLE] ProcessManualCommand error: {0}\n{1}", manualError.Message, manualError.StackTrace));
             }
         }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     }
 }

@@ -1,10 +1,14 @@
 ﻿using MelonLoader;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 using MelonLoader.Utils;
 using Newtonsoft.Json;
 using ScheduleOne.Management;
 using System;
 using System.Collections;
+<<<<<<< HEAD
 =======
 using MelonLoader.TinyJSON;
 using MelonLoader.Utils;
@@ -17,15 +21,21 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
+<<<<<<< HEAD
 namespace MixerThreholdMod_1_0_0.Utils
 =======
 <<<<<<<< HEAD:Helpers/MixerSaveManager.cs
@@ -48,6 +58,9 @@ namespace MixerThreholdMod_0_0_1
 namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+namespace MixerThreholdMod_1_0_0.Helpers
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 {
     /// <summary>
     /// Comprehensive mixer save/load management system with crash prevention focus.
@@ -78,6 +91,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
     public static class MixerSaveManager
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         // Concurrency protection fields
         private static bool isBackupInProgress = false;
         private static readonly object backupLock = new object();
@@ -98,6 +114,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             Main.logger.Msg(3, string.Format("LoadMixerValuesWhenReady: Save path available: {0}", Main.CurrentSavePath));
 
+<<<<<<< HEAD
 =======
         private static CancellationTokenSource saveCts = new CancellationTokenSource();
         public static ConcurrentDictionary<int, float> SavedMixerValues = new ConcurrentDictionary<int, float>();
@@ -186,6 +203,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         Main.logger.Msg(3, $"Successfully attached listener for Mixer {uniqueID}");
 ========
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             // Perform loading on background thread to avoid blocking main thread
             bool loadCompleted = false;
             Exception loadError = null;
@@ -418,6 +437,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         float currentValue = (float)valueProperty.GetValue(sender, null);
                         OnValueChanged(mixerID, currentValue);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     }
                     else
                     {
@@ -435,6 +457,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             Main.logger.Msg(3, string.Format("PollValueChanges: Started polling for Mixer {0}", mixerID));
 
+<<<<<<< HEAD
 =======
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
                     }
@@ -489,6 +512,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     }
 ========
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             float lastKnownValue = -1f;
             bool hasInitialValue = false;
 
@@ -501,12 +526,16 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     currentValue = GetCurrentValue(config.StartThrehold);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
                 catch (Exception ex)
                 {
                     pollError = ex;
                 }
 
+<<<<<<< HEAD
 =======
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
                 }
@@ -543,6 +572,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
 ========
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 if (pollError == null && currentValue.HasValue)
                 {
                     if (!hasInitialValue)
@@ -892,12 +923,16 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger.Warn(1, string.Format("ShouldCreateBackup: Error checking backup status: {0}", ex.Message));
                 return false;
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
         }
 
         // Emergency save method for crash scenarios - NO coroutines here
         public static void EmergencySave()
         {
+<<<<<<< HEAD
 =======
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
             }
@@ -930,6 +965,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 if (saveCts != null)
 ========
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             try
             {
                 if (Main.savedMixerValues.Count == 0) return;
@@ -942,6 +979,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 var mixerValuesDict = new Dictionary<int, float>();
                 foreach (var kvp in Main.savedMixerValues)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 {
                     mixerValuesDict[kvp.Key] = kvp.Value;
                 }
@@ -963,6 +1003,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger.Err(string.Format("Emergency save failed: {0}", ex.Message));
             }
         }
+<<<<<<< HEAD
 =======
 >>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Helpers/MixerDataPersistenceManager.cs
                 {
@@ -1753,5 +1794,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             public Dictionary<int, float> MixerValues = new Dictionary<int, float>();
         }
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     }
 }

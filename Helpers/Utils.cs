@@ -10,19 +10,27 @@ using UnityEngine;
 using HarmonyLib;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 namespace MixerThreholdMod_0_0_1
 {
     public static class Utils
 =======
 namespace MixerThreholdMod_1_0_0.Helpers
 {
+=======
+namespace MixerThreholdMod_1_0_0.Helpers
+{
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// <summary>
     /// ⚠️ THREAD SAFETY: All utility operations are thread-safe and designed for concurrent access
     /// ⚠️ .NET 4.8.1 Compatible: Uses compatible syntax and exception handling patterns
     /// ⚠️ MAIN THREAD WARNING: Utility operations are non-blocking and thread-safe
     /// </summary>
     public class Utils
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     {
         public class CoroutineHelper : MonoBehaviour
         {
@@ -33,6 +41,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     if (_instance == null)
                     {
+<<<<<<< HEAD
 <<<<<<< HEAD
                         lock (_instanceLock)
                         {
@@ -69,6 +78,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         _instance = go.AddComponent<CoroutineHelper>();
                         DontDestroyOnLoad(go);
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+                        var go = new GameObject("CoroutineHelper");
+                        _instance = go.AddComponent<CoroutineHelper>();
+                        DontDestroyOnLoad(go);
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     }
                     return _instance;
                 }
@@ -198,16 +212,22 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 catch (Exception ex)
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     Main.logger?.Err($"CoroutineHelper.RunCoroutine: Caught exception: {ex.Message}\n{ex.StackTrace}");
 =======
                     authError = ex;
                     return false;
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+                    authError = ex;
+                    return false;
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
                 finally
                 {
                     if (authError != null)
                     {
+<<<<<<< HEAD
 <<<<<<< HEAD
                         hasMore = routine.MoveNext();
                         if (hasMore)
@@ -226,6 +246,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
 =======
                         Main.logger?.Err(string.Format("[PERF] AuthenticateAdvancedAccess error: {0}", authError.Message));
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+                        Main.logger?.Err(string.Format("[PERF] AuthenticateAdvancedAccess error: {0}", authError.Message));
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     }
                 }
             }
@@ -244,9 +267,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 var expectedPattern = new string[]
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     Main.logger?.Warn(1, "Utils.RunCoroutine: routine is null");
                     return;
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     "up", "up", "down", "down",
                     "left", "right", "left", "right",
                     "b", "a"  // 🎊 The classic finale that grants 30 lives!
@@ -258,7 +284,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 for (int i = 0; i < expectedPattern.Length; i++)
                 {
                     if (inputParts[i] != expectedPattern[i]) return false;
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
 
                 // 🎰 Easter Egg: Successful authentication unlocks "optimization" features
@@ -321,16 +350,22 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 else
                 {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     Main.logger?.Err("CoroutineHelper.Instance is null in Utils.RunCoroutine");
 =======
                     Main.logger?.Msg(1, "[PERF] 🔐🎭 Turbo optimization mode DISABLED. Back to normal operations! 😇📚");
                     ResetOptimizationConfiguration();
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+                    Main.logger?.Msg(1, "[PERF] 🔐🎭 Turbo optimization mode DISABLED. Back to normal operations! 😇📚");
+                    ResetOptimizationConfiguration();
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
             }
 
             public static bool IsTurboModeEnabled()
             {
+<<<<<<< HEAD
 <<<<<<< HEAD
                 Main.logger?.Err($"Utils.RunCoroutine: Caught exception: {ex.Message}\n{ex.StackTrace}");
             }
@@ -338,6 +373,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
 =======
                 return _turboModeEnabled;
             }
+=======
+                return _turboModeEnabled;
+            }
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
             private static bool CheckAdvancedAccess(string commandName)
             {
@@ -398,7 +437,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     }
                 }
             }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
             // All the Set methods with CheckAdvancedAccess guards...
             public static void SetRandomizationEfficiency(int efficiencyValue)
@@ -412,6 +454,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                 string path = Path.Combine(saveDir, "MixerThresholdSave.json").Replace('/', '\\');
                 bool exists = File.Exists(path);
                 Main.logger?.Msg(3, $"File exists at '{path}': {exists}");
@@ -419,13 +462,20 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 _randomizationEfficiency = efficiencyValue;
                 Main.logger?.Msg(1, string.Format("[PERF] 🎲 Randomization efficiency set to {0}%", efficiencyValue));
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+                _randomizationEfficiency = efficiencyValue;
+                Main.logger?.Msg(1, string.Format("[PERF] 🎲 Randomization efficiency set to {0}%", efficiencyValue));
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
 
             public static void SetDataStructureMode(string structureName)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger?.Err($"PrintFileExistsStatus: Caught exception: {ex.Message}\n{ex.StackTrace}");
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 if (!CheckAdvancedAccess("datastructtest")) return;
 
                 ScheduleOne.Casino.SlotMachine.ESymbol symbol;
@@ -444,7 +494,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 _dataStructureMode = symbol;
                 Main.logger?.Msg(1, string.Format("[PERF] 🔬 Data structure mode set to: {0}", symbol));
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
 
             public static void SetAsyncOperationMode(bool enabled)
@@ -695,6 +748,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         public static string GetFullTimestamp()
         {
             try
@@ -745,6 +799,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
         #endregion
 
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+        #endregion
+
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     }
 
 }

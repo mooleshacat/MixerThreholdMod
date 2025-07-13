@@ -5,6 +5,7 @@ A comprehensive mod for **Schedule 1** that enhances the mixer system with crash
 ## Build Environment Compatibility 🔄
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 - [Critical Features](#critical-features-🚀)
 - [Installation](#installation-📥)
 - [Console Commands](#console-commands-🎮)
@@ -57,6 +58,41 @@ A comprehensive mod for **Schedule 1** that enhances the mixer system with crash
 - **Automatic backup management** - maintains 5 most recent backups with cleanup
 
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+### MONO Build Support ✅
+- **Fully Compatible**: All features work perfectly in MONO builds
+- **Direct Type Loading**: Uses standard .NET reflection patterns
+- **Standard Performance**: Normal execution speed and memory usage
+
+### IL2CPP Build Support ✅
+- **Fully Compatible**: All features work in IL2CPP builds using dynamic type resolution
+- **Safe Type Loading**: Uses Assembly.GetType() to avoid TypeLoadException
+- **Graceful Degradation**: Mod continues to function even if some game types are not available
+- **Performance**: Minimal overhead from dynamic type resolution
+
+**⚠️ IMPORTANT**: IL2CPP builds require additional type loading time during mod initialization. This is normal and expected.
+
+## Table of Contents 📋
+
+- [Critical Features](#critical-features-🚀)
+- [Installation](#installation-📥)
+- [Console Commands](#console-commands-🎮)
+- [v1.0.0 Release Notes](#v100-release-notes-🎉) **🆕 LATEST**
+- [Known Issues](#known-issues-⚠️) **⚠️ IMPORTANT** 
+- [Troubleshooting](#troubleshooting-🛠️)
+- [Technical Implementation](#technical-implementation-⚙️)
+- [Development & Contributions](#development--contributions-👥)
+- [Reporting Issues](#reporting-issues-🐛)
+
+## Critical Features 🚀
+
+### 🛡️ **Save Crash Prevention** (Primary Focus)
+- **Emergency save protection** - prevents data loss during crashes and extended gameplay
+- **Atomic file operations** - ensures save integrity through temp file + rename strategy  
+- **Save cooldown system** - prevents corruption from rapid-fire saves
+- **Automatic backup management** - maintains 5 most recent backups with cleanup
+
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 ### 🔧 **Enhanced Mixer System**
 - **Increases mixer threshold from 10 to 20** - matching game's maximum stack size
 - **Persistent threshold settings** - survives game overwrites and save/load cycles
@@ -297,6 +333,7 @@ C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\Mixer
 - **Conflicts**: Compatible with most mods (extensive defensive programming)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## Known Issues ⚠️
 
 ### ⚠️ **Critical MelonLoader Window Warning** ⚠️
@@ -317,6 +354,16 @@ C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\Mixer
 
 ### 🔄 **IL2CPP Compatibility Achievement**
 
+=======
+## v1.0.0 Release Notes 🎉
+
+### Major Breakthrough: Universal Build Environment Support
+
+**v1.0.0** represents a complete compatibility revolution for MixerThreholdMod, delivering the first mod to achieve **100% compatibility with both MONO and IL2CPP builds** of Schedule 1.
+
+### 🔄 **IL2CPP Compatibility Achievement**
+
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 **The Challenge:** IL2CPP builds use Ahead-of-Time (AOT) compilation that prevents traditional .NET reflection patterns from working, causing TypeLoadException crashes for any mod attempting to access game types directly.
 
 **The Solution:** Revolutionary **IL2CPPTypeResolver** system that:
@@ -410,7 +457,10 @@ Complete debugging and testing suite:
 
 **✅ Both MONO and IL2CPP builds are fully supported** - initialization warnings in IL2CPP are normal and expected.
 
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 ## Troubleshooting 🛠️
 
 ### Common Issues

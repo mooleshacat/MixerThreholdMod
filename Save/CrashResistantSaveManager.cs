@@ -2,11 +2,15 @@ using MelonLoader;
 using MelonLoader.Utils;
 using Newtonsoft.Json;
 <<<<<<< HEAD
+<<<<<<< HEAD
 // IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
 // using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 =======
 using ScheduleOne.Management;
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+using ScheduleOne.Management;
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -17,10 +21,14 @@ using System.Reflection;
 using UnityEngine;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 namespace MixerThreholdMod_0_0_1.Save
 =======
 namespace MixerThreholdMod_1_0_0.Save
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+namespace MixerThreholdMod_1_0_0.Save
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 {
     /// <summary>
     /// Robust save management system focused on preventing crashes during save operations.
@@ -37,10 +45,13 @@ namespace MixerThreholdMod_1_0_0.Save
     /// thread as they can cause UI freezes. Use async alternatives when possible.
     /// 
 <<<<<<< HEAD
+<<<<<<< HEAD
     /// ⚠️ IL2CPP COMPATIBLE: Uses object parameters and reflection for type safety.
     /// 
 =======
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// .NET 4.8.1 Compatibility:
     /// - Uses compatible async/await patterns
     /// - Proper exception handling for crash prevention
@@ -58,12 +69,16 @@ namespace MixerThreholdMod_1_0_0.Save
         // Save state management
         private static bool isSaveInProgress = false;
 <<<<<<< HEAD
+<<<<<<< HEAD
 #pragma warning disable CS0414 // Field assigned but never used: Thread-safe backup flag used in async operations
         private static volatile bool isBackupInProgress = false;
 #pragma warning restore CS0414
 =======
         private static bool isBackupInProgress = false;
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+        private static bool isBackupInProgress = false;
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         private static readonly object saveLock = new object();
         private static readonly object backupLock = new object();
         private static DateTime lastSaveTime = DateTime.MinValue;
@@ -154,6 +169,7 @@ namespace MixerThreholdMod_1_0_0.Save
         /// Attach value change listener to mixer configuration.
         /// ⚠️ CRASH PREVENTION: Multiple fallback strategies for event attachment.
 <<<<<<< HEAD
+<<<<<<< HEAD
         /// ⚠️ IL2CPP COMPATIBLE: Uses object parameter and reflection for type safety.
         /// </summary>
         public static IEnumerator AttachListenerWhenReady(object config, int mixerID)
@@ -161,6 +177,10 @@ namespace MixerThreholdMod_1_0_0.Save
         /// </summary>
         public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+        /// </summary>
+        public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         {
             Main.logger.Msg(3, string.Format("[SAVE] AttachListenerWhenReady: Starting for Mixer {0}", mixerID));
 
@@ -168,6 +188,7 @@ namespace MixerThreholdMod_1_0_0.Save
             float startTime = Time.time;
             const float ATTACH_TIMEOUT = 10f;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property
             object startThreshold = null;
@@ -197,13 +218,18 @@ namespace MixerThreholdMod_1_0_0.Save
 
             if (startThreshold == null)
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             while (config?.StartThrehold == null && (Time.time - startTime) < ATTACH_TIMEOUT)
             {
                 yield return new WaitForSeconds(0.1f);
             }
 
             if (config?.StartThrehold == null)
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             {
                 Main.logger.Warn(1, string.Format("[SAVE] AttachListenerWhenReady: Timeout - StartThreshold not available for Mixer {0}", mixerID));
                 yield break;
@@ -215,6 +241,7 @@ namespace MixerThreholdMod_1_0_0.Save
 
             try
             {
+<<<<<<< HEAD
 <<<<<<< HEAD
                 // Strategy 1: Direct event attachment (most reliable) - IL2CPP COMPATIBLE
                 var onItemChangedField = startThreshold.GetType().GetField("onItemChanged", BindingFlags.Public | BindingFlags.Instance);
@@ -254,6 +281,8 @@ namespace MixerThreholdMod_1_0_0.Save
                 {
                     var numberFieldType = startThreshold.GetType();
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 // Strategy 1: Direct event attachment (most reliable)
                 if (config.StartThrehold.onItemChanged != null)
                 {
@@ -268,7 +297,10 @@ namespace MixerThreholdMod_1_0_0.Save
                 else
                 {
                     var numberFieldType = config.StartThrehold.GetType();
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     var eventNames = new[] { "OnValueChanged", "ValueChanged", "onValueChanged" };
 
                     foreach (var eventName in eventNames)
@@ -280,10 +312,14 @@ namespace MixerThreholdMod_1_0_0.Save
                             if (handler != null)
                             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 eventInfo.AddEventHandler(startThreshold, handler);
 =======
                                 eventInfo.AddEventHandler(config.StartThrehold, handler);
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+                                eventInfo.AddEventHandler(config.StartThrehold, handler);
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                                 eventAttached = true;
                                 Main.logger.Msg(2, string.Format("[SAVE] AttachListenerWhenReady: Reflection event {0} attached for Mixer {1}", eventName, mixerID));
                                 break;
@@ -581,6 +617,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 yield break;
             }
 <<<<<<< HEAD
+<<<<<<< HEAD
             
             if (Main.savedMixerValues.Count == 0)
             {
@@ -604,6 +641,8 @@ namespace MixerThreholdMod_1_0_0.Save
                 }
                 
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
             if (Main.savedMixerValues.Count == 0)
             {
@@ -611,7 +650,10 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Warn(1, "[SAVE] PerformCrashResistantSave: No mixer data to save. Gathering diagnostics...");
 
                 yield return GatherDetailedDiagnostics();
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 yield break;
             }
 
@@ -850,6 +892,7 @@ namespace MixerThreholdMod_1_0_0.Save
             int queuedInstancesCount = 0;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             try
             {
                 // Basic counts
@@ -867,6 +910,8 @@ namespace MixerThreholdMod_1_0_0.Save
                 {
                     trackedMixersCount = countTask.Result;
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             // Get basic counts safely
             queuedInstancesCount = Main.queuedInstances.Count;
 
@@ -885,7 +930,10 @@ namespace MixerThreholdMod_1_0_0.Save
                 {
                     trackedMixersCount = countTask.Result;
                     Main.logger.Msg(3, "[SAVE] DIAGNOSIS: Successfully retrieved TrackedMixers count");
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
                 else
                 {
@@ -902,10 +950,14 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Warn(1, string.Format("[SAVE] - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
                 Main.logger.Warn(1, string.Format("[SAVE] - Load coroutine started: {0}", Main.LoadCoroutineStarted));
 <<<<<<< HEAD
+<<<<<<< HEAD
                 
 =======
 
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 // Analysis based on results
                 if (trackedMixersCount == 0 && queuedInstancesCount == 0)
                 {
@@ -945,11 +997,14 @@ namespace MixerThreholdMod_1_0_0.Save
             if (diagError != null)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
                     diagError.Message, diagError.StackTrace));
             }
         }
 =======
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}",
                     diagError.Message, diagError.StackTrace));
             }
@@ -1312,6 +1367,9 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Msg(2, "[SAVE] GAME SAVE StressGameSaveTest: Stress test cleanup completed");
             }
         }
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+=======
+>>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     }
 }
