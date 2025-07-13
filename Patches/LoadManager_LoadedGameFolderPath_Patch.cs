@@ -2,8 +2,10 @@
 using MelonLoader;
 using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Save;
-using ScheduleOne.Persistence;
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
+using System.Reflection;
 
 namespace MixerThreholdMod_1_0_0.Patches
 {
@@ -16,29 +18,94 @@ namespace MixerThreholdMod_1_0_0.Patches
     /// ⚠️ THREAD SAFETY: All operations are designed to be thread-safe and not block the main thread.
     /// Error handling prevents patch failures from affecting game loading.
     /// 
+    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
+    /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses string.Format instead of string interpolation
     /// - Compatible exception handling patterns
     /// - Proper null checking
     /// </summary>
-    [HarmonyPatch(typeof(LoadManager), "StartGame")]
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
+        private static bool _patchInitialized = false;
+        private static MethodInfo _startGameMethod = null;
+
+        /// <summary>
+        /// Initialize the patch using IL2CPP-compatible type resolution
+        /// </summary>
+        public static void Initialize()
+        {
+            try
+            {
+                if (_patchInitialized) return;
+
+                // Get LoadManager type via reflection to avoid IL2CPP issues
+                var loadManagerType = IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Persistence.LoadManager");
+                if (loadManagerType == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] LoadManager type not found - patch will not be applied");
+                    return;
+                }
+
+                // Get SaveInfo type via reflection
+                var saveInfoType = IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Persistence.SaveInfo");
+                if (saveInfoType == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] SaveInfo type not found - patch will not be applied");
+                    return;
+                }
+
+                _startGameMethod = loadManagerType.GetMethod("StartGame", new[] { saveInfoType, typeof(bool) });
+                if (_startGameMethod == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] LoadManager.StartGame method not found - patch will not be applied");
+                    return;
+                }
+
+                // Apply Harmony patch dynamically
+                var harmony = new Harmony("MixerThreholdMod.LoadManager_LoadedGameFolderPath_Patch");
+                var postfixMethod = typeof(LoadManager_LoadedGameFolderPath_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
+                
+                harmony.Patch(_startGameMethod, null, new HarmonyMethod(postfixMethod));
+                
+                Main.logger.Msg(1, "[PATCH] IL2CPP-compatible LoadManager.StartGame patch applied successfully");
+                _patchInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("[PATCH] Failed to initialize LoadManager_LoadedGameFolderPath_Patch: {0}", ex.Message));
+            }
+        }
         /// <summary>
         /// Postfix patch that runs after LoadManager.StartGame completes
+        /// IL2CPP COMPATIBLE: Uses dynamic types to avoid TypeLoadException
         /// </summary>
-        public static void Postfix(LoadManager __instance, SaveInfo info, bool allowLoadStacking)
+        public static void Postfix(object __instance, object info, bool allowLoadStacking)
         {
             Exception patchError = null;
             try
             {
-                if (info == null || string.IsNullOrEmpty(info.SavePath))
+                if (info == null)
                 {
-                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: No save info or path");
+                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: No save info");
                     return;
                 }
 
-                string savePath = info.SavePath;
+                // Use reflection to get SavePath property from SaveInfo object
+                var savePathProperty = info.GetType().GetProperty("SavePath");
+                if (savePathProperty == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] LoadManager postfix: SavePath property not found on SaveInfo");
+                    return;
+                }
+
+                var savePath = savePathProperty.GetValue(info, null) as string;
+                if (string.IsNullOrEmpty(savePath))
+                {
+                    Main.logger.Msg(3, "[PATCH] LoadManager postfix: Save path is empty");
+                    return;
+                }
+
                 Main.logger.Msg(2, string.Format("[PATCH] LoadManager postfix: Game loading from {0}", savePath));
 
                 // Set current save path for the save system

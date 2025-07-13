@@ -5,10 +5,11 @@ using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Helpers;
 using MixerThreholdMod_1_0_0.Save;
 using Newtonsoft.Json;
-using ScheduleOne.Management;
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using ScheduleOne.Noise;
 using ScheduleOne.ObjectScripts;
-using ScheduleOne.Persistence;
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -69,9 +70,10 @@ namespace MixerThreholdMod_1_0_0
         public static MelonPreferences_Entry<int> currentWarnLogLevelEntry;
         public static readonly Core.Logger logger = new Core.Logger();
         
-        // IL2CPP COMPATIBLE: Use compile-time known collection types with proper generic constraints
-        public static List<MixingStationConfiguration> queuedInstances = new List<MixingStationConfiguration>();
-        public static Dictionary<MixingStationConfiguration, float> userSetValues = new Dictionary<MixingStationConfiguration, float>();
+        // IL2CPP COMPATIBLE: Use object instead of specific types to avoid TypeLoadException in IL2CPP builds
+        // Types will be resolved dynamically using IL2CPPTypeResolver when needed
+        public static List<object> queuedInstances = new List<object>();
+        public static Dictionary<object, float> userSetValues = new Dictionary<object, float>();
         public static ConcurrentDictionary<int, float> savedMixerValues = new ConcurrentDictionary<int, float>();
         
         public static string CurrentSavePath = null;
@@ -104,47 +106,68 @@ namespace MixerThreholdMod_1_0_0
 
                 try
                 {
-                    // IL2CPP COMPATIBLE: Use typeof() for compile-time safe type resolution instead of dynamic reflection
+                    // IL2CPP COMPATIBLE: Use IL2CPPTypeResolver for safe type resolution in both MONO and IL2CPP builds
                     // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
+                    logger.Msg(1, "Phase 2: Initializing IL2CPP-compatible type resolution...");
+                    
+                    // Log comprehensive type availability for debugging
+                    Core.IL2CPPTypeResolver.LogTypeAvailability();
+                    
+                    // IL2CPP-specific memory analysis after type loading
+                    if (Core.IL2CPPTypeResolver.IsIL2CPPBuild)
+                    {
+                    Core.AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis("POST_TYPE_LOADING");
+                    }
+                    
                     logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
-                    var constructor = typeof(MixingStationConfiguration).GetConstructor(
-                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                        null,
-                        new[] {
-                            typeof(ConfigurationReplicator),
-                            typeof(IConfigurable),
-                            typeof(MixingStation)
-                        },
-                        null
-                    );
+                    var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
                     if (constructor == null)
                     {
-                        logger.Err("CRITICAL: Target constructor NOT found! Mod will not function.");
-                        return;
+                        logger.Err("CRITICAL: Target constructor NOT found! This may be due to IL2CPP type loading issues.");
+                        logger.Err("CRITICAL: Mod functionality will be limited but initialization will continue.");
+                        // Don't return here - allow other initialization to continue
                     }
-                    logger.Msg(1, "Phase 2: Constructor found successfully");
+                    else
+                    {
+                        logger.Msg(1, "Phase 2: Constructor found successfully via IL2CPP-compatible type resolver");
+                    }
 
                     logger.Msg(1, "Phase 3: Applying IL2CPP-compatible Harmony patch...");
-                    // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
-                    HarmonyInstance.Patch(
-                        constructor,
-                        prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
-                    );
-                    logger.Msg(1, "Phase 3: IL2CPP-compatible Harmony patch applied successfully");
+                    // IL2CPP COMPATIBLE: Only apply Harmony patch if constructor is available
+                    if (constructor != null)
+                    {
+                        // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
+                        HarmonyInstance.Patch(
+                            constructor,
+                            prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
+                        );
+                        logger.Msg(1, "Phase 3: IL2CPP-compatible Harmony patch applied successfully");
+                    }
+                    else
+                    {
+                        logger.Warn(1, "Phase 3: Skipping Harmony patch - constructor not available (IL2CPP type loading issue)");
+                        logger.Warn(1, "Phase 3: Mod will operate in limited mode without automatic mixer detection");
+                    }
                     
                     logger.Msg(1, "Phase 4: Registering IL2CPP-compatible console commands...");
-                    Core.Console.RegisterConsoleCommandViaReflection();
+                    Core.ModConsoleCommandProcessor.RegisterConsoleCommandViaReflection();
                     logger.Msg(1, "Phase 4a: Basic console hook registered");
                     
                     // Also initialize native console integration for game console commands
                     logger.Msg(1, "Phase 4b: Initializing IL2CPP-compatible native game console integration...");
-                    Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
+                    Core.NativeGameConsoleIntegration.InitializeNativeConsoleIntegration();
                     logger.Msg(1, "Phase 4c: IL2CPP-compatible console commands registered successfully");
                     
+                    // Initialize IL2CPP-compatible patches
+                    logger.Msg(1, "Phase 6: Initializing IL2CPP-compatible patches...");
+                    Patches.SaveManager_Save_Patch.Initialize();
+                    Patches.LoadManager_LoadedGameFolderPath_Patch.Initialize();
+                    logger.Msg(1, "Phase 6: IL2CPP-compatible patches initialized");
+                    
                     // Initialize game logger bridge for exception monitoring
-                    logger.Msg(1, "Phase 5: Initializing game exception monitoring...");
-                    Core.GameLoggerBridge.InitializeLoggingBridge();
-                    logger.Msg(1, "Phase 5: Game exception monitoring initialized");
+                    logger.Msg(1, "Phase 7: Initializing game exception monitoring...");
+                    Core.GameExceptionMonitor.InitializeLoggingBridge();
+                    logger.Msg(1, "Phase 7: Game exception monitoring initialized");
                     
                     // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
                     logger.Msg(1, "Phase 6: Initializing advanced system monitoring with memory leak detection...");
@@ -156,6 +179,10 @@ namespace MixerThreholdMod_1_0_0
                     Helpers.Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
                     logger.Msg(1, "Phase 7: Advanced performance optimization initialized (authentication required)");
 
+                    logger.Msg(1, "Phase 8: Initializing advanced system monitoring with memory leak detection...");
+                    Core.AdvancedSystemPerformanceMonitor.Initialize();
+                    logger.Msg(1, "Phase 8: Advanced system monitoring with memory leak detection initialized");
+                    
                     logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
@@ -172,7 +199,7 @@ namespace MixerThreholdMod_1_0_0
             }
         }
 
-        private static void QueueInstance(MixingStationConfiguration __instance)
+        private static void QueueInstance(object __instance)
         {
             try
             {
@@ -233,7 +260,7 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(3, "ProcessQueuedInstancesAsync: Starting cleanup and processing");
                 
                 // Clean up null instances
-                await Core.TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
+                await Core.MixerConfigurationTracker.RemoveAllAsync(tm => tm.ConfigInstance == null);
                 
                 var toProcess = queuedInstances.ToList();
                 logger.Msg(3, string.Format("ProcessQueuedInstancesAsync: Processing {0} queued instances", toProcess.Count));
@@ -248,33 +275,53 @@ namespace MixerThreholdMod_1_0_0
                             continue;
                         }
 
-                        if (await Core.TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
+                        if (await Core.MixerConfigurationTracker.AnyAsync(tm => tm.ConfigInstance == instance))
                         {
                             logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
                             continue;
                         }
                         
-                        if (instance.StartThrehold == null)
+                        // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property safely
+                        var startThresholdProperty = instance.GetType().GetProperty("StartThrehold");
+                        if (startThresholdProperty == null)
+                        {
+                            logger.Warn(1, "StartThrehold property not found for instance. Skipping.");
+                            continue;
+                        }
+
+                        var startThreshold = startThresholdProperty.GetValue(instance, null);
+                        if (startThreshold == null)
                         {
                             logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
                             continue;
                         }
                         
-                        var mixerData = await Core.TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
+                        var mixerData = await Core.MixerConfigurationTracker.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
                         if (mixerData == null)
                         {
                             try
                             {
                                 logger.Msg(3, "ProcessQueuedInstancesAsync: Configuring new mixer...");
-                                instance.StartThrehold.Configure(1f, 20f, true);
-                                logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
+                                
+                                // IL2CPP COMPATIBLE: Use reflection to call Configure method safely
+                                var configureMethod = startThreshold.GetType().GetMethod("Configure", new[] { typeof(float), typeof(float), typeof(bool) });
+                                if (configureMethod != null)
+                                {
+                                    configureMethod.Invoke(startThreshold, new object[] { 1f, 20f, true });
+                                    logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
+                                }
+                                else
+                                {
+                                    logger.Warn(1, "Configure method not found on StartThrehold. Skipping configuration.");
+                                    continue;
+                                }
 
                                 var newTrackedMixer = new Core.TrackedMixer
                                 {
                                     ConfigInstance = instance,
                                     MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
                                 };
-                                await Core.TrackedMixers.AddAsync(newTrackedMixer);
+                                await Core.MixerConfigurationTracker.AddAsync(newTrackedMixer);
                                 logger.Msg(2, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
 
                                 if (!newTrackedMixer.ListenerAdded)
@@ -289,7 +336,17 @@ namespace MixerThreholdMod_1_0_0
                                 if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
                                 {
                                     logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
-                                    instance.StartThrehold.SetValue(savedValue, true);
+                                    
+                                    // IL2CPP COMPATIBLE: Use reflection to call SetValue method safely
+                                    var setValueMethod = startThreshold.GetType().GetMethod("SetValue", new[] { typeof(float), typeof(bool) });
+                                    if (setValueMethod != null)
+                                    {
+                                        setValueMethod.Invoke(startThreshold, new object[] { savedValue, true });
+                                    }
+                                    else
+                                    {
+                                        logger.Warn(1, "SetValue method not found on StartThrehold. Cannot restore saved value.");
+                                    }
                                 }
                             }
                             catch (Exception mixerEx)
@@ -329,7 +386,7 @@ namespace MixerThreholdMod_1_0_0
         {
             try
             {
-                return await Core.TrackedMixers.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
+                return await Core.MixerConfigurationTracker.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
             }
             catch (Exception ex)
             {
@@ -358,8 +415,8 @@ namespace MixerThreholdMod_1_0_0
                         System.Threading.Thread.Sleep(1000);
                         
                         logger.Msg(2, "[DEBUG] Testing console commands...");
-                        Core.Console.ProcessManualCommand("msg This is a test message from console command");
-                        Core.Console.ProcessManualCommand("warn This is a test warning from console command");
+                        Core.ModConsoleCommandProcessor.ProcessManualCommand("msg This is a test message from console command");
+                        Core.ModConsoleCommandProcessor.ProcessManualCommand("warn This is a test warning from console command");
                         logger.Msg(2, "[DEBUG] Console command test completed - check logs above for test output");
                     }
                     catch (Exception ex)
@@ -391,7 +448,7 @@ namespace MixerThreholdMod_1_0_0
                                 string targetFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
                                 if (File.Exists(sourceFile))
                                 {
-                                    await Helpers.FileOperations.SafeWriteAllTextAsync(targetFile, await Helpers.FileOperations.SafeReadAllTextAsync(sourceFile));
+                                    await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(targetFile, await Helpers.ThreadSafeFileOperations.SafeReadAllTextAsync(sourceFile));
                                     logger.Msg(3, "Copied MixerThresholdSave.json from persistent to save folder");
                                 }
                             }
@@ -429,7 +486,7 @@ namespace MixerThreholdMod_1_0_0
             logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
             
             // Log initial system state
-            SystemMonitor.LogCurrentPerformance("STRESS_TEST_START");
+            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_START");
             
             var startTime = DateTime.Now;
             int successCount = 0;
@@ -446,7 +503,7 @@ namespace MixerThreholdMod_1_0_0
                 // Log system state before critical operation (every 5th iteration to avoid spam)
                 if (i % 5 == 1 || iterations <= 5)
                 {
-                    SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
+                    AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
                 }
                 
                 // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
@@ -460,7 +517,7 @@ namespace MixerThreholdMod_1_0_0
                     // Log system state after critical operation (every 5th iteration)
                     if (i % 5 == 0 || i == iterations || iterations <= 5)
                     {
-                        SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
+                        AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
                     }
                     
                     successCount++;
@@ -469,7 +526,7 @@ namespace MixerThreholdMod_1_0_0
                 catch (Exception ex)
                 {
                     logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
-                    SystemMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_FAILED", i));
+                    AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_FAILED", i));
                     failureCount++;
                 }
                 
@@ -484,7 +541,7 @@ namespace MixerThreholdMod_1_0_0
             var totalTime = (DateTime.Now - startTime).TotalSeconds;
             
             // Log final system state after stress test
-            SystemMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
+            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
             
             logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
             logger.Msg(1, string.Format("[MONITOR] Average time per operation: {0:F1}ms", (totalTime * 1000) / iterations));
@@ -497,7 +554,7 @@ namespace MixerThreholdMod_1_0_0
             logger.Msg(2, "[TRANSACTION] Performing save operation...");
             
             // Log system state before transaction
-            SystemMonitor.LogCurrentPerformance("TRANSACTION_START");
+            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_START");
             
             var saveStart = DateTime.Now;
             
@@ -509,7 +566,7 @@ namespace MixerThreholdMod_1_0_0
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
                 
                 // Log system state after successful transaction
-                SystemMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
+                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
                 
                 logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
                 logger.Msg(2, string.Format("[TRANSACTION] Performance: {0:F3} saves/second", 1000.0 / saveTime));
@@ -517,7 +574,7 @@ namespace MixerThreholdMod_1_0_0
             catch (Exception ex)
             {
                 // Log system state after failed transaction
-                SystemMonitor.LogCurrentPerformance("TRANSACTION_FAILED");
+                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_FAILED");
                 
                 logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
                 logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
@@ -531,7 +588,7 @@ namespace MixerThreholdMod_1_0_0
             var profileStart = DateTime.Now;
             
             // Initial system state capture
-            SystemMonitor.LogCurrentPerformance("PROFILE_START");
+            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_START");
             
             // Phase 1: Pre-save diagnostics
             logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
@@ -549,7 +606,7 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", System.GC.GetTotalMemory(false) / 1024));
                 
                 // Enhanced system diagnostics
-                SystemMonitor.LogCurrentPerformance("PROFILE_PHASE1");
+                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE1");
                 
                 phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
@@ -564,7 +621,7 @@ namespace MixerThreholdMod_1_0_0
             var phase2Start = DateTime.Now;
             
             // System state before save operation
-            SystemMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
+            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
             
             yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
             
@@ -574,7 +631,7 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
                 
                 // System state after save operation
-                SystemMonitor.LogCurrentPerformance("PROFILE_AFTER_SAVE");
+                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_AFTER_SAVE");
                 
                 // Phase 3: Post-save diagnostics
                 logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
@@ -584,7 +641,7 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
                 
                 // Final system state capture
-                SystemMonitor.LogCurrentPerformance("PROFILE_PHASE3");
+                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE3");
                 
                 phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
                 logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
@@ -600,12 +657,12 @@ namespace MixerThreholdMod_1_0_0
                     ((phase1Time + phase3Time) / phase2Time) * 100));
                 
                 // Final system state
-                SystemMonitor.LogCurrentPerformance("PROFILE_COMPLETE");
+                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_COMPLETE");
             }
             catch (Exception ex)
             {
                 // System state on error
-                SystemMonitor.LogCurrentPerformance("PROFILE_ERROR");
+                AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_ERROR");
                 
                 if (profileError != null)
                 {
@@ -628,7 +685,7 @@ namespace MixerThreholdMod_1_0_0
                 logger?.Msg(2, "[MAIN] Application shutting down - cleaning up resources");
                 
                 // Cleanup system monitoring resources
-                SystemMonitor.Cleanup();
+                AdvancedSystemPerformanceMonitor.Cleanup();
                 
                 logger?.Msg(1, "[MAIN] Cleanup completed successfully");
             }

@@ -129,7 +129,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(2, string.Format("[CONSOLE] Command hash: {0}", command.GetHashCode()));
                     
                     // Log system context during command processing (DEBUG mode only)
-                    SystemMonitor.LogCurrentPerformance("CONSOLE_COMMAND");
+                    AdvancedSystemPerformanceMonitor.LogCurrentPerformance("CONSOLE_COMMAND");
                     
                     // Parse and log command components with enhanced analysis
                     var originalParts = command.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -213,7 +213,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     }
                     
                     // Process command with performance monitoring
-                    SystemMonitor.MonitorOperation(string.Format("Console Command: {0}", parts[0]), () => {
+                    AdvancedSystemPerformanceMonitor.MonitorOperation(string.Format("Console Command: {0}", parts[0]), () => {
                         ProcessCommand(command.ToLower().Trim());
                     });
                     

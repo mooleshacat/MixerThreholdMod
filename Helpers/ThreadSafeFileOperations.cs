@@ -17,7 +17,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// - Compatible exception handling
     /// - Proper file locking mechanisms
     /// </summary>
-    public static class FileOperations
+    public static class ThreadSafeFileOperations
     {
         private static readonly object _fileLock = new object();
 
