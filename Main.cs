@@ -209,14 +209,14 @@ namespace MixerThreholdMod_1_0_0
                     logger.Msg(1, "Phase 7: Game exception monitoring initialized");
 
                     // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
-                    logger.Msg(1, "Phase 8: Initializing advanced system monitoring with memory leak detection...");
-                    Core.AdvancedSystemPerformanceMonitor.Initialize();
-                    logger.Msg(1, "Phase 8: Advanced system monitoring with memory leak detection initialized");
+                    logger.Msg(1, "Phase 6: Initializing advanced system monitoring with memory leak detection...");
+                    Core.SystemMonitor.Initialize();
+                    logger.Msg(1, "Phase 6: Advanced system monitoring with memory leak detection initialized");
 
-                    // Phase 9 nothing interesting here ... Just "performance optimization routines"
-                    logger.Msg(1, "Phase 9: Initializing advanced performance optimization...");
-                    Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
-                    logger.Msg(1, "Phase 9: Advanced performance optimization initialized (authentication required)");
+                    // Phase 7 nothing interesting here ... Just "performance optimization routines"
+                    logger.Msg(1, "Phase 7: Initializing advanced performance optimization...");
+                    Helpers.Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
+                    logger.Msg(1, "Phase 7: Advanced performance optimization initialized (authentication required)");
 
                     logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
                 }
