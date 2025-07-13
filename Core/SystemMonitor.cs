@@ -1,6 +1,6 @@
 using System;
 using System.Diagnostics;
-using System.Management;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace MixerThreholdMod_1_0_0.Core
@@ -220,62 +220,43 @@ namespace MixerThreholdMod_1_0_0.Core
         private static void LogWMIInfo(string className, string[] properties, string category)
         {
 #if DEBUG
-            Exception wmiQueryError = null;
+            // Use built-in .NET diagnostics instead of WMI for better compatibility
+            Exception systemInfoError = null;
             try
             {
-                using (var searcher = new ManagementObjectSearcher(string.Format("SELECT * FROM {0}", className)))
+                Main.logger?.Msg(3, string.Format("[SYSMON] {0} Information (via .NET Diagnostics):", category));
+                
+                if (category.Contains("OS"))
                 {
-                    using (var collection = searcher.Get())
-                    {
-                        foreach (ManagementObject obj in collection)
-                        {
-                            Main.logger?.Msg(3, string.Format("[SYSMON] {0} Information:", category));
-                            
-                            foreach (string property in properties)
-                            {
-                                try
-                                {
-                                    object value = obj[property];
-                                    if (value != null)
-                                    {
-                                        // Format large numbers appropriately
-                                        if (property.Contains("Memory") || property.Contains("Size") || property.Contains("FreeSpace"))
-                                        {
-                                            if (long.TryParse(value.ToString(), out long bytes))
-                                            {
-                                                Main.logger?.Msg(3, string.Format("[SYSMON]   {0}: {1:F2} GB", property, bytes / 1073741824.0));
-                                            }
-                                            else
-                                            {
-                                                Main.logger?.Msg(3, string.Format("[SYSMON]   {0}: {1}", property, value));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Main.logger?.Msg(3, string.Format("[SYSMON]   {0}: {1}", property, value));
-                                        }
-                                    }
-                                }
-                                catch (Exception propEx)
-                                {
-                                    Main.logger?.Warn(1, string.Format("[SYSMON] Failed to read property {0}: {1}", property, propEx.Message));
-                                }
-                            }
-                            
-                            // Only log first instance for most classes
-                            if (className != "Win32_LogicalDisk") break;
-                        }
-                    }
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   OSVersion: {0}", Environment.OSVersion));
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   MachineName: {0}", Environment.MachineName));
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   ProcessorCount: {0}", Environment.ProcessorCount));
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   SystemDirectory: {0}", Environment.SystemDirectory));
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   CLRVersion: {0}", Environment.Version));
+                }
+                else if (category.Contains("Processor"))
+                {
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   ProcessorCount: {0}", Environment.ProcessorCount));
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   Architecture: {0}", RuntimeInformation.ProcessArchitecture));
+                }
+                else if (category.Contains("Memory"))
+                {
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   WorkingSet: {0:F2} MB", Environment.WorkingSet / 1048576.0));
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   GC Total Memory: {0:F2} MB", GC.GetTotalMemory(false) / 1048576.0));
+                }
+                else
+                {
+                    Main.logger?.Msg(3, string.Format("[SYSMON]   WMI not available - using basic .NET diagnostics"));
                 }
             }
             catch (Exception ex)
             {
-                wmiQueryError = ex;
+                systemInfoError = ex;
             }
 
-            if (wmiQueryError != null)
+            if (systemInfoError != null)
             {
-                Main.logger?.Warn(1, string.Format("[SYSMON] WMI query for {0} failed: {1}", className, wmiQueryError.Message));
+                Main.logger?.Warn(1, string.Format("[SYSMON] System info query for {0} failed: {1}", className, systemInfoError.Message));
             }
 #endif
         }
