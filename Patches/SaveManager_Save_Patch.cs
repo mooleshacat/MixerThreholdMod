@@ -6,6 +6,7 @@ using MixerThreholdMod_1_0_0.Save;
 using System;
 using System.Collections;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 
@@ -21,12 +22,13 @@ namespace MixerThreholdMod_0_0_1.Patches
     /// ⚠️ THREAD SAFETY: All operations use thread-safe methods and don't block the main thread.
     /// Error handling prevents patch failures from crashing the save process.
     /// 
+    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
+    /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses string.Format instead of string interpolation
     /// - Compatible exception handling patterns
     /// - Proper async coroutine usage
     /// </summary>
-    [HarmonyPatch(typeof(SaveManager), nameof(SaveManager.Save), new[] { typeof(string) })]
     public static class SaveManager_Save_Patch
     {
         private const int MaxBackups = 5;
@@ -57,10 +59,9 @@ namespace MixerThreholdMod_0_0_1.Patches
                 }
 
                 // Apply Harmony patch dynamically
-                // FIX: Use correct HarmonyLib v2 syntax
-                var harmony = new HarmonyLib.Harmony("MixerThreholdMod.SaveManager_Save_Patch");
+                var harmony = new Harmony("MixerThreholdMod.SaveManager_Save_Patch");
                 var postfixMethod = typeof(SaveManager_Save_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
-
+                
                 harmony.Patch(_saveMethod, null, new HarmonyMethod(postfixMethod));
                 
                 Main.logger.Msg(1, "[PATCH] IL2CPP-compatible SaveManager.Save patch applied successfully");

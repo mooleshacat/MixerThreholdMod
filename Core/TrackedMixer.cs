@@ -1,4 +1,5 @@
-using ScheduleOne.Management;
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Management;  // REMOVED: Use dynamic object types for IL2CPP compatibility
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,8 @@ namespace MixerThreholdMod_0_0_1.Core
     /// </summary>
     public class TrackedMixer
     {
-        public MixingStationConfiguration ConfigInstance { get; set; }
+        // IL2CPP COMPATIBLE: Use object instead of specific type to avoid TypeLoadException in IL2CPP builds
+        public object ConfigInstance { get; set; }
         public int MixerInstanceID { get; set; }
         public bool ListenerAdded { get; set; }
 
@@ -117,7 +119,16 @@ namespace MixerThreholdMod_0_0_1.Core
                         }
                     }
 
-                    foreach (var tm in toRemove)
+        /// <summary>
+        /// Remove a specific tracked mixer by ConfigInstance asynchronously
+        /// </summary>
+        public static async Task<bool> RemoveAsync(object configInstance)
+        {
+            try
+            {
+                return await Task.Run(() =>
+                {
+                    lock (_operationLock)
                     {
                         try
                         {

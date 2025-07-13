@@ -86,7 +86,6 @@ namespace MixerThreholdMod_1_0_0.Core
         /// </summary>
         public static Type GetMixingStationConfigurationType()
         {
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 if (IsIL2CPPBuild)
@@ -98,9 +97,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         var type = assemblyCSharp.GetType("ScheduleOne.Management.MixingStationConfiguration");
                         if (type != null)
                         {
-                            stopwatch.Stop();
-                            AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance("MixingStationConfiguration (Assembly-CSharp)", stopwatch.Elapsed.TotalMilliseconds, true);
-                            logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration found via Assembly.GetType()");
+                            logger.Msg(3, "[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration found via Assembly.GetType()");
                             return type;
                         }
                     }
@@ -111,31 +108,23 @@ namespace MixerThreholdMod_1_0_0.Core
                         var type = assembly.GetType("ScheduleOne.Management.MixingStationConfiguration");
                         if (type != null)
                         {
-                            stopwatch.Stop();
-                            AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance(string.Format("MixingStationConfiguration ({0})", assembly.FullName), stopwatch.Elapsed.TotalMilliseconds, true);
                             logger.Msg(3, string.Format("[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration found in assembly: {0}", assembly.FullName));
                             return type;
                         }
                     }
 
-                    stopwatch.Stop();
-                    AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance("MixingStationConfiguration (NOT_FOUND)", stopwatch.Elapsed.TotalMilliseconds, false);
-                    logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration not found via string-based loading");
+                    logger.Warn(1, "[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration not found via string-based loading");
                     return null;
                 }
                 else
                 {
                     // MONO: Direct type reference (should work normally)
-                    stopwatch.Stop();
-                    AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance("MixingStationConfiguration (MONO_DIRECT)", stopwatch.Elapsed.TotalMilliseconds, true);
-                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[TYPE_RESOLVER] MONO: Using direct type reference for MixingStationConfiguration");
+                    logger.Msg(3, "[TYPE_RESOLVER] MONO: Using direct type reference for MixingStationConfiguration");
                     return typeof(ScheduleOne.Management.MixingStationConfiguration);
                 }
             }
             catch (Exception ex)
             {
-                stopwatch.Stop();
-                AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance("MixingStationConfiguration (EXCEPTION)", stopwatch.Elapsed.TotalMilliseconds, false);
                 logger.Err(string.Format("[TYPE_RESOLVER] Failed to resolve MixingStationConfiguration: {0}", ex.Message));
                 return null;
             }
@@ -157,7 +146,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         var type = assemblyCSharp.GetType("ScheduleOne.Persistence.SaveManager");
                         if (type != null)
                         {
-                            logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[TYPE_RESOLVER] IL2CPP: SaveManager found via Assembly.GetType()");
+                            logger.Msg(3, "[TYPE_RESOLVER] IL2CPP: SaveManager found via Assembly.GetType()");
                             return type;
                         }
                     }
@@ -173,13 +162,13 @@ namespace MixerThreholdMod_1_0_0.Core
                         }
                     }
 
-                    logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[TYPE_RESOLVER] IL2CPP: SaveManager not found via string-based loading");
+                    logger.Warn(1, "[TYPE_RESOLVER] IL2CPP: SaveManager not found via string-based loading");
                     return null;
                 }
                 else
                 {
                     // MONO: Direct type reference (should work normally)
-                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[TYPE_RESOLVER] MONO: Using direct type reference for SaveManager");
+                    logger.Msg(3, "[TYPE_RESOLVER] MONO: Using direct type reference for SaveManager");
                     return typeof(ScheduleOne.Persistence.SaveManager);
                 }
             }
@@ -200,7 +189,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 var mixingStationType = GetMixingStationConfigurationType();
                 if (mixingStationType == null)
                 {
-                    logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[TYPE_RESOLVER] Cannot get constructor - MixingStationConfiguration type not found");
+                    logger.Warn(1, "[TYPE_RESOLVER] Cannot get constructor - MixingStationConfiguration type not found");
                     return null;
                 }
 
@@ -217,11 +206,11 @@ namespace MixerThreholdMod_1_0_0.Core
 
                 if (constructor != null)
                 {
-                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[TYPE_RESOLVER] MixingStationConfiguration constructor found successfully");
+                    logger.Msg(3, "[TYPE_RESOLVER] MixingStationConfiguration constructor found successfully");
                 }
                 else
                 {
-                    logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[TYPE_RESOLVER] MixingStationConfiguration constructor not found");
+                    logger.Warn(1, "[TYPE_RESOLVER] MixingStationConfiguration constructor not found");
                 }
 
                 return constructor;
@@ -290,7 +279,7 @@ namespace MixerThreholdMod_1_0_0.Core
         /// </summary>
         public static void LogTypeAvailability()
         {
-            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[TYPE_RESOLVER] === TYPE AVAILABILITY REPORT ===");
+            logger.Msg(1, "[TYPE_RESOLVER] === TYPE AVAILABILITY REPORT ===");
             logger.Msg(1, string.Format("[TYPE_RESOLVER] Build Environment: {0}", IsIL2CPPBuild ? "IL2CPP" : "MONO"));
             
             var mixingStationType = GetMixingStationConfigurationType();
@@ -303,7 +292,7 @@ namespace MixerThreholdMod_1_0_0.Core
             logger.Msg(1, string.Format("[TYPE_RESOLVER] MixingStationConfiguration Constructor: {0}", constructor != null ? "AVAILABLE" : "NOT FOUND"));
 
             // List available assemblies for debugging
-            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[TYPE_RESOLVER] Available Assemblies:");
+            logger.Msg(2, "[TYPE_RESOLVER] Available Assemblies:");
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 logger.Msg(3, string.Format("[TYPE_RESOLVER]   - {0}", assembly.FullName));
