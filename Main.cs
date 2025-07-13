@@ -180,12 +180,12 @@ namespace MixerThreholdMod_0_0_1
                     Core.GameExceptionMonitor.InitializeLoggingBridge();
                     logger.Msg(1, "Phase 7: Game exception monitoring initialized");
                     
-                    // Initialize system hardware monitoring for debugging (DEBUG mode only)
-                    logger.Msg(1, "Phase 6: Initializing system monitoring...");
+                    // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
+                    logger.Msg(1, "Phase 6: Initializing advanced system monitoring with memory leak detection...");
                     Core.SystemMonitor.Initialize();
-                    logger.Msg(1, "Phase 6: System monitoring initialized");
+                    logger.Msg(1, "Phase 6: Advanced system monitoring with memory leak detection initialized");
                     
-                    logger.Msg(1, "=== MixerThreholdMod Initialization COMPLETE ===");
+                    logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
                 {
