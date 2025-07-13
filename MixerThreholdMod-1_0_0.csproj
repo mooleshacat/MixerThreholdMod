@@ -98,6 +98,7 @@
     <!-- Core Components -->
     <Compile Include="Core\GameConsoleBridge.cs" />
     <Compile Include="Core\GameLoggerBridge.cs" />
+    <Compile Include="Core\IL2CPPTypeResolver.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\MixerIDManager.cs" />
     <Compile Include="Core\SystemMonitor.cs" />

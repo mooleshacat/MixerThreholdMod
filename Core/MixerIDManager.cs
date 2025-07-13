@@ -1,4 +1,5 @@
-using ScheduleOne.Management;
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Management;  // REMOVED: Use dynamic object types for IL2CPP compatibility
 using System;
 using System.Collections.Concurrent;
 
@@ -26,9 +27,9 @@ namespace MixerThreholdMod_1_0_0.Core
         private static int _nextStableID = 1;
         private static readonly object _counterLock = new object();
 
-        // Thread-safe dictionary for .NET 4.8.1
-        public static readonly ConcurrentDictionary<MixingStationConfiguration, int> MixerInstanceMap =
-            new ConcurrentDictionary<MixingStationConfiguration, int>();
+        // Thread-safe dictionary for .NET 4.8.1 - IL2CPP COMPATIBLE: Use object instead of specific type
+        public static readonly ConcurrentDictionary<object, int> MixerInstanceMap =
+            new ConcurrentDictionary<object, int>();
 
         /// <summary>
         /// Reset the stable ID counter to 1. Used when starting new game sessions.
@@ -54,8 +55,9 @@ namespace MixerThreholdMod_1_0_0.Core
         /// <summary>
         /// Get or assign a unique mixer ID for the given configuration instance.
         /// ⚠️ THREAD SAFETY: This method is thread-safe and handles concurrent access.
+        /// IL2CPP COMPATIBLE: Uses object type to avoid TypeLoadException
         /// </summary>
-        public static int GetMixerID(MixingStationConfiguration instance)
+        public static int GetMixerID(object instance)
         {
             try
             {
@@ -109,8 +111,9 @@ namespace MixerThreholdMod_1_0_0.Core
         /// <summary>
         /// Try to get mixer ID without throwing exceptions.
         /// ⚠️ THREAD SAFETY: This method is thread-safe and won't throw exceptions.
+        /// IL2CPP COMPATIBLE: Uses object type to avoid TypeLoadException
         /// </summary>
-        public static bool TryGetMixerID(MixingStationConfiguration instance, out int id)
+        public static bool TryGetMixerID(object instance, out int id)
         {
             id = -1;
             try
