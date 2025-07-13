@@ -66,7 +66,7 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Proper exception handling and logging throughout all operations
     /// - Memory-efficient collection operations with leak prevention
     /// </summary>
-    public static class TrackedMixers
+    public static class MixerConfigurationTracker
     {
         private static readonly ConcurrentBag<TrackedMixer> _trackedMixers = new ConcurrentBag<TrackedMixer>();
         private static readonly object _operationLock = new object();

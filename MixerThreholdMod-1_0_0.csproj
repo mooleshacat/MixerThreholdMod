@@ -96,23 +96,23 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Core Components -->
-    <Compile Include="Core\GameConsoleBridge.cs" />
-    <Compile Include="Core\GameLoggerBridge.cs" />
+    <Compile Include="Core\NativeGameConsoleIntegration.cs" />
+    <Compile Include="Core\GameExceptionMonitor.cs" />
     <Compile Include="Core\IL2CPPTypeResolver.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\MixerIDManager.cs" />
-    <Compile Include="Core\SystemMonitor.cs" />
-    <Compile Include="Core\TrackedMixer.cs" />
-    <Compile Include="Core\Console.cs" />
+    <Compile Include="Core\AdvancedSystemPerformanceMonitor.cs" />
+    <Compile Include="Core\MixerConfigurationTracker.cs" />
+    <Compile Include="Core\ModConsoleCommandProcessor.cs" />
     <!-- Save System -->
     <Compile Include="Save\CrashResistantSaveManager.cs" />
     <!-- Threading -->
     <Compile Include="Threading\ThreadSafeCollections.cs" />
-    <!-- Restored Critical Helpers -->
+    <!-- Enhanced File Operations -->
     <Compile Include="Helpers\CancellableIoRunner.cs" />
-    <Compile Include="Helpers\FileLockerHelper.cs" />
-    <Compile Include="Helpers\FileOperations.cs" />
-    <Compile Include="Helpers\MixerSaveManager.cs" />
+    <Compile Include="Helpers\SafeFileLockingSystem.cs" />
+    <Compile Include="Helpers\ThreadSafeFileOperations.cs" />
+    <Compile Include="Helpers\MixerDataPersistenceManager.cs" />
     <Compile Include="Helpers\Utils.cs" />
     <!-- Patches -->
     <Compile Include="Patches\SaveManager_Save_Patch.cs" />
