@@ -91,9 +91,11 @@ namespace MixerThreholdMod_1_0_0.Core
                                     
                                     // NOTE: Direct dictionary injection causes type compatibility issues with ScheduleOne.Console+ConsoleCommand
                                     // Using Harmony-based command interception instead for reliable console integration
-                                    Main.logger?.Msg(2, "[BRIDGE] Skipping direct command injection - using Harmony interception for mod commands");
+                                    Main.logger?.Msg(2, "[BRIDGE] Applying Harmony-based command interception for mod commands");
 
-                                    _isInitialized = true;
+                                    // Apply Harmony patches to intercept console commands
+                                    TryHarmonyConsoleIntegration(consoleType);
+                                    
                                     Main.logger?.Msg(1, "[BRIDGE] Console integration ready - commands handled via Harmony patches");
                                 }
                                 else
@@ -368,12 +370,13 @@ namespace MixerThreholdMod_1_0_0.Core
                 var baseCommand = parts[0];
 
                 // Check if this is one of our mod commands
-                // Updated to include all commands actually implemented in Console.cs
+                // Updated to include ONLY commands actually implemented in Console.cs
                 var modCommands = new string[] 
                 { 
-                    "savemonitor", "transactionalsave", "profile", "saveprefstress", "savegamestress",
-                    "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency", "mixer_status", "mixer_info",
-                    "msg", "warn", "err", "info", "warning", "error", "help", "commands"
+                    "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency",
+                    "mixer_saveprefstress", "saveprefstress", "mixer_savegamestress", "savegamestress",
+                    "mixer_savemonitor", "savemonitor", "transactionalsave", "mixer_transactional",
+                    "profile", "mixer_profile", "msg", "warn", "err", "help", "?"
                 };
 
                 // Log ALL console commands for comprehensive debugging
