@@ -25,9 +25,12 @@ instead of a txt file. If you need it for reference, here it is.
 
 Please note the filename prefixes and possibility for multiple files.
 
-- dnSpy full decompile entire assembly (inside folder: "Assembly-CSharp.dll\")
-- filname is only a date/timestamp: logging from mod (filename has no prefix, look for date/timestamp as filename, shows melon logger logs if enabled, shows in mod log)
+- dnSpy full decompile entire assembly (inside folder: "Assembly-CSharp.dll\" there is solution / files/folders)
+- dnSpy file name "dnSpyFromHuman_IMPORTANT.txt" read!!! then search your dnspy solution :) (IF FILES EXIST!)
 - compileErrors: list of compile errors from last test. (filename prefix: compileErrors)
+- filname is only a date/timestamp: logging from mod (filename has no prefix, look for date/timestamp as filename, compare files in ForCopilot over each git commit on the current active PR you working on, shows in mod log)
+
+You should be able to compare files changed and diffs from the PR to figure out which logs are new/recent. Sometimes the first run will crash but second run loads, then crashes after delay. Hence 2 logs. I try to get as much for you as possible. 
 
 Not all files will exist all the time. If you need logs, ask for recent logs. If you need any other dnSpy code, ask human, and inform what patterns to look for.
 
