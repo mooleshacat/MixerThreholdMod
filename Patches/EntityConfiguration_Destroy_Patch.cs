@@ -1,12 +1,9 @@
 ﻿using ScheduleOne.Management;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HarmonyLib;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
     /// Harmony patch for EntityConfiguration.Destroy to handle mixer cleanup.
@@ -41,6 +38,7 @@ namespace MixerThreholdMod_0_0_1
                 }
 
                 Main.logger.Msg(3, "[PATCH] EntityConfiguration.Destroy() called - checking for mixer cleanup");
+<<<<<<< HEAD
 
                 // Check if this is a mixer configuration that needs cleanup
                 var mixerConfig = __instance as MixingStationConfiguration;
@@ -119,18 +117,42 @@ namespace MixerThreholdMod_0_0_1
                 }
 
                 Main.logger.Msg(2, $"EntityConfiguration.Destroy() called for mixer");
+=======
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
-                // Use fire-and-forget async to avoid blocking the game thread
-                Task.Run(async () =>
+                // Check if this is a mixer configuration that needs cleanup
+                var mixerConfig = __instance as MixingStationConfiguration;
+                if (mixerConfig != null)
                 {
-                    try
+                    // Safe cleanup using background task to not block destruction
+                    System.Threading.Tasks.Task.Run(async () =>
                     {
+<<<<<<< HEAD
                         // Get a snapshot of tracked mixers
                         var trackedMixers = await TrackedMixers.ToListAsync();
                         if (trackedMixers == null)
+=======
+                        Exception cleanupError = null;
+                        try
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                         {
-                            Main.logger.Warn(1, "EntityConfiguration_Destroy_Patch: trackedMixers is null");
-                            return;
+                            // Remove from tracked mixers safely
+                            bool removed = await TrackedMixers.RemoveAsync(mixerConfig);
+                            if (removed)
+                            {
+                                Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");
+                            }
+
+                            // Remove from ID manager
+                            bool idRemoved = Core.MixerIDManager.RemoveMixerID(mixerConfig);
+                            if (idRemoved)
+                            {
+                                Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from ID manager");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            cleanupError = ex;
                         }
 =======
                 Main.logger.Msg(2, $"EntityConfiguration.Destroy() called mixer");
@@ -144,10 +166,9 @@ namespace MixerThreholdMod_0_0_1
                         var trackedMixers = await TrackedMixers.ToListAsync().ConfigureAwait(false);
 >>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
 
-                        // Find if this instance is tracked
-                        var mixerData = trackedMixers.FirstOrDefault(tm => tm != null && tm.ConfigInstance == __instance);
-                        if (mixerData != null)
+                        if (cleanupError != null)
                         {
+<<<<<<< HEAD
                             // Remove from shared tracked list
 <<<<<<< HEAD
                             await TrackedMixers.RemoveAsync(mixerData.ConfigInstance);
@@ -173,6 +194,13 @@ namespace MixerThreholdMod_0_0_1
 >>>>>>> f184e29 (Fix sync-over-async patterns, improve file operations, and add defensive programming)
                     }
                 });
+=======
+                            Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Cleanup error: {0}", cleanupError.Message));
+                            // Don't re-throw - let cleanup fail gracefully
+                        }
+                    });
+                }
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
             catch (Exception ex)
             {

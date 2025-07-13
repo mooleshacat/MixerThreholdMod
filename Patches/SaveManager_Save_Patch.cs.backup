@@ -75,7 +75,11 @@ namespace MixerThreholdMod_0_0_1
         private static IEnumerator BackupSaveFolder(string _saveRoot)
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
             Main.logger.Msg(3, $"BackupSaveFolder started for: {_saveRoot}");
+=======
+            Main.logger.Msg(3, string.Format("BackupSaveFolder started for: {0}", _saveRoot));
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             yield return new WaitForSeconds(1.5f); // Ensure save completes
 
             // Move backup logic to a background task to avoid yield issues
@@ -135,6 +139,7 @@ namespace MixerThreholdMod_0_0_1
 
                 Main.logger.Msg(2, $"BACKUP ROOT: {_backupRoot}");
                 Main.logger.Msg(2, $"SAVE ROOT: {_saveRoot}");
+<<<<<<< HEAD
 =======
             try
             {
@@ -144,6 +149,11 @@ namespace MixerThreholdMod_0_0_1
                 if (string.IsNullOrEmpty(_saveRoot))
                 {
 <<<<<<< HEAD
+=======
+
+                if (!Directory.Exists(_saveRoot))
+                {
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     Main.logger.Warn(1, $"Save directory not found at {_saveRoot}");
                     return BackupResult.CreateFailure($"Save directory not found at {_saveRoot}");
                 }
@@ -165,6 +175,7 @@ namespace MixerThreholdMod_0_0_1
                     // Copy the SaveGame_2 folder to backup location
                     CopyDirectory(_saveRoot, _backupPath);
                     Main.logger.Msg(2, $"Saved backup to: {_backupPath}");
+<<<<<<< HEAD
 =======
                     Main.logger.Warn(1, "BackupSaveFolder: _saveRoot is null or empty");
                     yield break;
@@ -301,6 +312,13 @@ namespace MixerThreholdMod_0_0_1
 =======
                     Main.logger.Err($"BackupSaveFolder: Error during backup: {ex.Message}\n{ex.StackTrace}");
 >>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+=======
+                }
+                catch (Exception copyEx)
+                {
+                    Main.logger.Err($"Failed to copy directory during backup: {copyEx.Message}\n{copyEx.StackTrace}");
+                    return BackupResult.CreateFailure($"Failed to copy directory during backup: {copyEx.Message}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
 
                 return BackupResult.CreateSuccess(_backupRoot, _saveRootPrefix);
@@ -308,6 +326,9 @@ namespace MixerThreholdMod_0_0_1
             catch (Exception ex)
             {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 Main.logger.Err($"PerformBackupOperation: Critical error during backup: {ex.Message}\n{ex.StackTrace}");
                 return BackupResult.CreateFailure($"Critical error during backup: {ex.Message}");
             }
@@ -512,9 +533,12 @@ namespace MixerThreholdMod_0_0_1
             public static DeletionResult CreateFatal(string errorMessage)
             {
                 return new DeletionResult { Success = false, ShouldContinue = false, ErrorMessage = errorMessage };
+<<<<<<< HEAD
 =======
                 Main.logger.Err($"Coroutine continue failure in BackupSaveFolder: {ex}");
 >>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
+=======
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
         }
 
@@ -587,6 +611,7 @@ namespace MixerThreholdMod_0_0_1
 
         private static IEnumerator WriteDelayed(string _saveRoot)
         {
+<<<<<<< HEAD
             try
             {
                 if (string.IsNullOrEmpty(_saveRoot))
@@ -609,6 +634,24 @@ namespace MixerThreholdMod_0_0_1
             catch (Exception ex)
             {
                 Main.logger.Err($"Coroutine continue failure in WriteDelayed: {ex}");
+=======
+            if (string.IsNullOrEmpty(_saveRoot))
+            {
+                Main.logger.Warn(1, "WriteDelayed: _saveRoot is null or empty");
+                yield break;
+            }
+
+            yield return new WaitForSeconds(1.0f);
+
+            // Move coroutine start to background to avoid potential issues
+            try
+            {
+                MelonCoroutines.Start(MixerSaveManager.WriteMixerValuesAsync(_saveRoot));
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err($"WriteDelayed: Error starting WriteMixerValuesAsync coroutine: {ex.Message}\n{ex.StackTrace}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
         }
     }

@@ -3,7 +3,11 @@
 using System;
 using System.Collections.Concurrent;
 
+<<<<<<< HEAD
 namespace MixerThreholdMod_0_0_1.Core
+=======
+namespace MixerThreholdMod_1_0_0.Core
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 {
     /// <summary>
     /// Thread-safe mixer ID management system for .NET 4.8.1 compatibility.
@@ -27,9 +31,15 @@ namespace MixerThreholdMod_0_0_1.Core
         private static int _nextStableID = 1;
         private static readonly object _counterLock = new object();
 
+<<<<<<< HEAD
         // Thread-safe dictionary for .NET 4.8.1
         public static readonly ConcurrentDictionary<MixingStationConfiguration, int> MixerInstanceMap =
             new ConcurrentDictionary<MixingStationConfiguration, int>();
+=======
+        // Thread-safe dictionary for .NET 4.8.1 - IL2CPP COMPATIBLE: Use object instead of specific type
+        public static readonly ConcurrentDictionary<object, int> MixerInstanceMap =
+            new ConcurrentDictionary<object, int>();
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
         /// <summary>
         /// Reset the stable ID counter to 1. Used when starting new game sessions.
@@ -47,7 +57,11 @@ namespace MixerThreholdMod_0_0_1.Core
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 Main.logger?.Err(string.Format("ResetStableIDCounter: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+=======
+                Main.logger?.Err($"ResetStableIDCounter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 throw;
             }
         }
@@ -65,6 +79,7 @@ namespace MixerThreholdMod_0_0_1.Core
                 {
                     const string errorMsg = "Cannot assign ID to null MixingStationConfiguration";
                     Main.logger?.Err(errorMsg);
+<<<<<<< HEAD
                     throw new ArgumentNullException("instance", errorMsg);
                 }
 
@@ -73,6 +88,19 @@ namespace MixerThreholdMod_0_0_1.Core
                 if (MixerInstanceMap.TryGetValue(instance, out existingId))
                 {
                     Main.logger?.Warn(2, string.Format("Instance already has ID {0}: {1}", existingId, instance));
+=======
+<<<<<<<< HEAD:Helpers/MixerIDManager.cs
+                    throw new ArgumentNullException(nameof(instance), errorMsg);
+========
+                    throw new ArgumentNullException("instance", errorMsg);
+>>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025):Core/MixerIDManager.cs
+                }
+
+                // Try to get existing ID first
+                if (MixerInstanceMap.TryGetValue(instance, out int existingId))
+                {
+                    Main.logger?.Warn(2, $"Instance already has ID {existingId}: {instance}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     return existingId;
                 }
 
@@ -88,11 +116,19 @@ namespace MixerThreholdMod_0_0_1.Core
 
                 if (actualId == newId)
                 {
+<<<<<<< HEAD
                     Main.logger?.Msg(3, string.Format("Assigned new ID {0} to instance: {1}", newId, instance));
                 }
                 else
                 {
                     Main.logger?.Warn(2, string.Format("Another thread assigned ID {0} to instance: {1}", actualId, instance));
+=======
+                    Main.logger?.Msg(3, $"Assigned new ID {newId} to instance: {instance}");
+                }
+                else
+                {
+                    Main.logger?.Warn(2, $"Another thread assigned ID {actualId} to instance: {instance}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
 
                 return actualId;
@@ -103,7 +139,11 @@ namespace MixerThreholdMod_0_0_1.Core
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 Main.logger?.Err(string.Format("GetMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+=======
+                Main.logger?.Err($"GetMixerID: Caught exception: {ex.Message}\n{ex.StackTrace}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 throw;
             }
         }
@@ -123,12 +163,17 @@ namespace MixerThreholdMod_0_0_1.Core
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 Main.logger?.Err(string.Format("TryGetMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+=======
+                Main.logger?.Err($"TryGetMixerID: Caught exception: {ex.Message}\n{ex.StackTrace}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 return false;
             }
         }
 
         /// <summary>
+<<<<<<< HEAD
         /// Remove mixer ID mapping using object type for IL2CPP compatibility.
         /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.
         /// ⚠️ IL2CPP COMPATIBLE: Uses object type to avoid TypeLoadException
@@ -205,6 +250,12 @@ namespace MixerThreholdMod_0_0_1.Core
         /// ⚠️ IL2CPP COMPATIBLE: Uses object type to avoid TypeLoadException
         /// </summary>
         public static bool RemoveMixerID(object instance)
+=======
+        /// Remove mixer ID mapping. Used for cleanup when mixers are destroyed.
+        /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.
+        /// </summary>
+        public static bool RemoveMixerID(MixingStationConfiguration instance)
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         {
             try
             {
@@ -214,6 +265,7 @@ namespace MixerThreholdMod_0_0_1.Core
                     return false;
                 }
 
+<<<<<<< HEAD
                 int removedId;
                 bool removed = MixerInstanceMap.TryRemove(instance, out removedId);
                 if (removed)
@@ -223,13 +275,27 @@ namespace MixerThreholdMod_0_0_1.Core
                 else
                 {
                     Main.logger?.Warn(2, string.Format("Failed to remove mixer ID for instance: {0}", instance));
+=======
+                bool removed = MixerInstanceMap.TryRemove(instance, out int removedId);
+                if (removed)
+                {
+                    Main.logger?.Msg(3, $"Removed mixer ID {removedId} for instance: {instance}");
+                }
+                else
+                {
+                    Main.logger?.Warn(2, $"Failed to remove mixer ID for instance: {instance}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
 
                 return removed;
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 Main.logger?.Err(string.Format("RemoveMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+=======
+                Main.logger?.Err($"RemoveMixerID: Caught exception: {ex.Message}\n{ex.StackTrace}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 return false;
             }
         }
@@ -246,7 +312,11 @@ namespace MixerThreholdMod_0_0_1.Core
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 Main.logger?.Err(string.Format("GetMixerCount: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+=======
+                Main.logger?.Err($"GetMixerCount: Caught exception: {ex.Message}\n{ex.StackTrace}");
+>>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 return 0;
             }
         }
