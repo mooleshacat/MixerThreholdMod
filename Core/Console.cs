@@ -8,16 +8,25 @@ using UnityEngine;
 namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
-    /// Simplified console integration for debugging and user commands.
-    /// Provides essential console commands for save management and debugging.
+    /// IL2CPP COMPATIBLE: Simplified console integration for debugging and user commands.
+    /// Provides essential console commands for save management and debugging with AOT-safe patterns.
     /// 
-    /// ⚠️ THREAD SAFETY: All console operations are designed to be thread-safe.
-    /// Error handling prevents console failures from crashing the mod.
+    /// ⚠️ THREAD SAFETY: All console operations are designed to be thread-safe with proper error handling.
+    /// ⚠️ IL2CPP COMPATIBLE: Uses compile-time safe patterns, minimal reflection, AOT-friendly operations.
+    /// ⚠️ MEMORY LEAK PREVENTION: Proper cleanup and disposal patterns prevent console-related memory leaks.
+    /// 
+    /// IL2CPP Compatibility Features:
+    /// - Minimal reflection usage with compile-time known types only
+    /// - No dynamic code generation or runtime type creation
+    /// - AOT-safe method resolution using typeof() instead of GetType()
+    /// - Interface-based command processing instead of reflection-heavy approaches
+    /// - Compile-time safe generic constraints and collection usage
     /// 
     /// .NET 4.8.1 Compatibility:
-    /// - Uses string.Format instead of string interpolation
-    /// - Compatible reflection patterns
-    /// - Proper exception handling
+    /// - Uses string.Format instead of string interpolation for maximum compatibility
+    /// - Compatible reflection patterns with minimal usage and proper error handling
+    /// - Proper exception handling throughout all console operations
+    /// - Framework-appropriate async patterns and resource management
     /// </summary>
     public static class Console
     {
