@@ -353,6 +353,7 @@ namespace MixerThreholdMod_1_0_0.Core
         /// Harmony prefix patch for console command processing
         /// Intercepts ScheduleOne.Console.SubmitCommand(string args) calls
         /// ⚠️ COMPREHENSIVE LOGGING: Logs all console commands for debugging, including non-mod commands
+        /// ⚠️ COMMAND VALIDATION: Checks both mod and game command registries to prevent invalid command processing
         /// </summary>
         private static bool ConsoleProcessPrefix(string args)
         {
@@ -379,6 +380,43 @@ namespace MixerThreholdMod_1_0_0.Core
                     "profile", "mixer_profile", "msg", "warn", "err", "help", "?"
                 };
 
+                // Get game's commands dictionary using reflection
+                bool isGameCommand = false;
+                try
+                {
+                    // dnSpy Verified: ScheduleOne.Console.commands is a static Dictionary<string, Console.ConsoleCommand> field
+                    var consoleType = System.Type.GetType("ScheduleOne.Console, Assembly-CSharp");
+                    if (consoleType != null)
+                    {
+                        var commandsField = consoleType.GetField("commands", BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+                        if (commandsField != null)
+                        {
+                            var commandsDict = commandsField.GetValue(null) as System.Collections.IDictionary;
+                            if (commandsDict != null)
+                            {
+                                isGameCommand = commandsDict.Contains(baseCommand);
+                                Main.logger?.Msg(3, string.Format("[BRIDGE] Game commands dictionary accessed. Command '{0}' exists in game: {1}", baseCommand, isGameCommand ? "YES" : "NO"));
+                            }
+                            else
+                            {
+                                Main.logger?.Warn(1, "[BRIDGE] Could not access game commands dictionary - may not be initialized");
+                            }
+                        }
+                        else
+                        {
+                            Main.logger?.Warn(1, "[BRIDGE] Could not find game commands field via reflection");
+                        }
+                    }
+                    else
+                    {
+                        Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console type via reflection");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Warn(1, string.Format("[BRIDGE] Error accessing game commands: {0}", ex.Message));
+                }
+
                 // Log ALL console commands for comprehensive debugging
                 Main.logger?.Msg(2, string.Format("[BRIDGE] === INTERCEPTED CONSOLE COMMAND ==="));
                 Main.logger?.Msg(2, string.Format("[BRIDGE] Raw command: '{0}'", args));
@@ -392,6 +430,9 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(3, "[BRIDGE] No parameters detected");
                 }
 
+                // Check if this is one of our mod commands
+                bool isModCommand = modCommands.Contains(baseCommand);
+
                 // Log the comparison for debugging
                 Main.logger?.Msg(3, string.Format("[BRIDGE] Checking if '{0}' is in mod command list...", baseCommand));
                 foreach (var modCmd in modCommands)
@@ -403,11 +444,18 @@ namespace MixerThreholdMod_1_0_0.Core
                     }
                 }
 
-                bool isModCommand = modCommands.Contains(baseCommand);
-                Main.logger?.Msg(2, string.Format("[BRIDGE] Command classification: {0}", isModCommand ? "MOD COMMAND" : "GAME COMMAND"));
-
-                if (isModCommand)
+                // Determine command classification and appropriate action
+                if (isModCommand && isGameCommand)
                 {
+                    // CONFLICT: Both mod and game handle this command
+                    Main.logger?.Warn(1, string.Format("[BRIDGE] CONFLICT: Both mod and game handle command '{0}' - yielding to game!", baseCommand));
+                    Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: CONFLICTED (MOD+GAME) - YIELDING TO GAME"));
+                    return true; // Let game handle it
+                }
+                else if (isModCommand)
+                {
+                    // MOD ONLY: Process with mod handler
+                    Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: MOD COMMAND"));
                     Main.logger?.Msg(2, string.Format("[BRIDGE] Processing mod command: {0}", args));
                     
                     // Process with our console handler
@@ -424,10 +472,22 @@ namespace MixerThreholdMod_1_0_0.Core
                     
                     return false; // Skip original method execution
                 }
-                else
+                else if (isGameCommand)
                 {
+                    // GAME ONLY: Allow game to process
+                    Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: GAME COMMAND"));
                     Main.logger?.Msg(2, string.Format("[BRIDGE] Allowing game to process command: {0}", baseCommand));
                     return true; // Continue with original method for game commands
+                }
+                else
+                {
+                    // NEITHER: Command is invalid to both mod and game
+                    Main.logger?.Warn(1, string.Format("[BRIDGE] INVALID COMMAND: '{0}' is not recognized by mod or game - preventing game processing", baseCommand));
+                    Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: INVALID (UNKNOWN TO BOTH)"));
+                    Main.logger?.Warn(1, string.Format("[BRIDGE] Use 'help' or '?' to see available commands"));
+                    
+                    // Prevent game from processing unknown commands to avoid "Command not found" spam
+                    return false; // Skip original method execution
                 }
             }
             catch (Exception ex)
