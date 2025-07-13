@@ -198,11 +198,16 @@ namespace MixerThreholdMod_0_0_1
             Console.RegisterConsoleCommandViaReflection();
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
         private static void QueueInstance(MixingStationConfiguration __instance)
 =======
 
         private static void QueueInstance(object __instance)
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+
+        private static void QueueInstance(object __instance)
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         {
             queuedInstances.Add(__instance);
             logger.Msg(3, "Queued new MixingStationConfiguration");

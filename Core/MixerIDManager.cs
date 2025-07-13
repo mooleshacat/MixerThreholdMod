@@ -42,6 +42,7 @@ namespace MixerThreholdMod_1_0_0.Core
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         // Thread-safe dictionary for .NET 4.8.1
         public static readonly ConcurrentDictionary<MixingStationConfiguration, int> MixerInstanceMap =
             new ConcurrentDictionary<MixingStationConfiguration, int>();
@@ -60,6 +61,11 @@ namespace MixerThreholdMod_1_0_0.Core
         public static readonly ConcurrentDictionary<object, int> MixerInstanceMap =
             new ConcurrentDictionary<object, int>();
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+        // Thread-safe dictionary for .NET 4.8.1 - IL2CPP COMPATIBLE: Use object instead of specific type
+        public static readonly ConcurrentDictionary<object, int> MixerInstanceMap =
+            new ConcurrentDictionary<object, int>();
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 
         /// <summary>
         /// Reset the stable ID counter to 1. Used when starting new game sessions.

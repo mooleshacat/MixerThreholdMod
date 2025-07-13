@@ -182,6 +182,7 @@ namespace MixerThreholdMod_1_0_0.Core
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         public static async Task<bool> RemoveAsync(MixingStationConfiguration configInstance)
 =======
         public static async Task<bool> RemoveAsync(object configInstance)
@@ -192,6 +193,9 @@ namespace MixerThreholdMod_1_0_0.Core
 =======
         public static async Task<bool> RemoveAsync(object configInstance)
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+        public static async Task<bool> RemoveAsync(object configInstance)
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         {
             try
             {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<<< HEAD:Helpers/FileLockerHelper.cs
 namespace MixerThreholdMod_0_0_1
@@ -16,6 +17,8 @@ namespace MixerThreholdMod_0_0_1
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
@@ -44,10 +47,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
     public class FileLockHelper : IDisposable
     {
         private readonly string lockFilePath;
@@ -57,6 +63,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         private bool disposed = false;
         private const int DefaultTimeoutMs = 5000;
         private const int RetryDelayMs = 50;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -73,6 +80,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 
         public FileLockHelper(string lockFilePath)
         {
@@ -82,10 +91,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 {
                     Main.logger?.Err("FileLockHelper constructor: lockFilePath is null or empty");
                     throw new ArgumentException("Lock file path cannot be null or empty", "lockFilePath");
@@ -97,6 +109,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             catch (Exception ex)
             {
                 Main.logger?.Err(string.Format("FileLockHelper constructor failed: {0}\n{1}", ex.Message, ex.StackTrace));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -112,6 +125,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 throw;
             }
         }
@@ -121,10 +136,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         /// 
         /// ⚠️ MAIN THREAD WARNING: This method uses Thread.Sleep and blocks the calling thread.
         /// Do NOT call from main thread. Use AcquireSharedLockAsync() for main thread safety.
@@ -135,6 +153,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         /// <returns>True if lock acquired successfully, false on timeout or error</returns>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         /// </summary>
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
@@ -142,6 +161,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         public bool AcquireSharedLock(int timeoutMs = DefaultTimeoutMs)
         {
             try
@@ -149,10 +170,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 if (disposed)
                 {
                     Main.logger?.Warn(1, "FileLockHelper.AcquireSharedLock: Object is disposed");
@@ -205,6 +229,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireSharedLock: Timeout acquiring shared lock on {0}", lockFilePath));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 lock (_lockObject)
                 {
@@ -234,11 +259,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                     return false;
                 }
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -252,12 +280,16 @@ namespace MixerThreholdMod_1_0_0.Helpers
 =======
                 Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+                Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 try
                 {
                     ReleaseLock();
                 }
                 catch (Exception releaseEx)
                 {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -271,6 +303,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
 =======
                     Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 }
                 return false;
             }
@@ -281,10 +316,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         /// 
         /// ⚠️ MAIN THREAD WARNING: This method uses Thread.Sleep and blocks the calling thread.
         /// Do NOT call from main thread. Use AcquireExclusiveLockAsync() for main thread safety.
@@ -295,6 +333,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         /// <returns>True if lock acquired successfully, false on timeout or error</returns>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         /// </summary>
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
@@ -302,6 +341,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         public bool AcquireExclusiveLock(int timeoutMs = DefaultTimeoutMs)
         {
             try
@@ -309,10 +350,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 if (disposed)
                 {
                     Main.logger?.Warn(1, "FileLockHelper.AcquireExclusiveLock: Object is disposed");
@@ -365,6 +409,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireExclusiveLock: Timeout acquiring exclusive lock on {0}", lockFilePath));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 lock (_lockObject)
                 {
@@ -393,11 +438,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                     return false;
                 }
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -411,12 +459,16 @@ namespace MixerThreholdMod_1_0_0.Helpers
 =======
                 Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+                Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 try
                 {
                     ReleaseLock();
                 }
                 catch (Exception releaseEx)
                 {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -430,6 +482,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
 =======
                     Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 }
                 return false;
             }
@@ -440,10 +495,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         /// 
         /// Thread Safety: This method is fully async and safe to call from main thread.
         /// Uses Task.Delay instead of Thread.Sleep to avoid blocking.
@@ -456,6 +514,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         /// <returns>Task returning true if lock acquired successfully, false on timeout/cancellation</returns>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         /// </summary>
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
@@ -463,6 +522,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         public async Task<bool> AcquireSharedLockAsync(int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
@@ -470,10 +531,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 if (disposed)
                 {
                     Main.logger?.Warn(1, "FileLockHelper.AcquireSharedLockAsync: Object is disposed");
@@ -541,6 +605,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLockAsync: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 if (_isLocked)
                 {
@@ -603,6 +668,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 return false;
             }
         }
@@ -612,10 +679,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         /// 
         /// Thread Safety: This method is fully async and safe to call from main thread.
         /// Uses Task.Delay instead of Thread.Sleep to avoid blocking.
@@ -628,6 +698,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         /// <returns>Task returning true if lock acquired successfully, false on timeout/cancellation</returns>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         /// </summary>
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
@@ -635,6 +706,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
         public async Task<bool> AcquireExclusiveLockAsync(int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
@@ -642,10 +715,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 if (disposed)
                 {
                     Main.logger?.Warn(1, "FileLockHelper.AcquireExclusiveLockAsync: Object is disposed");
@@ -713,6 +789,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLockAsync: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 if (_isLocked)
                 {
@@ -775,6 +852,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 return false;
             }
         }
@@ -789,10 +868,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 lock (lockObject)
                 {
                     if (isLocked && lockStream != null)
@@ -817,6 +899,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 lock (_lockObject)
                 {
@@ -830,6 +913,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                     }
                 }
             }
@@ -838,14 +923,18 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 Main.logger?.Err(string.Format("FileLockHelper.ReleaseLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 // Force cleanup in case of catastrophic failure
                 isLocked = false;
                 lockStream = null;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -858,6 +947,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             }
         }
 
@@ -866,10 +957,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             if (!disposed)
             {
                 try
@@ -887,6 +981,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             try
             {
@@ -900,6 +995,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
             }
         }
     }

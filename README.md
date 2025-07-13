@@ -2,7 +2,25 @@
 
 A comprehensive mod for **Schedule 1** that enhances the mixer system with crash-resistant saves, increased capacity, and intelligent threshold control. **Now fully compatible with both MONO and IL2CPP builds!**
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+
+## Build Environment Compatibility 🔄
+
+### MONO Build Support ✅
+- **Fully Compatible**: All features work perfectly in MONO builds
+- **Direct Type Loading**: Uses standard .NET reflection patterns
+- **Standard Performance**: Normal execution speed and memory usage
+
+### IL2CPP Build Support ✅
+- **Fully Compatible**: All features work in IL2CPP builds using dynamic type resolution
+- **Safe Type Loading**: Uses Assembly.GetType() to avoid TypeLoadException
+- **Graceful Degradation**: Mod continues to function even if some game types are not available
+- **Performance**: Minimal overhead from dynamic type resolution
+
+**⚠️ IMPORTANT**: IL2CPP builds require additional type loading time during mod initialization. This is normal and expected.
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 
 ## Build Environment Compatibility 🔄
 
@@ -354,7 +372,10 @@ C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\Mixer
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 ## v1.0.0 Release Notes 🎉
 
 ### Major Breakthrough: Universal Build Environment Support
@@ -434,7 +455,10 @@ Complete debugging and testing suite:
 
 **Support:** Full documentation, troubleshooting guides, and issue templates included for enterprise-level support experience.
 
+<<<<<<< HEAD
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 ## Known Issues ⚠️
 
 ### ⚠️ **Critical MelonLoader Window Warning** ⚠️
@@ -446,6 +470,7 @@ Complete debugging and testing suite:
 - **Safe inspection**: Use `Alt + Tab` to switch between windows - do not click inside the MelonLoader window
 - **Log review**: Review logs after closing the game to avoid interruption
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 ## v1.0.0 Release Notes 🎉
@@ -550,6 +575,8 @@ Complete debugging and testing suite:
 
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 ### 🔄 **IL2CPP Build Considerations**
 
 **IL2CPP builds may show initial warnings** during mod initialization:
@@ -563,11 +590,14 @@ Complete debugging and testing suite:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> aa94715 (performance optimizations, cache manager)
+=======
+>>>>>>> 2bf7ffe (performance optimizations, cache manager)
 ## Troubleshooting 🛠️
 
 ### Common Issues
