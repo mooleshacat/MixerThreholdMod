@@ -23,30 +23,6 @@ namespace MixerThreholdMod_1_0_0.Core
 >>>>>>> aa94715 (performance optimizations, cache manager)
 {
     /// <summary>
-    /// Simplified console integration for debugging and user commands.
-    /// Provides essential console commands for save management and debugging.
-    /// 
-    /// ⚠️ THREAD SAFETY: All console operations are designed to be thread-safe.
-    /// Error handling prevents console failures from crashing the mod.
-    /// 
-    /// .NET 4.8.1 Compatibility:
-    /// - Uses string.Format instead of string interpolation
-    /// - Compatible reflection patterns
-    /// - Proper exception handling
-<<<<<<< HEAD
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-using MelonLoader;
-using MelonLoader.Utils;
-using System;
-using System.IO;
-using System.Reflection;
-using UnityEngine;
-
-namespace MixerThreholdMod_1_0_0.Core
-{
-    /// <summary>
     /// IL2CPP COMPATIBLE: Simplified console integration for debugging and user commands.
     /// Provides essential console commands for save management and debugging with AOT-safe patterns.
     /// 
@@ -66,12 +42,6 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Compatible reflection patterns with minimal usage and proper error handling
     /// - Proper exception handling throughout all console operations
     /// - Framework-appropriate async patterns and resource management
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
     /// </summary>
     public static class Console
     {
