@@ -86,7 +86,6 @@ namespace MixerThreholdMod_1_0_0.Core
         /// </summary>
         public static Type GetMixingStationConfigurationType()
         {
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 if (IsIL2CPPBuild)
@@ -98,8 +97,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         var type = assemblyCSharp.GetType("ScheduleOne.Management.MixingStationConfiguration");
                         if (type != null)
                         {
-                            stopwatch.Stop();
-                            AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance("MixingStationConfiguration (Assembly-CSharp)", stopwatch.Elapsed.TotalMilliseconds, true);
                             logger.Msg(3, "[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration found via Assembly.GetType()");
                             return type;
                         }
@@ -111,31 +108,23 @@ namespace MixerThreholdMod_1_0_0.Core
                         var type = assembly.GetType("ScheduleOne.Management.MixingStationConfiguration");
                         if (type != null)
                         {
-                            stopwatch.Stop();
-                            AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance(string.Format("MixingStationConfiguration ({0})", assembly.FullName), stopwatch.Elapsed.TotalMilliseconds, true);
                             logger.Msg(3, string.Format("[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration found in assembly: {0}", assembly.FullName));
                             return type;
                         }
                     }
 
-                    stopwatch.Stop();
-                    AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance("MixingStationConfiguration (NOT_FOUND)", stopwatch.Elapsed.TotalMilliseconds, false);
                     logger.Warn(1, "[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration not found via string-based loading");
                     return null;
                 }
                 else
                 {
                     // MONO: Direct type reference (should work normally)
-                    stopwatch.Stop();
-                    AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance("MixingStationConfiguration (MONO_DIRECT)", stopwatch.Elapsed.TotalMilliseconds, true);
                     logger.Msg(3, "[TYPE_RESOLVER] MONO: Using direct type reference for MixingStationConfiguration");
                     return typeof(ScheduleOne.Management.MixingStationConfiguration);
                 }
             }
             catch (Exception ex)
             {
-                stopwatch.Stop();
-                AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance("MixingStationConfiguration (EXCEPTION)", stopwatch.Elapsed.TotalMilliseconds, false);
                 logger.Err(string.Format("[TYPE_RESOLVER] Failed to resolve MixingStationConfiguration: {0}", ex.Message));
                 return null;
             }
