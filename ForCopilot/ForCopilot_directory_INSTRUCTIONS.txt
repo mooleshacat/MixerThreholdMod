@@ -2,8 +2,6 @@ Welcome to your personal data input folder!
 
 In here I will paste up to 3 types of files.
 
-DO NOT delete this file, or the folder, we need to reuse it.
-
 - No longer will you delete anything in this directory, human will manually confirm changes
 and remove files no longer necessary.
 
@@ -36,4 +34,4 @@ Not all files will exist all the time. If you need logs, ask for recent logs. If
 
 =================================================================================================================
 
-Keeping the contents of file in mind, and users last comments please complete the task / instructions that were assigned to you.
+Keeping the contents of dnSpyFromHuman_IMPORTANT.txt and folder Assembly-CSharp.dll\ project (dnSpy data) in mind, please process users last comments and complete the task / instructions that were assigned to you.
