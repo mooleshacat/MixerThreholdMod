@@ -61,6 +61,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\PROTECTED_SCHEDULE1_UNITY_DLLS_COPYRIGHTED\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="FishNet.Runtime">
+      <HintPath>..\PROTECTED_SCHEDULE1_UNITY_DLLS_COPYRIGHTED\FishNet.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="Il2CppInterop.Runtime, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\PROTECTED_SCHEDULE1_UNITY_DLLS_COPYRIGHTED\Il2CppInterop.Runtime.dll</HintPath>
@@ -122,6 +125,7 @@
   <ItemGroup>
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
+    <None Include="Helpers\PerformanceOptimizer\there is nothing here turn back now\ok here" />
     <None Include="LICENSE.md" />
     <None Include="packages.config" />
     <None Include="README.md" />

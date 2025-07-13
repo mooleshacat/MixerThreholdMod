@@ -150,7 +150,12 @@ namespace MixerThreholdMod_1_0_0
                     logger.Msg(1, "Phase 6: Initializing advanced system monitoring with memory leak detection...");
                     Core.SystemMonitor.Initialize();
                     logger.Msg(1, "Phase 6: Advanced system monitoring with memory leak detection initialized");
-                    
+
+                    // Phase 7 nothing interesting here ... Just "performance optimization routines"
+                    logger.Msg(1, "Phase 7: Initializing advanced performance optimization...");
+                    Helpers.Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
+                    logger.Msg(1, "Phase 7: Advanced performance optimization initialized (authentication required)");
+
                     logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
