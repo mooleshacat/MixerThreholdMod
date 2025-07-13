@@ -1,3 +1,15 @@
+using HarmonyLib;
+using MelonLoader;
+using MelonLoader.Utils;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Helpers;
+using MixerThreholdMod_1_0_0.Save;
+using Newtonsoft.Json;
+// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+using ScheduleOne.Noise;
+using ScheduleOne.ObjectScripts;
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -84,9 +96,7 @@ namespace MixerThreholdMod_1_0_0
         public static MelonPreferences_Entry<int> currentMsgLogLevelEntry;
         public static MelonPreferences_Entry<int> currentWarnLogLevelEntry;
         public static readonly Core.Logger logger = new Core.Logger();
-
-        public static new HarmonyLib.Harmony HarmonyInstance { get; private set; }
-
+        
         // IL2CPP COMPATIBLE: Use object instead of specific types to avoid TypeLoadException in IL2CPP builds
         // Types will be resolved dynamically using IL2CPPTypeResolver when needed
         public static List<object> queuedInstances = new List<object>();
@@ -158,18 +168,12 @@ namespace MixerThreholdMod_1_0_0
                     // IL2CPP COMPATIBLE: Use IL2CPPTypeResolver for safe type resolution in both MONO and IL2CPP builds
                     // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
                     logger.Msg(1, "Phase 2: Initializing IL2CPP-compatible type resolution...");
-
-                    // Log comprehensive type availability for debugging
-                    IL2CPPTypeResolver.LogTypeAvailability();
                     
-                    // IL2CPP-specific memory analysis after type loading
-                    if (IL2CPPTypeResolver.IsIL2CPPBuild)
-                    {
-                        AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis("POST_TYPE_LOADING");
-                    }
+                    // Log comprehensive type availability for debugging
+                    Core.IL2CPPTypeResolver.LogTypeAvailability();
                     
                     logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
-                    var constructor = IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
+                    var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
                     if (constructor == null)
                     {
                         logger.Err("CRITICAL: Target constructor NOT found! This may be due to IL2CPP type loading issues.");
@@ -185,8 +189,6 @@ namespace MixerThreholdMod_1_0_0
                     // IL2CPP COMPATIBLE: Only apply Harmony patch if constructor is available
                     if (constructor != null)
                     {
-                        HarmonyInstance = new HarmonyLib.Harmony("MixerThreholdMod.Main");
-
                         // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
                         HarmonyInstance.Patch(
                             constructor,
@@ -223,13 +225,12 @@ namespace MixerThreholdMod_1_0_0
                     // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
                     logger.Msg(1, "Phase 8: Initializing advanced system monitoring with memory leak detection...");
                     Core.SystemMonitor.Initialize();
-                    logger.Msg(1, "Phase 8: Advanced system monitoring with memory leak detection initialized");
-                    
-                    // Phase 9 nothing interesting here ... Just "performance optimization routines"
-                    logger.Msg(1, "Phase 9: Initializing advanced performance optimization...");
-                    Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
-                    logger.Msg(1, "Phase 9: Advanced performance optimization initialized (authentication required)");
-                          
+
+                    // Phase 7 nothing interesting here ... Just "performance optimization routines"
+                    logger.Msg(1, "Phase 7: Initializing advanced performance optimization...");
+                    Helpers.Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
+                    logger.Msg(1, "Phase 7: Advanced performance optimization initialized (authentication required)");
+
                     logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
                 }
                 catch (Exception harmonyEx)
@@ -246,8 +247,6 @@ namespace MixerThreholdMod_1_0_0
             }
         }
 
-        //⚠️ REFLECTION REFERENCE: Called via typeof(Main).GetMethod("QueueInstance") in 
-        //⚠️ OnInitializeMelon() - DO NOT DELETE
         private static void QueueInstance(object __instance)
         {
             try

@@ -1,6 +1,5 @@
 // IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
 // using ScheduleOne.Management;  // REMOVED: Use dynamic object types for IL2CPP compatibility
-using ScheduleOne.Management;
 using System;
 using System.Collections.Concurrent;
 
