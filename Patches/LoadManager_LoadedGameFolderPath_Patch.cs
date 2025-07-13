@@ -21,6 +21,55 @@ namespace MixerThreholdMod_0_0_1.Patches
     [HarmonyPatch(typeof(LoadManager), "StartGame")]
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
+        private static bool _patchInitialized = false;
+        private static MethodInfo _startGameMethod = null;
+
+        /// <summary>
+        /// Initialize the patch using IL2CPP-compatible type resolution
+        /// </summary>
+        public static void Initialize()
+        {
+            try
+            {
+                if (_patchInitialized) return;
+
+                // Get LoadManager type via reflection to avoid IL2CPP issues
+                var loadManagerType = IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Persistence.LoadManager");
+                if (loadManagerType == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] LoadManager type not found - patch will not be applied");
+                    return;
+                }
+
+                // Get SaveInfo type via reflection
+                var saveInfoType = IL2CPPTypeResolver.GetTypeByName("ScheduleOne.Persistence.SaveInfo");
+                if (saveInfoType == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] SaveInfo type not found - patch will not be applied");
+                    return;
+                }
+
+                _startGameMethod = loadManagerType.GetMethod("StartGame", new[] { saveInfoType, typeof(bool) });
+                if (_startGameMethod == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] LoadManager.StartGame method not found - patch will not be applied");
+                    return;
+                }
+
+                // Apply Harmony patch dynamically
+                var harmony = new HarmonyLib.Harmony("MixerThreholdMod.LoadManager_LoadedGameFolderPath_Patch");
+                var postfixMethod = typeof(LoadManager_LoadedGameFolderPath_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
+                
+                harmony.Patch(_startGameMethod, null, new HarmonyMethod(postfixMethod));
+                
+                Main.logger.Msg(1, "[PATCH] IL2CPP-compatible LoadManager.StartGame patch applied successfully");
+                _patchInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("[PATCH] Failed to initialize LoadManager_LoadedGameFolderPath_Patch: {0}", ex.Message));
+            }
+        }
         /// <summary>
         /// Postfix patch that runs after LoadManager.StartGame completes
         /// </summary>
