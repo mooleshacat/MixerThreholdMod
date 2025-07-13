@@ -10,20 +10,6 @@ using System.Threading.Tasks;
 namespace MixerThreholdMod_0_0_1.Core
 {
     /// <summary>
-    /// Represents a tracked mixer configuration with its associated data.
-    /// Thread-safe implementation for .NET 4.8.1 compatibility.
-    /// 
-    /// ⚠️ THREAD SAFETY: All operations on TrackedMixer instances are thread-safe.
-    /// ⚠️ MEMORY SAFETY: Proper cleanup and disposal patterns implemented.
-    /// 
-    /// .NET 4.8.1 Compatibility:
-    /// - Uses Task.Run for async operations
-    /// - Compatible exception handling patterns
-    /// - Thread-safe collections and operations
-=======
-namespace MixerThreholdMod_1_0_0.Core
-{
-    /// <summary>
     /// IL2CPP COMPATIBLE: Represents a tracked mixer configuration with its associated data.
     /// Thread-safe implementation for .NET 4.8.1 compatibility with AOT-safe patterns.
     /// 
@@ -43,7 +29,6 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Compatible exception handling patterns with comprehensive logging
     /// - Thread-safe collections and operations using framework-appropriate patterns
     /// - Proper resource cleanup and disposal patterns
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// </summary>
     public class TrackedMixer
     {
@@ -62,18 +47,6 @@ namespace MixerThreholdMod_1_0_0.Core
     }
 
     /// <summary>
-<<<<<<< HEAD
-    /// Thread-safe collection manager for TrackedMixer instances.
-    /// Provides async operations for managing tracked mixers.
-    /// 
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe using ConcurrentBag.
-    /// ⚠️ PERFORMANCE: Async operations prevent blocking the main thread.
-    /// 
-    /// .NET 4.8.1 Compatibility:
-    /// - Uses Task.Run for background operations
-    /// - Compatible with framework's async patterns
-    /// - Proper exception handling and logging
-=======
     /// IL2CPP COMPATIBLE: Thread-safe collection manager for TrackedMixer instances.
     /// Provides async operations for managing tracked mixers with AOT-safe patterns.
     /// 
@@ -93,7 +66,6 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Compatible with framework's async patterns and cancellation
     /// - Proper exception handling and logging throughout all operations
     /// - Memory-efficient collection operations with leak prevention
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// </summary>
     public static class MixerConfigurationTracker
     {
