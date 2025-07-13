@@ -21,13 +21,15 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - Disk I/O performance monitoring with resource usage analysis
     /// - System hardware information logging
     /// - Memory allocation baseline tracking for leak detection
+    /// - IL2CPP-specific type loading monitoring and performance tracking
     /// 
     /// Memory Leak Detection Features:
-    /// - Tracks memory growth patterns over time
-    /// - Monitors GC collection frequency and heap pressure
-    /// - Detects abnormal memory allocation patterns
+    /// - Tracks memory growth patterns over time with IL2CPP-specific monitoring
+    /// - Monitors GC collection frequency and heap pressure in both MONO and IL2CPP
+    /// - Detects abnormal memory allocation patterns during type loading operations
     /// - Provides comprehensive resource cleanup verification
     /// - Tracks object allocation rates and lifetime patterns
+    /// - IL2CPP type resolution performance monitoring
     /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses standard .NET performance counters (no WMI dependency)
@@ -42,15 +44,18 @@ namespace MixerThreholdMod_1_0_0.Core
     /// - No runtime assembly traversal or dynamic type loading
     /// - Uses typeof() instead of GetType() where possible
     /// - Compile-time safe generic constraints
+    /// - IL2CPP build environment detection and specific monitoring
     /// 
     /// Crash Prevention Features:
     /// - Graceful degradation when performance counters are unavailable
     /// - Comprehensive error handling for system queries
     /// - Safe resource disposal patterns with memory leak prevention
     /// - Prevents system monitoring failures from affecting game performance
+    /// - IL2CPP type loading error recovery and graceful fallback patterns
+    /// </summary>
     /// - Memory monitoring does not allocate excessive objects itself
     /// </summary>
-    public static class SystemMonitor
+    public static class AdvancedSystemPerformanceMonitor
     {
         private static bool _isInitialized = false;
         private static readonly object _initLock = new object();
@@ -893,6 +898,157 @@ namespace MixerThreholdMod_1_0_0.Core
 #else
             // In release mode, just execute the operation
             operation?.Invoke();
+#endif
+        }
+
+        /// <summary>
+        /// IL2CPP-specific monitoring for type loading operations and performance
+        /// ⚠️ IL2CPP COMPATIBLE: Monitors type resolution performance without reflection dependencies
+        /// </summary>
+        public static void LogIL2CPPTypeLoadingPerformance(string typeInfo, double loadTimeMs, bool success)
+        {
+#if DEBUG
+            if (!_isInitialized)
+            {
+                Main.logger?.Warn(1, "[SYSMON] System monitoring not initialized - cannot log IL2CPP performance");
+                return;
+            }
+
+            try
+            {
+                var status = success ? "SUCCESS" : "FAILED";
+                var performanceCategory = loadTimeMs > 100 ? "SLOW" : loadTimeMs > 50 ? "MODERATE" : "FAST";
+                
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] Type Loading: {0} - {1} in {2:F1}ms ({3})", 
+                    typeInfo, status, loadTimeMs, performanceCategory));
+                
+                // Log detailed IL2CPP environment information on first type load
+                if (!_il2cppDetailsLogged)
+                {
+                    LogIL2CPPEnvironmentDetails();
+                    _il2cppDetailsLogged = true;
+                }
+                
+                // Monitor memory impact of type loading
+                if (loadTimeMs > 50) // Only for operations that take significant time
+                {
+                    LogCurrentPerformance(string.Format("IL2CPP_TYPE_LOAD_{0}", typeInfo.Replace(".", "_")));
+                }
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Warn(1, string.Format("[IL2CPP-SYSMON] Failed to log type loading performance: {0}", ex.Message));
+            }
+#endif
+        }
+
+        private static bool _il2cppDetailsLogged = false;
+
+        /// <summary>
+        /// Log comprehensive IL2CPP environment details for debugging
+        /// </summary>
+        private static void LogIL2CPPEnvironmentDetails()
+        {
+#if DEBUG
+            try
+            {
+                Main.logger?.Msg(1, "[IL2CPP-SYSMON] === IL2CPP ENVIRONMENT DETAILS ===");
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] Build Environment: {0}", 
+                    IL2CPPTypeResolver.IsIL2CPPBuild ? "IL2CPP" : "MONO"));
+                
+                // Log assembly information
+                Main.logger?.Msg(2, "[IL2CPP-SYSMON] Available Assemblies:");
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    try
+                    {
+                        var assemblyName = assembly.GetName().Name;
+                        var location = assembly.Location;
+                        var hasLocation = !string.IsNullOrEmpty(location);
+                        
+                        Main.logger?.Msg(3, string.Format("[IL2CPP-SYSMON]   - {0} (Location: {1})", 
+                            assemblyName, hasLocation ? "Available" : "IL2CPP/Dynamic"));
+                    }
+                    catch
+                    {
+                        // Skip assemblies that can't be inspected
+                    }
+                }
+                
+                // Log runtime information
+                var clrVersion = Environment.Version;
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] CLR Version: {0}", clrVersion));
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] OS Platform: {0}", Environment.OSVersion));
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] Processor Count: {0}", Environment.ProcessorCount));
+                
+                // Memory information specific to IL2CPP
+                var gcMemory = GC.GetTotalMemory(false);
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] GC Total Memory: {0:F2} MB", gcMemory / 1048576.0));
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] Working Set: {0:F2} MB", Environment.WorkingSet / 1048576.0));
+                
+                Main.logger?.Msg(1, "[IL2CPP-SYSMON] === END IL2CPP ENVIRONMENT DETAILS ===");
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Warn(1, string.Format("[IL2CPP-SYSMON] Failed to log environment details: {0}", ex.Message));
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Enhanced memory leak detection specifically designed for IL2CPP environments
+        /// </summary>
+        public static void LogIL2CPPMemoryLeakAnalysis(string context)
+        {
+#if DEBUG
+            if (!_isInitialized)
+            {
+                Main.logger?.Warn(1, "[IL2CPP-SYSMON] System monitoring not initialized - cannot analyze memory");
+                return;
+            }
+
+            try
+            {
+                Main.logger?.Msg(2, string.Format("[IL2CPP-SYSMON] === MEMORY LEAK ANALYSIS: {0} ===", context));
+                
+                // IL2CPP-specific memory analysis
+                var gcMemoryBefore = GC.GetTotalMemory(false);
+                GC.Collect(); // Force collection to see what's actually held
+                GC.WaitForPendingFinalizers();
+                var gcMemoryAfter = GC.GetTotalMemory(false);
+                
+                var memoryFreed = gcMemoryBefore - gcMemoryAfter;
+                var freeDPercentage = (memoryFreed * 100.0) / gcMemoryBefore;
+                
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] Memory before GC: {0:F2} MB", gcMemoryBefore / 1048576.0));
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] Memory after GC: {0:F2} MB", gcMemoryAfter / 1048576.0));
+                Main.logger?.Msg(1, string.Format("[IL2CPP-SYSMON] Memory freed: {0:F2} MB ({1:F1}%)", memoryFreed / 1048576.0, freeDPercentage));
+                
+                // IL2CPP type resolution impact analysis
+                if (IL2CPPTypeResolver.IsIL2CPPBuild)
+                {
+                    Main.logger?.Msg(2, "[IL2CPP-SYSMON] IL2CPP-Specific Analysis:");
+                    Main.logger?.Msg(2, "[IL2CPP-SYSMON] - Dynamic type loading may create additional GC pressure");
+                    Main.logger?.Msg(2, "[IL2CPP-SYSMON] - Assembly reflection usage is minimized for AOT compatibility");
+                    Main.logger?.Msg(2, "[IL2CPP-SYSMON] - Object-based type storage prevents TypeLoadException");
+                }
+                
+                // Warning thresholds for IL2CPP
+                if (freeDPercentage < 10)
+                {
+                    Main.logger?.Warn(1, "[IL2CPP-SYSMON] LOW MEMORY RECOVERY: Less than 10% freed by GC - potential memory leak");
+                }
+                else if (freeDPercentage > 50)
+                {
+                    Main.logger?.Msg(1, "[IL2CPP-SYSMON] HIGH MEMORY RECOVERY: More than 50% freed by GC - healthy memory usage");
+                }
+                
+                Main.logger?.Msg(2, string.Format("[IL2CPP-SYSMON] === END MEMORY ANALYSIS: {0} ===", context));
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Warn(1, string.Format("[IL2CPP-SYSMON] Memory leak analysis failed: {0}", ex.Message));
+            }
 #endif
         }
 
