@@ -125,13 +125,9 @@
   <ItemGroup>
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
-    <None Include="ForCopilot\25-7-12_15-55-46.log" />
     <None Include="LICENSE.md" />
     <None Include="packages.config" />
     <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ForCopilot\ForCopilot_directory_INSTRUCTIONS.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
