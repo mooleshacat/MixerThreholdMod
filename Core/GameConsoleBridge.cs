@@ -270,24 +270,24 @@ namespace MixerThreholdMod_1_0_0.Core
             {
                 Main.logger?.Msg(2, "[BRIDGE] Attempting Harmony-based console integration...");
                 
-                // dnSpy Verified: Console method signatures and parameter types confirmed through comprehensive decompilation analysis
-                // All Console.Log, Console.LogWarning, Console.LogError methods use (object, UnityEngine.Object) signature
-                var processMethod = consoleType.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);
-                if (processMethod == null)
+                // dnSpy Verified: ScheduleOne.Console.SubmitCommand(string args) is the main command entry point
+                // This method splits the string and calls SubmitCommand(List<string>) which processes commands
+                // Token: 0x06000C28 RID: 3112 RVA: 0x000384D8 File Offset: 0x000366D8
+                // dnSpy confirmed method signature: public static void SubmitCommand(string args)
+                // Method implementation confirmed: args.Split(' ') -> List<string> -> command lookup in Console.commands dictionary
+                var processMethod = consoleType.GetMethod("SubmitCommand", 
+                    BindingFlags.Public | BindingFlags.Static,
+                    null,
+                    new Type[] { typeof(string) },
+                    null);
+                
+                Main.logger?.Msg(3, string.Format("[BRIDGE] Searching for SubmitCommand(string) method: {0}", processMethod != null ? "FOUND" : "NOT FOUND"));
+                
+                if (processMethod != null)
                 {
-                    processMethod = consoleType.GetMethod("ProcessCommand", BindingFlags.Public | BindingFlags.Static);
-                }
-                if (processMethod == null)
-                {
-                    processMethod = consoleType.GetMethod("ExecuteCommand", BindingFlags.Public | BindingFlags.Static);
-                }
-                if (processMethod == null)
-                {
-                    processMethod = consoleType.GetMethod("Command", BindingFlags.Public | BindingFlags.Static);
-                }
-                if (processMethod == null)
-                {
-                    processMethod = consoleType.GetMethod("HandleCommand", BindingFlags.Public | BindingFlags.Static);
+                    Main.logger?.Msg(3, string.Format("[BRIDGE] SubmitCommand method signature: {0}", processMethod.ToString()));
+                    // dnSpy Verified: This method handles all console command input from game's console UI
+                    // Pattern: SubmitCommand(string) -> splits args -> SubmitCommand(List<string>) -> command execution or "Command not found"
                 }
 
                 if (processMethod != null)
@@ -351,21 +351,21 @@ namespace MixerThreholdMod_1_0_0.Core
 
         /// <summary>
         /// Harmony prefix patch for console command processing
-        /// Intercepts console commands and handles mod-specific ones
+        /// Intercepts ScheduleOne.Console.SubmitCommand(string args) calls
         /// ⚠️ COMPREHENSIVE LOGGING: Logs all console commands for debugging, including non-mod commands
         /// </summary>
-        private static bool ConsoleProcessPrefix(string command)
+        private static bool ConsoleProcessPrefix(string args)
         {
             Exception patchError = null;
             try
             {
-                if (string.IsNullOrEmpty(command))
+                if (string.IsNullOrEmpty(args))
                 {
                     Main.logger?.Msg(3, "[BRIDGE] Empty command intercepted - allowing original processing");
                     return true; // Continue with original method
                 }
 
-                var lowerCommand = command.ToLower().Trim();
+                var lowerCommand = args.ToLower().Trim();
                 var parts = lowerCommand.Split(' ');
                 var baseCommand = parts[0];
 
@@ -381,7 +381,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
                 // Log ALL console commands for comprehensive debugging
                 Main.logger?.Msg(2, string.Format("[BRIDGE] === INTERCEPTED CONSOLE COMMAND ==="));
-                Main.logger?.Msg(2, string.Format("[BRIDGE] Raw command: '{0}'", command));
+                Main.logger?.Msg(2, string.Format("[BRIDGE] Raw command: '{0}'", args));
                 Main.logger?.Msg(2, string.Format("[BRIDGE] Base command: '{0}'", baseCommand));
                 if (parts.Length > 1)
                 {
@@ -408,13 +408,13 @@ namespace MixerThreholdMod_1_0_0.Core
 
                 if (isModCommand)
                 {
-                    Main.logger?.Msg(2, string.Format("[BRIDGE] Processing mod command: {0}", command));
+                    Main.logger?.Msg(2, string.Format("[BRIDGE] Processing mod command: {0}", args));
                     
                     // Process with our console handler
                     var hookInstance = Console.MixerConsoleHook.Instance;
                     if (hookInstance != null)
                     {
-                        hookInstance.OnConsoleCommand(command);
+                        hookInstance.OnConsoleCommand(args);
                         Main.logger?.Msg(2, "[BRIDGE] Mod command processed successfully - skipping game processing");
                     }
                     else
@@ -438,7 +438,7 @@ namespace MixerThreholdMod_1_0_0.Core
             if (patchError != null)
             {
                 Main.logger?.Err(string.Format("[BRIDGE] ConsoleProcessPrefix error: {0}", patchError.Message));
-                Main.logger?.Err(string.Format("[BRIDGE] Failed command was: '{0}'", command ?? "[null]"));
+                Main.logger?.Err(string.Format("[BRIDGE] Failed command was: '{0}'", args ?? "[null]"));
             }
             
             return true; // Continue with original method on error

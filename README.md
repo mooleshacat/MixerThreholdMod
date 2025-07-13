@@ -2,6 +2,16 @@
 
 A comprehensive mod for **Schedule 1** that enhances the mixer system with crash-resistant saves, increased capacity, and intelligent threshold control.
 
+## Table of Contents 📋
+
+- [Critical Features](#critical-features-🚀)
+- [Installation](#installation-📥)
+- [Console Commands](#console-commands-🎮)
+- [Troubleshooting](#troubleshooting-🛠️) **⚠️ IMPORTANT**
+- [Technical Implementation](#technical-implementation-⚙️)
+- [Development & Contributions](#development--contributions-👥)
+- [Reporting Issues](#reporting-issues-🐛)
+
 ## Critical Features 🚀
 
 ### 🛡️ **Save Crash Prevention** (Primary Focus)
@@ -23,7 +33,7 @@ A comprehensive mod for **Schedule 1** that enhances the mixer system with crash
 
 ## Console Commands 🎮
 
-The mod provides 12 powerful console commands for testing, monitoring, debugging, and advanced save operations:
+The mod provides 13 powerful console commands for testing, monitoring, debugging, and advanced save operations:
 
 ### Available Commands
 
@@ -51,32 +61,6 @@ mixer_path                      # Shows active save location and tracked mixer c
 Trigger emergency save operation:
 ```
 mixer_emergency                 # Immediate save without cooldown checks
-```
-
-#### **Mixer Management**
-
-##### `mixer_reset`
-Reset all mixer values and clear the tracked mixer data:
-```
-mixer_reset                      # Clear all mixer values and reset ID counter
-```
-
-##### `mixer_save`
-Force immediate save operation:
-```
-mixer_save                       # Trigger immediate save with cooldown respect
-```
-
-##### `mixer_path`
-Display current save path and mixer statistics:
-```
-mixer_path                       # Show save path and tracked mixer count
-```
-
-##### `mixer_emergency`
-Trigger emergency save operation:
-```
-mixer_emergency                  # Emergency save bypassing all cooldowns and checks
 ```
 
 #### **Advanced Save Testing**
@@ -252,6 +236,58 @@ C:\Users\YourName\AppData\LocalLow\TVGS\Schedule 1\Saves\nnnnnnnnnnnnnnnnn\Mixer
 - **Framework**: MelonLoader + HarmonyLib
 - **Target**: .NET Framework 4.8.1
 - **Conflicts**: Compatible with most mods (extensive defensive programming)
+
+## Troubleshooting 🛠️
+
+### ⚠️ **Critical MelonLoader Window Warning** ⚠️
+
+**DO NOT CLICK** in the MelonLoader console window to inspect logs while the game is running:
+
+- **Clicking pauses MelonLoader** and can cause the game to crash after a brief delay
+- **To resume**: Press `Space` or `Enter` key, but damage may already be done
+- **Safe inspection**: Use `Alt + Tab` to switch between windows - do not click inside the MelonLoader window
+- **Log review**: Review logs after closing the game to avoid interruption
+
+### Common Issues
+
+#### Console Commands Not Working
+- Ensure you're typing commands correctly (case-sensitive)
+- Try the `help` command to verify mod is loaded
+- Check MelonLoader logs for initialization errors
+
+#### Save System Issues  
+- Use `mixer_path` to verify save location
+- Check available disk space in save directory
+- Review logs for file permission errors
+
+#### Performance Issues
+- Use `profile` command to identify bottlenecks
+- Monitor system resources with stress testing commands
+- Consider reducing stress testing parameters
+
+### Getting Detailed Support
+
+**When reporting issues**, please include:
+
+1. **Complete MelonLoader logs** - Full console output from mod startup
+2. **System specifications** - CPU, RAM, GPU, OS version
+3. **Game version** - Schedule 1 version number  
+4. **Reproduction steps** - Exact steps to reproduce the issue
+5. **Console command logs** - Output from relevant console commands
+6. **Save game details** - Size, location, backup status
+
+**Issue Report Template**:
+```
+Environment: [Game version, OS, hardware specs]
+Mod Version: v1.0.0
+Issue: [Brief description]
+Steps to Reproduce: [Numbered steps]
+Expected vs Actual: [What should happen vs what happened] 
+Logs: [Attach complete MelonLoader logs]
+Console Commands Used: [Any commands that triggered the issue]
+```
+
+**Post issues to**: [Repository Issues](https://github.com/mooleshacat/MixerThreholdMod/issues)
 
 ## Issue Reporting & Support 🐛
 
