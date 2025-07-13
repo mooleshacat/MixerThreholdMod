@@ -78,7 +78,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                 {
                     Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
 
-                    string json = await FileOperations.SafeReadAllTextAsync(saveFile);
+                    string json = await ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
                     if (!string.IsNullOrEmpty(json))
                     {
                         var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
@@ -493,7 +493,7 @@ namespace MixerThreholdMod_1_0_0.Utils
 
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
 
-                await FileOperations.SafeWriteAllTextAsync(saveFile, json);
+                await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
 
                 Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
 
@@ -502,7 +502,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                 if (!string.IsNullOrEmpty(persistentPath))
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
-                    await FileOperations.SafeWriteAllTextAsync(persistentFile, json);
+                    await ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
             }

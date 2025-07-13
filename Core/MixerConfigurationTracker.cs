@@ -6,29 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-<<<<<<< HEAD
 namespace MixerThreholdMod_0_0_1.Core
 {
     /// <summary>
-    /// IL2CPP COMPATIBLE: Represents a tracked mixer configuration with its associated data.
-    /// Thread-safe implementation for .NET 4.8.1 compatibility with AOT-safe patterns.
+    /// Represents a tracked mixer configuration with its associated data.
+    /// Thread-safe implementation for .NET 4.8.1 compatibility.
     /// 
     /// ⚠️ THREAD SAFETY: All operations on TrackedMixer instances are thread-safe.
-    /// ⚠️ MEMORY SAFETY: Proper cleanup and disposal patterns implemented to prevent leaks.
-    /// ⚠️ IL2CPP COMPATIBLE: Uses compile-time known types, no reflection, AOT-friendly patterns.
-    /// 
-    /// IL2CPP Compatibility Features:
-    /// - All types statically known at compile time
-    /// - No dynamic type creation or reflection usage
-    /// - AOT-safe generic constraints and collection usage
-    /// - Compile-time safe property access patterns
-    /// - Interface-based operations instead of reflection
+    /// ⚠️ MEMORY SAFETY: Proper cleanup and disposal patterns implemented.
     /// 
     /// .NET 4.8.1 Compatibility:
-    /// - Uses Task.Run for async operations with proper exception handling
-    /// - Compatible exception handling patterns with comprehensive logging
-    /// - Thread-safe collections and operations using framework-appropriate patterns
-    /// - Proper resource cleanup and disposal patterns
+    /// - Uses Task.Run for async operations
+    /// - Compatible exception handling patterns
+    /// - Thread-safe collections and operations
     /// </summary>
     public class TrackedMixer
     {
@@ -47,25 +37,16 @@ namespace MixerThreholdMod_0_0_1.Core
     }
 
     /// <summary>
-    /// IL2CPP COMPATIBLE: Thread-safe collection manager for TrackedMixer instances.
-    /// Provides async operations for managing tracked mixers with AOT-safe patterns.
+    /// Thread-safe collection manager for TrackedMixer instances.
+    /// Provides async operations for managing tracked mixers.
     /// 
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe using ConcurrentBag with proper locking.
-    /// ⚠️ PERFORMANCE: Async operations prevent blocking the main thread with memory leak prevention.
-    /// ⚠️ IL2CPP COMPATIBLE: Uses compile-time safe collection operations, no reflection required.
-    /// 
-    /// IL2CPP Compatibility Features:
-    /// - ConcurrentBag<T> usage with compile-time known generic constraints
-    /// - No dynamic type operations or reflection in collection management
-    /// - AOT-safe LINQ operations with proper delegate usage
-    /// - Compile-time safe predicate functions and lambda expressions
-    /// - Interface-based operations instead of reflection-heavy approaches
+    /// ⚠️ THREAD SAFETY: All operations are thread-safe using ConcurrentBag.
+    /// ⚠️ PERFORMANCE: Async operations prevent blocking the main thread.
     /// 
     /// .NET 4.8.1 Compatibility:
-    /// - Uses Task.Run for background operations with proper exception handling
-    /// - Compatible with framework's async patterns and cancellation
-    /// - Proper exception handling and logging throughout all operations
-    /// - Memory-efficient collection operations with leak prevention
+    /// - Uses Task.Run for background operations
+    /// - Compatible with framework's async patterns
+    /// - Proper exception handling and logging
     /// </summary>
     public static class MixerConfigurationTracker
     {
@@ -139,19 +120,7 @@ namespace MixerThreholdMod_0_0_1.Core
         /// <summary>
         /// Remove a specific tracked mixer by ConfigInstance asynchronously
         /// </summary>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         public static async Task<bool> RemoveAsync(MixingStationConfiguration configInstance)
-=======
-        public static async Task<bool> RemoveAsync(object configInstance)
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
-        public static async Task<bool> RemoveAsync(object configInstance)
->>>>>>> aa94715 (performance optimizations, cache manager)
-=======
-        public static async Task<bool> RemoveAsync(object configInstance)
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
         {
             try
             {
