@@ -48,7 +48,7 @@ namespace MixerThreholdMod_0_0_1.Core
     /// - Compatible with framework's async patterns
     /// - Proper exception handling and logging
     /// </summary>
-    public static class TrackedMixers
+    public static class MixerConfigurationTracker
     {
         private static readonly ConcurrentBag<TrackedMixer> _trackedMixers = new ConcurrentBag<TrackedMixer>();
         private static readonly object _operationLock = new object();

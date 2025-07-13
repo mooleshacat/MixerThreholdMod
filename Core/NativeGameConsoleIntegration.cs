@@ -1,103 +1,42 @@
 ﻿using HarmonyLib;
-using MixerThreholdMod_1_0_0.Constants;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
-    /// IL2CPP COMPATIBLE: Native game console integration for mod commands using compile-time safe patterns
+    /// Native game console integration for mod commands
     /// ⚠️ THREAD SAFETY: All operations are thread-safe and designed for concurrent access
     /// ⚠️ .NET 4.8.1 Compatible: Uses compatible syntax and exception handling patterns
     /// ⚠️ MAIN THREAD WARNING: Console operations are non-blocking and thread-safe
-    /// ⚠️ IL2CPP COMPATIBLE: Uses AOT-safe patterns, minimal reflection, no dynamic code generation
-    /// 
-    /// IL2CPP Compatibility Features:
-    /// - No use of System.Reflection.Emit or dynamic code generation
-    /// - Minimal reflection usage with AOT-safe patterns only
-    /// - All types statically known at compile time
-    /// - Interface-based command integration instead of dynamic type creation
-    /// - Compile-time safe generic constraints and method signatures
-    /// - No runtime assembly traversal or dynamic type loading
     /// 
     /// Integration Features:
-    /// - Injects mod commands into game's native console system via Harmony patches
-    /// - Commands appear in game's help and auto-complete through safe interception
-    /// - Leverages game's existing command infrastructure without breaking changes
-    /// - Maintains compatibility with game updates through stable API usage
+    /// - Injects mod commands into game's native console system
+    /// - Commands appear in game's help and auto-complete
+    /// - Leverages game's existing command infrastructure
+    /// - Maintains compatibility with game updates
     /// 
     /// .NET 4.8.1 Compatibility:
-    /// - Uses AOT-safe reflection patterns instead of dynamic IL generation
-    /// - Compatible exception handling patterns with proper resource disposal
-    /// - Proper type checking and validation using compile-time known types
+    /// - Uses reflection-based approach instead of dynamic IL generation
+    /// - Compatible exception handling patterns
+    /// - Proper type checking and validation
     /// 
     /// Crash Prevention Features:
-    /// - Comprehensive error handling for reflection operations with graceful degradation
-    /// - Safe command registration with validation using interface contracts
-    /// - Prevents mod failures from affecting game console through isolation patterns
-    /// - Memory leak prevention in command handling and registration
+    /// - Comprehensive error handling for reflection operations
+    /// - Graceful degradation when game console system changes
+    /// - Safe command registration with validation
+    /// - Prevents mod failures from affecting game console
     /// </summary>
     public static class GameConsoleBridge
     {
         private static bool _isInitialized = false;
         private static readonly object _initLock = new object();
 
-        // IL2CPP COMPATIBLE: Compile-time known command definitions using interfaces
-        // These are statically defined at compile time, no dynamic type creation
-        private static readonly IModCommand[] _modCommands = new IModCommand[]
-        {
-            new ModCommand("mixer_reset", "Reset all mixer values", "mixer_reset"),
-            new ModCommand("mixer_save", "Save current mixer configuration", "mixer_save"),
-            new ModCommand("mixer_path", "Show current save path", "mixer_path"),
-            new ModCommand("mixer_emergency", "Emergency mixer reset", "mixer_emergency"),
-            new ModCommand("saveprefstress", "Stress test mixer preferences saves", "saveprefstress <count> [delay] [bypass]"),
-            new ModCommand("savegamestress", "Stress test game saves", "savegamestress <count> [delay] [bypass]"),
-            new ModCommand("savemonitor", "Comprehensive save monitoring", "savemonitor <count> [delay] [bypass]"),
-            new ModCommand("transactionalsave", "Perform atomic transactional save", "transactionalsave"),
-            new ModCommand("profile", "Advanced save operation profiling", "profile"),
-            new ModCommand("msg", "Log info message", "msg <message>"),
-            new ModCommand("warn", "Log warning message", "warn <message>"),
-            new ModCommand("err", "Log error message", "err <message>"),
-            new ModCommand("help", "Show available commands", "help"),
-            new ModCommand("?", "Show available commands", "?")
-        };
-
         /// <summary>
-        /// IL2CPP COMPATIBLE: Interface for mod commands using compile-time safe contracts
-        /// No reflection required, fully AOT-safe command definition
-        /// </summary>
-        private interface IModCommand
-        {
-            string CommandWord { get; }
-            string Description { get; }
-            string Usage { get; }
-        }
-
-        /// <summary>
-        /// IL2CPP COMPATIBLE: Compile-time safe command implementation
-        /// Uses only statically known types and properties
-        /// </summary>
-        private class ModCommand : IModCommand
-        {
-            public string CommandWord { get; }
-            public string Description { get; }
-            public string Usage { get; }
-
-            public ModCommand(string commandWord, string description, string usage)
-            {
-                CommandWord = commandWord ?? "";
-                Description = description ?? "";
-                Usage = usage ?? "";
-            }
-        }
-
-        /// <summary>
-        /// IL2CPP COMPATIBLE: Initialize native console integration using AOT-safe reflection patterns only
+        /// Initialize native console integration using reflection
         /// ⚠️ CRASH PREVENTION: Safe integration with comprehensive error handling
-        /// ⚠️ IL2CPP COMPATIBLE: Uses minimal reflection with compile-time known types only
         /// </summary>
         public static void InitializeNativeConsoleIntegration()
         {
@@ -112,30 +51,57 @@ namespace MixerThreholdMod_1_0_0.Core
                 Exception integrationError = null;
                 try
                 {
-                    Main.logger?.Msg(2, "[BRIDGE] Initializing IL2CPP-compatible native console integration");
-                    Main.logger?.Msg(3, "[BRIDGE] Using interface-based command integration (AOT-safe)...");
+                    Main.logger?.Msg(2, "[BRIDGE] Initializing native console integration");
+                    Main.logger?.Msg(3, "[BRIDGE] Searching for ScheduleOne.Console class...");
 
-                    // IL2CPP COMPATIBLE: Use typeof() instead of GetType() for AOT safety
-                    // This approach uses compile-time known types only
-                    var consoleType = typeof(ScheduleOne.Console); // More AOT-safe than System.Type.GetType()
+                    // Find the game's Console class and commands dictionary using reflection
+                    var consoleType = System.Type.GetType("ScheduleOne.Console, Assembly-CSharp");
                     Main.logger?.Msg(3, string.Format("[BRIDGE] ScheduleOne.Console type found: {0}", consoleType != null ? "YES" : "NO"));
                     
                     if (consoleType != null)
                     {
                         Main.logger?.Msg(3, string.Format("[BRIDGE] Console type full name: {0}", consoleType.FullName));
-                        Main.logger?.Msg(3, "[BRIDGE] Setting up IL2CPP-compatible Harmony patches...");
+                        Main.logger?.Msg(3, "[BRIDGE] Searching for commands field...");
                         
-                        // IL2CPP COMPATIBLE: Apply AOT-safe Harmony patches for command interception
-                        // This uses compile-time safe method resolution
-                        SetupIL2CPPSafeHarmonyPatches(consoleType);
+                        var commandsField = consoleType.GetField("commands", BindingFlags.Public | BindingFlags.Static);
+                        Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field found: {0}", commandsField != null ? "YES" : "NO"));
                         
-                        Main.logger?.Msg(1, "[BRIDGE] IL2CPP-compatible console integration ready - commands handled via safe Harmony patches");
+                        if (commandsField != null)
+                        {
+                            Main.logger?.Msg(3, string.Format("[BRIDGE] Commands field type: {0}", commandsField.FieldType));
+                            
+                            var commandsDict = commandsField.GetValue(null) as System.Collections.IDictionary;
+                            Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary retrieved: {0}", commandsDict != null ? "YES" : "NO"));
+                            
+                            if (commandsDict != null)
+                            {
+                                Main.logger?.Msg(3, string.Format("[BRIDGE] Commands dictionary count: {0}", commandsDict.Count));
+                                
+                                // Add mod commands to game's native console using reflection-based approach
+                                AddModCommandsToGameConsole(commandsDict, consoleType);
+
+                                _isInitialized = true;
+                                Main.logger?.Msg(1, "[BRIDGE] Successfully integrated mod commands into game console");
+                            }
+                            else
+                            {
+                                Main.logger?.Warn(1, "[BRIDGE] Could not access game's commands dictionary - may not be initialized yet");
+                                // Try alternative approaches
+                                TryAlternativeConsoleIntegration(consoleType);
+                            }
+                        }
+                        else
+                        {
+                            Main.logger?.Warn(1, "[BRIDGE] Could not find commands field in Console class");
+                            // List available fields for debugging
+                            LogAvailableFields(consoleType);
+                        }
                     }
                     else
                     {
-                        Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console class - attempting fallback integration");
-                        // IL2CPP COMPATIBLE: Try AOT-safe fallback approaches
-                        TryAOTSafeFallbackIntegration();
+                        Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console class");
+                        // Try to find any Console class
+                        TryFindAnyConsoleClass();
                     }
                 }
                 catch (Exception ex)
@@ -150,356 +116,339 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
                 
                 // Regardless of native integration success, provide fallback information
-                if (!_isInitialized)
-                {
-                    Main.logger?.Warn(1, "[BRIDGE] Native console integration failed - using manual command processing only");
-                    Main.logger?.Msg(1, "[BRIDGE] Console commands available through manual processing:");
-                    Main.logger?.Msg(1, "[BRIDGE] Use Core.Console.ProcessManualCommand(\"command\") for testing");
-                    Main.logger?.Msg(1, "[BRIDGE] Note: Commands may not appear in game's console help system");
-                }
-                else
-                {
-                    Main.logger?.Msg(1, "[BRIDGE] IL2CPP-compatible console integration completed successfully");
-                    Main.logger?.Msg(1, "[BRIDGE] Commands should be available in game's native console system");
-                }
+                Main.logger?.Msg(1, "[BRIDGE] Console commands available through manual processing:");
+                Main.logger?.Msg(1, "[BRIDGE] Use Core.Console.ProcessManualCommand(\"command\") for testing");
             }
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Setup AOT-safe Harmony patches using compile-time known method signatures
-        /// This method uses minimal reflection with statically known types only
+        /// Log available fields in the console type for debugging
         /// </summary>
-        private static void SetupIL2CPPSafeHarmonyPatches(Type consoleType)
+        private static void LogAvailableFields(Type consoleType)
         {
-            Exception harmonyError = null;
+            Exception fieldError = null;
             try
             {
-                Main.logger?.Msg(2, "[BRIDGE] Setting up IL2CPP-compatible Harmony patches...");
-                
-                // IL2CPP COMPATIBLE: Use compile-time safe method resolution
-                // dnSpy Verified: ScheduleOne.Console.SubmitCommand(string args) is the main command entry point
-                // This method splits the string and calls SubmitCommand(List<string>) which processes commands
-                // Token: 0x06000C28 RID: 3112 RVA: 0x000384D8 File Offset: 0x000366D8
-                // Method signature: public static void SubmitCommand(string args)
-                
-                // IL2CPP COMPATIBLE: Use compile-time safe method signature matching
-                var submitCommandMethod = consoleType.GetMethod("SubmitCommand", 
-                    BindingFlags.Public | BindingFlags.Static,
-                    null,
-                    new Type[] { typeof(string) }, // Compile-time known parameter types
-                    null);
-                
-                Main.logger?.Msg(3, string.Format("[BRIDGE] SubmitCommand(string) method found: {0}", submitCommandMethod != null ? "FOUND" : "NOT FOUND"));
-                
-                if (submitCommandMethod != null)
+                Main.logger?.Msg(3, "[BRIDGE] Available fields in Console class:");
+                var fields = consoleType.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
+                foreach (var field in fields)
                 {
-                    Main.logger?.Msg(3, string.Format("[BRIDGE] Method signature verified: {0}", submitCommandMethod.ToString()));
-                    
-                    // IL2CPP COMPATIBLE: Apply Harmony patch using compile-time safe method references
-                    if (Main.HarmonyInstance != null)
-                    {
-                        var harmony = Main.HarmonyInstance;
-                        // IL2CPP COMPATIBLE: Use typeof() for compile-time safe method resolution
-                        var prefixMethod = typeof(GameConsoleBridge).GetMethod(nameof(IL2CPPSafeConsolePrefix), BindingFlags.Static | BindingFlags.NonPublic);
-                        if (prefixMethod != null)
-                        {
-                            harmony.Patch(submitCommandMethod, new HarmonyMethod(prefixMethod));
-                            Main.logger?.Msg(2, "[BRIDGE] Successfully applied IL2CPP-compatible Harmony patch to console command processing");
-                            _isInitialized = true;
-                        }
-                        else
-                        {
-                            Main.logger?.Err("[BRIDGE] IL2CPPSafeConsolePrefix method not found for Harmony patch");
-                        }
-                    }
-                    else
-                    {
-                        Main.logger?.Err("[BRIDGE] Harmony instance not available for console patching");
-                    }
-                }
-                else
-                {
-                    Main.logger?.Warn(1, "[BRIDGE] Could not find SubmitCommand(string) method for Harmony patching");
-                    // IL2CPP COMPATIBLE: List available methods using compile-time safe patterns
-                    LogAOTSafeAvailableMethods(consoleType);
+                    Main.logger?.Msg(3, string.Format("[BRIDGE]   - {0} ({1})", field.Name, field.FieldType.Name));
                 }
             }
             catch (Exception ex)
             {
-                harmonyError = ex;
+                fieldError = ex;
             }
             
-            if (harmonyError != null)
+            if (fieldError != null)
             {
-                Main.logger?.Err(string.Format("[BRIDGE] IL2CPP-compatible Harmony setup error: {0}", harmonyError.Message));
+                Main.logger?.Err(string.Format("[BRIDGE] LogAvailableFields error: {0}", fieldError.Message));
             }
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: AOT-safe fallback integration using interface-based approach
-        /// No dynamic assembly traversal or runtime type discovery
+        /// Try to find any console class in the game assemblies
         /// </summary>
-        private static void TryAOTSafeFallbackIntegration()
+        private static void TryFindAnyConsoleClass()
         {
-            Exception fallbackError = null;
+            Exception findError = null;
             try
             {
-                Main.logger?.Msg(2, "[BRIDGE] Attempting IL2CPP-compatible fallback integration...");
+                Main.logger?.Msg(3, "[BRIDGE] Searching for any Console class in loaded assemblies...");
                 
-                // IL2CPP COMPATIBLE: Use interface-based command registration instead of reflection
-                Main.logger?.Msg(2, "[BRIDGE] Using compile-time safe command definitions...");
-                
-                foreach (var command in _modCommands)
+                var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assembly in assemblies)
                 {
-                    Main.logger?.Msg(3, string.Format("[BRIDGE] Registered compile-time safe command: {0} - {1}", command.CommandWord, command.Description));
+                    try
+                    {
+                        var types = assembly.GetTypes();
+                        foreach (var type in types)
+                        {
+                            if (type.Name.Contains("Console"))
+                            {
+                                Main.logger?.Msg(3, string.Format("[BRIDGE] Found Console-like class: {0} in {1}", type.FullName, assembly.GetName().Name));
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Skip assemblies that can't be reflected over
+                    }
                 }
-                
-                Main.logger?.Msg(2, string.Format("[BRIDGE] Registered {0} IL2CPP-compatible mod commands", _modCommands.Length));
-                _isInitialized = true; // Mark as initialized even without game integration
             }
             catch (Exception ex)
             {
-                fallbackError = ex;
+                findError = ex;
             }
             
-            if (fallbackError != null)
+            if (findError != null)
             {
-                Main.logger?.Err(string.Format("[BRIDGE] AOT-safe fallback integration error: {0}", fallbackError.Message));
+                Main.logger?.Err(string.Format("[BRIDGE] TryFindAnyConsoleClass error: {0}", findError.Message));
             }
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Log available methods using compile-time safe patterns only
-        /// No dynamic assembly traversal, uses statically known type only
+        /// Try alternative console integration approaches
         /// </summary>
-        private static void LogAOTSafeAvailableMethods(Type consoleType)
+        private static void TryAlternativeConsoleIntegration(Type consoleType)
         {
-            Exception methodError = null;
+            Exception altError = null;
             try
             {
-                Main.logger?.Msg(3, "[BRIDGE] Available static methods in Console class (compile-time safe):");
+                Main.logger?.Msg(2, "[BRIDGE] Attempting alternative console integration...");
                 
-                // IL2CPP COMPATIBLE: Use GetMethods() with specific binding flags (AOT-safe)
+                // Try to find any methods that might be used for command registration
                 var methods = consoleType.GetMethods(BindingFlags.Public | BindingFlags.Static);
+                Main.logger?.Msg(3, "[BRIDGE] Available static methods in Console class:");
                 foreach (var method in methods)
                 {
-                    // IL2CPP COMPATIBLE: Use compile-time safe string operations
-                    var paramTypes = string.Join(", ", method.GetParameters().Select(p => p.ParameterType.Name).ToArray());
-                    Main.logger?.Msg(3, string.Format("[BRIDGE]   - {0}({1})", method.Name, paramTypes));
-                    
-                    // Look for promising methods to patch using compile-time safe string operations
-                    var methodNameLower = method.Name.ToLower();
-                    if (methodNameLower.Contains("submit") || 
-                        methodNameLower.Contains("process") || 
-                        methodNameLower.Contains("execute") || 
-                        methodNameLower.Contains("command"))
-                    {
-                        Main.logger?.Msg(2, string.Format("[BRIDGE] ** Potential command method: {0}({1})", method.Name, paramTypes));
-                    }
+                    Main.logger?.Msg(3, string.Format("[BRIDGE]   - {0}", method.Name));
                 }
             }
             catch (Exception ex)
             {
-                methodError = ex;
+                altError = ex;
             }
             
-            if (methodError != null)
+            if (altError != null)
             {
-                Main.logger?.Err(string.Format("[BRIDGE] AOT-safe method logging error: {0}", methodError.Message));
+                Main.logger?.Err(string.Format("[BRIDGE] TryAlternativeConsoleIntegration error: {0}", altError.Message));
             }
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Harmony prefix patch for console command processing using compile-time safe patterns
-        /// Intercepts ScheduleOne.Console.SubmitCommand(string args) calls with AOT-safe command processing
-        /// ⚠️ COMPREHENSIVE LOGGING: Logs all console commands for debugging, including non-mod commands
-        /// ⚠️ COMMAND VALIDATION: Checks both mod and game command registries to prevent invalid command processing
-        /// ⚠️ IL2CPP COMPATIBLE: Uses interface-based command matching with compile-time known types
-        /// ⚠️ REFLECTION REFERENCE: Called via GetMethod(nameof(IL2CPPSafeConsolePrefix)) in NativeGameConsoleIntegration.cs - DO NOT DELETE
+        /// Add mod commands to game's native console system using composition pattern
+        /// ⚠️ .NET 4.8.1 Compatible: Uses composition instead of dynamic inheritance
         /// </summary>
-        private static bool IL2CPPSafeConsolePrefix(string args)
+        private static void AddModCommandsToGameConsole(System.Collections.IDictionary commandsDict, Type consoleType)
         {
-            Exception patchError = null;
+            Exception addError = null;
             try
             {
-                if (string.IsNullOrEmpty(args))
+                // Find ConsoleCommand base class for creating compatible commands
+                var consoleCommandType = consoleType.GetNestedType("ConsoleCommand", BindingFlags.Public);
+                if (consoleCommandType == null)
                 {
-                    Main.logger?.Msg(3, "[BRIDGE] Empty command intercepted - allowing original processing");
-                    return true; // Continue with original method
+                    Main.logger?.Warn(1, "[BRIDGE] Could not find ConsoleCommand base class - using alternative approach");
+                    // Alternative: Try to find any existing command to understand the interface
+                    TryAlternativeCommandRegistration(commandsDict);
+                    return;
                 }
 
-                var lowerCommand = args.ToLower().Trim();
-                var parts = lowerCommand.Split(' ');
-                var baseCommand = parts[0];
+                // Add stress testing commands
+                AddStressTestCommands(commandsDict, consoleCommandType);
 
-                // IL2CPP COMPATIBLE: Use compile-time safe command checking via interface
-                bool isModCommand = IsModCommand(baseCommand);
-                
-                // IL2CPP COMPATIBLE: Check game commands using minimal AOT-safe reflection
-                bool isGameCommand = IsGameCommand(baseCommand);
+                // Add logging commands  
+                AddLoggingCommands(commandsDict, consoleCommandType);
 
-                // Log ALL console commands for comprehensive debugging
-                Main.logger?.Msg(2, string.Format("[BRIDGE] === INTERCEPTED CONSOLE COMMAND (IL2CPP SAFE) ==="));
-                Main.logger?.Msg(2, string.Format("[BRIDGE] Raw command: '{0}'", args));
-                Main.logger?.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format("[BRIDGE] Base command: '{0}'", baseCommand));
-                if (parts.Length > 1)
+                // Add utility commands
+                AddUtilityCommands(commandsDict, consoleCommandType);
+
+                Main.logger?.Msg(2, string.Format("[BRIDGE] Added {0} mod commands to native console system", 6));
+            }
+            catch (Exception ex)
+            {
+                addError = ex;
+            }
+
+            if (addError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] AddModCommandsToGameConsole error: {0}", addError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Add stress testing commands using reflection-based wrappers
+        /// ⚠️ CRASH PREVENTION: Safe command creation with error handling
+        /// </summary>
+        private static void AddStressTestCommands(System.Collections.IDictionary commandsDict, Type consoleCommandType)
+        {
+            Exception stressError = null;
+            try
+            {
+                // Create mod stress test commands using reflection wrapper
+                var savePrefStressCmd = CreateReflectionBasedCommand(consoleCommandType, "saveprefstress",
+                    "Stress test mixer preferences saves", "saveprefstress <count> [delay] [bypass]",
+                    HandleSavePrefStressCommand);
+
+                var saveGameStressCmd = CreateReflectionBasedCommand(consoleCommandType, "savegamestress",
+                    "Stress test game saves", "savegamestress <count> [delay] [bypass]",
+                    HandleSaveGameStressCommand);
+
+                if (savePrefStressCmd != null)
                 {
-                    Main.logger?.Msg(2, string.Format("[BRIDGE] Command parameters ({0}): [{1}]", parts.Length - 1, string.Join(", ", parts, 1, parts.Length - 1)));
-                }
-                else
-                {
-                    Main.logger?.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[BRIDGE] No parameters detected");
+                    commandsDict["saveprefstress"] = savePrefStressCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added saveprefstress command to native console");
                 }
 
-                // IL2CPP COMPATIBLE: Command classification using compile-time safe logic
-                Main.logger?.Msg(3, string.Format("[BRIDGE] Checking command classification for '{0}'...", baseCommand));
-                Main.logger?.Msg(3, string.Format("[BRIDGE] Is mod command: {0}", isModCommand ? "YES" : "NO"));
-                Main.logger?.Msg(3, string.Format("[BRIDGE] Is game command: {0}", isGameCommand ? "YES" : "NO"));
-
-                // Determine command classification and appropriate action
-                if (isModCommand && isGameCommand)
+                if (saveGameStressCmd != null)
                 {
-                    // CONFLICT: Both mod and game handle this command
-                    Main.logger?.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format("[BRIDGE] CONFLICT: Both mod and game handle command '{0}' - yielding to game!", baseCommand));
-                    Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: CONFLICTED (MOD+GAME) - YIELDING TO GAME"));
-                    return true; // Let game handle it
-                }
-                else if (isModCommand)
-                {
-                    // MOD ONLY: Process with mod handler
-                    Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: MOD COMMAND"));
-                    Main.logger?.Msg(2, string.Format("[BRIDGE] Processing mod command: {0}", args));
-                    
-                    // IL2CPP COMPATIBLE: Process with console handler using interface
-                    var hookInstance = Console.MixerConsoleHook.Instance;
-                    if (hookInstance != null)
-                    {
-                        hookInstance.OnConsoleCommand(args);
-                        Main.logger?.Msg(2, "[BRIDGE] Mod command processed successfully - skipping game processing");
-                    }
-                    else
-                    {
-                        Main.logger?.Err("[BRIDGE] MixerConsoleHook instance not available for intercepted command");
-                    }
-                    
-                    return false; // Skip original method execution
-                }
-                else if (isGameCommand)
-                {
-                    // GAME ONLY: Allow game to process
-                    Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: GAME COMMAND"));
-                    Main.logger?.Msg(2, string.Format("[BRIDGE] Allowing game to process command: {0}", baseCommand));
-                    return true; // Continue with original method for game commands
-                }
-                else
-                {
-                    // NEITHER: Command is invalid to both mod and game
-                    Main.logger?.Warn(1, string.Format("[BRIDGE] INVALID COMMAND: '{0}' is not recognized by mod or game - preventing game processing", baseCommand));
-                    Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: INVALID (UNKNOWN TO BOTH)"));
-                    Main.logger?.Warn(1, string.Format("[BRIDGE] Use 'help' or '?' to see available commands"));
-                    
-                    // Prevent game from processing unknown commands to avoid "Command not found" spam
-                    return false; // Skip original method execution
+                    commandsDict["savegamestress"] = saveGameStressCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added savegamestress command to native console");
                 }
             }
             catch (Exception ex)
             {
-                patchError = ex;
+                stressError = ex;
             }
-            
-            if (patchError != null)
+
+            if (stressError != null)
             {
-                Main.logger?.Err(string.Format("[BRIDGE] IL2CPPSafeConsolePrefix error: {0}", patchError.Message));
-                Main.logger?.Err(string.Format("[BRIDGE] Failed command was: '{0}'", args ?? "[null]"));
+                Main.logger?.Err(string.Format("[BRIDGE] AddStressTestCommands error: {0}", stressError.Message));
             }
-            
-            return true; // Continue with original method on error
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Check if command is a mod command using compile-time safe interface matching
-        /// No reflection required, uses statically defined command list
+        /// Add logging commands using reflection-based wrappers
+        /// ⚠️ CRASH PREVENTION: Safe command creation with error handling
         /// </summary>
-        private static bool IsModCommand(string commandWord)
+        private static void AddLoggingCommands(System.Collections.IDictionary commandsDict, Type consoleCommandType)
         {
-            Exception checkError = null;
+            Exception logError = null;
             try
             {
-                if (string.IsNullOrEmpty(commandWord)) return false;
-                
-                // IL2CPP COMPATIBLE: Use compile-time safe command list iteration
-                foreach (var command in _modCommands)
+                var msgCmd = CreateReflectionBasedCommand(consoleCommandType, "msg",
+                    "Log info message", "msg <message>", HandleMsgCommand);
+
+                var warnCmd = CreateReflectionBasedCommand(consoleCommandType, "warn",
+                    "Log warning message", "warn <message>", HandleWarnCommand);
+
+                var errCmd = CreateReflectionBasedCommand(consoleCommandType, "err",
+                    "Log error message", "err <message>", HandleErrCommand);
+
+                if (msgCmd != null)
                 {
-                    if (string.Equals(command.CommandWord, commandWord, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
+                    commandsDict["msg"] = msgCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added msg command to native console");
                 }
-                
-                return false;
+
+                if (warnCmd != null)
+                {
+                    commandsDict["warn"] = warnCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added warn command to native console");
+                }
+
+                if (errCmd != null)
+                {
+                    commandsDict["err"] = errCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added err command to native console");
+                }
             }
             catch (Exception ex)
             {
-                checkError = ex;
-                return false;
+                logError = ex;
             }
-            finally
+
+            if (logError != null)
             {
-                if (checkError != null)
-                {
-                    Main.logger?.Err(string.Format("[BRIDGE] IsModCommand error: {0}", checkError.Message));
-                }
+                Main.logger?.Err(string.Format("[BRIDGE] AddLoggingCommands error: {0}", logError.Message));
             }
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Check if command is a game command using minimal AOT-safe reflection
-        /// Uses compile-time known types and minimal reflection access
+        /// Add utility commands using reflection-based wrappers
+        /// ⚠️ CRASH PREVENTION: Safe command creation with error handling
         /// </summary>
-        private static bool IsGameCommand(string commandWord)
+        private static void AddUtilityCommands(System.Collections.IDictionary commandsDict, Type consoleCommandType)
         {
-            Exception checkError = null;
+            Exception utilError = null;
             try
             {
-                if (string.IsNullOrEmpty(commandWord)) return false;
-                
-                // IL2CPP COMPATIBLE: Use typeof() instead of GetType() for AOT safety
-                var consoleType = typeof(ScheduleOne.Console);
-                if (consoleType != null)
+                var mixerResetCmd = CreateReflectionBasedCommand(consoleCommandType, "mixer_reset",
+                    "Reset all mixer values", "mixer_reset", HandleMixerResetCommand);
+
+                var mixerPathCmd = CreateReflectionBasedCommand(consoleCommandType, "mixer_path",
+                    "Show current save path", "mixer_path", HandleMixerPathCommand);
+
+                if (mixerResetCmd != null)
                 {
-                    // IL2CPP COMPATIBLE: Minimal reflection with compile-time known field name
-                    var commandsField = consoleType.GetField("commands", BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic);
-                    if (commandsField != null)
-                    {
-                        var commandsDict = commandsField.GetValue(null) as System.Collections.IDictionary;
-                        if (commandsDict != null)
-                        {
-                            return commandsDict.Contains(commandWord);
-                        }
-                    }
+                    commandsDict["mixer_reset"] = mixerResetCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added mixer_reset command to native console");
                 }
-                
-                return false;
+
+                if (mixerPathCmd != null)
+                {
+                    commandsDict["mixer_path"] = mixerPathCmd;
+                    Main.logger?.Msg(3, "[BRIDGE] Added mixer_path command to native console");
+                }
             }
             catch (Exception ex)
             {
-                checkError = ex;
-                return false;
+                utilError = ex;
             }
-            finally
+
+            if (utilError != null)
             {
-                if (checkError != null)
-                {
-                    Main.logger?.Warn(1, string.Format("[BRIDGE] IsGameCommand check failed: {0}", checkError.Message));
-                }
+                Main.logger?.Err(string.Format("[BRIDGE] AddUtilityCommands error: {0}", utilError.Message));
             }
         }
 
-        #region IL2CPP Compatible Command Handlers
+        /// <summary>
+        /// Create a reflection-based command wrapper compatible with game's console system
+        /// ⚠️ .NET 4.8.1 Compatible: Uses composition pattern instead of dynamic inheritance
+        /// </summary>
+        private static object CreateReflectionBasedCommand(Type consoleCommandType, string commandWord, string description, string exampleUsage, Action<List<string>> executeAction)
+        {
+            Exception createError = null;
+            try
+            {
+                // Instead of dynamic inheritance, create a wrapper that implements the interface
+                // This approach is more compatible with .NET 4.8.1
+                return new ConsoleCommandWrapper(commandWord, description, exampleUsage, executeAction);
+            }
+            catch (Exception ex)
+            {
+                createError = ex;
+            }
+
+            if (createError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] CreateReflectionBasedCommand error for '{0}': {1}", commandWord, createError.Message));
+            }
+
+            return null;
+        }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Handle saveprefstress command using compile-time safe patterns
-        /// No reflection required, uses direct method invocation
+        /// Alternative command registration for when ConsoleCommand type is not accessible
+        /// ⚠️ CRASH PREVENTION: Fallback approach with comprehensive error handling
+        /// </summary>
+        private static void TryAlternativeCommandRegistration(System.Collections.IDictionary commandsDict)
+        {
+            Exception altError = null;
+            try
+            {
+                Main.logger?.Msg(2, "[BRIDGE] Attempting alternative command registration approach");
+
+                // Check if there are existing commands to understand the interface
+                if (commandsDict.Count > 0)
+                {
+                    foreach (var key in commandsDict.Keys)
+                    {
+                        var existingCommand = commandsDict[key];
+                        Main.logger?.Msg(3, string.Format("[BRIDGE] Found existing command '{0}' of type: {1}", key, existingCommand?.GetType()?.Name ?? "null"));
+                        break; // Just need one example
+                    }
+                }
+
+                Main.logger?.Warn(1, "[BRIDGE] Alternative registration not implemented - native console integration disabled");
+            }
+            catch (Exception ex)
+            {
+                altError = ex;
+            }
+
+            if (altError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] TryAlternativeCommandRegistration error: {0}", altError.Message));
+            }
+        }
+
+        #region Command Handlers
+
+        /// <summary>
+        /// Handle saveprefstress command from native console
         /// </summary>
         private static void HandleSavePrefStressCommand(List<string> args)
         {
@@ -513,12 +462,19 @@ namespace MixerThreholdMod_1_0_0.Core
                     parts[i + 1] = args[i];
                 }
 
-                // IL2CPP COMPATIBLE: Forward to existing console handler using interface-based approach
+                // Forward to existing console handler - FIXED: Correct method name
                 var hookInstance = Console.MixerConsoleHook.Instance;
                 if (hookInstance != null)
                 {
-                    // IL2CPP COMPATIBLE: Use direct method call instead of reflection
-                    hookInstance.OnConsoleCommand(string.Join(" ", parts));
+                    var handlerMethod = hookInstance.GetType().GetMethod("HandleStressSavePrefCommand", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (handlerMethod != null)
+                    {
+                        handlerMethod.Invoke(hookInstance, new object[] { parts });
+                    }
+                    else
+                    {
+                        Main.logger?.Err("[BRIDGE] HandleStressSavePrefCommand method not found");
+                    }
                 }
                 else
                 {
@@ -537,8 +493,7 @@ namespace MixerThreholdMod_1_0_0.Core
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Handle savegamestress command using compile-time safe patterns
-        /// No reflection required, uses direct method invocation
+        /// Handle savegamestress command from native console
         /// </summary>
         private static void HandleSaveGameStressCommand(List<string> args)
         {
@@ -552,12 +507,19 @@ namespace MixerThreholdMod_1_0_0.Core
                     parts[i + 1] = args[i];
                 }
 
-                // IL2CPP COMPATIBLE: Forward to existing console handler using interface-based approach
+                // Forward to existing console handler - FIXED: Correct method name
                 var hookInstance = Console.MixerConsoleHook.Instance;
                 if (hookInstance != null)
                 {
-                    // IL2CPP COMPATIBLE: Use direct method call instead of reflection
-                    hookInstance.OnConsoleCommand(string.Join(" ", parts));
+                    var handlerMethod = hookInstance.GetType().GetMethod("HandleStressSaveGameCommand", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (handlerMethod != null)
+                    {
+                        handlerMethod.Invoke(hookInstance, new object[] { parts });
+                    }
+                    else
+                    {
+                        Main.logger?.Err("[BRIDGE] HandleStressSaveGameCommand method not found");
+                    }
                 }
                 else
                 {
@@ -576,8 +538,7 @@ namespace MixerThreholdMod_1_0_0.Core
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Handle msg command using compile-time safe patterns
-        /// No reflection required, uses direct logging calls
+        /// Handle msg command from native console
         /// </summary>
         private static void HandleMsgCommand(List<string> args)
         {
@@ -589,7 +550,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(1, "[CONSOLE] Usage: msg <message>");
                     return;
                 }
-                var message = string.Join(" ", args.ToArray());
+                var message = string.Join(" ", args);
                 Main.logger?.Msg(1, string.Format("[MANUAL] {0}", message));
             }
             catch (Exception ex)
@@ -604,8 +565,7 @@ namespace MixerThreholdMod_1_0_0.Core
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Handle warn command using compile-time safe patterns
-        /// No reflection required, uses direct logging calls
+        /// Handle warn command from native console
         /// </summary>
         private static void HandleWarnCommand(List<string> args)
         {
@@ -617,7 +577,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(1, "[CONSOLE] Usage: warn <message>");
                     return;
                 }
-                var message = string.Join(" ", args.ToArray());
+                var message = string.Join(" ", args);
                 Main.logger?.Warn(1, string.Format("[MANUAL] {0}", message));
             }
             catch (Exception ex)
@@ -632,8 +592,7 @@ namespace MixerThreholdMod_1_0_0.Core
         }
 
         /// <summary>
-        /// IL2CPP COMPATIBLE: Handle err command using compile-time safe patterns
-        /// No reflection required, uses direct logging calls
+        /// Handle err command from native console
         /// </summary>
         private static void HandleErrCommand(List<string> args)
         {
@@ -645,7 +604,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(1, "[CONSOLE] Usage: err <message>");
                     return;
                 }
-                var message = string.Join(" ", args.ToArray());
+                var message = string.Join(" ", args);
                 Main.logger?.Err(string.Format("[MANUAL] {0}", message));
             }
             catch (Exception ex)
@@ -659,6 +618,107 @@ namespace MixerThreholdMod_1_0_0.Core
             }
         }
 
+        /// <summary>
+        /// Handle mixer_reset command from native console
+        /// </summary>
+        private static void HandleMixerResetCommand(List<string> args)
+        {
+            Exception handlerError = null;
+            try
+            {
+                var hookInstance = Console.MixerConsoleHook.Instance;
+                if (hookInstance != null)
+                {
+                    var resetMethod = hookInstance.GetType().GetMethod("ResetMixerValues", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (resetMethod != null)
+                    {
+                        resetMethod.Invoke(hookInstance, null);
+                    }
+                    else
+                    {
+                        Main.logger?.Err("[BRIDGE] ResetMixerValues method not found");
+                    }
+                }
+                else
+                {
+                    Main.logger?.Err("[BRIDGE] MixerConsoleHook instance not available");
+                }
+            }
+            catch (Exception ex)
+            {
+                handlerError = ex;
+            }
+
+            if (handlerError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] HandleMixerResetCommand error: {0}", handlerError.Message));
+            }
+        }
+
+        /// <summary>
+        /// Handle mixer_path command from native console
+        /// </summary>
+        private static void HandleMixerPathCommand(List<string> args)
+        {
+            Exception handlerError = null;
+            try
+            {
+                Main.logger?.Msg(1, string.Format("[CONSOLE] Current save path: {0}", Main.CurrentSavePath ?? "[not set]"));
+                Main.logger?.Msg(1, string.Format("[CONSOLE] Tracked mixer values: {0}", Main.savedMixerValues?.Count ?? 0));
+            }
+            catch (Exception ex)
+            {
+                handlerError = ex;
+            }
+
+            if (handlerError != null)
+            {
+                Main.logger?.Err(string.Format("[BRIDGE] HandleMixerPathCommand error: {0}", handlerError.Message));
+            }
+        }
+
         #endregion
+
+        /// <summary>
+        /// Wrapper class to make mod commands compatible with game's console system
+        /// ⚠️ .NET 4.8.1 Compatible: Uses composition pattern for compatibility
+        /// </summary>
+        private class ConsoleCommandWrapper
+        {
+            private readonly string _commandWord;
+            private readonly string _description;
+            private readonly string _exampleUsage;
+            private readonly Action<List<string>> _executeAction;
+
+            public ConsoleCommandWrapper(string commandWord, string description, string exampleUsage, Action<List<string>> executeAction)
+            {
+                _commandWord = commandWord;
+                _description = description;
+                _exampleUsage = exampleUsage;
+                _executeAction = executeAction;
+            }
+
+            public string CommandWord { get { return _commandWord; } }
+            public string CommandDescription { get { return _description; } }
+            public string ExampleUsage { get { return _exampleUsage; } }
+
+            public void Execute(List<string> args)
+            {
+                Exception executeError = null;
+                try
+                {
+                    _executeAction?.Invoke(args);
+                }
+                catch (Exception ex)
+                {
+                    executeError = ex;
+                }
+
+                if (executeError != null)
+                {
+                    Main.logger?.Err(string.Format("[BRIDGE] ConsoleCommandWrapper.Execute error for '{0}': {1}", _commandWord, executeError.Message));
+                }
+            }
+        }
     }
 }
