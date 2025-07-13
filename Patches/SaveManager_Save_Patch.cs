@@ -34,6 +34,45 @@ namespace MixerThreholdMod_0_0_1.Patches
         private static MethodInfo _saveMethod = null;
 
         /// <summary>
+        /// Initialize the patch using IL2CPP-compatible type resolution
+        /// </summary>
+        public static void Initialize()
+        {
+            try
+            {
+                if (_patchInitialized) return;
+
+                var saveManagerType = IL2CPPTypeResolver.GetSaveManagerType();
+                if (saveManagerType == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] SaveManager type not found - patch will not be applied");
+                    return;
+                }
+
+                _saveMethod = saveManagerType.GetMethod("Save", new[] { typeof(string) });
+                if (_saveMethod == null)
+                {
+                    Main.logger.Warn(1, "[PATCH] SaveManager.Save method not found - patch will not be applied");
+                    return;
+                }
+
+                // Apply Harmony patch dynamically
+                // FIX: Use correct HarmonyLib v2 syntax
+                var harmony = new HarmonyLib.Harmony("MixerThreholdMod.SaveManager_Save_Patch");
+                var postfixMethod = typeof(SaveManager_Save_Patch).GetMethod("Postfix", BindingFlags.Static | BindingFlags.Public);
+
+                harmony.Patch(_saveMethod, null, new HarmonyMethod(postfixMethod));
+                
+                Main.logger.Msg(1, "[PATCH] IL2CPP-compatible SaveManager.Save patch applied successfully");
+                _patchInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Main.logger.Err(string.Format("[PATCH] Failed to initialize SaveManager_Save_Patch: {0}", ex.Message));
+            }
+        }
+
+        /// <summary>
         /// Postfix patch that runs after SaveManager.Save completes.
         /// ⚠️ CRASH PREVENTION: This is the critical entry point for preventing save crashes.
         /// </summary>

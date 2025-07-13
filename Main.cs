@@ -149,16 +149,16 @@ namespace MixerThreholdMod_1_0_0
                     logger.Msg(1, "Phase 2: Initializing IL2CPP-compatible type resolution...");
 
                     // Log comprehensive type availability for debugging
-                    Core.IL2CPPTypeResolver.LogTypeAvailability();
-
+                    IL2CPPTypeResolver.LogTypeAvailability();
+                    
                     // IL2CPP-specific memory analysis after type loading
-                    if (Core.IL2CPPTypeResolver.IsIL2CPPBuild)
+                    if (IL2CPPTypeResolver.IsIL2CPPBuild)
                     {
-                        Core.AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis("POST_TYPE_LOADING");
+                        AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis("POST_TYPE_LOADING");
                     }
                     
                     logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
-                    var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
+                    var constructor = IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
                     if (constructor == null)
                     {
                         logger.Err("CRITICAL: Target constructor NOT found! This may be due to IL2CPP type loading issues.");
@@ -319,7 +319,7 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(3, "ProcessQueuedInstancesAsync: Starting cleanup and processing");
                 
                 // Clean up null instances
-                await Core.MixerConfigurationTracker.RemoveAllAsync(tm => tm.ConfigInstance == null);
+                await MixerConfigurationTracker.RemoveAllAsync(tm => tm.ConfigInstance == null);
                 
                 var toProcess = queuedInstances.ToList();
                 logger.Msg(3, string.Format("ProcessQueuedInstancesAsync: Processing {0} queued instances", toProcess.Count));
@@ -334,7 +334,7 @@ namespace MixerThreholdMod_1_0_0
                             continue;
                         }
 
-                        if (await Core.MixerConfigurationTracker.AnyAsync(tm => tm.ConfigInstance == instance))
+                        if (await MixerConfigurationTracker.AnyAsync(tm => tm.ConfigInstance == instance))
                         {
                             logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
                             continue;
@@ -355,7 +355,7 @@ namespace MixerThreholdMod_1_0_0
                             continue;
                         }
                         
-                        var mixerData = await Core.MixerConfigurationTracker.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
+                        var mixerData = await MixerConfigurationTracker.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
                         if (mixerData == null)
                         {
                             try
@@ -378,9 +378,9 @@ namespace MixerThreholdMod_1_0_0
                                 var newTrackedMixer = new Core.TrackedMixer
                                 {
                                     ConfigInstance = instance,
-                                    MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
+                                    MixerInstanceID = MixerIDManager.GetMixerID(instance)
                                 };
-                                await Core.MixerConfigurationTracker.AddAsync(newTrackedMixer);
+                                await MixerConfigurationTracker.AddAsync(newTrackedMixer);
                                 logger.Msg(2, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
 
                                 if (!newTrackedMixer.ListenerAdded)
@@ -635,7 +635,7 @@ namespace MixerThreholdMod_1_0_0
         {
             try
             {
-                return await Core.MixerConfigurationTracker.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
+                return await MixerConfigurationTracker.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
             }
             catch (Exception ex)
             {
@@ -650,14 +650,40 @@ namespace MixerThreholdMod_1_0_0
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             base.OnSceneWasLoaded(buildIndex, sceneName);
-            logger.Msg(2, string.Format("[MAIN] Scene loaded: {0}", sceneName));
-
-            if (sceneName == "Main" && !isShuttingDown)
+            logger.Msg(2, "Scene loaded: " + sceneName);
+            
+            // One-time console command test when main scene loads (to verify commands work)
+            if (sceneName == "Main" && !_consoleTestCompleted)
+            {
+                _consoleTestCompleted = true;
+                logger.Msg(2, "[DEBUG] Running one-time console command test...");
+                
+                // Test console commands to verify they work
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        // Wait a moment for everything to settle
+                        Thread.Sleep(1000);
+                        
+                        logger.Msg(2, "[DEBUG] Testing console commands...");
+                        Core.Console.ProcessManualCommand("msg This is a test message from console command");
+                        Core.Console.ProcessManualCommand("warn This is a test warning from console command");
+                        logger.Msg(2, "[DEBUG] Console command test completed - check logs above for test output");
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Err(string.Format("[DEBUG] Console command test failed: {0}", ex.Message));
+                    }
+                });
+            }
+            
+            if (sceneName == "Main")
             {
                 try
                 {
-                    Core.MixerIDManager.MixerInstanceMap.Clear();
-                    Core.MixerIDManager.ResetStableIDCounter();
+                    MixerIDManager.MixerInstanceMap.Clear();
+                    MixerIDManager.ResetStableIDCounter();
 
                     // Clear previous mixer values
                     savedMixerValues.Clear();
@@ -682,7 +708,7 @@ namespace MixerThreholdMod_1_0_0
                                 string targetFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
                                 if (File.Exists(sourceFile))
                                 {
-                                    await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(targetFile, await Helpers.ThreadSafeFileOperations.SafeReadAllTextAsync(sourceFile));
+                                    await ThreadSafeFileOperations.SafeWriteAllTextAsync(targetFile, await ThreadSafeFileOperations.SafeReadAllTextAsync(sourceFile));
                                     logger.Msg(3, "Copied MixerThresholdSave.json from persistent to save folder");
                                 }
                             }
@@ -718,9 +744,9 @@ namespace MixerThreholdMod_1_0_0
             Exception startError = null;
             try
             {
-                _loadCoroutineStarted = true;
+                if (LoadCoroutineStarted) return;
+                LoadCoroutineStarted = true;
                 MelonCoroutines.Start(CrashResistantSaveManager.LoadMixerValuesWhenReady());
-                logger.Msg(2, "[MAIN] Load coroutine started successfully");
             }
             catch (Exception ex)
             {
@@ -762,8 +788,8 @@ namespace MixerThreholdMod_1_0_0
                 }
 
                 // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
-                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-
+                yield return CrashResistantSaveManager.TriggerSaveWithCooldown();
+                
                 try
                 {
                     var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
@@ -858,8 +884,8 @@ namespace MixerThreholdMod_1_0_0
             var saveStart = DateTime.Now;
 
             // Perform the save operation - yield return outside try/catch for .NET 4.8.1 compatibility
-            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-
+            yield return CrashResistantSaveManager.TriggerSaveWithCooldown();
+            
             try
             {
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
@@ -903,7 +929,7 @@ namespace MixerThreholdMod_1_0_0
                 logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
                 logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
                 logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", GC.GetTotalMemory(false) / 1024));
-
+                
                 // Enhanced system diagnostics
                 Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE1");
                 
@@ -920,10 +946,10 @@ namespace MixerThreholdMod_1_0_0
             var phase2Start = DateTime.Now;
 
             // System state before save operation
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
-
-            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
-
+            AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
+            
+            yield return CrashResistantSaveManager.TriggerSaveWithCooldown();
+            
             try
             {
                 phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
