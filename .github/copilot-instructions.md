@@ -12,4 +12,4 @@
 
 5. **📝 Class-Level Documentation**: Every class must include thread safety warnings, .NET 4.8.1 compatibility notes, and main thread blocking warnings in XML documentation comments.
 
-6. **🔄 Workflow Compliance**: Work on feature/fix branches → merge to development → merge to master. Development and master branches are protected. Follow proper Git flow and ensure all changes are tested before merging.
+6. **🔄 Workflow Compliance**: Always monitor ForCopilot/* directory and files/subdirs. Work on feature/fix branches → merge to development → merge to master. Development and master branches are protected. Follow proper Git flow and ensure all changes are tested before merging.
