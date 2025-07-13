@@ -8,16 +8,25 @@ using System.Threading.Tasks;
 namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
-    /// Represents a tracked mixer configuration with its associated data.
-    /// Thread-safe implementation for .NET 4.8.1 compatibility.
+    /// IL2CPP COMPATIBLE: Represents a tracked mixer configuration with its associated data.
+    /// Thread-safe implementation for .NET 4.8.1 compatibility with AOT-safe patterns.
     /// 
     /// ⚠️ THREAD SAFETY: All operations on TrackedMixer instances are thread-safe.
-    /// ⚠️ MEMORY SAFETY: Proper cleanup and disposal patterns implemented.
+    /// ⚠️ MEMORY SAFETY: Proper cleanup and disposal patterns implemented to prevent leaks.
+    /// ⚠️ IL2CPP COMPATIBLE: Uses compile-time known types, no reflection, AOT-friendly patterns.
+    /// 
+    /// IL2CPP Compatibility Features:
+    /// - All types statically known at compile time
+    /// - No dynamic type creation or reflection usage
+    /// - AOT-safe generic constraints and collection usage
+    /// - Compile-time safe property access patterns
+    /// - Interface-based operations instead of reflection
     /// 
     /// .NET 4.8.1 Compatibility:
-    /// - Uses Task.Run for async operations
-    /// - Compatible exception handling patterns
-    /// - Thread-safe collections and operations
+    /// - Uses Task.Run for async operations with proper exception handling
+    /// - Compatible exception handling patterns with comprehensive logging
+    /// - Thread-safe collections and operations using framework-appropriate patterns
+    /// - Proper resource cleanup and disposal patterns
     /// </summary>
     public class TrackedMixer
     {
@@ -35,16 +44,25 @@ namespace MixerThreholdMod_1_0_0.Core
     }
 
     /// <summary>
-    /// Thread-safe collection manager for TrackedMixer instances.
-    /// Provides async operations for managing tracked mixers.
+    /// IL2CPP COMPATIBLE: Thread-safe collection manager for TrackedMixer instances.
+    /// Provides async operations for managing tracked mixers with AOT-safe patterns.
     /// 
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe using ConcurrentBag.
-    /// ⚠️ PERFORMANCE: Async operations prevent blocking the main thread.
+    /// ⚠️ THREAD SAFETY: All operations are thread-safe using ConcurrentBag with proper locking.
+    /// ⚠️ PERFORMANCE: Async operations prevent blocking the main thread with memory leak prevention.
+    /// ⚠️ IL2CPP COMPATIBLE: Uses compile-time safe collection operations, no reflection required.
+    /// 
+    /// IL2CPP Compatibility Features:
+    /// - ConcurrentBag<T> usage with compile-time known generic constraints
+    /// - No dynamic type operations or reflection in collection management
+    /// - AOT-safe LINQ operations with proper delegate usage
+    /// - Compile-time safe predicate functions and lambda expressions
+    /// - Interface-based operations instead of reflection-heavy approaches
     /// 
     /// .NET 4.8.1 Compatibility:
-    /// - Uses Task.Run for background operations
-    /// - Compatible with framework's async patterns
-    /// - Proper exception handling and logging
+    /// - Uses Task.Run for background operations with proper exception handling
+    /// - Compatible with framework's async patterns and cancellation
+    /// - Proper exception handling and logging throughout all operations
+    /// - Memory-efficient collection operations with leak prevention
     /// </summary>
     public static class TrackedMixers
     {
