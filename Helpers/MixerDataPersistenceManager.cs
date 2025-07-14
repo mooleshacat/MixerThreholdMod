@@ -570,7 +570,7 @@ namespace MixerThreholdMod_1_0_0.Utils
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
                     await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
-                    Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValuesToFileAsync: Copied to persistent location");
+                    Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
             }
             catch (Exception ex)
