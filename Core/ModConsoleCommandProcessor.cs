@@ -1,9 +1,10 @@
-using MelonLoader;
-using MelonLoader.Utils;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using UnityEngine;
+using MelonLoader;
+using MelonLoader.Utils;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -340,6 +341,11 @@ namespace MixerThreholdMod_1_0_0.Core
                         case "?":
                             ShowHelpMessage();
                             break;
+                        case "detectdirs":
+                        case "directories":
+                        case "paths":
+                            HandleDirectoryDetectionCommand();
+                            break;
                         default:
                             if (baseCommand == "help" || baseCommand == "?")
                             {
@@ -496,6 +502,10 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     Main.logger?.Msg(1, "[CONSOLE] Available commands:");
                     Main.logger?.Msg(1, "[CONSOLE] ");
+                    Main.logger?.Msg(1, "[CONSOLE] === SYSTEM COMMANDS ===");
+                    Main.logger?.Msg(1, "[CONSOLE]   detectdirs - Detect and display game directories");
+                    Main.logger?.Msg(1, "[CONSOLE]   directories - Alias for detectdirs");
+                    Main.logger?.Msg(1, "[CONSOLE]   paths - Alias for detectdirs");
                     Main.logger?.Msg(1, "[CONSOLE] === MIXER MANAGEMENT ===");
                     Main.logger?.Msg(1, "[CONSOLE]   mixer_reset - Reset all mixer values");
                     Main.logger?.Msg(1, "[CONSOLE]   mixer_save - Force immediate save");
@@ -530,6 +540,89 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (helpError != null)
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] ShowHelpMessage error: {0}\n{1}", helpError.Message, helpError.StackTrace));
+                }
+            }
+
+            // Add this method to the MixerConsoleHook class:
+            /// <summary>
+            /// Handle directory detection command
+            /// ⚠️ THREAD SAFETY: Safe directory detection with comprehensive error handling
+            /// </summary>
+            private void HandleDirectoryDetectionCommand()
+            {
+                Exception detectionError = null;
+                try
+                {
+                    Main.logger?.Msg(1, "[CONSOLE] Starting directory detection command...");
+
+                    // ⚠️ ASYNC JUSTIFICATION: Directory detection can take 100-500ms using game APIs
+                    // Task.Run prevents Unity main thread blocking during game API access
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var directoryInfo = await Helpers.GameDirectoryResolver.RefreshDirectoryDetectionAsync();
+
+                            Main.logger?.Msg(1, "[CONSOLE] === DIRECTORY DETECTION COMMAND RESULTS ===");
+                            Main.logger?.Msg(1, string.Format("[CONSOLE] Detection Status: {0}", directoryInfo.ToString()));
+
+                            if (directoryInfo.GameDirectoryFound)
+                            {
+                                Main.logger?.Msg(1, string.Format("[CONSOLE] 🎮 Game Directory: {0}", directoryInfo.GameInstallDirectory));
+                            }
+
+                            if (directoryInfo.UserDataDirectoryFound)
+                            {
+                                Main.logger?.Msg(1, string.Format("[CONSOLE] 👤 User Data: {0}", directoryInfo.UserDataDirectory));
+                            }
+
+                            if (directoryInfo.SavesDirectoryFound)
+                            {
+                                Main.logger?.Msg(1, string.Format("[CONSOLE] 💾 Saves Directory: {0}", directoryInfo.SavesDirectory));
+
+                                if (!string.IsNullOrEmpty(directoryInfo.IndividualSavesPath))
+                                {
+                                    Main.logger?.Msg(1, string.Format("[CONSOLE] 💾 Individual Saves: {0}", directoryInfo.IndividualSavesPath));
+                                }
+
+                                if (!string.IsNullOrEmpty(directoryInfo.CurrentSavePath))
+                                {
+                                    Main.logger?.Msg(1, string.Format("[CONSOLE] 💾 Current Save: {0}", directoryInfo.CurrentSavePath));
+                                }
+                            }
+
+                            if (directoryInfo.MelonLoaderLogFound)
+                            {
+                                Main.logger?.Msg(1, string.Format("[CONSOLE] 🍈 MelonLoader Log: {0}", directoryInfo.MelonLoaderLogFile));
+
+                                try
+                                {
+                                    var logInfo = new FileInfo(directoryInfo.MelonLoaderLogFile);
+                                    Main.logger?.Msg(2, string.Format("[CONSOLE] Log file: {0:F1} KB, modified {1:yyyy-MM-dd HH:mm:ss}",
+                                        logInfo.Length / 1024.0, logInfo.LastWriteTime));
+                                }
+                                catch (Exception logInfoEx)
+                                {
+                                    Main.logger?.Warn(2, string.Format("[CONSOLE] Could not get log file details: {0}", logInfoEx.Message));
+                                }
+                            }
+
+                            Main.logger?.Msg(1, "[CONSOLE] Directory detection command completed successfully");
+                        }
+                        catch (Exception asyncEx)
+                        {
+                            Main.logger?.Err(string.Format("[CONSOLE] Directory detection command failed: {0}", asyncEx.Message));
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    detectionError = ex;
+                }
+
+                if (detectionError != null)
+                {
+                    Main.logger?.Err(string.Format("[CONSOLE] HandleDirectoryDetectionCommand error: {0}", detectionError.Message));
                 }
             }
 
