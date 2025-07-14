@@ -164,6 +164,41 @@ namespace MixerThreholdMod_1_0_0.Core
         }
 
         /// <summary>
+        /// Remove mixer ID mapping using object type for IL2CPP compatibility.
+        /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.
+        /// ⚠️ IL2CPP COMPATIBLE: Uses object type to avoid TypeLoadException
+        /// </summary>
+        public static bool RemoveMixerID(object instance)
+        {
+            try
+            {
+                if (instance == null)
+                {
+                    Main.logger?.Warn(1, "RemoveMixerID: Cannot remove null instance");
+                    return false;
+                }
+
+                int removedId;
+                bool removed = MixerInstanceMap.TryRemove(instance, out removedId);
+                if (removed)
+                {
+                    Main.logger?.Msg(3, string.Format("Removed mixer ID {0} for instance: {1}", removedId, instance));
+                }
+                else
+                {
+                    Main.logger?.Warn(2, string.Format("Failed to remove mixer ID for instance: {0}", instance));
+                }
+
+                return removed;
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err(string.Format("RemoveMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Get current count of tracked mixers.
         /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.Count.
         /// </summary>

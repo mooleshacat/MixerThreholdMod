@@ -195,9 +195,9 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(3, string.Format("[BRIDGE] Method signature verified: {0}", submitCommandMethod.ToString()));
                     
                     // IL2CPP COMPATIBLE: Apply Harmony patch using compile-time safe method references
-                    var harmony = Main.Instance?.HarmonyInstance;
-                    if (harmony != null)
+                    if (Main.HarmonyInstance != null)
                     {
+                        var harmony = Main.HarmonyInstance;
                         // IL2CPP COMPATIBLE: Use typeof() for compile-time safe method resolution
                         var prefixMethod = typeof(GameConsoleBridge).GetMethod(nameof(IL2CPPSafeConsolePrefix), BindingFlags.Static | BindingFlags.NonPublic);
                         if (prefixMethod != null)

@@ -1,7 +1,6 @@
 ﻿using MelonLoader;
 using MelonLoader.Utils;
 using Newtonsoft.Json;
-using ScheduleOne.Management;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,6 +23,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// ⚠️ THREAD SAFETY: All save operations are thread-safe with proper locking mechanisms.
     /// Coroutines are used to prevent blocking Unity's main thread during file operations.
     /// 
+    /// ⚠️ IL2CPP COMPATIBLE: Uses object parameters and reflection for type safety.
+    /// All mixer configuration access uses dynamic type resolution to avoid TypeLoadException.
+    /// 
     /// ⚠️ MAIN THREAD WARNING: Emergency save methods are designed for crash scenarios and 
     /// use blocking I/O. Regular save operations use coroutines to avoid main thread blocking.
     /// 
@@ -32,14 +34,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// - Compatible async patterns with proper ConfigureAwait usage
     /// - Manual dictionary operations instead of modern LINQ where needed
     /// - Proper exception handling and resource cleanup
-    /// 
-    /// Key Features:
-    /// - Save cooldown system to prevent corruption from rapid saves
-    /// - Automatic backup creation and cleanup (maintains 5 most recent)
-    /// - Event attachment with multiple fallback strategies
-    /// - Emergency save functionality for crash scenarios
-    /// - Atomic file operations with temp file + rename strategy
-    /// </summary>
+    /// - IL2CPP-safe reflection patterns throughout
     public static class MixerSaveManager
     {
         // Concurrency protection fields
@@ -104,7 +99,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
 
-                    string json = await ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
+                    string json = await Helpers.ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
                     if (!string.IsNullOrEmpty(json))
                     {
                         var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
@@ -133,13 +128,28 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 throw;
             }
         }
+        private static bool HasValidStartThreshold(object config)
+        {
+            try
+            {
+                if (config == null) return false;
+                var startThresholdProperty = config.GetType().GetProperty("StartThrehold");
+                if (startThresholdProperty == null) return false;
+                var startThreshold = startThresholdProperty.GetValue(config, null);
+                return startThreshold != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
-        public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
+        public static IEnumerator AttachListenerWhenReady(object config, int mixerID)
         {
             Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Started for Mixer {0}", mixerID));
 
             // Wait until the StartThrehold is properly initialized - NO try-catch around yield
-            while (config?.StartThrehold == null)
+            while (!HasValidStartThreshold(config))
             {
                 yield return new WaitForSeconds(0.1f);
             }
@@ -186,11 +196,21 @@ namespace MixerThreholdMod_1_0_0.Helpers
             Main.logger.Msg(3, string.Format("AttachListenerWhenReady: Finished for Mixer {0}", mixerID));
         }
 
-        private static bool TryAttachEventListener(MixingStationConfiguration config, int mixerID)
+        private static bool TryAttachEventListener(object config, int mixerID)
         {
             try
             {
-                var numberFieldType = config.StartThrehold.GetType();
+                // IL2CPP COMPATIBLE: Safe type checking
+                if (config == null) return false;
+
+                // IL2CPP COMPATIBLE: Use reflection to access StartThrehold
+                var startThresholdProperty = config.GetType().GetProperty("StartThrehold");
+                if (startThresholdProperty == null) return false;
+
+                var startThreshold = startThresholdProperty.GetValue(config, null);
+                if (startThreshold == null) return false;
+
+                var numberFieldType = startThreshold.GetType();
                 Main.logger.Msg(3, string.Format("TryAttachEventListener: NumberField type: {0}", numberFieldType.Name));
 
                 // Look for common event names
@@ -206,7 +226,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         var handler = CreateEventHandler(eventInfo.EventHandlerType, mixerID);
                         if (handler != null)
                         {
-                            eventInfo.AddEventHandler(config.StartThrehold, handler);
+                            eventInfo.AddEventHandler(startThreshold, handler);
                             Main.logger.Msg(2, string.Format("TryAttachEventListener: Successfully attached to {0} event for Mixer {1}", eventName, mixerID));
                             return true;
                         }
@@ -306,21 +326,28 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
         }
 
-        private static IEnumerator PollValueChanges(MixingStationConfiguration config, int mixerID)
+        private static IEnumerator PollValueChanges(object config, int mixerID)
         {
             Main.logger.Msg(3, string.Format("PollValueChanges: Started polling for Mixer {0}", mixerID));
 
             float lastKnownValue = -1f;
             bool hasInitialValue = false;
 
-            while (config?.StartThrehold != null)
+            // IL2CPP COMPATIBLE: Use helper method instead of direct property access
+            while (HasValidStartThreshold(config))
             {
                 Exception pollError = null;
                 float? currentValue = null;
 
                 try
                 {
-                    currentValue = GetCurrentValue(config.StartThrehold);
+                    // IL2CPP COMPATIBLE: Use reflection to get StartThreshold
+                    var startThresholdProperty = config.GetType().GetProperty("StartThrehold");
+                    if (startThresholdProperty != null)
+                    {
+                        var startThreshold = startThresholdProperty.GetValue(config, null);
+                        currentValue = GetCurrentValue(startThreshold);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -519,7 +546,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
 
-                await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
+                await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
 
                 Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
 
@@ -528,7 +555,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 if (!string.IsNullOrEmpty(persistentPath))
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
-                    await ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
+                    await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
             }
