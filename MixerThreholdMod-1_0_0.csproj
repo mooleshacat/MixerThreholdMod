@@ -99,6 +99,8 @@
     <Compile Include="Core\AdvancedSystemPerformanceMonitor.cs" />
     <Compile Include="Core\MixerConfigurationTracker.cs" />
     <Compile Include="Core\ModConsoleCommandProcessor.cs" />
+    <Compile Include="Helpers\FileOperationDiagnostics.cs" />
+    <Compile Include="Helpers\GameDirectoryResolver.cs" />
     <!-- Save System -->
     <Compile Include="Save\CrashResistantSaveManager.cs" />
     

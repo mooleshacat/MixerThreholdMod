@@ -10,3 +10,5 @@ obj\*
 /bin/x64/Debug
 /obj
 /bin
+ForCopilot/*
+!packages/**/*.dll
