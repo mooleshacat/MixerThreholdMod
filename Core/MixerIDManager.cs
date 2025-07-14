@@ -1,5 +1,11 @@
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Management;  // REMOVED: Use dynamic object types for IL2CPP compatibility
+// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
+
+// ✅ IL2CPP SAFE: Dynamic type resolution at runtime
+// No direct type references - use strings and reflection
+
+//using ScheduleOne.Management; // REMOVED: Use IL2CPPTypeResolver for safe type loading
+
+
 using System;
 using System.Collections.Concurrent;
 
@@ -196,41 +202,6 @@ namespace MixerThreholdMod_0_0_1.Core
                     Main.logger?.Err(string.Format("RemoveMixerID: Exception during removal: {0}\n{1}",
                         removeError.Message, removeError.StackTrace));
                 }
-            }
-        }
-
-        /// <summary>
-        /// Remove mixer ID mapping using object type for IL2CPP compatibility.
-        /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.
-        /// ⚠️ IL2CPP COMPATIBLE: Uses object type to avoid TypeLoadException
-        /// </summary>
-        public static bool RemoveMixerID(object instance)
-        {
-            try
-            {
-                if (instance == null)
-                {
-                    Main.logger?.Warn(1, "RemoveMixerID: Cannot remove null instance");
-                    return false;
-                }
-
-                int removedId;
-                bool removed = MixerInstanceMap.TryRemove(instance, out removedId);
-                if (removed)
-                {
-                    Main.logger?.Msg(3, string.Format("Removed mixer ID {0} for instance: {1}", removedId, instance));
-                }
-                else
-                {
-                    Main.logger?.Warn(2, string.Format("Failed to remove mixer ID for instance: {0}", instance));
-                }
-
-                return removed;
-            }
-            catch (Exception ex)
-            {
-                Main.logger?.Err(string.Format("RemoveMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                return false;
             }
         }
 
