@@ -25,6 +25,15 @@ using MixerThreholdMod_1_0_0.Save;    // ✅ NEEDED
 // using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 
+// We fixed these and used type resolver, do we need to do same for the above?
+// NOTE: I have seen MixerIDManager.cs access ScheduleOne.Manager and not use type resolver.
+// It's using declaration was even removed once and commented to use IL2CPPTypeResolver but
+// somehow it got added back. We need to fix it. This makes me think the above is not ok either.
+
+// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+
 // Assembly attributes must come first, before namespace
 [assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), "MixerThreholdMod", "1.0.0", "mooleshacat")]
 [assembly: MelonGame("TVGS", "Schedule I")]
