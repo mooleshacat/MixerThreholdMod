@@ -120,9 +120,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             // These look like innocent performance variables, but they're actually entertainment controls! 🎭🎪🎯
             private static int _randomizationEfficiency = -1; // 🎮 Actually: gaming machine win rate (0-100%) - SHHH! 😉
-#pragma warning disable CS0414 // Field assigned but never used: Secret casino dynamic type storage for IL2CPP compatibility  
             private static object _dataStructureMode = null; // Will be resolved dynamically
-#pragma warning restore CS0414
             private static string _dataStructureModeString = "Seven"; // String representation // 🎲 Actually: forced symbol - SECRET! 🤫
             private static bool _asyncOperationMode = false; // 🕐 Actually: 24/7 venue mode - Don't tell! 😏
             private static int _workloadStartTime = 1600; // ⏰ Actually: venue open hour - Innocent! 🎭
@@ -373,12 +371,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         Main.logger?.Msg(1, "[PERF] 🔧 Initializing Advanced Performance Optimization...");
                         Main.logger?.Msg(2, "[PERF] 🔐 Turbo features locked - use 'perfauth' to unlock! 🗝️");
 
-                        var harmony = Main.Instance?.HarmonyInstance;
-                        if (harmony == null)
+                        if (Main.HarmonyInstance == null)
                         {
                             Main.logger?.Err("[PERF] Harmony instance not available for advanced optimization");
                             return;
                         }
+                        var harmony = Main.HarmonyInstance;
 
                         // Initialize "optimization" patches - actually entertainment venue manipulation patches! 🎮🎪🕵️‍♂️
                         PatchRandomizationEfficiencySystem(harmony); // 🎲 Actually: patch gaming machine symbols - Totally innocent! 😉
@@ -431,23 +429,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
 =======
                 if (!CheckAdvancedAccess("datastructtest")) return;
 
-                ScheduleOne.Casino.SlotMachine.ESymbol symbol;
-                switch (structureName.ToLower())
-                {
-                    case "cherry": symbol = ScheduleOne.Casino.SlotMachine.ESymbol.Cherry; break;
-                    case "lemon": symbol = ScheduleOne.Casino.SlotMachine.ESymbol.Lemon; break;
-                    case "grape": symbol = ScheduleOne.Casino.SlotMachine.ESymbol.Grape; break;
-                    case "watermelon": symbol = ScheduleOne.Casino.SlotMachine.ESymbol.Watermelon; break;
-                    case "bell": symbol = ScheduleOne.Casino.SlotMachine.ESymbol.Bell; break;
-                    case "seven": symbol = ScheduleOne.Casino.SlotMachine.ESymbol.Seven; break;
-                    default:
-                        Main.logger?.Err(string.Format("[PERF] Invalid data structure: {0}. Valid: cherry, lemon, grape, watermelon, bell, seven", structureName));
-                        return;
-                }
+                // ✅ IL2CPP-SAFE: Store string representation
+                _dataStructureModeString = structureName.ToLower();
+                _dataStructureMode = null; // Reset object, will be resolved when needed
 
-                _dataStructureMode = symbol;
-                Main.logger?.Msg(1, string.Format("[PERF] 🔬 Data structure mode set to: {0}", symbol));
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
+                Main.logger?.Msg(1, string.Format("[PERF] 🔬 Data structure mode set to: {0}", structureName));
             }
 
             public static void SetAsyncOperationMode(bool enabled)
@@ -488,7 +474,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
             public static void ResetOptimizationConfiguration()
             {
                 _randomizationEfficiency = -1;
-                _dataStructureMode = ScheduleOne.Casino.SlotMachine.ESymbol.Seven;
+                // ✅ IL2CPP-SAFE: Use string representation instead of direct enum
+                _dataStructureModeString = "Seven";
+                _dataStructureMode = null; // Will be resolved when needed
                 _asyncOperationMode = false;
                 _workloadStartTime = 1600;
                 _workloadEndTime = 2300;
@@ -607,8 +595,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
             }
 
-            //⚠️ SECRET CASINO REFLECTION: Called via GetMethod(nameof()) in Utils.cs
-            // PatchRandomizationEfficiencySystem - DO NOT DELETE
+            // The actual patch methods
             private static bool RandomizationEfficiencyPrefix(ref object __result)
             {
                 try
@@ -620,26 +607,16 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         var random = UnityEngine.Random.Range(0, 100);
                         if (random < _randomizationEfficiency)
                         {
-                            __result = _dataStructureMode;
+                            // ✅ IL2CPP-SAFE: Use dynamic type resolution
+                            __result = ResolveSlotMachineSymbol(_dataStructureModeString);
                             return false; // Skip original method
                         }
                     }
 
                     if (_computationalMultiplier != 1.0f)
                     {
-                        var baseRandom = UnityEngine.Random.Range(0f, 1f);
-                        var optimizedRandom = Mathf.Pow(baseRandom, 1f / _computationalMultiplier);
-
-                        var enumValues = System.Enum.GetValues(typeof(ScheduleOne.Casino.SlotMachine.ESymbol));
-                        var symbolIndex = Mathf.FloorToInt(optimizedRandom * enumValues.Length);
-                        symbolIndex = Mathf.Clamp(symbolIndex, 0, enumValues.Length - 1);
-
-                        if (_computationalMultiplier > 1.0f)
-                        {
-                            symbolIndex = (enumValues.Length - 1) - symbolIndex;
-                        }
-
-                        __result = (ScheduleOne.Casino.SlotMachine.ESymbol)enumValues.GetValue(symbolIndex);
+                        // ✅ IL2CPP-SAFE: Use string-based symbol resolution
+                        __result = ResolveRandomSlotMachineSymbol(_computationalMultiplier);
                         return false;
                     }
 
@@ -695,6 +672,81 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 catch (Exception ex)
                 {
                     Main.logger?.Err(string.Format("[PERF] AlgorithmBiasPrefix error: {0}", ex.Message));
+                }
+            }
+
+            /// <summary>
+            /// IL2CPP-SAFE: Resolve SlotMachine symbol using dynamic type loading
+            /// Uses string representation to avoid direct enum references
+            /// </summary>
+            private static object ResolveSlotMachineSymbol(string symbolName)
+            {
+                try
+                {
+                    // IL2CPP-SAFE: Try to resolve enum value using reflection
+                    var slotMachineType = typeof(ScheduleOne.Casino.SlotMachine);
+                    if (slotMachineType != null)
+                    {
+                        // Look for nested ESymbol enum
+                        var nestedTypes = slotMachineType.GetNestedTypes();
+                        foreach (var nestedType in nestedTypes)
+                        {
+                            if (nestedType.Name == "ESymbol" && nestedType.IsEnum)
+                            {
+                                try
+                                {
+                                    return Enum.Parse(nestedType, symbolName, true);
+                                }
+                                catch (Exception parseEx)
+                                {
+                                    Main.logger?.Err(string.Format("[PERF] Failed to parse symbol '{0}': {1}", symbolName, parseEx.Message));
+                                }
+                            }
+                        }
+                    }
+
+                    // Fallback: return string representation
+                    Main.logger?.Warn(1, string.Format("[PERF] Could not resolve SlotMachine symbol, using string fallback: {0}", symbolName));
+                    return symbolName;
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err(string.Format("[PERF] ResolveSlotMachineSymbol error: {0}", ex.Message));
+                    return symbolName; // Fallback to string
+                }
+            }
+
+            /// <summary>
+            /// IL2CPP-SAFE: Generate random slot machine symbol with computational multiplier
+            /// </summary>
+            private static object ResolveRandomSlotMachineSymbol(float multiplier)
+            {
+                try
+                {
+                    // Use the symbol names from the enum we found in the decompiled code
+                    var symbolNames = new string[] { "Cherry", "Lemon", "Grape", "Watermelon", "Bell", "Seven" };
+
+                    var baseRandom = UnityEngine.Random.Range(0f, 1f);
+                    var adjustedRandom = Mathf.Pow(baseRandom, 1f / multiplier);
+
+                    var symbolIndex = Mathf.FloorToInt(adjustedRandom * symbolNames.Length);
+                    symbolIndex = Mathf.Clamp(symbolIndex, 0, symbolNames.Length - 1);
+
+                    // If multiplier > 1.0, favor higher-value symbols (reverse index)
+                    if (multiplier > 1.0f)
+                    {
+                        symbolIndex = (symbolNames.Length - 1) - symbolIndex;
+                    }
+
+                    var selectedSymbol = symbolNames[symbolIndex];
+                    Main.logger?.Msg(3, string.Format("[PERF] Generated random symbol: {0} (multiplier: {1})", selectedSymbol, multiplier));
+
+                    return ResolveSlotMachineSymbol(selectedSymbol);
+                }
+                catch (Exception ex)
+                {
+                    Main.logger?.Err(string.Format("[PERF] ResolveRandomSlotMachineSymbol error: {0}", ex.Message));
+                    return ResolveSlotMachineSymbol("Seven"); // Safe fallback
                 }
             }
 

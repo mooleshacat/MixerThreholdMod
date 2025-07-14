@@ -69,9 +69,24 @@ namespace MixerThreholdMod_1_0_0
     /// </summary>
     public class Main : MelonMod
     {
-        // Core components
-        public static readonly Logger logger = new Logger();
-        public static new HarmonyLib.Harmony HarmonyInstance = new HarmonyLib.Harmony("com.mooleshacat.mixerthreholdmod");
+        public static Main Instance { get; private set; }
+        public static MelonPreferences_Entry<bool> debugLoggingEnabledEntry;
+        public static MelonPreferences_Entry<bool> showLogLevelCalcEntry;
+        public static MelonPreferences_Entry<int> currentMsgLogLevelEntry;
+        public static MelonPreferences_Entry<int> currentWarnLogLevelEntry;
+        public static readonly Core.Logger logger = new Core.Logger();
+
+        public static new HarmonyLib.Harmony HarmonyInstance { get; private set; }
+
+        // IL2CPP COMPATIBLE: Use object instead of specific types to avoid TypeLoadException in IL2CPP builds
+        // Types will be resolved dynamically using IL2CPPTypeResolver when needed
+        public static List<object> queuedInstances = new List<object>();
+        public static Dictionary<object, float> userSetValues = new Dictionary<object, float>();
+        public static ConcurrentDictionary<int, float> savedMixerValues = new ConcurrentDictionary<int, float>();
+        
+        public static string CurrentSavePath = null;
+        public static bool LoadCoroutineStarted = false;
+        private static bool _consoleTestCompleted = false;
 
         // Thread-safe collections for .NET 4.8.1 compatibility
         public static readonly ThreadSafeList<MixingStationConfiguration> queuedInstances = new ThreadSafeList<MixingStationConfiguration>();
@@ -356,11 +371,15 @@ namespace MixerThreholdMod_1_0_0
 
             while (!isShuttingDown)
             {
-                // Clean up null/invalid mixers first
-                TrackedMixers.RemoveAll(tm => tm?.ConfigInstance == null);
-
-                // Process queued instances
-                if (queuedInstances.Count > 0)
+                logger.Msg(3, "ProcessQueuedInstancesAsync: Starting cleanup and processing");
+                
+                // Clean up null instances
+                await Core.MixerConfigurationTracker.RemoveAllAsync(tm => tm.ConfigInstance == null);
+                
+                var toProcess = queuedInstances.ToList();
+                logger.Msg(3, string.Format("ProcessQueuedInstancesAsync: Processing {0} queued instances", toProcess.Count));
+                
+                foreach (var instance in toProcess)
                 {
                     queuedInstances.Clear();
                 }
@@ -382,15 +401,53 @@ namespace MixerThreholdMod_1_0_0
                             continue;
                         }
 
-                        // Process each instance with crash protection
-                        yield return ProcessMixerInstance(instance);
+                        if (await Core.MixerConfigurationTracker.AnyAsync(tm => tm.ConfigInstance == instance))
+                        {
+                            logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
+                            continue;
+                        }
+                        
+                        // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property safely
+                        var startThresholdProperty = instance.GetType().GetProperty("StartThrehold");
+                        if (startThresholdProperty == null)
+                        {
+                            logger.Warn(1, "StartThrehold property not found for instance. Skipping.");
+                            continue;
+                        }
+
+                        var startThreshold = startThresholdProperty.GetValue(instance, null);
+                        if (startThreshold == null)
+                        {
+                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
+                            continue;
+                        }
+                        
+                        var mixerData = await Core.MixerConfigurationTracker.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
+                        if (mixerData == null)
+                        {
+                            try
+                            {
+                                logger.Msg(3, "ProcessQueuedInstancesAsync: Configuring new mixer...");
+                                
+                                // IL2CPP COMPATIBLE: Use reflection to call Configure method safely
+                                var configureMethod = startThreshold.GetType().GetMethod("Configure", new[] { typeof(float), typeof(float), typeof(bool) });
+                                if (configureMethod != null)
+                                {
+                                    configureMethod.Invoke(startThreshold, new object[] { 1f, 20f, true });
+                                    logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
+                                }
+                                else
+                                {
+                                    logger.Warn(1, "Configure method not found on StartThrehold. Skipping configuration.");
+                                    continue;
+                                }
 
                                 var newTrackedMixer = new Core.TrackedMixer
                                 {
                                     ConfigInstance = instance,
                                     MixerInstanceID = Core.MixerIDManager.GetMixerID(instance)
                                 };
-                                await Core.TrackedMixers.AddAsync(newTrackedMixer);
+                                await Core.MixerConfigurationTracker.AddAsync(newTrackedMixer);
                                 logger.Msg(2, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
 
                                 if (!newTrackedMixer.ListenerAdded)
@@ -537,7 +594,7 @@ namespace MixerThreholdMod_1_0_0
         {
             try
             {
-                return TrackedMixers.Any(tm => tm.MixerInstanceID == mixerInstanceID);
+                return await Core.MixerConfigurationTracker.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
             }
             catch (Exception ex)
             {
@@ -558,12 +615,8 @@ namespace MixerThreholdMod_1_0_0
             {
                 try
                 {
-                    // Reset mixer state for new game session
-                    if (MixerIDManager.MixerInstanceMap != null)
-                    {
-                        MixerIDManager.MixerInstanceMap.Clear();
-                    }
-                    MixerIDManager.ResetStableIDCounter();
+                    Core.MixerIDManager.MixerInstanceMap.Clear();
+                    Core.MixerIDManager.ResetStableIDCounter();
 
                     // Clear previous mixer values
                     savedMixerValues.Clear();
@@ -580,7 +633,24 @@ namespace MixerThreholdMod_1_0_0
                     // Copy emergency save to current save path if available
                     if (!string.IsNullOrEmpty(CurrentSavePath))
                     {
-                        CopyEmergencySaveIfExists();
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                string persistentPath = MelonEnvironment.UserDataDirectory;
+                                string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
+                                string targetFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
+                                if (File.Exists(sourceFile))
+                                {
+                                    await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(targetFile, await Helpers.ThreadSafeFileOperations.SafeReadAllTextAsync(sourceFile));
+                                    logger.Msg(3, "Copied MixerThresholdSave.json from persistent to save folder");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.Err(string.Format("Background file copy failed: {0}", ex));
+                            }
+                        });
                     }
                 }
                 catch (Exception ex)
@@ -612,6 +682,9 @@ namespace MixerThreholdMod_1_0_0
         public static IEnumerator StressGameSaveTestWithComprehensiveMonitoring(int iterations, float delaySeconds, bool bypassCooldown)
         {
             logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
+
+            // Log initial system state
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_START");
             
             var startTime = DateTime.Now;
             int successCount = 0;
@@ -619,6 +692,21 @@ namespace MixerThreholdMod_1_0_0
             
             for (int i = 1; i <= iterations; i++)
             {
+                logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
+                
+                // Track timing and system performance for this iteration
+                var iterationStart = DateTime.Now;
+                bool iterationSuccess = false;
+                
+                // Log system state before critical operation (every 5th iteration to avoid spam)
+                if (i % 5 == 1 || iterations <= 5)
+                {
+                    Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
+                }
+
+                // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
+                yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+
                 try
                 {
                     logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
@@ -631,6 +719,13 @@ namespace MixerThreholdMod_1_0_0
                     
                     var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
                     logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
+                    
+                    // Log system state after critical operation (every 5th iteration)
+                    if (i % 5 == 0 || i == iterations || iterations <= 5)
+                    {
+                        Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
+                    }
+                    
                     successCount++;
                     
                     // Add delay if specified
@@ -643,33 +738,49 @@ namespace MixerThreholdMod_1_0_0
                 catch (Exception ex)
                 {
                     logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
+                    Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_FAILED", i));
                     failureCount++;
                 }
             }
             
             var totalTime = (DateTime.Now - startTime).TotalSeconds;
+
+            // Log final system state after stress test
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
+            
             logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
         }
 
         public static IEnumerator PerformTransactionalSave()
         {
             logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
+            logger.Msg(2, "[TRANSACTION] Performing save operation...");
+
+            // Log system state before transaction
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_START");
             
+            var saveStart = DateTime.Now;
+
+            // Perform the save operation - yield return outside try/catch for .NET 4.8.1 compatibility
+            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+
             try
             {
-                _loadCoroutineStarted = true;
-                MelonCoroutines.Start(CrashResistantSaveManager.LoadMixerValuesWhenReady());
-                logger.Msg(2, "[MAIN] Load coroutine started successfully");
+                var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
+
+                // Log system state after successful transaction
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
+                
+                logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
+                logger.Msg(2, string.Format("[TRANSACTION] Performance: {0:F3} saves/second", 1000.0 / saveTime));
             }
             catch (Exception ex)
             {
-                startError = ex;
-                _loadCoroutineStarted = false; // Reset on error
-            }
-
-            if (startError != null)
-            {
-                logger.Err(string.Format("[MAIN] StartLoadCoroutine error: {0}\nStackTrace: {1}", startError.Message, startError.StackTrace));
+                // Log system state after failed transaction
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_FAILED");
+                
+                logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
+                logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
             }
         }
 
@@ -678,15 +789,88 @@ namespace MixerThreholdMod_1_0_0
         /// </summary>
         private static void CopyEmergencySaveIfExists()
         {
+            logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
+            
+            var profileStart = DateTime.Now;
+
+            // Initial system state capture
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_START");
+            
+            // Phase 1: Pre-save diagnostics
+            logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
+            var phase1Start = DateTime.Now;
+            
+            double phase1Time = 0;
+            double phase2Time = 0;
+            double phase3Time = 0;
+            Exception profileError = null;
+            
             try
             {
-                string persistentPath = MelonEnvironment.UserDataDirectory;
-                if (string.IsNullOrEmpty(persistentPath) || string.IsNullOrEmpty(CurrentSavePath)) return;
+                logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
+                logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
+                logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", GC.GetTotalMemory(false) / 1024));
 
-                string emergencyFile = Path.Combine(persistentPath, "MixerThresholdSave_Emergency.json");
-                string targetFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json");
+                // Enhanced system diagnostics
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE1");
+                
+                phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
+            }
+            catch (Exception ex)
+            {
+                profileError = ex;
+            }
+            
+            // Phase 2: Save operation profiling - yield return outside try/catch for .NET 4.8.1 compatibility
+            logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
+            var phase2Start = DateTime.Now;
 
-                if (File.Exists(emergencyFile) && !File.Exists(targetFile))
+            // System state before save operation
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
+
+            yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
+
+            try
+            {
+                phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
+
+                // System state after save operation
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_AFTER_SAVE");
+                
+                // Phase 3: Post-save diagnostics
+                logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
+                var phase3Start = DateTime.Now;
+                
+                logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", GC.GetTotalMemory(false) / 1024));
+                logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
+
+                // Final system state capture
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE3");
+                
+                phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
+                logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
+                
+                var totalTime = (DateTime.Now - profileStart).TotalMilliseconds;
+                
+                // Comprehensive performance summary
+                logger.Msg(1, string.Format("[PROFILE] Advanced profiling complete. Total time: {0:F1}ms", totalTime));
+                logger.Msg(1, string.Format("[PROFILE] Breakdown: PreSave={0:F1}ms, Save={1:F1}ms, PostSave={2:F1}ms", 
+                    phase1Time, phase2Time, phase3Time));
+                logger.Msg(1, string.Format("[PROFILE] Performance: {0:F3} saves/second", 1000.0 / phase2Time));
+                logger.Msg(1, string.Format("[PROFILE] Overhead ratio: {0:F1}% (diagnostics vs save time)", 
+                    ((phase1Time + phase3Time) / phase2Time) * 100));
+
+                // Final system state
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_COMPLETE");
+            }
+            catch (Exception ex)
+            {
+                // System state on error
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_ERROR");
+                
+                if (profileError != null)
                 {
                     File.Copy(emergencyFile, targetFile, overwrite: false);
                     logger.Msg(2, "[MAIN] Copied emergency save to current save location");
@@ -709,24 +893,12 @@ namespace MixerThreholdMod_1_0_0
             Exception quitError = null;
             try
             {
-                // Stop main coroutine
-                if (mainUpdateCoroutine != null)
-                {
-                    MelonCoroutines.Stop(mainUpdateCoroutine);
-                    mainUpdateCoroutine = null;
-                    logger.Msg(2, "[MAIN] Main update coroutine stopped");
-                }
+                logger?.Msg(2, "[MAIN] Application shutting down - cleaning up resources");
 
-                // Emergency save if we have data
-                if (savedMixerValues.Count > 0)
-                {
-                    CrashResistantSaveManager.EmergencySave();
-                    logger.Msg(1, "[MAIN] Emergency save completed on quit");
-                }
-                else
-                {
-                    logger.Msg(2, "[MAIN] No mixer data to save on quit");
-                }
+                // Cleanup system monitoring resources
+                Core.AdvancedSystemPerformanceMonitor.Cleanup();
+                
+                logger?.Msg(1, "[MAIN] Cleanup completed successfully");
             }
             catch (Exception ex)
             {
