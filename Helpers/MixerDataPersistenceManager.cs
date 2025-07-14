@@ -820,71 +820,6 @@ namespace MixerThreholdMod_1_0_0.Utils
 
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
 
-<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
-<<<<<<< HEAD
-=======
-<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
-                await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
-========
-                await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
->>>>>>>> aa94715 (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
-<<<<<<< HEAD
-=======
-========
-                await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
->>>>>>>> 2bf7ffe (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
-
-                Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
-
-                // Also save to persistent location
-                string persistentPath = MelonEnvironment.UserDataDirectory;
-                if (!string.IsNullOrEmpty(persistentPath))
-                {
-                    string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
-<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
-<<<<<<< HEAD
-=======
-<<<<<<<< HEAD:Legacy/MixerDataPersistenceManager.cs
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
-                    await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
-                    Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
-                }
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("SaveMixerValuesToFileAsync error: {0}", ex));
-                throw;
-            }
-<<<<<<< HEAD
->>>>>>> aa94715 (performance optimizations, cache manager)
-=======
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
-        }
-
-        private static async Task SaveMixerValuesToFileAsync()
-        {
-            try
-            {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
-
-                // Convert to regular dictionary for JSON serialization
-                var mixerValuesDict = new Dictionary<int, float>();
-                foreach (var kvp in Main.savedMixerValues)
-                {
-                    mixerValuesDict[kvp.Key] = kvp.Value;
-                }
-
-                var saveData = new Dictionary<string, object>
-                {
-                    ["MixerValues"] = mixerValuesDict,
-                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    ["Version"] = "1.0.0"
-                };
-
-                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
-
                 await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
 
                 Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
@@ -895,60 +830,6 @@ namespace MixerThreholdMod_1_0_0.Utils
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
                     await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
-                    Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
-                }
-            }
-            catch (Exception ex)
-            {
-                Main.logger.Err(string.Format("SaveMixerValuesToFileAsync error: {0}", ex));
-                throw;
-            }
-        }
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
-        private static async Task SaveMixerValuesToFileAsync()
-        {
-            try
-            {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
-
-                // Convert to regular dictionary for JSON serialization
-                var mixerValuesDict = new Dictionary<int, float>();
-                foreach (var kvp in Main.savedMixerValues)
-                {
-                    mixerValuesDict[kvp.Key] = kvp.Value;
-                }
-
-                var saveData = new Dictionary<string, object>
-                {
-                    ["MixerValues"] = mixerValuesDict,
-                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    ["Version"] = "1.0.0"
-                };
-
-                string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
-
-                await ThreadSafeFileOperations.SafeWriteAllTextAsync(saveFile, json);
-
-                Main.logger.Msg(2, string.Format("SaveMixerValuesToFileAsync: Saved {0} mixer values to {1}", Main.savedMixerValues.Count, saveFile));
-
-                // Also save to persistent location
-                string persistentPath = MelonEnvironment.UserDataDirectory;
-                if (!string.IsNullOrEmpty(persistentPath))
-                {
-                    string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
-========
->>>>>>>> aa94715 (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
-<<<<<<< HEAD
-=======
-========
->>>>>>>> 2bf7ffe (performance optimizations, cache manager):Helpers/MixerDataPersistenceManager.cs
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
-                    await ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
             }
