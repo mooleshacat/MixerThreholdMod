@@ -1,5 +1,7 @@
 *~
 *.dll
+packages/*
+ForCopilot/*
 *.log
 bin\*
 obj\*
