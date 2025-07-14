@@ -1,13 +1,3 @@
-using HarmonyLib;
-using MelonLoader;
-using MelonLoader.Utils;
-using MixerThreholdMod_0_0_1.Core;
-using MixerThreholdMod_0_0_1.Save;
-using MixerThreholdMod_0_0_1.Threading;
-using ScheduleOne.Management;
-using ScheduleOne.Noise;
-using ScheduleOne.ObjectScripts;
-using ScheduleOne.Persistence;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -19,9 +9,21 @@ using MelonLoader;
 using MelonLoader.Utils;
 using HarmonyLib;
 using MixerThreholdMod_1_0_0.Core;    // ✅ ESSENTIAL - Keep this! IDE false positive
-using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 using MixerThreholdMod_1_0_0.Helpers; // ✅ NEEDED
 using MixerThreholdMod_1_0_0.Save;    // ✅ NEEDED
+// Suspect these two may be IL2CPP compatibility problems same as below
+//using ScheduleOne.Noise;
+//using ScheduleOne.ObjectScripts;
+// COMMENTED FOR TESTING COMPILE TIME ERRORS? IT APPEARS OK ... MAYBE NOT NEEDED.
+
+// We fixed these and used type resolver, do we need to do same for the above?
+// NOTE: I have seen MixerIDManager.cs access ScheduleOne.Manager and not use type resolver.
+// It's using declaration was even removed once and commented to use IL2CPPTypeResolver but
+// somehow it got added back. We need to fix it. This makes me think the above is not ok either.
+
+// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
+// using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
+// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 
 // Assembly attributes must come first, before namespace
 [assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), "MixerThreholdMod", "1.0.0", "mooleshacat")]
@@ -99,7 +101,125 @@ namespace MixerThreholdMod_1_0_0
 
                 if (constructor == null)
                 {
-                    logger.Err("[MAIN] CRITICAL: MixingStationConfiguration constructor not found - mod cannot function");
+                    logger.Msg(1, "=== LOGGER TEST: MixerThreholdMod v1.0.0 Starting ===");
+                    System.Console.WriteLine("[CONSOLE TEST] MixerThreholdMod v1.0.0 Starting");
+                }
+                catch (Exception logEx)
+                {
+                    // If even basic logging fails, use console directly
+                    System.Console.WriteLine(string.Format("[CRITICAL] Logger failed during startup: {0}", logEx.Message));
+                    throw; // This is fatal - if we can't log, we're in trouble
+                }
+
+                Instance = this;
+                base.OnInitializeMelon();
+                logger.Msg(1, "=== MixerThreholdMod v1.0.0 Initializing ===");
+                logger.Msg(1, string.Format("currentMsgLogLevel: {0}", logger.CurrentMsgLogLevel));
+                logger.Msg(1, string.Format("currentWarnLogLevel: {0}", logger.CurrentWarnLogLevel));
+                logger.Msg(1, "Phase 1: Basic initialization complete");
+
+                try
+                {
+                    // IL2CPP COMPATIBLE: Use IL2CPPTypeResolver for safe type resolution in both MONO and IL2CPP builds
+                    // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
+                    logger.Msg(1, "Phase 2: Initializing IL2CPP-compatible type resolution...");
+
+                    // Log comprehensive type availability for debugging
+                    Core.IL2CPPTypeResolver.LogTypeAvailability();
+
+                    // IL2CPP-specific memory analysis after type loading
+                    if (Core.IL2CPPTypeResolver.IsIL2CPPBuild)
+                    {
+                        Core.AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis("POST_TYPE_LOADING");
+                    }
+                    
+                    logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
+                    var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
+                    if (constructor == null)
+                    {
+                        logger.Err("CRITICAL: Target constructor NOT found! This may be due to IL2CPP type loading issues.");
+                        logger.Err("CRITICAL: Mod functionality will be limited but initialization will continue.");
+                        // Don't return here - allow other initialization to continue
+                    }
+                    else
+                    {
+                        logger.Msg(1, "Phase 2: Constructor found successfully via IL2CPP-compatible type resolver");
+                    }
+
+                    logger.Msg(1, "Phase 3: Applying IL2CPP-compatible Harmony patch...");
+                    // IL2CPP COMPATIBLE: Only apply Harmony patch if constructor is available
+                    if (constructor != null)
+                    {
+                        HarmonyInstance = new HarmonyLib.Harmony("MixerThreholdMod.Main");
+
+                        // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
+                        HarmonyInstance.Patch(
+                            constructor,
+                            prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
+                        );
+                        logger.Msg(1, "Phase 3: IL2CPP-compatible Harmony patch applied successfully");
+                    }
+                    else
+                    {
+                        logger.Warn(1, "Phase 3: Skipping Harmony patch - constructor not available (IL2CPP type loading issue)");
+                        logger.Warn(1, "Phase 3: Mod will operate in limited mode without automatic mixer detection");
+                    }
+                    
+                    logger.Msg(1, "Phase 4: Registering IL2CPP-compatible console commands...");
+                    MixerThreholdMod_1_0_0.Core.Console.RegisterConsoleCommandViaReflection();
+                    logger.Msg(1, "Phase 4a: Basic console hook registered");
+                    
+                    // Also initialize native console integration for game console commands
+                    logger.Msg(1, "Phase 4b: Initializing IL2CPP-compatible native game console integration...");
+                    Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
+                    logger.Msg(1, "Phase 4c: IL2CPP-compatible console commands registered successfully");
+                    
+                    // Initialize IL2CPP-compatible patches
+                    logger.Msg(1, "Phase 6: Initializing IL2CPP-compatible patches...");
+                    Patches.SaveManager_Save_Patch.Initialize();
+                    Patches.LoadManager_LoadedGameFolderPath_Patch.Initialize();
+                    logger.Msg(1, "Phase 6: IL2CPP-compatible patches initialized");
+                    
+                    // Initialize game logger bridge for exception monitoring
+                    logger.Msg(1, "Phase 7: Initializing game exception monitoring...");
+                    Core.GameLoggerBridge.InitializeLoggingBridge();
+                    logger.Msg(1, "Phase 7: Game exception monitoring initialized");
+                    
+                    // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
+                    logger.Msg(1, "Phase 6: Initializing advanced system monitoring with memory leak detection...");
+                    Core.AdvancedSystemPerformanceMonitor.Initialize();
+                    logger.Msg(1, "Phase 6: Advanced system monitoring with memory leak detection initialized");
+
+                    // Phase 7 nothing interesting here ... Just "performance optimization routines"
+                    logger.Msg(1, "Phase 7: Initializing advanced performance optimization...");
+                    Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
+                    logger.Msg(1, "Phase 7: Advanced performance optimization initialized (authentication required)");
+                                        
+                    logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
+                }
+                catch (Exception harmonyEx)
+                {
+                    logger.Err(string.Format("CRITICAL: Harmony/Console setup failed: {0}\n{1}", harmonyEx.Message, harmonyEx.StackTrace));
+                    throw; // Re-throw to ensure initialization failure is visible
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("CRITICAL: OnInitializeMelon failed: {0}\n{1}", ex.Message, ex.StackTrace));
+                // Don't re-throw here to prevent mod loader crash, but log prominently
+                System.Console.WriteLine(string.Format("[CRITICAL] MixerThreholdMod initialization failed: {0}", ex.Message));
+            }
+        }
+
+        //⚠️ REFLECTION REFERENCE: Called via typeof(Main).GetMethod("QueueInstance") in 
+        //⚠️ OnInitializeMelon() - DO NOT DELETE
+        private static void QueueInstance(object __instance)
+        {
+            try
+            {
+                if (__instance == null)
+                {
+                    logger.Warn(1, "QueueInstance: Received null instance - ignoring");
                     return;
                 }
 
