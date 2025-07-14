@@ -9,5 +9,6 @@ obj\*
 /bin/x64/Debug
 /obj
 /bin
-!packages/**/*.dll
-!ForCopilot/*
+ForCopilot/*
+packages/*
+
