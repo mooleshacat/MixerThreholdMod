@@ -27,9 +27,9 @@ namespace MixerThreholdMod_1_0_0.Core
 #else
         public bool IsDebugEnabled = false; // disable for production builds (disables all logging except errors)
 #endif
-        public int CurrentMsgLogLevel = 3; // current dev desired msg log level (1, 2, or 3)
-        public int CurrentWarnLogLevel = 2; // current dev desired warn log level (1 or 2)
-        public bool ShowLogLevelCalc = true; // Simplified default (leave as true for clarity, for human)
+        public int CurrentMsgLogLevel = ModConstants.LOG_LEVEL_VERBOSE; // current/default dev desired msg log level (1, 2, or 3) (human changes this only)
+        public int CurrentWarnLogLevel = ModConstants.WARN_LEVEL_VERBOSE; // current/default dev desired warn log level (1 or 2) (human changes this only)
+        public bool ShowLogLevelCalc = true; // current/default simplified log level calculation (human changes this only)
 
         /// <summary>
         /// Info (Msg) logging with level filtering.
@@ -44,7 +44,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 // This allows for dynamic control of message verbosity based on the CurrentMsgLogLevel
                 // IsDebugEnabled is used to disable all logging except errors in production builds
                 // Future will include user's ability to set log levels dynamically in game
-                if (msgLogLevel < 1 || msgLogLevel > 3)
+                if (msgLogLevel < ModConstants.LOG_LEVEL_CRITICAL || msgLogLevel > ModConstants.LOG_LEVEL_VERBOSE)
                 {
                     // Fallback for invalid log levels (should never hit this, but just in case, use helper)
                     this.Err(string.Format("[ERROR] Invalid log level {0} for Msg method. Must be 1, 2, or 3.", msgLogLevel));
@@ -80,10 +80,11 @@ namespace MixerThreholdMod_1_0_0.Core
                 // This allows for dynamic control of warning verbosity based on the CurrentWarnLogLevel
                 // IsDebugEnabled is used to disable all logging except errors in production builds
                 // Future will include user's ability to set log levels dynamically in game
-                if (warnLogLevel < 1 || warnLogLevel > 2)
+                if (warnLogLevel < ModConstants.WARN_LEVEL_CRITICAL || warnLogLevel > ModConstants.WARN_LEVEL_VERBOSE)
                 {
                     // Fallback for invalid log levels (should never hit this, but just in case, use helper)
-                    this.Warn(1, string.Format("[ERROR] Invalid log level {0} for Warn method. Must be 1 or 2.", warnLogLevel));
+                    this.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format("[ERROR] Invalid log level {0} for Warn method. Must be {1} or {2}.",
+                        warnLogLevel, ModConstants.WARN_LEVEL_CRITICAL, ModConstants.WARN_LEVEL_VERBOSE));
                     return;
                 }
                 // Check if debug mode is enabled and if the CurrentWarnLogLevel allows (greater than or equal to this message's submitted warnLogLevel)

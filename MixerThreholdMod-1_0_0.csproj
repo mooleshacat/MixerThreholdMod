@@ -96,6 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Core Components -->
+    <Compile Include="Constants\Constants.cs" />
     <Compile Include="Core\NativeGameConsoleIntegration.cs" />
     <Compile Include="Core\GameExceptionMonitor.cs" />
     <Compile Include="Core\IL2CPPTypeResolver.cs" />
