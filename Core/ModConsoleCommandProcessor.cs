@@ -279,6 +279,11 @@ namespace MixerThreholdMod_0_0_1.Core
                         case "paths":
                             HandleDirectoryDetectionCommand();
                             break;
+                        case "detectdirs":
+                        case "directories":
+                        case "paths":
+                            HandleDirectoryDetectionCommand();
+                            break;
                         default:
                             Main.logger?.Msg(1, string.Format("[CONSOLE] Available commands: mixer_reset, mixer_save, mixer_path, mixer_emergency"));
                             break;
