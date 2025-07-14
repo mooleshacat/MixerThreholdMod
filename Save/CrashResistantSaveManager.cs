@@ -46,7 +46,9 @@ namespace MixerThreholdMod_1_0_0.Save
     {
         // Save state management
         private static bool isSaveInProgress = false;
-        private static bool isBackupInProgress = false;
+#pragma warning disable CS0414 // Field assigned but never used: Thread-safe backup flag used in async operations
+        private static volatile bool isBackupInProgress = false;
+#pragma warning restore CS0414
         private static readonly object saveLock = new object();
         private static readonly object backupLock = new object();
         private static DateTime lastSaveTime = DateTime.MinValue;

@@ -126,6 +126,7 @@ namespace MixerThreholdMod_1_0_0.Patches
         /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic types to avoid TypeLoadException
         /// ⚠️ THREAD SAFETY: All cleanup operations are performed asynchronously
         /// ⚠️ CRASH PREVENTION: Extensive error handling prevents patch failures from crashing game
+        /// ⚠️ REFLECTION REFERENCE: Called via GetMethod("Prefix") in EntityConfiguration_Destroy_Patch.Initialize() - DO NOT DELETE
         /// </summary>
         public static void Prefix(object __instance)
         {

@@ -1,6 +1,11 @@
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Management;  // REMOVED: Use dynamic object types for IL2CPP compatibility
-using ScheduleOne.Management;
+// IL2CPP COMPATIBILITY: Remove direct type references that cause TypeLoadException in IL2CPP builds
+
+// ✅ IL2CPP SAFE: Dynamic type resolution at runtime
+// No direct type references - use strings and reflection
+
+//using ScheduleOne.Management; // REMOVED: Use IL2CPPTypeResolver for safe type loading
+
+
 using System;
 using System.Collections.Concurrent;
 
@@ -130,56 +135,49 @@ namespace MixerThreholdMod_1_0_0.Core
         }
 
         /// <summary>
-        /// Remove mixer ID mapping. Used for cleanup when mixers are destroyed.
-        /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.
-        /// </summary>
-        public static bool RemoveMixerID(MixingStationConfiguration instance)
-        {
-            try
-            {
-                if (instance == null)
-                {
-                    Main.logger?.Warn(1, "RemoveMixerID: Cannot remove null instance");
-                    return false;
-                }
-
-                int removedId;
-                bool removed = MixerInstanceMap.TryRemove(instance, out removedId);
-                if (removed)
-                {
-                    Main.logger?.Msg(3, string.Format("Removed mixer ID {0} for instance: {1}", removedId, instance));
-                }
-                else
-                {
-                    Main.logger?.Warn(2, string.Format("Failed to remove mixer ID for instance: {0}", instance));
-                }
-
-                return removed;
-            }
-            catch (Exception ex)
-            {
-                Main.logger?.Err(string.Format("RemoveMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Remove mixer ID mapping using object type for IL2CPP compatibility.
         /// ⚠️ THREAD SAFETY: This method is thread-safe using ConcurrentDictionary.
         /// ⚠️ IL2CPP COMPATIBLE: Uses object type to avoid TypeLoadException
+        /// ⚠️ REFLECTION REFERENCE: Called via mixerIdManagerType.GetMethod("RemoveMixerID") in
+        /// ⚠️ EntityConfiguration_Destroy_Patch - DO NOT DELETE
         /// </summary>
         public static bool RemoveMixerID(object instance)
         {
+            Exception removeError = null;
             try
             {
+                // Step 2.1: Null check first (defensive programming)
                 if (instance == null)
                 {
                     Main.logger?.Warn(1, "RemoveMixerID: Cannot remove null instance");
                     return false;
                 }
 
+                // Step 2.2: IL2CPP-SAFE dynamic type verification
+                var expectedType = Core.IL2CPPTypeResolver.GetMixingStationConfigurationType();
+
+                // Step 2.3: MONO compatibility check
+                if (expectedType != null)
+                {
+                    // IL2CPP build - verify type matches
+                    if (instance.GetType() != expectedType)
+                    {
+                        Main.logger?.Warn(2, string.Format("RemoveMixerID: Type mismatch. Expected: {0}, Got: {1}",
+                            expectedType.Name, instance.GetType().Name));
+                        return false;
+                    }
+                }
+                else
+                {
+                    // MONO build or IL2CPP graceful degradation
+                    Main.logger?.Msg(3, "RemoveMixerID: Type resolver unavailable, proceeding with object type");
+                }
+
+                // Step 2.4: Proceed with actual removal (thread-safe operation)
                 int removedId;
                 bool removed = MixerInstanceMap.TryRemove(instance, out removedId);
+
+                // Step 2.5: Comprehensive logging for debugging
                 if (removed)
                 {
                     Main.logger?.Msg(3, string.Format("Removed mixer ID {0} for instance: {1}", removedId, instance));
@@ -193,8 +191,17 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("RemoveMixerID: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                removeError = ex;
                 return false;
+            }
+            finally
+            {
+                // Step 2.6: Exception handling like a hawk (.NET 4.8.1 pattern)
+                if (removeError != null)
+                {
+                    Main.logger?.Err(string.Format("RemoveMixerID: Exception during removal: {0}\n{1}",
+                        removeError.Message, removeError.StackTrace));
+                }
             }
         }
 

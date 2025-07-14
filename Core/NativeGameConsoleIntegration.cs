@@ -314,6 +314,7 @@ namespace MixerThreholdMod_1_0_0.Core
         /// ⚠️ COMPREHENSIVE LOGGING: Logs all console commands for debugging, including non-mod commands
         /// ⚠️ COMMAND VALIDATION: Checks both mod and game command registries to prevent invalid command processing
         /// ⚠️ IL2CPP COMPATIBLE: Uses interface-based command matching with compile-time known types
+        /// ⚠️ REFLECTION REFERENCE: Called via GetMethod(nameof(IL2CPPSafeConsolePrefix)) in NativeGameConsoleIntegration.cs - DO NOT DELETE
         /// </summary>
         private static bool IL2CPPSafeConsolePrefix(string args)
         {
