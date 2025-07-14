@@ -97,17 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Core Components -->
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    <Compile Include="Core\GameConsoleBridge.cs" />
-    <Compile Include="Core\GameLoggerBridge.cs" />
-    <Compile Include="Core\Logger.cs" />
-    <Compile Include="Core\MixerIDManager.cs" />
-    <Compile Include="Core\SystemMonitor.cs" />
-    <Compile Include="Core\TrackedMixer.cs" />
-    <Compile Include="Core\Console.cs" />
-=======
+    <Compile Include="Constants\Constants.cs" />
     <Compile Include="Core\NativeGameConsoleIntegration.cs" />
     <Compile Include="Core\GameExceptionMonitor.cs" />
     <Compile Include="Core\IL2CPPTypeResolver.cs" />
