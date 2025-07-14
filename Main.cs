@@ -751,6 +751,8 @@ namespace MixerThreholdMod_1_0_0
             }
 
             var totalTime = (DateTime.Now - startTime).TotalSeconds;
+
+            var totalTime = (DateTime.Now - startTime).TotalSeconds;
             
             // Log final system state after stress test
             Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
@@ -767,6 +769,8 @@ namespace MixerThreholdMod_1_0_0
             
             // Log system state before transaction
             Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_START");
+
+            var saveStart = DateTime.Now;
 
             var saveStart = DateTime.Now;
             
@@ -796,6 +800,8 @@ namespace MixerThreholdMod_1_0_0
         public static IEnumerator AdvancedSaveOperationProfiling()
         {
             logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
+
+            var profileStart = DateTime.Now;
 
             var profileStart = DateTime.Now;
             
