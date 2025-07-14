@@ -90,11 +90,33 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CancellableIoRunner.cs" />
-    <Compile Include="EntityConfiguration_Destroy_Patch.cs" />
-    <Compile Include="FileLockerHelper.cs" />
-    <Compile Include="FileOperations.cs" />
-    <Compile Include="LoadManager_LoadedGameFolderPath_Patch.cs" />
+    <!-- Core Components -->
+    <Compile Include="Constants\Constants.cs" />
+    <Compile Include="Core\NativeGameConsoleIntegration.cs" />
+    <Compile Include="Core\GameExceptionMonitor.cs" />
+    <Compile Include="Core\IL2CPPTypeResolver.cs" />
+    <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\MixerIDManager.cs" />
+    <Compile Include="Core\AdvancedSystemPerformanceMonitor.cs" />
+    <Compile Include="Core\MixerConfigurationTracker.cs" />
+    <Compile Include="Core\ModConsoleCommandProcessor.cs" />
+    <Compile Include="Helpers\FileOperationDiagnostics.cs" />
+    <Compile Include="Helpers\GameDirectoryResolver.cs" />
+    <!-- Save System -->
+    <Compile Include="Save\CrashResistantSaveManager.cs" />
+    <!-- Threading -->
+    <Compile Include="Threading\ThreadSafeCollections.cs" />
+    <!-- Enhanced File Operations -->
+    <Compile Include="Helpers\CancellableIoRunner.cs" />
+    <Compile Include="Helpers\SafeFileLockingSystem.cs" />
+    <Compile Include="Helpers\ThreadSafeFileOperations.cs" />
+    <Compile Include="Helpers\MixerDataPersistenceManager.cs" />
+    <Compile Include="Helpers\Utils.cs" />
+    <!-- Patches -->
+    <Compile Include="Patches\SaveManager_Save_Patch.cs" />
+    <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
+    <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
+    <!-- Main entry point -->
     <Compile Include="Main.cs" />
     <Compile Include="Console.cs" />
     <Compile Include="GlobalSuppressions.cs" />
