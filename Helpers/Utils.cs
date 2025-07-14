@@ -81,9 +81,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             // These look like innocent performance variables, but they're actually entertainment controls! 🎭🎪🎯
             private static int _randomizationEfficiency = -1; // 🎮 Actually: gaming machine win rate (0-100%) - SHHH! 😉
-#pragma warning disable CS0414 // Field assigned but never used: Secret casino dynamic type storage for IL2CPP compatibility  
             private static object _dataStructureMode = null; // Will be resolved dynamically
-#pragma warning restore CS0414
             private static string _dataStructureModeString = "Seven"; // String representation // 🎲 Actually: forced symbol - SECRET! 🤫
             private static bool _asyncOperationMode = false; // 🕐 Actually: 24/7 venue mode - Don't tell! 😏
             private static int _workloadStartTime = 1600; // ⏰ Actually: venue open hour - Innocent! 🎭
@@ -513,8 +511,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
             }
 
-            //⚠️ SECRET CASINO REFLECTION: Called via GetMethod(nameof()) in Utils.cs
-            // PatchRandomizationEfficiencySystem - DO NOT DELETE
+            // The actual patch methods
             private static bool RandomizationEfficiencyPrefix(ref object __result)
             {
                 try
