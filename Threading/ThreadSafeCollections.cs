@@ -1,11 +1,9 @@
 using System;
-using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MixerThreholdMod_1_0_0.Threading
 namespace MixerThreholdMod_1_0_0.Threading
 {
     /// <summary>

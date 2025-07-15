@@ -1,4 +1,3 @@
-using HarmonyLib;
 using MelonLoader;
 using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Save;
@@ -14,6 +13,9 @@ using System.Collections;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
+using Harmony;
+using HarmonyLib;
+using System.Linq;
 
 namespace MixerThreholdMod_1_0_0.Patches
 {

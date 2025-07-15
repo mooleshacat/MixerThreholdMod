@@ -6,9 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using MelonLoader;
+using MixerThreholdMod_1_0_0.Constants;
+using MixerThreholdMod_1_0_0;
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
-namespace MixerThreholdMod_0_0_1
+namespace MixerThreholdMod_1_0_0.Helpers
 {
     public class Console
     {

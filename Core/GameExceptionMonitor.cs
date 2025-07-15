@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using System;
 using UnityEngine;
+using MixerThreholdMod_1_0_0;
+using MixerThreholdMod_1_0_0.Core;
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Core

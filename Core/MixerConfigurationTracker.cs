@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MixerThreholdMod_0_0_1.Core
+namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
     /// IL2CPP COMPATIBLE: Represents a tracked mixer configuration with its associated data.
@@ -138,9 +138,6 @@ namespace MixerThreholdMod_0_0_1.Core
         /// <summary>
         /// Remove a specific tracked mixer by ConfigInstance asynchronously
         /// </summary>
-        public static async Task<bool> RemoveAsync(MixingStationConfiguration configInstance)
-        public static async Task<bool> RemoveAsync(object configInstance)
-        public static async Task<bool> RemoveAsync(object configInstance)
         public static async Task<bool> RemoveAsync(object configInstance)
         {
             try
@@ -277,6 +274,79 @@ namespace MixerThreholdMod_0_0_1.Core
             {
                 Main.logger?.Err(string.Format("TrackedMixers.ClearAsync: Error clearing mixers: {0}", ex));
                 throw;
+            }
+        }
+
+        // Synchronous compatibility methods for existing code
+        /// <summary>
+        /// Synchronous count operation for compatibility
+        /// ⚠️ MAIN THREAD WARNING: Can block calling thread - prefer async version
+        /// </summary>
+        public static int Count(Func<TrackedMixer, bool> predicate = null)
+        {
+            try
+            {
+                var task = CountAsync(predicate);
+                task.Wait();
+                return task.Result;
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err(string.Format("TrackedMixers.Count CRASH PREVENTION: Error: {0}", ex.Message));
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Synchronous existence check for compatibility
+        /// ⚠️ MAIN THREAD WARNING: Can block calling thread - prefer async version
+        /// </summary>
+        public static bool Any(Func<TrackedMixer, bool> predicate)
+        {
+            try
+            {
+                var task = AnyAsync(predicate);
+                task.Wait();
+                return task.Result;
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err(string.Format("TrackedMixers.Any CRASH PREVENTION: Error: {0}", ex.Message));
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Synchronous add operation for compatibility
+        /// ⚠️ MAIN THREAD WARNING: Can block calling thread - prefer async version
+        /// </summary>
+        public static void Add(TrackedMixer mixer)
+        {
+            try
+            {
+                var task = AddAsync(mixer);
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err(string.Format("TrackedMixers.Add CRASH PREVENTION: Error: {0}", ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Synchronous bulk removal for compatibility
+        /// ⚠️ MAIN THREAD WARNING: Can block calling thread - prefer async version
+        /// </summary>
+        public static void RemoveAll(Func<TrackedMixer, bool> predicate)
+        {
+            try
+            {
+                var task = RemoveAllAsync(predicate);
+                task.Wait();
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err(string.Format("TrackedMixers.RemoveAll CRASH PREVENTION: Error: {0}", ex.Message));
             }
         }
     }
