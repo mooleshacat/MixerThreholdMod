@@ -28,12 +28,6 @@ namespace MixerThreholdMod_1_0_0.Save
     /// ⚠️ MAIN THREAD WARNING: Synchronous methods should NOT be called from Unity's main
     /// thread as they can cause UI freezes. Use async alternatives when possible.
     /// 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /// ⚠️ IL2CPP COMPATIBLE: Uses object parameters and reflection for type safety.
-    /// 
-=======
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     /// .NET 4.8.1 Compatibility:
@@ -52,14 +46,6 @@ namespace MixerThreholdMod_1_0_0.Save
     {
         // Save state management
         private static bool isSaveInProgress = false;
-<<<<<<< HEAD
-<<<<<<< HEAD
-#pragma warning disable CS0414 // Field assigned but never used: Thread-safe backup flag used in async operations
-        private static volatile bool isBackupInProgress = false;
-#pragma warning restore CS0414
-=======
-        private static bool isBackupInProgress = false;
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
         private static bool isBackupInProgress = false;
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
@@ -152,15 +138,6 @@ namespace MixerThreholdMod_1_0_0.Save
         /// <summary>
         /// Attach value change listener to mixer configuration.
         /// ⚠️ CRASH PREVENTION: Multiple fallback strategies for event attachment.
-<<<<<<< HEAD
-<<<<<<< HEAD
-        /// ⚠️ IL2CPP COMPATIBLE: Uses object parameter and reflection for type safety.
-        /// </summary>
-        public static IEnumerator AttachListenerWhenReady(object config, int mixerID)
-=======
-        /// </summary>
-        public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
         /// </summary>
         public static IEnumerator AttachListenerWhenReady(MixingStationConfiguration config, int mixerID)
@@ -172,46 +149,12 @@ namespace MixerThreholdMod_1_0_0.Save
             float startTime = Time.time;
             const float ATTACH_TIMEOUT = 10f;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-            // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property
-            object startThreshold = null;
-            while (startThreshold == null && (Time.time - startTime) < ATTACH_TIMEOUT)
-            {
-                try
-                {
-                    if (config != null)
-                    {
-                        var startThresholdProperty = config.GetType().GetProperty("StartThrehold");
-                        if (startThresholdProperty != null)
-                        {
-                            startThreshold = startThresholdProperty.GetValue(config, null);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Main.logger.Err(string.Format("[SAVE] AttachListenerWhenReady: Error accessing StartThrehold: {0}", ex.Message));
-                }
-
-                if (startThreshold == null)
-                {
-                    yield return new WaitForSeconds(0.1f);
-                }
-            }
-
-            if (startThreshold == null)
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             while (config?.StartThrehold == null && (Time.time - startTime) < ATTACH_TIMEOUT)
             {
                 yield return new WaitForSeconds(0.1f);
             }
 
             if (config?.StartThrehold == null)
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             {
@@ -225,48 +168,6 @@ namespace MixerThreholdMod_1_0_0.Save
 
             try
             {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                // Strategy 1: Direct event attachment (most reliable) - IL2CPP COMPATIBLE
-                var onItemChangedField = startThreshold.GetType().GetField("onItemChanged", BindingFlags.Public | BindingFlags.Instance);
-                if (onItemChangedField != null)
-                {
-                    var unityEvent = onItemChangedField.GetValue(startThreshold);
-                    if (unityEvent != null)
-                    {
-                        // Use reflection to call AddListener
-                        var addListenerMethod = unityEvent.GetType().GetMethod("AddListener");
-                        if (addListenerMethod != null)
-                        {
-                            // Create a compatible delegate for the event
-                            var actionType = typeof(UnityEngine.Events.UnityAction<float>);
-                            var listener = System.Delegate.CreateDelegate(actionType,
-                                null,
-                                typeof(CrashResistantSaveManager).GetMethod("CreateValueChangeHandler", BindingFlags.NonPublic | BindingFlags.Static));
-
-                            if (listener != null)
-                            {
-                                // Store the mixerID in a closure-friendly way
-                                var specificHandler = new UnityEngine.Events.UnityAction<float>((float val) =>
-                                {
-                                    HandleValueChange(mixerID, val);
-                                });
-
-                                addListenerMethod.Invoke(unityEvent, new object[] { specificHandler });
-                                eventAttached = true;
-                                Main.logger.Msg(2, string.Format("[SAVE] AttachListenerWhenReady: Direct event attached for Mixer {0}", mixerID));
-                            }
-                        }
-                    }
-                }
-
-                // Strategy 2: Reflection-based attachment (fallback)
-                if (!eventAttached)
-                {
-                    var numberFieldType = startThreshold.GetType();
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 // Strategy 1: Direct event attachment (most reliable)
                 if (config.StartThrehold.onItemChanged != null)
                 {
@@ -281,8 +182,6 @@ namespace MixerThreholdMod_1_0_0.Save
                 else
                 {
                     var numberFieldType = config.StartThrehold.GetType();
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     var eventNames = new[] { "OnValueChanged", "ValueChanged", "onValueChanged" };
@@ -295,12 +194,6 @@ namespace MixerThreholdMod_1_0_0.Save
                             var handler = CreateEventHandler(eventInfo.EventHandlerType, mixerID);
                             if (handler != null)
                             {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                                eventInfo.AddEventHandler(startThreshold, handler);
-=======
-                                eventInfo.AddEventHandler(config.StartThrehold, handler);
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
                                 eventInfo.AddEventHandler(config.StartThrehold, handler);
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
@@ -600,33 +493,6 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Warn(1, "[SAVE] PerformCrashResistantSave: No save path available");
                 yield break;
             }
-<<<<<<< HEAD
-<<<<<<< HEAD
-            
-            if (Main.savedMixerValues.Count == 0)
-            {
-                // Provide detailed diagnostics
-                int trackedMixersCount = Core.TrackedMixers.Count(tm => tm != null);
-                int queuedInstancesCount = Main.queuedInstances.Count;
-                
-                Main.logger.Warn(1, string.Format("[SAVE] PerformCrashResistantSave: No mixer data to save. Diagnostics:"));
-                Main.logger.Warn(1, string.Format("[SAVE] - SavedMixerValues: {0}", Main.savedMixerValues.Count));
-                Main.logger.Warn(1, string.Format("[SAVE] - TrackedMixers: {0}", trackedMixersCount));
-                Main.logger.Warn(1, string.Format("[SAVE] - QueuedInstances: {0}", queuedInstancesCount));
-                Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? "[null]"));
-                
-                if (trackedMixersCount == 0 && queuedInstancesCount == 0)
-                {
-                    Main.logger.Err("[SAVE] DIAGNOSIS: No mixers detected at all - constructor patching or runtime scanning may have failed");
-                }
-                else if (trackedMixersCount > 0)
-                {
-                    Main.logger.Warn(1, "[SAVE] DIAGNOSIS: Mixers are tracked but no values captured - event attachment may have failed");
-                }
-                
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
             if (Main.savedMixerValues.Count == 0)
             {
@@ -634,8 +500,6 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Warn(1, "[SAVE] PerformCrashResistantSave: No mixer data to save. Gathering diagnostics...");
 
                 yield return GatherDetailedDiagnostics();
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 yield break;
@@ -875,27 +739,6 @@ namespace MixerThreholdMod_1_0_0.Save
             int trackedMixersCount = 0;
             int queuedInstancesCount = 0;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-            try
-            {
-                // Basic counts
-                queuedInstancesCount = Main.queuedInstances.Count;
-                
-                // Try to get tracked mixers count with timeout protection
-                var countTask = Core.TrackedMixers.CountAsync(tm => tm != null);
-                float startTime = Time.time;
-                while (!countTask.IsCompleted && (Time.time - startTime) < 2f)
-                {
-                    yield return new WaitForSeconds(0.1f);
-                }
-
-                if (countTask.IsCompleted && !countTask.IsFaulted)
-                {
-                    trackedMixersCount = countTask.Result;
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             // Get basic counts safely
             queuedInstancesCount = Main.queuedInstances.Count;
 
@@ -914,8 +757,6 @@ namespace MixerThreholdMod_1_0_0.Save
                 {
                     trackedMixersCount = countTask.Result;
                     Main.logger.Msg(3, "[SAVE] DIAGNOSIS: Successfully retrieved TrackedMixers count");
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 }
@@ -933,12 +774,6 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? "[null]"));
                 Main.logger.Warn(1, string.Format("[SAVE] - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
                 Main.logger.Warn(1, string.Format("[SAVE] - Load coroutine started: {0}", Main.LoadCoroutineStarted));
-<<<<<<< HEAD
-<<<<<<< HEAD
-                
-=======
-
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
@@ -980,15 +815,6 @@ namespace MixerThreholdMod_1_0_0.Save
 
             if (diagError != null)
             {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}", 
-                    diagError.Message, diagError.StackTrace));
-            }
-        }
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 Main.logger.Err(string.Format("[SAVE] GatherDetailedDiagnostics CRASH PREVENTION: Error: {0}\nStackTrace: {1}",
                     diagError.Message, diagError.StackTrace));
             }
@@ -1351,8 +1177,6 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Msg(2, "[SAVE] GAME SAVE StressGameSaveTest: Stress test cleanup completed");
             }
         }
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 =======
 >>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
     }
