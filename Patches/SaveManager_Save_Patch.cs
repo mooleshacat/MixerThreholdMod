@@ -2,27 +2,13 @@ using HarmonyLib;
 using MelonLoader;
 using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Save;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 using ScheduleOne.Persistence;
-=======
 // IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
 // IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
 // IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
->>>>>>> aa94715 (performance optimizations, cache manager)
-=======
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
 using System;
 using System.Collections;
 using System.IO;
@@ -53,10 +39,6 @@ namespace MixerThreholdMod_1_0_0.Patches
         private const int MaxBackups = 5;
         private static bool _patchInitialized = false;
         private static MethodInfo _saveMethod = null;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
 
         /// <summary>
         /// Initialize the patch using IL2CPP-compatible type resolution
@@ -95,7 +77,6 @@ namespace MixerThreholdMod_1_0_0.Patches
                 Main.logger.Err(string.Format("[PATCH] Failed to initialize SaveManager_Save_Patch: {0}", ex.Message));
             }
         }
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
 
         /// <summary>
         /// Initialize the patch using IL2CPP-compatible type resolution
@@ -134,7 +115,6 @@ namespace MixerThreholdMod_1_0_0.Patches
                 Main.logger.Err(string.Format("[PATCH] Failed to initialize SaveManager_Save_Patch: {0}", ex.Message));
             }
         }
->>>>>>> aa94715 (performance optimizations, cache manager)
 
         /// <summary>
         /// Initialize the patch using IL2CPP-compatible type resolution
@@ -316,14 +296,10 @@ namespace MixerThreholdMod_1_0_0.Patches
             // Move cleanup logic to background task
             var cleanupTask = Task.Run(() =>
             {
-=======
             Main.logger.Msg(3, string.Format("Starting backup cleanup process for: {0}", backupRoot));
                 // Trigger crash-resistant save immediately after game save
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
             Main.logger.Msg(3, string.Format("Starting backup cleanup process for: {0}", backupRoot));
                 // Trigger crash-resistant save immediately after game save
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 try
                 {
                     return GetBackupDirectoriesForCleanup(backupRoot, saveRootPrefix);
@@ -394,8 +370,6 @@ namespace MixerThreholdMod_1_0_0.Patches
                     // Don't re-throw - let the game continue
                 }
             }
-<<<<<<< HEAD
-<<<<<<< HEAD
 
             Main.logger.Msg(3, string.Format("Backup cleanup completed. Deleted {0} old directories.", deletionCount));
         }
@@ -463,8 +437,6 @@ namespace MixerThreholdMod_1_0_0.Patches
             }
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         private class CleanupData
         {
             public bool Success { get; set; }
@@ -501,24 +473,14 @@ namespace MixerThreholdMod_1_0_0.Patches
             public static DeletionResult CreateFatal(string errorMessage)
             {
                 return new DeletionResult { Success = false, ShouldContinue = false, ErrorMessage = errorMessage };
-=======
-                Main.logger.Err($"Coroutine continue failure in BackupSaveFolder: {ex}");
->>>>>>> 63ef1db (Add comprehensive coroutine exception handling and fix crash-prone backup operations)
             }
         }
 
         private static void CopyDirectory(string sourceDir, string targetDir)
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         /// <summary>
         /// Simple path normalization for .NET 4.8.1 compatibility
         /// </summary>
         private static string NormalizePath(string path)
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
         {
             try
             {

@@ -9,8 +9,6 @@ using System.Reflection;
 
 namespace MixerThreholdMod_1_0_0.Patches
 {
-<<<<<<< HEAD
-<<<<<<< HEAD
     [HarmonyPatch(typeof(LoadManager), "LoadedGameFolderPath", MethodType.Getter)]
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
@@ -65,7 +63,6 @@ namespace MixerThreholdMod_1_0_0.Patches
                             Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Error starting save coroutine: {0}", coroutineEx.Message));
                         }
                     }
-=======
     /// <summary>
     /// Harmony patch for LoadManager.StartGame to capture load operations and initialize save path.
     /// 
@@ -102,13 +99,6 @@ namespace MixerThreholdMod_1_0_0.Patches
                 {
                     Main.logger.Warn(1, "[PATCH] LoadManager type not found - patch will not be applied");
                     return;
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
-=======
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
                 }
 
                 // Get SaveInfo type via reflection
@@ -167,8 +157,6 @@ namespace MixerThreholdMod_1_0_0.Patches
                 if (string.IsNullOrEmpty(savePath))
                 {
                     Main.logger.Msg(3, "[PATCH] LoadManager postfix: Save path is empty");
-<<<<<<< HEAD
-<<<<<<< HEAD
                     return;
                 }
 
@@ -191,21 +179,10 @@ namespace MixerThreholdMod_1_0_0.Patches
             }
             catch (Exception ex)
             {
-<<<<<<< HEAD
                 // catchall at patch level, where my DLL interacts with the game and it's engine
                 // hopefully should catch errors in entire project?
                 Main.logger.Err("LoadManager_LoadedGameFolderPath_Patch: Failed during path handling");
                 Main.logger.Err(string.Format("LoadManager_LoadedGameFolderPath_Patch: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-=======
-                patchError = ex;
-            }
-
-            if (patchError != null)
-            {
-                Main.logger.Err(string.Format("[PATCH] LoadManager_LoadedGameFolderPath_Patch CRASH PREVENTION: Patch error: {0}\nStackTrace: {1}", 
-                    patchError.Message, patchError.StackTrace));
-                // CRITICAL: Never let patch failures crash the game's load process
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
         }
 
@@ -227,13 +204,7 @@ namespace MixerThreholdMod_1_0_0.Patches
             }
             catch (Exception ex)
             {
-<<<<<<< HEAD
                 Main.logger.Err(string.Format("SaveThresholdsCoroutine: Error: {0}\n{1}", ex.Message, ex.StackTrace));
-=======
-                Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
-                return path;
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
     /// <summary>
     /// Harmony patch for LoadManager.StartGame to capture load operations and initialize save path.
     /// 
@@ -328,10 +299,6 @@ namespace MixerThreholdMod_1_0_0.Patches
                 if (string.IsNullOrEmpty(savePath))
                 {
                     Main.logger.Msg(3, "[PATCH] LoadManager postfix: Save path is empty");
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
-=======
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
                     return;
                 }
 
@@ -385,7 +352,6 @@ namespace MixerThreholdMod_1_0_0.Patches
             {
                 Main.logger.Err(string.Format("[PATCH] NormalizePath error: {0}", ex.Message));
                 return path;
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             }
         }
     }

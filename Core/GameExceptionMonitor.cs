@@ -40,7 +40,6 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(2, "[BRIDGE] Initializing GameLoggerBridge patches");
 
                     // Apply Harmony patches to intercept game logging
-<<<<<<< HEAD
                     var harmony = Main.Instance.HarmonyInstance;
 
                     // dnSpy Verified: ScheduleOne.Console class and method signatures verified via comprehensive dnSpy analysis
@@ -80,13 +79,6 @@ namespace MixerThreholdMod_1_0_0.Core
                     else
                     {
                         Main.logger?.Warn(1, "[BRIDGE] Could not find ScheduleOne.Console.LogError method for patching");
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
                     }
 
                     _isInitialized = true;
@@ -96,27 +88,12 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     initError = ex;
                 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
 
                 if (initError != null)
                 {
                     Main.logger?.Err(string.Format("[BRIDGE] GameLoggerBridge initialization FAILED: {0}\nStackTrace: {1}",
                         initError.Message, initError.StackTrace));
                 }
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
             }
         }
 

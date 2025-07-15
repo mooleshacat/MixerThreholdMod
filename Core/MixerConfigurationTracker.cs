@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 namespace MixerThreholdMod_0_0_1.Core
 {
     /// <summary>
@@ -140,23 +138,10 @@ namespace MixerThreholdMod_0_0_1.Core
         /// <summary>
         /// Remove a specific tracked mixer by ConfigInstance asynchronously
         /// </summary>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         public static async Task<bool> RemoveAsync(MixingStationConfiguration configInstance)
-=======
         public static async Task<bool> RemoveAsync(object configInstance)
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
         public static async Task<bool> RemoveAsync(object configInstance)
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
         public static async Task<bool> RemoveAsync(object configInstance)
->>>>>>> aa94715 (performance optimizations, cache manager)
-=======
-        public static async Task<bool> RemoveAsync(object configInstance)
->>>>>>> 2bf7ffe (performance optimizations, cache manager)
         {
             try
             {

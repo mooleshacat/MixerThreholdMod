@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-using System;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
-using UnityEngine;
-using MelonLoader;
-using MelonLoader.Utils;
-
-namespace MixerThreholdMod_0_0_1.Core
-=======
 using MelonLoader;
 using MelonLoader.Utils;
 using System;
@@ -20,7 +7,6 @@ using UnityEngine;
 using UnityEngine.U2D;
 
 namespace MixerThreholdMod_1_0_0.Core
->>>>>>> aa94715 (performance optimizations, cache manager)
 {
     /// <summary>
     /// IL2CPP COMPATIBLE: Simplified console integration for debugging and user commands.
@@ -135,10 +121,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[CONSOLE] Empty command received - no action taken");
                         return;
                     }
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
                     // Enhanced comprehensive command logging with system context
                     Main.logger?.Msg(2, string.Format("[CONSOLE] === COMMAND RECEIVED ==="));
@@ -241,10 +223,6 @@ namespace MixerThreholdMod_1_0_0.Core
                     
                     Main.logger?.Msg(2, string.Format("[CONSOLE] Command execution time: {0:F3}ms", executionTime.TotalMilliseconds));
                     Main.logger?.Msg(2, "[CONSOLE] === COMMAND COMPLETED ===");
-<<<<<<< HEAD
-=======
->>>>>>>> aa94715 (performance optimizations, cache manager):Core/ModConsoleCommandProcessor.cs
->>>>>>> aa94715 (performance optimizations, cache manager)
                 }
                 catch (Exception ex)
                 {
@@ -262,49 +240,25 @@ namespace MixerThreholdMod_1_0_0.Core
             /// <summary>
             /// Process specific console commands
             /// </summary>
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                     Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? "[null]"));
                     Main.logger?.Err(string.Format("[CONSOLE] Command processing failed after {0:F3}ms", (DateTime.UtcNow - commandStartTime).TotalMilliseconds));
                 }
             }
 
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
                 }
             }
 
->>>>>>> aa94715 (performance optimizations, cache manager)
             private void ProcessCommand(string lowerCommand)
             {
                 Exception processError = null;
                 try
                 {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                     switch (lowerCommand)
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
                     // Handle commands with parameters
                     var parts = lowerCommand.Split(' ');
                     var baseCommand = parts[0];
 
                     switch (baseCommand)
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
                     {
                         case "mixer_reset":
                             ResetMixerValues();
@@ -320,24 +274,15 @@ namespace MixerThreholdMod_1_0_0.Core
                             break;
                         case "mixer_saveprefstress":
                         case "saveprefstress":
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
                             HandleStressSavePrefCommand(parts);
                             break;
                         case "mixer_savegamestress":
                         case "savegamestress":
                             HandleStressSaveGameCommand(parts);
                             break;
-<<<<<<< HEAD
                         case "mixer_savemonitor":
                         case "savemonitor":
                             HandleComprehensiveSaveMonitoringCommand(parts);
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                             if (parts.Length < 2)
                             {
                                 Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: count");
@@ -371,10 +316,6 @@ namespace MixerThreholdMod_1_0_0.Core
                             {
                                 HandleComprehensiveSaveMonitoringCommand(parts);
                             }
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                             break;
                         case "transactionalsave":
                         case "mixer_transactional":
@@ -385,12 +326,6 @@ namespace MixerThreholdMod_1_0_0.Core
                             HandleProfileCommand();
                             break;
                         case "msg":
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-                        // REMOVED: case "mixer_log": and case "log":
-                        case "msg":
->>>>>>> aa94715 (performance optimizations, cache manager)
                             HandleSingleLogCommand("msg", parts, lowerCommand);
                             break;
                         case "warn":
@@ -399,7 +334,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         case "err":
                             HandleSingleLogCommand("err", parts, lowerCommand);
                             break;
-<<<<<<< HEAD
                         case "detectdirs":
                         case "directories":
                         case "paths":
@@ -422,9 +356,6 @@ namespace MixerThreholdMod_1_0_0.Core
                             break;
                         default:
                             Main.logger?.Msg(1, string.Format("[CONSOLE] Available commands: mixer_reset, mixer_save, mixer_path, mixer_emergency"));
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                             if (parts.Length < 2)
                             {
                                 Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: message");
@@ -471,16 +402,10 @@ namespace MixerThreholdMod_1_0_0.Core
                                 Main.logger?.Warn(1, string.Format("[CONSOLE] Unknown command: '{0}'", baseCommand));
                                 Main.logger?.Msg(1, "[CONSOLE] Type 'help' to see available commands");
                             }
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                             break;
-=======
                         default:
                             ShowHelpMessage();
                             break;
->>>>>>> aa94715 (performance optimizations, cache manager)
                     }
                 }
                 catch (Exception ex)
@@ -494,12 +419,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
             /// <summary>
             /// Show help for specific command when parameters are missing
             /// ⚠️ THREAD SAFETY: Safe logging operations with comprehensive error handling
@@ -625,12 +544,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
             private void ShowHelpMessage()
             {
                 Exception helpError = null;
@@ -638,19 +551,10 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     Main.logger?.Msg(1, "[CONSOLE] Available commands:");
                     Main.logger?.Msg(1, "[CONSOLE] ");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                     Main.logger?.Msg(1, "[CONSOLE] === SYSTEM COMMANDS ===");
                     Main.logger?.Msg(1, "[CONSOLE]   detectdirs - Detect and display game directories");
                     Main.logger?.Msg(1, "[CONSOLE]   directories - Alias for detectdirs");
                     Main.logger?.Msg(1, "[CONSOLE]   paths - Alias for detectdirs");
-=======
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
                     Main.logger?.Msg(1, "[CONSOLE] === MIXER MANAGEMENT ===");
                     Main.logger?.Msg(1, "[CONSOLE]   mixer_reset - Reset all mixer values");
                     Main.logger?.Msg(1, "[CONSOLE]   mixer_save - Force immediate save");
@@ -660,17 +564,12 @@ namespace MixerThreholdMod_1_0_0.Core
                     Main.logger?.Msg(1, "[CONSOLE] === STRESS TESTING ===");
                     Main.logger?.Msg(1, "[CONSOLE]   saveprefstress <count> [delay] [bypass] - Stress test mixer prefs saves");
                     Main.logger?.Msg(1, "[CONSOLE]   savegamestress <count> [delay] [bypass] - Stress test game saves");
-<<<<<<< HEAD
                     Main.logger?.Msg(1, "[CONSOLE]   savemonitor <count> [delay] [bypass] - Comprehensive save monitoring (dnSpy)");
                     Main.logger?.Msg(1, "[CONSOLE]   transactionalsave - Perform atomic transactional save");
                     Main.logger?.Msg(1, "[CONSOLE]   profile - Advanced save operation profiling");
                     Main.logger?.Msg(1, "[CONSOLE]     Examples: saveprefstress 10 0.1 true");
                     Main.logger?.Msg(1, "[CONSOLE]               savegamestress 5 false 2.0");
                     Main.logger?.Msg(1, "[CONSOLE]               savemonitor 3 1.0 - Multi-method validation");
-=======
-                    Main.logger?.Msg(1, "[CONSOLE]     Examples: saveprefstress 10 0.1 true");
-                    Main.logger?.Msg(1, "[CONSOLE]               savegamestress 5 false 2.0");
->>>>>>> aa94715 (performance optimizations, cache manager)
                     Main.logger?.Msg(1, "[CONSOLE]     Note: Parameters after count can be in any order");
                     Main.logger?.Msg(1, "[CONSOLE] ");
                     Main.logger?.Msg(1, "[CONSOLE] === MANUAL LOGGING ===");
@@ -693,9 +592,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
             // Add this method to the MixerConsoleHook class:
             /// <summary>
             /// Handle directory detection command
@@ -779,12 +675,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-=======
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
             /// <summary>
             /// Handle single-type logging commands (msg, warn, err)
             /// ⚠️ THREAD SAFETY: Safe logging operations with comprehensive error handling
@@ -915,15 +805,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
-=======
-            /// <summary>
-            /// Handle stress save game command with parameters
-            /// ⚠️ THREAD SAFETY: Validates parameters and starts game save stress test safely
-            /// Supports flexible parameter ordering: <count> [delay] [bypassCooldown]
-            /// </summary>
-            /// <param name="parts">Command parts: [0]=command, [1-3]=flexible parameters</param>
->>>>>>> aa94715 (performance optimizations, cache manager)
             private void HandleStressSaveGameCommand(string[] parts)
             {
                 Exception stressError = null;
@@ -943,10 +824,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-<<<<<<< HEAD
-=======
-                    // Parse iteration count (always first parameter)
->>>>>>> aa94715 (performance optimizations, cache manager)
                     int iterations;
                     if (!int.TryParse(parts[1], out iterations) || iterations <= 0)
                     {
@@ -954,35 +831,18 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-<<<<<<< HEAD
                     float delaySeconds = 0f;
                     bool bypassCooldown = true;
 
                     for (int i = 2; i < parts.Length && i < 4; i++)
                     {
                         var param = parts[i].Trim();
-=======
-                    // Parse remaining parameters flexibly
-                    float delaySeconds = 0f;
-                    bool bypassCooldown = true; // Default to true
-
-                    // Analyze remaining parameters (parts[2] and parts[3] if they exist)
-                    for (int i = 2; i < parts.Length && i < 4; i++)
-                    {
-                        var param = parts[i].Trim();
-
-                        // Try to parse as boolean first
->>>>>>> aa94715 (performance optimizations, cache manager)
                         bool boolValue;
                         if (bool.TryParse(param, out boolValue))
                         {
                             bypassCooldown = boolValue;
                             Main.logger?.Msg(3, string.Format("[CONSOLE] Parsed parameter '{0}' as bypass cooldown: {1}", param, boolValue));
                         }
-<<<<<<< HEAD
-=======
-                        // Try to parse as float
->>>>>>> aa94715 (performance optimizations, cache manager)
                         else
                         {
                             float floatValue;
@@ -999,10 +859,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         }
                     }
 
-<<<<<<< HEAD
-=======
-                    // Game save validation warnings (more conservative)
->>>>>>> aa94715 (performance optimizations, cache manager)
                     if (iterations > 20)
                     {
                         Main.logger?.Warn(1, string.Format("[CONSOLE] Warning: {0} game saves is excessive. Consider using fewer iterations.", iterations));
@@ -1013,15 +869,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[CONSOLE] Warning: Game saves should have adequate delay (3+ seconds recommended) to prevent corruption.");
                     }
 
-<<<<<<< HEAD
-=======
-                    if (!bypassCooldown)
-                    {
-                        Main.logger?.Warn(1, "[CONSOLE] Warning: Game save cooldown behavior depends on game's internal cooldown system (not controlled by this mod).");
-                    }
-
-                    // Start the game save stress test using direct SaveManager access
->>>>>>> aa94715 (performance optimizations, cache manager)
                     Main.logger?.Msg(1, string.Format("[CONSOLE] Starting game save stress test: {0} iterations, {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
                     MelonCoroutines.Start(Save.CrashResistantSaveManager.StressGameSaveTest(iterations, delaySeconds, bypassCooldown));
                 }
@@ -1036,7 +883,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
             private void HandleComprehensiveSaveMonitoringCommand(string[] parts)
             {
                 Exception monitorError = null;
@@ -1174,14 +1020,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-=======
-            /// <summary>
-            /// Handle stress save mixer preferences command with parameters
-            /// ⚠️ THREAD SAFETY: Validates parameters and starts coroutine safely
-            /// Supports flexible parameter ordering: <count> [delay] [bypassCooldown]
-            /// </summary>
-            /// <param name="parts">Command parts: [0]=command, [1-3]=flexible parameters</param>
->>>>>>> aa94715 (performance optimizations, cache manager)
             private void HandleStressSavePrefCommand(string[] parts)
             {
                 Exception stressError = null;
@@ -1200,10 +1038,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-<<<<<<< HEAD
-=======
-                    // Parse iteration count (always first parameter)
->>>>>>> aa94715 (performance optimizations, cache manager)
                     int iterations;
                     if (!int.TryParse(parts[1], out iterations) || iterations <= 0)
                     {
@@ -1211,35 +1045,18 @@ namespace MixerThreholdMod_1_0_0.Core
                         return;
                     }
 
-<<<<<<< HEAD
                     float delaySeconds = 0f;
                     bool bypassCooldown = true;
 
                     for (int i = 2; i < parts.Length && i < 4; i++)
                     {
                         var param = parts[i].Trim();
-=======
-                    // Parse remaining parameters flexibly
-                    float delaySeconds = 0f;
-                    bool bypassCooldown = true; // Default to true
-
-                    // Analyze remaining parameters (parts[2] and parts[3] if they exist)
-                    for (int i = 2; i < parts.Length && i < 4; i++)
-                    {
-                        var param = parts[i].Trim();
-
-                        // Try to parse as boolean first
->>>>>>> aa94715 (performance optimizations, cache manager)
                         bool boolValue;
                         if (bool.TryParse(param, out boolValue))
                         {
                             bypassCooldown = boolValue;
                             Main.logger?.Msg(3, string.Format("[CONSOLE] Parsed parameter '{0}' as bypass cooldown: {1}", param, boolValue));
                         }
-<<<<<<< HEAD
-=======
-                        // Try to parse as float
->>>>>>> aa94715 (performance optimizations, cache manager)
                         else
                         {
                             float floatValue;
@@ -1256,10 +1073,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         }
                     }
 
-<<<<<<< HEAD
-=======
-                    // Validation warnings
->>>>>>> aa94715 (performance optimizations, cache manager)
                     if (iterations > 100)
                     {
                         Main.logger?.Warn(1, string.Format("[CONSOLE] Warning: {0} iterations is a large stress test. This may take significant time.", iterations));
@@ -1275,10 +1088,6 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Warn(1, "[CONSOLE] Warning: With cooldown enabled and low delay, some saves may be skipped due to 2-second cooldown.");
                     }
 
-<<<<<<< HEAD
-=======
-                    // Start the mixer preferences stress test
->>>>>>> aa94715 (performance optimizations, cache manager)
                     Main.logger?.Msg(1, string.Format("[CONSOLE] Starting mixer preferences stress test: {0} iterations, {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
                     MelonCoroutines.Start(Save.CrashResistantSaveManager.StressSaveTest(iterations, delaySeconds, bypassCooldown));
                 }
@@ -1293,12 +1102,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
-=======
-            /// <summary>
-            /// Reset all mixer values
-            /// </summary>
->>>>>>> aa94715 (performance optimizations, cache manager)
             private void ResetMixerValues()
             {
                 Exception resetError = null;
@@ -1310,17 +1113,9 @@ namespace MixerThreholdMod_1_0_0.Core
                         Main.logger?.Msg(1, "[CONSOLE] Mixer values cleared");
                     }
 
-<<<<<<< HEAD
                     MixerIDManager.ResetStableIDCounter();
                     Main.logger?.Msg(1, "[CONSOLE] Mixer ID counter reset");
 
-=======
-                    // Reset ID manager
-                    MixerIDManager.ResetStableIDCounter();
-                    Main.logger?.Msg(1, "[CONSOLE] Mixer ID counter reset");
-
-                    // Force emergency save of empty state
->>>>>>> aa94715 (performance optimizations, cache manager)
                     Save.CrashResistantSaveManager.EmergencySave();
                     Main.logger?.Msg(1, "[CONSOLE] Empty state saved");
                 }
@@ -1335,12 +1130,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
-=======
-            /// <summary>
-            /// Force an immediate save
-            /// </summary>
->>>>>>> aa94715 (performance optimizations, cache manager)
             private void ForceSave()
             {
                 Exception saveError = null;
@@ -1360,12 +1149,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
-=======
-            /// <summary>
-            /// Print current save path
-            /// </summary>
->>>>>>> aa94715 (performance optimizations, cache manager)
             private void PrintSavePath()
             {
                 Exception pathError = null;
@@ -1388,12 +1171,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
             }
 
-<<<<<<< HEAD
-=======
-            /// <summary>
-            /// Trigger emergency save
-            /// </summary>
->>>>>>> aa94715 (performance optimizations, cache manager)
             private void EmergencySave()
             {
                 Exception emergencyError = null;
@@ -1431,22 +1208,10 @@ namespace MixerThreholdMod_1_0_0.Core
                 }
 
                 Main.logger?.Msg(2, "[CONSOLE] Console commands registered successfully");
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
                 
                 // Test the console commands to ensure they work
                 Main.logger?.Msg(2, "[CONSOLE] Testing console command functionality...");
                 TestConsoleCommands(hookInstance);
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
             }
             catch (Exception ex)
             {
@@ -1458,12 +1223,6 @@ namespace MixerThreholdMod_1_0_0.Core
                 Main.logger?.Err(string.Format("[CONSOLE] RegisterConsoleCommandViaReflection error: {0}\n{1}", regError.Message, regError.StackTrace));
             }
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
 
         /// <summary>
         /// Test console commands to verify they work properly
@@ -1531,11 +1290,5 @@ namespace MixerThreholdMod_1_0_0.Core
                 Main.logger?.Err(string.Format("[CONSOLE] ProcessManualCommand error: {0}\n{1}", manualError.Message, manualError.StackTrace));
             }
         }
-<<<<<<< HEAD
->>>>>>> bd55758 (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> c6170fc (Merge branch 'copilot/fix-7f635d0c-3e41-4d2d-ba44-3f2ddfc5a4c6' into copilot/fix-6fb822ce-3d96-449b-9617-05ee31c54025)
-=======
->>>>>>> aa94715 (performance optimizations, cache manager)
     }
 }
