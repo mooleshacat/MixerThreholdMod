@@ -109,6 +109,38 @@ namespace MixerThreholdMod_1_0_0.Constants
         /// <summary>Patch name for EntityConfiguration Destroy patch</summary>
         public const string PATCH_ENTITY_DESTROY_NAME = "EntityConfiguration_Destroy_Patch";
 
+        // ===== COMPONENT NAME CONSTANTS =====
+        /// <summary>Performance optimizer component name</summary>
+        public const string PERFORMANCE_OPTIMIZER_NAME = "PerformanceOptimizer";
+
+        // ===== LOGGING PREFIX CONSTANTS =====
+        /// <summary>Logging prefix for advanced save operations</summary>
+        public const string ADVANCED_SAVE_OPERATION_PREFIX = "[ADVANCED_SAVE]";
+
+        /// <summary>Logging prefix for stress test operations</summary>
+        public const string STRESS_TEST_PREFIX = "[STRESS_TEST]";
+
+        /// <summary>Logging prefix for backup operations</summary>
+        public const string BACKUP_OPERATION_PREFIX = "[BACKUP]";
+
+        /// <summary>Logging prefix for directory resolver operations</summary>
+        public const string DIRECTORY_RESOLVER_PREFIX = "[DIR-RESOLVER]";
+
+        /// <summary>Logging prefix for file lock operations</summary>
+        public const string FILE_LOCK_PREFIX = "[FILE_LOCK]";
+
+        /// <summary>Logging prefix for IO runner operations</summary>
+        public const string IO_RUNNER_PREFIX = "[IO_RUNNER]";
+
+        /// <summary>Logging prefix for diagnostics operations</summary>
+        public const string DIAGNOSTICS_PREFIX = "[DIAGNOSTICS]";
+
+        /// <summary>Logging prefix for persistence operations</summary>
+        public const string PERSISTENCE_PREFIX = "[PERSISTENCE]";
+
+        /// <summary>Logging prefix for utility operations</summary>
+        public const string UTILS_PREFIX = "[UTILS]";
+
         // ===== ERROR MESSAGE CONSTANTS =====
         /// <summary>Error message template for invalid log levels</summary>
         public const string INVALID_MSG_LEVEL_ERROR = "[ERROR] Invalid log level {0} for Msg method. Must be {1} to {2}.";
@@ -243,6 +275,16 @@ namespace MixerThreholdMod_1_0_0.Constants
 
         /// <summary>System health check interval in seconds</summary>
         public const int SYSTEM_HEALTH_CHECK_INTERVAL_SECONDS = 30;
+
+        // ===== FILE OPERATION CONSTANTS =====
+        /// <summary>Default file buffer size for read/write operations</summary>
+        public const int DEFAULT_FILE_BUFFER_SIZE = 4096;
+
+        /// <summary>Maximum concurrent file operations allowed</summary>
+        public const int MAX_CONCURRENT_OPERATIONS = 10;
+
+        /// <summary>File operation timeout in seconds</summary>
+        public const float FILE_OPERATION_TIMEOUT_SECONDS = 30f;
 
         // ===== VALIDATION CONSTANTS =====
         /// <summary>Minimum valid file size in bytes</summary>
