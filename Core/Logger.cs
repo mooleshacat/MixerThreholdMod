@@ -84,7 +84,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (warnLogLevel < ModConstants.WARN_LEVEL_CRITICAL || warnLogLevel > ModConstants.WARN_LEVEL_VERBOSE)
                 {
                     // Fallback for invalid log levels (should never hit this, but just in case, use helper)
-                    this.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format("[ERROR] Invalid log level {0} for Warn method. Must be {1} or {2}.",
+                    this.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format(ModConstants.INVALID_WARN_LEVEL_ERROR,
                         warnLogLevel, ModConstants.WARN_LEVEL_CRITICAL, ModConstants.WARN_LEVEL_VERBOSE));
                     return;
                 }
