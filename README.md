@@ -1,6 +1,16 @@
+<<<<<<< HEAD
 # MixerThreholdMod-0_0_1
 
 Working on mod ... Not adviseable to use currently. Release coming soon :)
+=======
+# MixerThreholdMod v1.0.0 🧪 - MONO/IL2CPP Compatible
+
+A comprehensive mod for **Schedule 1** that enhances the mixer system with crash-resistant saves, increased capacity, and intelligent threshold control. **Now fully compatible with both MONO and IL2CPP builds!**
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> pr13-constants-consolidation-v2
 
 Yes I am playing with Github Copilot :)
 

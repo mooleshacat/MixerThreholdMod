@@ -1,5 +1,9 @@
 *~
 *.dll
+<<<<<<< HEAD
+=======
+!packages/**/*.dll
+>>>>>>> pr13-constants-consolidation-v2
 *.log
 bin\*
 obj\*
