@@ -97,29 +97,37 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Core Components -->
-    <Compile Include="Core\AdvancedSystemPerformanceMonitor.cs" />
     <Compile Include="Core\Console.cs" />
+    <Compile Include="Core\CpuMonitor.cs" />
     <Compile Include="Core\GameExceptionMonitor.cs" />
     <Compile Include="Core\IL2CPPTypeResolver.cs" />
     <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\MemoryMonitor.cs" />
     <Compile Include="Core\MixerConfigurationTracker.cs" />
     <Compile Include="Core\MixerIDManager.cs" />
+    <Compile Include="Core\MixerManager.cs" />
     <Compile Include="Core\ModConsoleCommandProcessor.cs" />
     <Compile Include="Core\NativeGameConsoleIntegration.cs" />
-    <Compile Include="Core\SystemMonitor.cs" />
+    <Compile Include="Core\PatchInitializer.cs" />
+    <Compile Include="Core\PerformanceSnapshot.cs" />
+    <Compile Include="Core\SceneHandler.cs" />
+    <Compile Include="Core\StressTestManager.cs" />
+    <Compile Include="Core\SystemInfoLogger.cs" />
+    <Compile Include="Helpers\AtomicFileWriter.cs" />
+    <Compile Include="Helpers\GameInstallDirectoryResolver.cs" />
+    <Compile Include="Helpers\MixerBackupManager.cs" />
+    <Compile Include="Helpers\MixerDataValidator.cs" />
+    <Compile Include="Helpers\ThreadSafeFileReader.cs" />
+    <Compile Include="Helpers\ThreadSafeFileWriter.cs" />
+    <Compile Include="Helpers\UserDataDirectoryResolver.cs" />
+    <Compile Include="Save\BackupSaveManager.cs" />
     <!-- Save System -->
-    <Compile Include="Save\CrashResistantSaveManager.cs" />
+    <Compile Include="Save\EmergencySaveManager.cs" />
     <!-- Threading -->
     <Compile Include="Threading\ThreadSafeCollections.cs" />
     <!-- Enhanced File Operations -->
-    <Compile Include="Helpers\CancellableIoRunner.cs" />
-    <Compile Include="Helpers\Console.cs" />
-    <Compile Include="Helpers\FileOperationDiagnostics.cs" />
     <Compile Include="Helpers\GameDirectoryResolver.cs" />
     <Compile Include="Helpers\MixerDataPersistenceManager.cs" />
-    <Compile Include="Helpers\SafeFileLockingSystem.cs" />
-    <Compile Include="Helpers\ThreadSafeFileOperations.cs" />
-    <Compile Include="Helpers\Utils.cs" />
     <!-- Patches -->
     <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
     <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
