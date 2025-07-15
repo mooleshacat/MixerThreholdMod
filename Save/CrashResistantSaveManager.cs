@@ -731,7 +731,7 @@ namespace MixerThreholdMod_1_0_0.Save
             queuedInstancesCount = Main.queuedInstances.Count;
 
             // Try to get tracked mixers count with timeout protection - outside try/catch
-            var countTask = Core.TrackedMixers.CountAsync(tm => tm != null);
+            var countTask = Core.MixerConfigurationTracker.CountAsync(tm => tm != null);
             float startTime = Time.time;
             while (!countTask.IsCompleted && (Time.time - startTime) < 2f)
             {

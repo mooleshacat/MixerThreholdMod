@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using HarmonyLib;
+using static MixerThreholdMod_1_0_0.Core.MixerConfigurationTracker;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -51,7 +52,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         try
                         {
                             // Remove from tracked mixers safely
-                            bool removed = await TrackedMixers.RemoveAsync(mixerConfig);
+                            bool removed = await MixerConfigurationTracker.RemoveAsync(mixerConfig);
                             if (removed)
                             {
                                 Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");
@@ -90,7 +91,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         try
                         {
                             // Remove from tracked mixers safely
-                            bool removed = await TrackedMixers.RemoveAsync(mixerConfig);
+                            bool removed = await MixerConfigurationTracker.RemoveAsync(mixerConfig);
                             if (removed)
                             {
                                 Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");
@@ -126,11 +127,11 @@ namespace MixerThreholdMod_1_0_0.Core
                     System.Threading.Tasks.Task.Run(async () =>
                     {
                         // Get a snapshot of tracked mixers
-                        var trackedMixers = await TrackedMixers.ToListAsync();
+                        var trackedMixers = await MixerConfigurationTracker.ToListAsync();
                         if (trackedMixers == null)
                         {
                             // Remove from tracked mixers safely
-                            bool removed = await TrackedMixers.RemoveAsync(mixerConfig);
+                            bool removed = await MixerConfigurationTracker.RemoveAsync(mixerConfig);
                             if (removed)
                             {
                                 Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");
@@ -156,12 +157,12 @@ namespace MixerThreholdMod_1_0_0.Core
                     System.Threading.Tasks.Task.Run(async () =>
                     {
                         // Get a snapshot of tracked mixers
-                        var trackedMixers = await TrackedMixers.ToListAsync().ConfigureAwait(false);
+                        var trackedMixers = await MixerConfigurationTracker.ToListAsync().ConfigureAwait(false);
 
                         if (cleanupError != null)
                         {
                             // Remove from shared tracked list
-                            await TrackedMixers.RemoveAsync(mixerData.ConfigInstance);
+                            await MixerConfigurationTracker.RemoveAsync(mixerData.ConfigInstance);
                             Main.logger.Msg(2, string.Format("Removed mixer {0} from tracked list (via EntityConfiguration.Destroy)", mixerData.MixerInstanceID));
                         }
                         else
@@ -183,7 +184,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         try
                         {
                             // Remove from tracked mixers safely
-                            bool removed = await TrackedMixers.RemoveAsync(mixerConfig);
+                            bool removed = await MixerConfigurationTracker.RemoveAsync(mixerConfig);
                             if (removed)
                             {
                                 Main.logger.Msg(2, "[PATCH] Mixer configuration cleaned up from tracking");

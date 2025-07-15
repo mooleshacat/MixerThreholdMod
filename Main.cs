@@ -74,6 +74,20 @@ namespace MixerThreholdMod_1_0_0
             );
             logger.Msg(2, "Patched constructor");
             Console.RegisterConsoleCommandViaReflection();
+            
+            // Initialize IL2CPP-compatible patches
+            try
+            {
+                Patches.SaveManager_Save_Patch.Initialize();
+                logger.Msg(2, "SaveManager_Save_Patch initialized");
+                
+                Patches.LoadManager_LoadedGameFolderPath_Patch.Initialize();
+                logger.Msg(2, "LoadManager_LoadedGameFolderPath_Patch initialized");
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("Failed to initialize patches: {0}\n{1}", ex.Message, ex.StackTrace));
+            }
         }
         private static void QueueInstance(MixingStationConfiguration __instance)
         {

@@ -212,6 +212,9 @@ namespace MixerThreholdMod_1_0_0.Constants
         /// <summary>Fallback value for null or empty strings</summary>
         public const string NULL_STRING_FALLBACK = "[null_string]";
 
+        /// <summary>Fallback value for null or empty log messages</summary>
+        public const string NULL_MESSAGE_FALLBACK = "[null_message]";
+
         /// <summary>Default mixer ID when none is assigned</summary>
         public const int DEFAULT_MIXER_ID = -1;
 
