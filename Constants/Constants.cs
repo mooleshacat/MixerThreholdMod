@@ -257,5 +257,74 @@ namespace MixerThreholdMod_1_0_0.Constants
 
         /// <summary>Task completion timeout in milliseconds</summary>
         public const int TASK_COMPLETION_TIMEOUT_MS = 15000;
+
+        // ===== WAIT TIME CONSTANTS =====
+        /// <summary>Short wait time in seconds (100ms)</summary>
+        public const float SHORT_WAIT_SECONDS = 0.1f;
+
+        /// <summary>Medium wait time in seconds (500ms)</summary>
+        public const float MEDIUM_WAIT_SECONDS = 0.5f;
+
+        /// <summary>Standard wait time in seconds (1 second)</summary>
+        public const float STANDARD_WAIT_SECONDS = 1.0f;
+
+        /// <summary>Long wait time in seconds (1.5 seconds)</summary>
+        public const float LONG_WAIT_SECONDS = 1.5f;
+
+        /// <summary>Extended wait time in seconds (2 seconds)</summary>
+        public const float EXTENDED_WAIT_SECONDS = 2.0f;
+
+        // ===== FILE EXTENSION CONSTANTS =====
+        /// <summary>Backup file extension</summary>
+        public const string BACKUP_FILE_EXTENSION = ".backup";
+
+        /// <summary>Log file extension</summary>
+        public const string LOG_FILE_EXTENSION = ".log";
+
+        /// <summary>Text file extension</summary>
+        public const string TEXT_FILE_EXTENSION = ".txt";
+
+        // ===== ASSEMBLY AND VERSION CONSTANTS =====
+        /// <summary>Assembly name for IL2CPP type loading</summary>
+        public const string ASSEMBLY_CSHARP = "Assembly-CSharp";
+
+        /// <summary>Unity Assembly name for type loading</summary>
+        public const string UNITY_ENGINE_ASSEMBLY = "UnityEngine";
+
+        /// <summary>MelonLoader Assembly name</summary>
+        public const string MELONLOADER_ASSEMBLY = "MelonLoader";
+
+        // ===== NUMERIC PRECISION CONSTANTS =====
+        /// <summary>Default decimal precision for logging</summary>
+        public const int DEFAULT_DECIMAL_PRECISION = 3;
+
+        /// <summary>High precision decimal places</summary>
+        public const int HIGH_PRECISION_DECIMALS = 6;
+
+        /// <summary>Memory size precision for display</summary>
+        public const int MEMORY_SIZE_PRECISION = 2;
+
+        // ===== SAFETY AND LIMITS CONSTANTS =====
+        /// <summary>Maximum safe loop iterations</summary>
+        public const int MAX_SAFE_LOOP_ITERATIONS = 1000;
+
+        /// <summary>Maximum safe collection size</summary>
+        public const int MAX_SAFE_COLLECTION_SIZE = 10000;
+
+        /// <summary>Maximum safe string length for logging</summary>
+        public const int MAX_SAFE_STRING_LENGTH = 1000;
+
+        // ===== DEBUG AND CONDITIONAL COMPILATION =====
+        /// <summary>Debug mode identifier string</summary>
+        public const string DEBUG_MODE = "DEBUG";
+
+        /// <summary>Release mode identifier string</summary>
+        public const string RELEASE_MODE = "RELEASE";
+
+        /// <summary>IL2CPP build identifier</summary>
+        public const string IL2CPP_BUILD = "IL2CPP";
+
+        /// <summary>MONO build identifier</summary>
+        public const string MONO_BUILD = "MONO";
     }
 }
