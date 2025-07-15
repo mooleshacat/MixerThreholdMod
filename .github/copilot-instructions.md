@@ -2,9 +2,9 @@
 
 ## Core Development Rules (Limit: 6)
 
-1. **🚨 PRIORITY: Recent PR Comments**: Always prioritize and follow the most recent PR comment instructions unless explicitly overridden. Recent commit context takes precedence over historical instructions.
+1. **🚨 PRIORITY: Recent PR Comments**: Always prioritize and follow the most recent PR comment instructions unless explicitly told otherwise. Recent commit context takes precedence over historical instructions.
 
-2. **🎯 .NET 4.8.1 Compatibility**: Use IL2CPP compatible & .NET 4.8.1 syntax. Use `string.Format()` over interpolation, explicit types, `default(CancellationToken)`, never yield return in try/catch blocks.
+2. **🎯 .NET 4.8.1 Compatibility**: Use MONO, IL2CPP & .NET 4.8.1 compatible syntax. Use `string.Format()` over interpolation, explicit types, `default(CancellationToken)`, never yield return in try/catch blocks.
 
 3. **🛡️ Thread Safety & Performance**: All operations thread-safe, never block Unity main thread. Use async/await with `ConfigureAwait(false)`, proper cancellation tokens, no Thread.Sleep.
 
