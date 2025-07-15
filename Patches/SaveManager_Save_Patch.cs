@@ -565,7 +565,7 @@ namespace MixerThreholdMod_1_0_0.Patches
                 }
                 catch (Exception ex)
                 {
-                    Main.logger.Err($"Error starting WriteMixerValuesAsync coroutine: {ex}");
+                    Main.logger.Err(string.Format("Error starting WriteMixerValuesAsync coroutine: {0}", ex));
                 }
             }
             catch (Exception ex)

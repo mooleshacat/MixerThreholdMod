@@ -115,7 +115,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     });
                 }
 
-                Main.logger.Msg(2, $"EntityConfiguration.Destroy() called for mixer");
+                Main.logger.Msg(2, "EntityConfiguration.Destroy() called for mixer");
 
                 // Check if this is a mixer configuration that needs cleanup
                 var mixerConfig = __instance as MixingStationConfiguration;
@@ -146,7 +146,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         {
                             cleanupError = ex;
                         }
-                Main.logger.Msg(2, $"EntityConfiguration.Destroy() called mixer");
+                Main.logger.Msg(2, "EntityConfiguration.Destroy() called mixer");
 
                 // Use async helper to properly handle the removal without blocking
                 Task.Run(async () =>
@@ -161,7 +161,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         {
                             // Remove from shared tracked list
                             await TrackedMixers.RemoveAsync(mixerData.ConfigInstance);
-                            Main.logger.Msg(2, $"Removed mixer {mixerData.MixerInstanceID} from tracked list (via EntityConfiguration.Destroy)");
+                            Main.logger.Msg(2, string.Format("Removed mixer {0} from tracked list (via EntityConfiguration.Destroy)", mixerData.MixerInstanceID));
                         }
                         else
                         {
@@ -170,7 +170,7 @@ namespace MixerThreholdMod_1_0_0.Core
                     }
                     catch (Exception asyncEx)
                     {
-                        Main.logger.Err($"EntityConfiguration_Destroy_Patch: Error in async cleanup: {asyncEx.Message}\n{asyncEx.StackTrace}");
+                        Main.logger.Err(string.Format("EntityConfiguration_Destroy_Patch: Error in async cleanup: {0}\n{1}", asyncEx.Message, asyncEx.StackTrace));
                     }
                 });
                             Main.logger.Err(string.Format("[PATCH] CRASH PREVENTION: Cleanup error: {0}", cleanupError.Message));
