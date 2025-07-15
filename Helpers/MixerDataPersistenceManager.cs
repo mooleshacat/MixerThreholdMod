@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
@@ -43,11 +44,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
         private static bool isSaveInProgress = false;
         private static readonly object saveLock = new object();
         private static DateTime lastSaveTime = DateTime.MinValue;
-        private static readonly TimeSpan SAVE_COOLDOWN = TimeSpan.FromSeconds(1);
+		private static readonly TimeSpan SAVE_COOLDOWN = TimeSpan.FromSeconds(ModConstants.SAVE_COOLDOWN_SECONDS);
+		private static readonly TimeSpan BACKUP_INTERVAL = TimeSpan.FromMinutes(ModConstants.BACKUP_INTERVAL_MINUTES);
 
-        public static IEnumerator LoadMixerValuesWhenReady()
+		public static IEnumerator LoadMixerValuesWhenReady()
         {
-            Main.logger.Msg(3, "LoadMixerValuesWhenReady: Started");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "LoadMixerValuesWhenReady: Started");
 
             // Wait until we have a valid save path - NO try-catch around yield
             while (string.IsNullOrEmpty(Main.CurrentSavePath))
@@ -86,7 +88,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger.Err(string.Format("LoadMixerValuesWhenReady error: {0}\nStackTrace: {1}", loadError.Message, loadError.StackTrace));
             }
 
-            Main.logger.Msg(3, "LoadMixerValuesWhenReady: Finished");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "LoadMixerValuesWhenReady: Finished");
         }
 
         private static async Task LoadMixerValuesFromFileAsync()
@@ -97,7 +99,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 if (File.Exists(saveFile))
                 {
-                    Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "LoadMixerValuesFromFileAsync: Loading saved mixer values");
 
                     string json = await Helpers.ThreadSafeFileOperations.SafeReadAllTextAsync(saveFile);
                     if (!string.IsNullOrEmpty(json))
@@ -119,7 +121,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
                 else
                 {
-                    Main.logger.Msg(2, "LoadMixerValuesFromFileAsync: No save file found, starting fresh");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "LoadMixerValuesFromFileAsync: No save file found, starting fresh");
                 }
             }
             catch (Exception ex)
@@ -426,7 +428,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             // Check cooldown period
             if (DateTime.Now - lastSaveTime < SAVE_COOLDOWN)
             {
-                Main.logger.Msg(3, "SaveMixerValues: Skipping save due to cooldown period");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Skipping save due to cooldown period");
                 yield break;
             }
 
@@ -444,16 +446,16 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (!canProceed)
             {
-                Main.logger.Warn(1, "SaveMixerValues: Already in progress, skipping duplicate call");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "SaveMixerValues: Already in progress, skipping duplicate call");
                 yield break;
             }
 
-            Main.logger.Msg(3, "SaveMixerValues: Started");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Started");
 
             // Pre-validate before any yield returns
             if (string.IsNullOrEmpty(Main.CurrentSavePath))
             {
-                Main.logger.Warn(1, "SaveMixerValues: CurrentSavePath is null/empty, cannot save");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "SaveMixerValues: CurrentSavePath is null/empty, cannot save");
                 lock (saveLock)
                 {
                     isSaveInProgress = false;
@@ -463,7 +465,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (Main.savedMixerValues.Count == 0)
             {
-                Main.logger.Msg(3, "SaveMixerValues: No mixer values to save");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: No mixer values to save");
                 lock (saveLock)
                 {
                     isSaveInProgress = false;
@@ -476,14 +478,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (needsBackup)
             {
-                Main.logger.Msg(3, "SaveMixerValues: Starting backup coroutine");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Starting backup coroutine");
                 // NO try-catch around yield return for .NET 4.8.1
                 yield return MelonCoroutines.Start(BackupSaveFolder());
-                Main.logger.Msg(3, "SaveMixerValues: Backup coroutine completed");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Backup coroutine completed");
             }
             else
             {
-                Main.logger.Msg(3, "SaveMixerValues: Skipping backup (recent backup exists)");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Skipping backup (recent backup exists)");
             }
 
             // Perform save on background thread
@@ -521,7 +523,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger.Err(string.Format("SaveMixerValues error: {0}\nStackTrace: {1}", saveError.Message, saveError.StackTrace));
             }
 
-            Main.logger.Msg(3, "SaveMixerValues: Finished and cleanup completed");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValues: Finished and cleanup completed");
         }
 
         private static async Task SaveMixerValuesToFileAsync()
@@ -556,7 +558,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
                     await Helpers.ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
-                    Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
             }
             catch (Exception ex)
@@ -581,16 +583,16 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (!canProceed)
             {
-                Main.logger.Warn(1, "BackupSaveFolder: Already in progress, skipping duplicate call");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "BackupSaveFolder: Already in progress, skipping duplicate call");
                 yield break;
             }
 
-            Main.logger.Msg(3, "BackupSaveFolder: Started");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "BackupSaveFolder: Started");
 
             // Pre-validate before any yield returns
             if (string.IsNullOrEmpty(Main.CurrentSavePath))
             {
-                Main.logger.Warn(1, "BackupSaveFolder: CurrentSavePath is null/empty, cannot backup");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "BackupSaveFolder: CurrentSavePath is null/empty, cannot backup");
                 lock (backupLock)
                 {
                     isBackupInProgress = false;
@@ -633,7 +635,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 Main.logger.Err(string.Format("BackupSaveFolder error: {0}", backupError));
             }
 
-            Main.logger.Msg(3, "BackupSaveFolder: Finished and cleanup completed");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "BackupSaveFolder: Finished and cleanup completed");
         }
 
         private static void PerformBackupOperations()
@@ -643,14 +645,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (!File.Exists(sourceFile))
             {
-                Main.logger.Msg(2, "PerformBackupOperations: Source file doesn't exist, no backup needed");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "PerformBackupOperations: Source file doesn't exist, no backup needed");
                 return;
             }
 
             if (!Directory.Exists(backupDir))
             {
                 Directory.CreateDirectory(backupDir);
-                Main.logger.Msg(3, "PerformBackupOperations: Created backup directory");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "PerformBackupOperations: Created backup directory");
             }
 
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
@@ -733,7 +735,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
                 File.WriteAllText(emergencyFile, json);
 
-                Main.logger.Msg(1, "Emergency save completed successfully");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "Emergency save completed successfully");
             }
             catch (Exception ex)
             {

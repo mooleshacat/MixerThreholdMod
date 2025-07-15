@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 
 namespace MixerThreholdMod_1_0_0.Save
 {
@@ -61,20 +62,20 @@ namespace MixerThreholdMod_1_0_0.Save
         /// </summary>
         public static IEnumerator LoadMixerValuesWhenReady()
         {
-            Main.logger.Msg(2, "[SAVE] LoadMixerValuesWhenReady: Starting load process");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[SAVE] LoadMixerValuesWhenReady: Starting load process");
 
             // Wait for save path with timeout to prevent infinite loops
             float startTime = Time.time;
-            const float LOAD_TIMEOUT = 30f; // 30 second timeout
+            const float LOAD_TIMEOUT = ModConstants.LOAD_TIMEOUT_SECONDS; // 30 second timeout
 
             while (string.IsNullOrEmpty(Main.CurrentSavePath) && (Time.time - startTime) < LOAD_TIMEOUT)
             {
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(ModConstants.LOAD_POLL_INTERVAL_SECONDS);
             }
 
             if (string.IsNullOrEmpty(Main.CurrentSavePath))
             {
-                Main.logger.Warn(1, "[SAVE] LoadMixerValuesWhenReady: Timeout waiting for save path - using emergency defaults");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[SAVE] LoadMixerValuesWhenReady: Timeout waiting for save path - using emergency defaults");
                 yield break;
             }
 
@@ -118,7 +119,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 // If no files found, that's normal for new installations
                 if (!File.Exists(saveFile) && !File.Exists(emergencyFile))
                 {
-                    Main.logger.Msg(2, "[SAVE] LoadMixerValuesWhenReady: No save files found - starting fresh");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[SAVE] LoadMixerValuesWhenReady: No save files found - starting fresh");
                 }
             }
             catch (Exception ex)
@@ -132,7 +133,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 // Don't throw - let the game continue with default values
             }
 
-            Main.logger.Msg(3, "[SAVE] LoadMixerValuesWhenReady: Completed");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[SAVE] LoadMixerValuesWhenReady: Completed");
         }
 
         /// <summary>
@@ -146,7 +147,7 @@ namespace MixerThreholdMod_1_0_0.Save
 
             // Wait for StartThreshold to be available with timeout
             float startTime = Time.time;
-            const float ATTACH_TIMEOUT = 10f;
+            const float ATTACH_TIMEOUT = ModConstants.ATTACH_TIMEOUT_SECONDS;
 
             // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property
             object startThreshold = null;
@@ -170,7 +171,7 @@ namespace MixerThreholdMod_1_0_0.Save
 
                 if (startThreshold == null)
                 {
-                    yield return new WaitForSeconds(0.1f);
+                    yield return new WaitForSeconds(ModConstants.ATTACH_POLL_INTERVAL_SECONDS);
                 }
             }
 
@@ -376,7 +377,7 @@ namespace MixerThreholdMod_1_0_0.Save
 
             float lastKnownValue = -1f;
             bool hasInitialValue = false;
-            const float POLL_INTERVAL = 0.2f; // Poll every 200ms
+            const float POLL_INTERVAL = ModConstants.POLL_INTERVAL_SECONDS; // Poll every 200ms
 
             while (config != null)
             {
@@ -397,7 +398,7 @@ namespace MixerThreholdMod_1_0_0.Save
                                 lastKnownValue = currentValue.Value;
                                 hasInitialValue = true;
                             }
-                            else if (Math.Abs(currentValue.Value - lastKnownValue) > 0.001f)
+                            else if (Math.Abs(currentValue.Value - lastKnownValue) > ModConstants.MIXER_VALUE_TOLERANCE)
                             {
                                 lastKnownValue = currentValue.Value;
                                 HandleValueChange(mixerID, currentValue.Value);
@@ -462,7 +463,7 @@ namespace MixerThreholdMod_1_0_0.Save
             // Check cooldown period
             if (DateTime.Now - lastSaveTime < SAVE_COOLDOWN)
             {
-                Main.logger.Msg(3, "[SAVE] TriggerSaveWithCooldown: Skipping due to cooldown");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[SAVE] TriggerSaveWithCooldown: Skipping due to cooldown");
                 yield break;
             }
 
@@ -480,7 +481,7 @@ namespace MixerThreholdMod_1_0_0.Save
 
             if (!canProceed)
             {
-                Main.logger.Msg(3, "[SAVE] TriggerSaveWithCooldown: Save already in progress");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[SAVE] TriggerSaveWithCooldown: Save already in progress");
                 yield break;
             }
 
@@ -528,7 +529,7 @@ namespace MixerThreholdMod_1_0_0.Save
             // Check cooldown period
             if (DateTime.Now - lastSaveTime < SAVE_COOLDOWN)
             {
-                Main.logger.Msg(3, "[SAVE] TriggerSaveWithCooldown: Skipping due to cooldown");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[SAVE] TriggerSaveWithCooldown: Skipping due to cooldown");
                 yield break;
             }
 
@@ -546,7 +547,7 @@ namespace MixerThreholdMod_1_0_0.Save
 
             if (!canProceed)
             {
-                Main.logger.Msg(3, "[SAVE] TriggerSaveWithCooldown: Save already in progress");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[SAVE] TriggerSaveWithCooldown: Save already in progress");
                 yield break;
             }
 
@@ -567,18 +568,18 @@ namespace MixerThreholdMod_1_0_0.Save
         /// </summary>
         private static IEnumerator PerformCrashResistantSave()
         {
-            Main.logger.Msg(2, "[SAVE] PerformCrashResistantSave: Starting save operation");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[SAVE] PerformCrashResistantSave: Starting save operation");
 
             // Validate preconditions
             if (string.IsNullOrEmpty(Main.CurrentSavePath))
             {
-                Main.logger.Warn(1, "[SAVE] PerformCrashResistantSave: No save path available");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[SAVE] PerformCrashResistantSave: No save path available");
                 yield break;
             }
 
             if (Main.savedMixerValues.Count == 0)
             {
-                Main.logger.Msg(3, "[SAVE] PerformCrashResistantSave: No mixer data to save");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[SAVE] PerformCrashResistantSave: No mixer data to save");
                 yield break;
             }
 
@@ -629,7 +630,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 // Don't re-throw - let the game continue
             }
 
-            Main.logger.Msg(3, "[SAVE] PerformCrashResistantSave: Completed");
+            Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[SAVE] PerformCrashResistantSave: Completed");
             yield return null;
         }
         /// <summary>
@@ -645,14 +646,14 @@ namespace MixerThreholdMod_1_0_0.Save
             {
                 if (Main.savedMixerValues.Count == 0)
                 {
-                    Main.logger.Msg(3, "[SAVE] EmergencySave: No mixer data to save");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[SAVE] EmergencySave: No mixer data to save");
                     return;
                 }
 
                 string persistentPath = MelonEnvironment.UserDataDirectory;
                 if (string.IsNullOrEmpty(persistentPath))
                 {
-                    Main.logger.Warn(1, "[SAVE] EmergencySave: No persistent path available");
+                    Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[SAVE] EmergencySave: No persistent path available");
                     return;
                 }
 
@@ -702,17 +703,17 @@ namespace MixerThreholdMod_1_0_0.Save
         {
             if (iterations <= 0)
             {
-                Main.logger.Warn(1, "[SAVE] StressGameSaveTest: Invalid iteration count, must be > 0");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[SAVE] StressGameSaveTest: Invalid iteration count, must be > 0");
                 yield break;
             }
 
             if (delaySeconds < 0f)
             {
-                Main.logger.Warn(1, "[SAVE] StressGameSaveTest: Invalid delay, using 0 seconds");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[SAVE] StressGameSaveTest: Invalid delay, using 0 seconds");
                 delaySeconds = 0f;
             }
 
-            Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Starting stress test - {0} iterations with {1:F3}s delay, bypass cooldown: {2}", iterations, delaySeconds, bypassCooldown));
+            Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Total iterations: {0}", iterations));
 
             // Track stress test statistics
             int successCount = 0;
@@ -822,7 +823,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 totalTime = Time.time - startTime;
 
                 // Final statistics
-                Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ===== GAME SAVE STRESS TEST COMPLETED =====");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[SAVE] GAME SAVE StressGameSaveTest: ===== GAME SAVE STRESS TEST COMPLETED =====");
                 Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Total iterations: {0}", iterations));
                 Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Successful saves: {0}", successCount));
                 Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Failed saves: {0}", failureCount));
@@ -837,22 +838,22 @@ namespace MixerThreholdMod_1_0_0.Save
                     Main.logger.Msg(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: Average save time (excluding delays): {0:F3}s", actualSaveTime / iterations));
                 }
 
-                Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ==========================================");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[SAVE] GAME SAVE StressGameSaveTest: ==========================================");
 
                 // Performance warnings
                 if (failureCount > 0)
                 {
-                    Main.logger.Warn(1, string.Format("[SAVE] GAME SAVE StressGameSaveTest: ⚠️ {0} save operations failed - check logs for details", failureCount));
+                    Main.logger.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format("[SAVE] GAME SAVE StressGameSaveTest: ⚠️ {0} save operations failed - check logs for details", failureCount));
                 }
 
                 if (successCount == iterations)
                 {
-                    Main.logger.Msg(1, "[SAVE] GAME SAVE StressGameSaveTest: ✅ All game save operations completed successfully!");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[SAVE] GAME SAVE StressGameSaveTest: ✅ All game save operations completed successfully!");
                 }
             }
             finally
             {
-                Main.logger.Msg(2, "[SAVE] GAME SAVE StressGameSaveTest: Stress test cleanup completed");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[SAVE] GAME SAVE StressGameSaveTest: Stress test cleanup completed");
             }
         }
 
@@ -869,13 +870,13 @@ namespace MixerThreholdMod_1_0_0.Save
         {
             if (iterations <= 0)
             {
-                Main.logger.Warn(1, "[SAVE] StressSaveTest: Invalid iteration count, must be > 0");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[SAVE] StressSaveTest: Invalid iteration count, must be > 0");
                 yield break;
             }
 
             if (delaySeconds < 0f)
             {
-                Main.logger.Warn(1, "[SAVE] StressSaveTest: Invalid delay, using 0 seconds");
+                Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[SAVE] StressSaveTest: Invalid delay, using 0 seconds");
                 delaySeconds = 0f;
             }
 
@@ -969,7 +970,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 totalTime = Time.time - startTime;
 
                 // Final statistics
-                Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ===== MIXER PREFERENCES STRESS TEST COMPLETED =====");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[SAVE] MIXER PREFS StressSaveTest: ===== MIXER PREFERENCES STRESS TEST COMPLETED =====");
                 Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Total iterations: {0}", iterations));
                 Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Successful saves: {0}", successCount));
                 Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Failed saves: {0}", failureCount));
@@ -991,7 +992,7 @@ namespace MixerThreholdMod_1_0_0.Save
                     Main.logger.Msg(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: Average save time (excluding delays): {0:F3}s", actualSaveTime / iterations));
                 }
 
-                Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ==========================================");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[SAVE] MIXER PREFS StressSaveTest: ==========================================");
 
                 // Performance warnings
                 if (failureCount > 0)
@@ -1001,21 +1002,21 @@ namespace MixerThreholdMod_1_0_0.Save
 
                 if (skippedCount > 0 && !bypassCooldown)
                 {
-                    Main.logger.Warn(1, string.Format("[SAVE] MIXER PREFS StressSaveTest: ⚠️ {0} saves skipped due to cooldown - consider enabling bypass or increasing delay", skippedCount));
+                    Main.logger.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format("[SAVE] MIXER PREFS StressSaveTest: ⚠️ {0} saves skipped due to cooldown - consider enabling bypass or increasing delay", skippedCount));
                 }
 
-                if (totalTime / iterations > 1.0f)
+                if (totalTime / iterations > ModConstants.SAVE_PERFORMANCE_WARNING_SECONDS)
                 {
-                    Main.logger.Warn(1, "[SAVE] MIXER PREFS StressSaveTest: ⚠️ Average time per iteration > 1 second - performance issue detected");
+                    Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[SAVE] MIXER PREFS StressSaveTest: ⚠️ Average time per iteration > 1 second - performance issue detected");
                 }
 
                 if (successCount == iterations)
                 {
-                    Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ✅ All mixer preferences save operations completed successfully!");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[SAVE] MIXER PREFS StressSaveTest: ✅ All mixer preferences save operations completed successfully!");
                 }
                 else if (successCount + skippedCount == iterations)
                 {
-                    Main.logger.Msg(1, "[SAVE] MIXER PREFS StressSaveTest: ✅ All attempted mixer preferences save operations completed successfully!");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[SAVE] MIXER PREFS StressSaveTest: ✅ All attempted mixer preferences save operations completed successfully!");
                 }
             }
             finally
@@ -1027,7 +1028,7 @@ namespace MixerThreholdMod_1_0_0.Save
                     isSaveInProgress = false; // Ensure save lock is released
                 }
 
-                Main.logger.Msg(2, "[SAVE] MIXER PREFS StressSaveTest: Stress test cleanup completed");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[SAVE] MIXER PREFS StressSaveTest: Stress test cleanup completed");
             }
         }
     }

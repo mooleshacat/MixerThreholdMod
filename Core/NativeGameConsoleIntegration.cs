@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using MixerThreholdMod_1_0_0.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -340,14 +341,14 @@ namespace MixerThreholdMod_1_0_0.Core
                 // Log ALL console commands for comprehensive debugging
                 Main.logger?.Msg(2, string.Format("[BRIDGE] === INTERCEPTED CONSOLE COMMAND (IL2CPP SAFE) ==="));
                 Main.logger?.Msg(2, string.Format("[BRIDGE] Raw command: '{0}'", args));
-                Main.logger?.Msg(2, string.Format("[BRIDGE] Base command: '{0}'", baseCommand));
+                Main.logger?.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format("[BRIDGE] Base command: '{0}'", baseCommand));
                 if (parts.Length > 1)
                 {
                     Main.logger?.Msg(2, string.Format("[BRIDGE] Command parameters ({0}): [{1}]", parts.Length - 1, string.Join(", ", parts, 1, parts.Length - 1)));
                 }
                 else
                 {
-                    Main.logger?.Msg(3, "[BRIDGE] No parameters detected");
+                    Main.logger?.Msg(ModConstants.LOG_LEVEL_VERBOSE, "[BRIDGE] No parameters detected");
                 }
 
                 // IL2CPP COMPATIBLE: Command classification using compile-time safe logic
@@ -359,7 +360,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (isModCommand && isGameCommand)
                 {
                     // CONFLICT: Both mod and game handle this command
-                    Main.logger?.Warn(1, string.Format("[BRIDGE] CONFLICT: Both mod and game handle command '{0}' - yielding to game!", baseCommand));
+                    Main.logger?.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format("[BRIDGE] CONFLICT: Both mod and game handle command '{0}' - yielding to game!", baseCommand));
                     Main.logger?.Warn(1, string.Format("[BRIDGE] Command classification: CONFLICTED (MOD+GAME) - YIELDING TO GAME"));
                     return true; // Let game handle it
                 }

@@ -1,5 +1,6 @@
 using MelonLoader;
 using System;
+using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -47,22 +48,22 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (msgLogLevel < ModConstants.LOG_LEVEL_CRITICAL || msgLogLevel > ModConstants.LOG_LEVEL_VERBOSE)
                 {
                     // Fallback for invalid log levels (should never hit this, but just in case, use helper)
-                    this.Err(string.Format("[ERROR] Invalid log level {0} for Msg method. Must be 1, 2, or 3.", msgLogLevel));
+                    this.Err(string.Format(ModConstants.INVALID_MSG_LEVEL_ERROR, msgLogLevel, ModConstants.LOG_LEVEL_CRITICAL, ModConstants.LOG_LEVEL_VERBOSE));
                     return;
                 }
                 // Check if debug mode is enabled and if the CurrentMsgLogLevel allows (greater than or equal to this message's submitted msgLogLevel)
-                if (!IsDebugEnabled || CurrentMsgLogLevel < msgLogLevel) 
+                if (!IsDebugEnabled || CurrentMsgLogLevel < msgLogLevel)
                     return;
 
                 // ShowLogLevelCalc is used to show the current log level calculation for clarity in logs
                 var calcAdd = ShowLogLevelCalc ? string.Format("[{0}]>=[{1}]", CurrentMsgLogLevel, msgLogLevel) : "";
-                MelonLogger.Msg(string.Format("[Info]{0} {1}", calcAdd, message ?? "[null message]"));
+                MelonLogger.Msg(string.Format("{0}{1} {2}", ModConstants.LOG_PREFIX_INFO, calcAdd, message ?? ModConstants.NULL_MESSAGE_FALLBACK));
             }
             // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
             // Fallback when exception occurs during Logger.Msg call uses System.Console.WriteLine directly
             catch (Exception ex)
             {
-                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Msg exception while logging message: {0} Exception: {1}\nStack Trace: {2}", message ?? "null", ex.Message, ex.StackTrace)); }
+                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Msg exception while logging message: {0} Exception: {1}\nStack Trace: {2}", message ?? ModConstants.NULL_COMMAND_FALLBACK, ex.Message, ex.StackTrace)); }
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }
@@ -83,7 +84,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (warnLogLevel < ModConstants.WARN_LEVEL_CRITICAL || warnLogLevel > ModConstants.WARN_LEVEL_VERBOSE)
                 {
                     // Fallback for invalid log levels (should never hit this, but just in case, use helper)
-                    this.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format("[ERROR] Invalid log level {0} for Warn method. Must be {1} or {2}.",
+                    this.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format(ModConstants.INVALID_WARN_LEVEL_ERROR,
                         warnLogLevel, ModConstants.WARN_LEVEL_CRITICAL, ModConstants.WARN_LEVEL_VERBOSE));
                     return;
                 }
@@ -91,13 +92,13 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (!IsDebugEnabled || CurrentWarnLogLevel < warnLogLevel) return;
                 // ShowLogLevelCalc is used to show the current log level calculation for clarity in logs
                 var calcAdd = ShowLogLevelCalc ? string.Format("[{0}]>=[{1}]", CurrentWarnLogLevel, warnLogLevel) : "";
-                MelonLogger.Warning(string.Format("[WARN]{0} {1}", calcAdd, warningMessage ?? "[null message]"));
+                MelonLogger.Warning(string.Format("{0}{1} {2}", ModConstants.LOG_PREFIX_WARN, calcAdd, warningMessage ?? ModConstants.NULL_MESSAGE_FALLBACK));
             }
             catch (Exception ex)
             {
                 // Fallback for caught exception (can we rely on custom logging here? It may be broken!)
                 // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
-                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Warn exception while logging warning: {0} Exception: {1}\nStack Trace: {2}", warningMessage ?? "null", ex.Message, ex.StackTrace)); }
+                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Warn exception while logging warning: {0} Exception: {1}\nStack Trace: {2}", warningMessage ?? ModConstants.NULL_COMMAND_FALLBACK, ex.Message, ex.StackTrace)); }
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }
@@ -111,13 +112,13 @@ namespace MixerThreholdMod_1_0_0.Core
             try
             {
                 // Always log errors regardless of debug mode or log levels
-                MelonLogger.Error(string.Format("[ERROR] {0}", errorMessage ?? "[null error message]"));
+                MelonLogger.Error(string.Format("{0} {1}", ModConstants.LOG_PREFIX_ERROR, errorMessage ?? ModConstants.NULL_ERROR_FALLBACK));
             }
             catch (Exception ex)
             {
                 // Fallback for caught exception (can we rely on custom logging here? It may be broken!)
                 // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
-                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Err exception while logging error: {0} Exception: {1}\nStack Trace: {2}", errorMessage ?? "null", ex.Message, ex.StackTrace)); }
+                try { System.Console.WriteLine(string.Format("[CRITICAL] Logger.Err exception while logging error: {0} Exception: {1}\nStack Trace: {2}", errorMessage ?? ModConstants.NULL_COMMAND_FALLBACK, ex.Message, ex.StackTrace)); }
                 catch { /* Ultimate fallback - do nothing */ }
             }
         }

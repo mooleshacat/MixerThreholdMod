@@ -9,6 +9,7 @@ using System.Collections;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
+using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 
 namespace MixerThreholdMod_1_0_0.Patches
 {
@@ -47,14 +48,14 @@ namespace MixerThreholdMod_1_0_0.Patches
                 var saveManagerType = IL2CPPTypeResolver.GetSaveManagerType();
                 if (saveManagerType == null)
                 {
-                    Main.logger.Warn(1, "[PATCH] SaveManager type not found - patch will not be applied");
+                    Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[PATCH] SaveManager type not found - patch will not be applied");
                     return;
                 }
 
                 _saveMethod = saveManagerType.GetMethod("Save", new[] { typeof(string) });
                 if (_saveMethod == null)
                 {
-                    Main.logger.Warn(1, "[PATCH] SaveManager.Save method not found - patch will not be applied");
+                    Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[PATCH] SaveManager.Save method not found - patch will not be applied");
                     return;
                 }
 
@@ -65,7 +66,7 @@ namespace MixerThreholdMod_1_0_0.Patches
 
                 harmony.Patch(_saveMethod, null, new HarmonyMethod(postfixMethod));
                 
-                Main.logger.Msg(1, "[PATCH] IL2CPP-compatible SaveManager.Save patch applied successfully");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, "[PATCH] IL2CPP-compatible SaveManager.Save patch applied successfully");
                 _patchInitialized = true;
             }
             catch (Exception ex)
@@ -83,11 +84,11 @@ namespace MixerThreholdMod_1_0_0.Patches
             Exception patchError = null;
             try
             {
-                Main.logger.Msg(2, "[PATCH] SaveManager.Save postfix triggered");
+                Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[PATCH] SaveManager.Save postfix triggered");
 
                 if (string.IsNullOrEmpty(saveFolderPath))
                 {
-                    Main.logger.Warn(1, "[PATCH] Save folder path is null or empty - cannot proceed");
+                    Main.logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, "[PATCH] Save folder path is null or empty - cannot proceed");
                     return;
                 }
 
@@ -100,7 +101,7 @@ namespace MixerThreholdMod_1_0_0.Patches
                 try
                 {
                     MelonCoroutines.Start(Save.CrashResistantSaveManager.TriggerSaveWithCooldown());
-                    Main.logger.Msg(2, "[PATCH] Crash-resistant save triggered successfully");
+                    Main.logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, "[PATCH] Crash-resistant save triggered successfully");
                 }
                 catch (Exception saveEx)
                 {

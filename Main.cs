@@ -12,12 +12,9 @@ using MelonLoader;
 using MelonLoader.Utils;
 using HarmonyLib;
 using MixerThreholdMod_1_0_0.Core;    // ✅ ESSENTIAL - Keep this! IDE false positive
+using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
 using MixerThreholdMod_1_0_0.Helpers; // ✅ NEEDED
 using MixerThreholdMod_1_0_0.Save;    // ✅ NEEDED
-// Suspect these two may be IL2CPP compatibility problems same as below
-//using ScheduleOne.Noise;
-//using ScheduleOne.ObjectScripts;
-// COMMENTED FOR TESTING COMPILE TIME ERRORS? IT APPEARS OK ... MAYBE NOT NEEDED.
 
 // We fixed these and used type resolver, do we need to do same for the above?
 // NOTE: I have seen MixerIDManager.cs access ScheduleOne.Manager and not use type resolver.
@@ -28,7 +25,7 @@ using MixerThreholdMod_1_0_0.Save;    // ✅ NEEDED
 // using ScheduleOne.Management;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 
-[assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), "MixerThreholdMod", "1.0.0", "mooleshacat")]
+[assembly: MelonInfo(typeof(MixerThreholdMod_1_0_0.Main), ModConstants.MOD_NAME, ModConstants.VERSION, "mooleshacat")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace MixerThreholdMod_1_0_0
@@ -95,25 +92,25 @@ namespace MixerThreholdMod_1_0_0
             {
                 Instance = this;
                 base.OnInitializeMelon();
-                logger.Msg(1, "=== MixerThreholdMod v1.0.0 Initializing ===");
-                logger.Msg(1, string.Format("currentMsgLogLevel: {0}", logger.CurrentMsgLogLevel));
-                logger.Msg(1, string.Format("currentWarnLogLevel: {0}", logger.CurrentWarnLogLevel));
-                logger.Msg(1, "Phase 0: Basic initialization complete");
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.MOD_INIT_HEADER);
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.CURRENT_MSG_LOG_LEVEL_TEMPLATE, logger.CurrentMsgLogLevel));
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.CURRENT_WARN_LOG_LEVEL_TEMPLATE, logger.CurrentWarnLogLevel));
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.BASIC_INIT_COMPLETE);
 
                 // Test logger immediately - if this fails, we have a fundamental problem
                 try
                 {
-                    logger.Msg(1, "Phase 0.25: [LOGGER TEST] MixerThreholdMod v1.0.0 Starting");
-                    System.Console.WriteLine("Phase 0.25: [CONSOLE TEST] MixerThreholdMod v1.0.0 Starting");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.LOGGER_TEST_MESSAGE);
+                    System.Console.WriteLine(ModConstants.CONSOLE_TEST_MESSAGE);
                 }
                 catch (Exception logEx)
                 {
                     // If even basic logging fails, use console directly
-                    System.Console.WriteLine(string.Format("[CRITICAL] Logger failed during startup: {0}", logEx.Message));
+                    System.Console.WriteLine(string.Format(ModConstants.CRITICAL_LOGGER_FAILURE_TEMPLATE, logEx.Message));
                     throw; // This is fatal - if we can't log, we're in trouble
                 }
 
-                logger.Msg(1, "Phase 0.5: Detecting directories via game APIs (ultra-fast)...");
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.DIRECTORY_DETECTION_START);
                 // ⚠️ ASYNC JUSTIFICATION: Game API access can take 50-200ms but prevents 20+ second filesystem recursion
                 // Uses game's own SaveManager/LoadManager APIs for instant path resolution
                 Task.Run(async () =>
@@ -123,30 +120,30 @@ namespace MixerThreholdMod_1_0_0
                         var directoryInfo = await Helpers.GameDirectoryResolver.InitializeDirectoryDetectionAsync();
 
                         // Log key findings for user benefit
-                        logger.Msg(1, string.Format("[INIT] 🚀 Game-based directory detection: {0}", directoryInfo.ToString()));
+                        logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.GAME_DIRECTORY_DETECTION_TEMPLATE, directoryInfo.ToString()));
 
                         if (directoryInfo.MelonLoaderLogFound)
                         {
-                            logger.Msg(1, string.Format("[INIT] 📄 MelonLoader log ready for management: {0}", directoryInfo.MelonLoaderLogFile));
+                            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.MELON_LOADER_LOG_READY_TEMPLATE, directoryInfo.MelonLoaderLogFile));
                         }
 
                         if (directoryInfo.SavesDirectoryFound)
                         {
-                            logger.Msg(1, string.Format("[INIT] 💾 Game saves directory: {0}", directoryInfo.SavesDirectory));
+                            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.GAME_SAVES_DIRECTORY_TEMPLATE, directoryInfo.SavesDirectory));
                         }
                     }
                     catch (Exception dirEx)
                     {
-                        logger.Err(string.Format("[INIT] Game-based directory detection failed: {0}", dirEx.Message));
+                        logger.Err(string.Format(ModConstants.DIRECTORY_DETECTION_FAILURE_TEMPLATE, dirEx.Message));
                     }
                 });
-                logger.Msg(1, "Phase 0.5: Game API directory detection started (100x faster than multiple drive recursion)");
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.DIRECTORY_DETECTION_COMPLETE);
 
                 try
                 {
                     // IL2CPP COMPATIBLE: Use IL2CPPTypeResolver for safe type resolution in both MONO and IL2CPP builds
                     // dnSpy Verified: ScheduleOne.Management.MixingStationConfiguration constructor signature verified via comprehensive dnSpy analysis
-                    logger.Msg(1, "Phase 2: Initializing IL2CPP-compatible type resolution...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.TYPE_RESOLUTION_START);
 
                     // Log comprehensive type availability for debugging
                     Core.IL2CPPTypeResolver.LogTypeAvailability();
@@ -154,85 +151,85 @@ namespace MixerThreholdMod_1_0_0
                     // IL2CPP-specific memory analysis after type loading
                     if (Core.IL2CPPTypeResolver.IsIL2CPPBuild)
                     {
-                        Core.AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis("POST_TYPE_LOADING");
+                        Core.AdvancedSystemPerformanceMonitor.LogIL2CPPMemoryLeakAnalysis(ModConstants.PERF_TAG_POST_TYPE_LOADING);
                     }
 
-                    logger.Msg(1, "Phase 2: Looking up MixingStationConfiguration constructor...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSTRUCTOR_LOOKUP);
                     var constructor = Core.IL2CPPTypeResolver.GetMixingStationConfigurationConstructor();
                     if (constructor == null)
                     {
-                        logger.Err("CRITICAL: Target constructor NOT found! This may be due to IL2CPP type loading issues.");
-                        logger.Err("CRITICAL: Mod functionality will be limited but initialization will continue.");
+                        logger.Err(ModConstants.CONSTRUCTOR_NOT_FOUND_ERROR);
+                        logger.Err(ModConstants.LIMITED_FUNCTIONALITY_WARNING);
                         // Don't return here - allow other initialization to continue
                     }
                     else
                     {
-                        logger.Msg(1, "Phase 2: Constructor found successfully via IL2CPP-compatible type resolver");
+                        logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSTRUCTOR_FOUND);
                     }
 
-                    logger.Msg(1, "Phase 3: Applying IL2CPP-compatible Harmony patch...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.HARMONY_PATCH_START);
                     // IL2CPP COMPATIBLE: Only apply Harmony patch if constructor is available
                     if (constructor != null)
                     {
-                        HarmonyInstance = new HarmonyLib.Harmony("MixerThreholdMod.Main");
+                        HarmonyInstance = new HarmonyLib.Harmony(ModConstants.HARMONY_MOD_ID);
 
                         // IL2CPP COMPATIBLE: Use typeof() and compile-time safe method resolution for Harmony patching
                         HarmonyInstance.Patch(
                             constructor,
-                            prefix: new HarmonyMethod(typeof(Main).GetMethod("QueueInstance", BindingFlags.Static | BindingFlags.NonPublic))
+                            prefix: new HarmonyMethod(typeof(Main).GetMethod(ModConstants.QUEUE_INSTANCE_METHOD_NAME, BindingFlags.Static | BindingFlags.NonPublic))
                         );
-                        logger.Msg(1, "Phase 3: IL2CPP-compatible Harmony patch applied successfully");
+                        logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.HARMONY_PATCH_SUCCESS);
                     }
                     else
                     {
-                        logger.Warn(1, "Phase 3: Skipping Harmony patch - constructor not available (IL2CPP type loading issue)");
-                        logger.Warn(1, "Phase 3: Mod will operate in limited mode without automatic mixer detection");
+                        logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.HARMONY_PATCH_SKIP);
+                        logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.LIMITED_MODE_MESSAGE);
                     }
 
-                    logger.Msg(1, "Phase 4: Registering IL2CPP-compatible console commands...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSOLE_COMMANDS_START);
                     MixerThreholdMod_1_0_0.Core.Console.RegisterConsoleCommandViaReflection();
-                    logger.Msg(1, "Phase 4a: Basic console hook registered");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CONSOLE_HOOK_REGISTERED);
 
                     // Also initialize native console integration for game console commands
-                    logger.Msg(1, "Phase 4b: Initializing IL2CPP-compatible native game console integration...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.NATIVE_CONSOLE_START);
                     Core.GameConsoleBridge.InitializeNativeConsoleIntegration();
-                    logger.Msg(1, "Phase 4c: IL2CPP-compatible console commands registered successfully");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.NATIVE_CONSOLE_SUCCESS);
 
                     // Initialize IL2CPP-compatible patches
-                    logger.Msg(1, "Phase 6: Initializing IL2CPP-compatible patches...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PATCHES_START);
                     Patches.SaveManager_Save_Patch.Initialize();
                     Patches.LoadManager_LoadedGameFolderPath_Patch.Initialize();
                     Patches.EntityConfiguration_Destroy_Patch.Initialize();
-                    logger.Msg(1, "Phase 6: IL2CPP-compatible patches initialized");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PATCHES_COMPLETE);
 
                     // Initialize game logger bridge for exception monitoring
-                    logger.Msg(1, "Phase 7: Initializing game exception monitoring...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.GAME_EXCEPTION_START);
                     Core.GameLoggerBridge.InitializeLoggingBridge();
-                    logger.Msg(1, "Phase 7: Game exception monitoring initialized");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.GAME_EXCEPTION_COMPLETE);
 
                     // Initialize system hardware monitoring with memory leak detection (DEBUG mode only)
-                    logger.Msg(1, "Phase 8: Initializing advanced system monitoring with memory leak detection...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.SYSTEM_MONITORING_START);
                     Core.AdvancedSystemPerformanceMonitor.Initialize();
-                    logger.Msg(1, "Phase 8: Advanced system monitoring with memory leak detection initialized");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.SYSTEM_MONITORING_COMPLETE);
 
                     // Phase 9 nothing interesting here ... Just "performance optimization routines"
-                    logger.Msg(1, "Phase 9: Initializing advanced performance optimization...");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PERFORMANCE_OPT_START);
                     Utils.PerformanceOptimizationManager.InitializeAdvancedOptimization();
-                    logger.Msg(1, "Phase 9: Advanced performance optimization initialized (authentication required)");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PERFORMANCE_OPT_COMPLETE);
 
-                    logger.Msg(1, "=== MixerThreholdMod IL2CPP-Compatible Initialization COMPLETE ===");
+                    logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.MOD_INIT_COMPLETE);
                 }
                 catch (Exception harmonyEx)
                 {
-                    logger.Err(string.Format("CRITICAL: Harmony/Console setup failed: {0}\n{1}", harmonyEx.Message, harmonyEx.StackTrace));
+                    logger.Err(string.Format(ModConstants.HARMONY_CONSOLE_FAILURE_TEMPLATE, harmonyEx.Message, harmonyEx.StackTrace));
                     throw; // Re-throw to ensure initialization failure is visible
                 }
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("CRITICAL: OnInitializeMelon failed: {0}\n{1}", ex.Message, ex.StackTrace));
+                logger.Err(string.Format(ModConstants.ON_INIT_MELON_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
                 // Don't re-throw here to prevent mod loader crash, but log prominently
-                System.Console.WriteLine(string.Format("[CRITICAL] MixerThreholdMod initialization failed: {0}", ex.Message));
+                System.Console.WriteLine(string.Format(ModConstants.CRITICAL_INIT_FAILURE_TEMPLATE, ex.Message));
             }
         }
 
@@ -244,16 +241,16 @@ namespace MixerThreholdMod_1_0_0
             {
                 if (__instance == null)
                 {
-                    logger.Warn(1, "QueueInstance: Received null instance - ignoring");
+                    logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.QUEUE_INSTANCE_NULL_WARNING);
                     return;
                 }
 
                 queuedInstances.Add(__instance);
-                logger.Msg(3, string.Format("QueueInstance: Successfully queued MixingStationConfiguration (Total: {0})", queuedInstances.Count));
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.QUEUE_INSTANCE_SUCCESS_TEMPLATE, queuedInstances.Count));
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("QueueInstance: Critical failure - {0}\n{1}", ex.Message, ex.StackTrace));
+                logger.Err(string.Format(ModConstants.QUEUE_INSTANCE_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
                 // Don't re-throw to prevent Harmony patch failure from crashing the game
             }
         }
@@ -283,7 +280,7 @@ namespace MixerThreholdMod_1_0_0
                     }
                     catch (Exception ex)
                     {
-                        logger.Err(string.Format("OnUpdate background processing: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                        logger.Err(string.Format(ModConstants.BACKGROUND_PROCESSING_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
                     }
                     finally
                     {
@@ -293,7 +290,7 @@ namespace MixerThreholdMod_1_0_0
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("OnUpdate: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                logger.Err(string.Format(ModConstants.ON_UPDATE_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
             }
         }
 
@@ -303,7 +300,7 @@ namespace MixerThreholdMod_1_0_0
 
             try
             {
-                logger.Msg(3, "ProcessQueuedInstancesAsync: Starting cleanup and processing");
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, ModConstants.PROCESS_CLEANUP_START);
 
                 // ⚠️ ASYNC JUSTIFICATION: RemoveAllAsync() performs:
                 // - ConcurrentBag enumeration and filtering (5-15ms for large collections)
@@ -312,7 +309,7 @@ namespace MixerThreholdMod_1_0_0
                 await Core.MixerConfigurationTracker.RemoveAllAsync(tm => tm.ConfigInstance == null);
 
                 var toProcess = queuedInstances.ToList();
-                logger.Msg(3, string.Format("ProcessQueuedInstancesAsync: Processing {0} queued instances", toProcess.Count));
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROCESS_INSTANCES_TEMPLATE, toProcess.Count));
 
                 foreach (var instance in toProcess)
                 {
@@ -320,7 +317,7 @@ namespace MixerThreholdMod_1_0_0
                     {
                         if (instance == null)
                         {
-                            logger.Warn(1, "ProcessQueuedInstancesAsync: Skipping null instance");
+                            logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.PROCESS_NULL_INSTANCE_SKIP);
                             continue;
                         }
 
@@ -330,22 +327,22 @@ namespace MixerThreholdMod_1_0_0
                         // - Predicate evaluation across multiple objects (2-15ms per object)
                         if (await Core.MixerConfigurationTracker.AnyAsync(tm => tm.ConfigInstance == instance))
                         {
-                            logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
+                            logger.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format(ModConstants.INSTANCE_ALREADY_TRACKED_TEMPLATE, instance));
                             continue;
                         }
 
                         // IL2CPP COMPATIBLE: Use reflection to access StartThrehold property safely
-                        var startThresholdProperty = instance.GetType().GetProperty("StartThrehold");
+                        var startThresholdProperty = instance.GetType().GetProperty(ModConstants.START_THREHOLD_PROPERTY_NAME);
                         if (startThresholdProperty == null)
                         {
-                            logger.Warn(1, "StartThrehold property not found for instance. Skipping.");
+                            logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.START_THREHOLD_NOT_FOUND);
                             continue;
                         }
 
                         var startThreshold = startThresholdProperty.GetValue(instance, null);
                         if (startThreshold == null)
                         {
-                            logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
+                            logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.START_THREHOLD_NULL);
                             continue;
                         }
 
@@ -358,18 +355,18 @@ namespace MixerThreholdMod_1_0_0
                         {
                             try
                             {
-                                logger.Msg(3, "ProcessQueuedInstancesAsync: Configuring new mixer...");
+                                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, ModConstants.NEW_MIXER_CONFIG);
 
                                 // IL2CPP COMPATIBLE: Use reflection to call Configure method safely
-                                var configureMethod = startThreshold.GetType().GetMethod("Configure", new[] { typeof(float), typeof(float), typeof(bool) });
+                                var configureMethod = startThreshold.GetType().GetMethod(ModConstants.CONFIGURE_METHOD_NAME, new[] { typeof(float), typeof(float), typeof(bool) });
                                 if (configureMethod != null)
                                 {
-                                    configureMethod.Invoke(startThreshold, new object[] { 1f, 20f, true });
-                                    logger.Msg(3, "ProcessQueuedInstancesAsync: Mixer configured successfully (1-20 range)");
+                                    configureMethod.Invoke(startThreshold, new object[] { ModConstants.MIXER_THRESHOLD_MIN, ModConstants.MIXER_THRESHOLD_MAX, ModConstants.MIXER_CONFIG_ENABLED_DEFAULT });
+                                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, ModConstants.MIXER_CONFIGURED_SUCCESS);
                                 }
                                 else
                                 {
-                                    logger.Warn(1, "Configure method not found on StartThrehold. Skipping configuration.");
+                                    logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.CONFIGURE_METHOD_NOT_FOUND);
                                     continue;
                                 }
 
@@ -384,11 +381,11 @@ namespace MixerThreholdMod_1_0_0
                                 // - Timestamp generation and object initialization (1-5ms)
                                 // - Memory allocation that could trigger GC (5-50ms)
                                 await Core.MixerConfigurationTracker.AddAsync(newTrackedMixer);
-                                logger.Msg(2, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
+                                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.MIXER_CREATED_TEMPLATE, newTrackedMixer.MixerInstanceID));
 
                                 if (!newTrackedMixer.ListenerAdded)
                                 {
-                                    logger.Msg(3, string.Format("Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
+                                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.ATTACHING_LISTENER_TEMPLATE, newTrackedMixer.MixerInstanceID));
                                     Utils.CoroutineHelper.RunCoroutine(CrashResistantSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
                                     newTrackedMixer.ListenerAdded = true;
                                 }
@@ -397,40 +394,40 @@ namespace MixerThreholdMod_1_0_0
                                 float savedValue;
                                 if (savedMixerValues.TryGetValue(newTrackedMixer.MixerInstanceID, out savedValue))
                                 {
-                                    logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", newTrackedMixer.MixerInstanceID, savedValue));
+                                    logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.RESTORING_MIXER_TEMPLATE, newTrackedMixer.MixerInstanceID, savedValue));
 
                                     // IL2CPP COMPATIBLE: Use reflection to call SetValue method safely
-                                    var setValueMethod = startThreshold.GetType().GetMethod("SetValue", new[] { typeof(float), typeof(bool) });
+                                    var setValueMethod = startThreshold.GetType().GetMethod(ModConstants.SET_VALUE_METHOD_NAME, new[] { typeof(float), typeof(bool) });
                                     if (setValueMethod != null)
                                     {
-                                        setValueMethod.Invoke(startThreshold, new object[] { savedValue, true });
+                                        setValueMethod.Invoke(startThreshold, new object[] { savedValue, ModConstants.MIXER_CONFIG_ENABLED_DEFAULT });
                                     }
                                     else
                                     {
-                                        logger.Warn(1, "SetValue method not found on StartThrehold. Cannot restore saved value.");
+                                        logger.Msg(ModConstants.WARN_LEVEL_CRITICAL, ModConstants.SET_VALUE_METHOD_NOT_FOUND);
                                     }
                                 }
                             }
                             catch (Exception mixerEx)
                             {
-                                logger.Err(string.Format("Error configuring individual mixer: {0}\n{1}", mixerEx.Message, mixerEx.StackTrace));
+                                logger.Err(string.Format(ModConstants.INDIVIDUAL_MIXER_ERROR_TEMPLATE, mixerEx.Message, mixerEx.StackTrace));
                                 // Continue processing other mixers despite this failure
                             }
                         }
                     }
                     catch (Exception instanceEx)
                     {
-                        logger.Err(string.Format("Error processing individual instance: {0}\n{1}", instanceEx.Message, instanceEx.StackTrace));
+                        logger.Err(string.Format(ModConstants.INDIVIDUAL_INSTANCE_ERROR_TEMPLATE, instanceEx.Message, instanceEx.StackTrace));
                         // Continue processing other instances despite this failure
                     }
                 }
 
                 queuedInstances.Clear();
-                logger.Msg(3, "ProcessQueuedInstancesAsync: Completed successfully");
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, ModConstants.PROCESS_COMPLETE_SUCCESS);
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("ProcessQueuedInstancesAsync: Critical failure: {0}\n{1}", ex.Message, ex.StackTrace));
+                logger.Err(string.Format(ModConstants.PROCESS_CRITICAL_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
                 // Ensure we don't leave the system in a bad state
                 try
                 {
@@ -439,12 +436,12 @@ namespace MixerThreholdMod_1_0_0
                 catch
                 {
                     // Even clearing failed - something is seriously wrong
-                    logger.Err("ProcessQueuedInstancesAsync: Even queue clearing failed!");
+                    logger.Err(ModConstants.QUEUE_CLEARING_FAILED);
                 }
             }
             finally
             {
-                diagnostics.LogSummary("ProcessQueuedInstancesAsync");
+                diagnostics.LogSummary(ModConstants.PROCESS_QUEUED_INSTANCES_METHOD_NAME);
             }
         }
 
@@ -462,12 +459,12 @@ namespace MixerThreholdMod_1_0_0
 
             try
             {
-                logger.Msg(3, string.Format("MixerExists: Checking for mixer ID {0}", mixerInstanceID));
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.MIXER_EXISTS_CHECK_TEMPLATE, mixerInstanceID));
 
                 // Input validation with defensive programming
                 if (mixerInstanceID <= 0)
                 {
-                    logger.Warn(2, string.Format("MixerExists: Invalid mixer ID {0} - must be positive integer", mixerInstanceID));
+                    logger.Warn(ModConstants.WARN_LEVEL_VERBOSE, string.Format(ModConstants.INVALID_MIXER_ID_TEMPLATE, mixerInstanceID));
                     return false;
                 }
 
@@ -478,7 +475,7 @@ namespace MixerThreholdMod_1_0_0
                 // - Async overhead (3-8ms) is more than the operation itself
 
                 // Use a timeout to prevent hanging in edge cases
-                var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(ModConstants.OPERATION_TIMEOUT_MS / ModConstants.MS_PER_SECOND));
                 bool result = false;
 
                 // Run with timeout protection for defensive programming
@@ -493,21 +490,20 @@ namespace MixerThreholdMod_1_0_0
                     }
                     catch (Exception ex)
                     {
-                        logger.Err(string.Format("MixerExists: Inner operation failed: {0}", ex.Message));
+                        logger.Err(string.Format(ModConstants.MIXER_EXISTS_INNER_FAILURE_TEMPLATE, ex.Message));
                         return false;
                     }
                 }, timeoutCts.Token);
 
                 // Wait with timeout protection
-                if (task.Wait(2000)) // 2 second timeout
+                if (task.Wait(ModConstants.OPERATION_TIMEOUT_MS)) // 2 second timeout
                 {
                     result = task.Result;
-                    logger.Msg(3, string.Format("MixerExists: Mixer ID {0} exists: {1} (checked in {2:F1}ms)",
-                        mixerInstanceID, result, sw.Elapsed.TotalMilliseconds));
+                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.MIXER_EXISTS_RESULT_TEMPLATE, mixerInstanceID, result, sw.Elapsed.TotalMilliseconds));
                 }
                 else
                 {
-                    logger.Warn(1, string.Format("MixerExists: Timeout after 2 seconds checking mixer ID {0}", mixerInstanceID));
+                    logger.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format(ModConstants.MIXER_EXISTS_TIMEOUT_TEMPLATE, mixerInstanceID));
                     result = false;
                 }
 
@@ -524,20 +520,19 @@ namespace MixerThreholdMod_1_0_0
 
                 if (operationError != null)
                 {
-                    logger.Err(string.Format("MixerExists: CRASH PREVENTION - Operation failed for mixer ID {0}: {1} (took {2:F1}ms)",
+                    logger.Err(string.Format(ModConstants.MIXER_EXISTS_CRASH_PREVENTION_TEMPLATE,
                         mixerInstanceID, operationError.Message, sw.Elapsed.TotalMilliseconds));
                 }
 
                 // Performance monitoring and warnings
                 var elapsedMs = sw.Elapsed.TotalMilliseconds;
-                if (elapsedMs > 100)
+                if (elapsedMs > ModConstants.PERFORMANCE_WARNING_THRESHOLD_MS)
                 {
-                    logger.Warn(1, string.Format("MixerExists: PERFORMANCE WARNING - Operation took {0:F1}ms for mixer ID {1} (expected <10ms)",
-                        elapsedMs, mixerInstanceID));
+                    logger.Warn(ModConstants.WARN_LEVEL_CRITICAL, string.Format(ModConstants.MIXER_EXISTS_PERFORMANCE_WARNING_TEMPLATE, elapsedMs, mixerInstanceID));
                 }
-                else if (elapsedMs > 50)
+                else if (elapsedMs > ModConstants.PERFORMANCE_SLOW_THRESHOLD_MS)
                 {
-                    logger.Msg(2, string.Format("MixerExists: Slow operation - {0:F1}ms for mixer ID {1}", elapsedMs, mixerInstanceID));
+                    logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.MIXER_EXISTS_SLOW_OPERATION_TEMPLATE, elapsedMs, mixerInstanceID));
                 }
             }
         }
@@ -545,13 +540,13 @@ namespace MixerThreholdMod_1_0_0
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             base.OnSceneWasLoaded(buildIndex, sceneName);
-            logger.Msg(2, "Scene loaded: " + sceneName);
+            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.SCENE_LOADED_TEMPLATE, sceneName));
 
             // One-time console command test when main scene loads (to verify commands work)
-            if (sceneName == "Main" && !_consoleTestCompleted)
+            if (sceneName == ModConstants.MAIN_SCENE_NAME && !_consoleTestCompleted)
             {
                 _consoleTestCompleted = true;
-                logger.Msg(2, "[DEBUG] Running one-time console command test...");
+                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.CONSOLE_COMMAND_TEST_START);
 
                 // ⚠️ ASYNC JUSTIFICATION: Test console commands in background because:
                 // - Console command processing can take 10-50ms per command
@@ -563,21 +558,21 @@ namespace MixerThreholdMod_1_0_0
                     try
                     {
                         // Wait a moment for everything to settle
-                        Thread.Sleep(1000);
+                        Thread.Sleep(ModConstants.CONSOLE_COMMAND_DELAY_MS);
 
-                        logger.Msg(2, "[DEBUG] Testing console commands...");
-                        Core.Console.ProcessManualCommand("msg This is a test message from console command");
-                        Core.Console.ProcessManualCommand("warn This is a test warning from console command");
-                        logger.Msg(2, "[DEBUG] Console command test completed - check logs above for test output");
+                        logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.CONSOLE_COMMAND_TESTING);
+                        Core.Console.ProcessManualCommand(ModConstants.CONSOLE_TEST_MSG_COMMAND);
+                        Core.Console.ProcessManualCommand(ModConstants.CONSOLE_TEST_WARN_COMMAND);
+                        logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.CONSOLE_COMMAND_TEST_COMPLETE);
                     }
                     catch (Exception ex)
                     {
-                        logger.Err(string.Format("[DEBUG] Console command test failed: {0}", ex.Message));
+                        logger.Err(string.Format(ModConstants.CONSOLE_COMMAND_TEST_FAILURE_TEMPLATE, ex.Message));
                     }
                 });
             }
 
-            if (sceneName == "Main")
+            if (sceneName == ModConstants.MAIN_SCENE_NAME)
             {
                 try
                 {
@@ -585,7 +580,7 @@ namespace MixerThreholdMod_1_0_0
                     Core.MixerIDManager.ResetStableIDCounter();
 
                     savedMixerValues.Clear();
-                    logger.Msg(3, "Current Save Path at scene load: " + (CurrentSavePath ?? "[not available yet]"));
+                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.CURRENT_SAVE_PATH_TEMPLATE, CurrentSavePath ?? ModConstants.NOT_AVAILABLE_PATH_FALLBACK));
                     StartLoadCoroutine();
 
                     if (!string.IsNullOrEmpty(CurrentSavePath))
@@ -602,12 +597,12 @@ namespace MixerThreholdMod_1_0_0
                             try
                             {
                                 string persistentPath = MelonEnvironment.UserDataDirectory;
-                                string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
-                                string targetFile = Path.Combine(CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
+                                string sourceFile = Path.Combine(persistentPath, ModConstants.MIXER_SAVE_FILENAME).Replace('/', '\\');
+                                string targetFile = Path.Combine(CurrentSavePath, ModConstants.MIXER_SAVE_FILENAME).Replace('/', '\\');
 
                                 if (File.Exists(sourceFile))
                                 {
-                                    diagnostics.StartOperation("File Copy Operation");
+                                    diagnostics.StartOperation(ModConstants.FILE_COPY_OPERATION_NAME);
 
                                     var readSw = System.Diagnostics.Stopwatch.StartNew();
                                     string content = await Helpers.ThreadSafeFileOperations.SafeReadAllTextAsync(sourceFile);
@@ -619,24 +614,23 @@ namespace MixerThreholdMod_1_0_0
 
                                     diagnostics.EndOperation();
 
-                                    logger.Msg(3, string.Format("Copied MixerThresholdSave.json from persistent to save folder (Read: {0:F1}ms, Write: {1:F1}ms, Total: {2:F1}ms)",
-                                        readSw.Elapsed.TotalMilliseconds, writeSw.Elapsed.TotalMilliseconds, diagnostics.GetLastOperationTime()));
+                                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.FILE_COPY_SUCCESS_TEMPLATE, ModConstants.MIXER_SAVE_FILENAME, readSw.Elapsed.TotalMilliseconds, writeSw.Elapsed.TotalMilliseconds, diagnostics.GetLastOperationTime()));
                                 }
                             }
                             catch (Exception ex)
                             {
-                                logger.Err(string.Format("Background file copy failed: {0}", ex));
+                                logger.Err(string.Format(ModConstants.BACKGROUND_FILE_COPY_FAILURE_TEMPLATE, ex));
                             }
                             finally
                             {
-                                diagnostics.LogSummary("Background File Copy");
+                                diagnostics.LogSummary(ModConstants.BACKGROUND_FILE_COPY_OPERATION);
                             }
                         });
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.Err(string.Format("OnSceneWasLoaded: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                    logger.Err(string.Format(ModConstants.ON_SCENE_LOADED_FAILURE_TEMPLATE, ex.Message, ex.StackTrace));
                 }
             }
         }
@@ -651,17 +645,17 @@ namespace MixerThreholdMod_1_0_0
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("StartLoadCoroutine: Caught exception: {0}", ex));
+                logger.Err(string.Format(ModConstants.START_LOAD_COROUTINE_FAILURE_TEMPLATE, ex));
             }
         }
 
         // Console command implementations for comprehensive testing and debugging
         public static IEnumerator StressGameSaveTestWithComprehensiveMonitoring(int iterations, float delaySeconds, bool bypassCooldown)
         {
-            logger.Msg(1, string.Format("[CONSOLE] Starting comprehensive save monitoring: {0} iterations, {1:F3}s delay, bypass: {2}", iterations, delaySeconds, bypassCooldown));
+            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.COMPREHENSIVE_MONITORING_START_TEMPLATE, iterations, delaySeconds, bypassCooldown));
 
             // Log initial system state
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_START");
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_STRESS_TEST_START);
 
             var startTime = DateTime.Now;
             int successCount = 0;
@@ -669,16 +663,16 @@ namespace MixerThreholdMod_1_0_0
 
             for (int i = 1; i <= iterations; i++)
             {
-                logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} - Starting save operation", i, iterations));
+                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.MONITOR_ITERATION_START_TEMPLATE, i, iterations));
 
                 // Track timing and system performance for this iteration
                 var iterationStart = DateTime.Now;
                 bool iterationSuccess = false;
 
                 // Log system state before critical operation (every 5th iteration to avoid spam)
-                if (i % 5 == 1 || iterations <= 5)
+                if (i % ModConstants.SYSTEM_MONITORING_LOG_INTERVAL == 1 || iterations <= ModConstants.SYSTEM_MONITORING_LOG_INTERVAL)
                 {
-                    Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_START", i));
+                    Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format(ModConstants.PERF_TAG_ITERATION_START_TEMPLATE, i));
                 }
 
                 // Perform the save with comprehensive monitoring - yield return outside try/catch for .NET 4.8.1 compatibility
@@ -687,12 +681,12 @@ namespace MixerThreholdMod_1_0_0
                 try
                 {
                     var iterationTime = (DateTime.Now - iterationStart).TotalMilliseconds;
-                    logger.Msg(2, string.Format("[MONITOR] Iteration {0}/{1} completed in {2:F1}ms", i, iterations, iterationTime));
+                    logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.MONITOR_ITERATION_COMPLETE_TEMPLATE, i, iterations, iterationTime));
 
                     // Log system state after critical operation (every 5th iteration)
-                    if (i % 5 == 0 || i == iterations || iterations <= 5)
+                    if (i % ModConstants.SYSTEM_MONITORING_LOG_INTERVAL == 0 || i == iterations || iterations <= ModConstants.SYSTEM_MONITORING_LOG_INTERVAL)
                     {
-                        Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_END", i));
+                        Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format(ModConstants.PERF_TAG_ITERATION_END_TEMPLATE, i));
                     }
 
                     successCount++;
@@ -700,15 +694,15 @@ namespace MixerThreholdMod_1_0_0
                 }
                 catch (Exception ex)
                 {
-                    logger.Err(string.Format("[MONITOR] Iteration {0}/{1} FAILED: {2}", i, iterations, ex.Message));
-                    Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format("ITERATION_{0}_FAILED", i));
+                    logger.Err(string.Format(ModConstants.MONITOR_ITERATION_FAILED_TEMPLATE, i, iterations, ex.Message));
+                    Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(string.Format(ModConstants.PERF_TAG_ITERATION_FAILED_TEMPLATE, i));
                     failureCount++;
                 }
 
                 // Add delay if specified - yield return outside try/catch for .NET 4.8.1 compatibility
-                if (delaySeconds > 0f && iterationSuccess)
+                if (delaySeconds > ModConstants.DEFAULT_OPERATION_DELAY && iterationSuccess)
                 {
-                    logger.Msg(3, string.Format("[MONITOR] Waiting {0:F3}s before next iteration...", delaySeconds));
+                    logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.MONITOR_WAITING_TEMPLATE, delaySeconds));
                     yield return new WaitForSeconds(delaySeconds);
                 }
             }
@@ -716,20 +710,20 @@ namespace MixerThreholdMod_1_0_0
             var totalTime = (DateTime.Now - startTime).TotalSeconds;
 
             // Log final system state after stress test
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("STRESS_TEST_COMPLETE");
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_STRESS_TEST_COMPLETE);
 
-            logger.Msg(1, string.Format("[MONITOR] Comprehensive monitoring complete: {0} success, {1} failures in {2:F1}s", successCount, failureCount, totalTime));
-            logger.Msg(1, string.Format("[MONITOR] Average time per operation: {0:F1}ms", (totalTime * 1000) / iterations));
-            logger.Msg(1, string.Format("[MONITOR] Success rate: {0:F1}%", (successCount * 100.0) / iterations));
+            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.MONITOR_COMPLETE_TEMPLATE, successCount, failureCount, totalTime));
+            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.MONITOR_AVERAGE_TIME_TEMPLATE, (totalTime * ModConstants.MS_PER_SECOND) / iterations));
+            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.MONITOR_SUCCESS_RATE_TEMPLATE, (successCount * ModConstants.PERCENTAGE_CALCULATION_FACTOR) / iterations));
         }
 
         public static IEnumerator PerformTransactionalSave()
         {
-            logger.Msg(1, "[CONSOLE] Starting atomic transactional save operation");
-            logger.Msg(2, "[TRANSACTION] Performing save operation...");
+            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.TRANSACTION_START_MESSAGE);
+            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.TRANSACTION_PERFORMING_MESSAGE);
 
             // Log system state before transaction
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_START");
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_TRANSACTION_START);
 
             var saveStart = DateTime.Now;
 
@@ -741,32 +735,32 @@ namespace MixerThreholdMod_1_0_0
                 var saveTime = (DateTime.Now - saveStart).TotalMilliseconds;
 
                 // Log system state after successful transaction
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_SUCCESS");
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_TRANSACTION_SUCCESS);
 
-                logger.Msg(1, string.Format("[TRANSACTION] Transactional save completed successfully in {0:F1}ms", saveTime));
-                logger.Msg(2, string.Format("[TRANSACTION] Performance: {0:F3} saves/second", 1000.0 / saveTime));
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.TRANSACTION_SUCCESS_TEMPLATE, saveTime));
+                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.TRANSACTION_PERFORMANCE_TEMPLATE, ModConstants.MS_PER_SECOND / saveTime));
             }
             catch (Exception ex)
             {
                 // Log system state after failed transaction
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("TRANSACTION_FAILED");
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_TRANSACTION_FAILED);
 
-                logger.Err(string.Format("[TRANSACTION] Transactional save FAILED: {0}", ex.Message));
-                logger.Msg(1, "[TRANSACTION] Check backup files for recovery if needed");
+                logger.Err(string.Format(ModConstants.TRANSACTION_FAILED_TEMPLATE, ex.Message));
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.TRANSACTION_BACKUP_CHECK);
             }
         }
 
         public static IEnumerator AdvancedSaveOperationProfiling()
         {
-            logger.Msg(1, "[CONSOLE] Starting advanced save operation profiling");
+            logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.PROFILE_START_MESSAGE);
 
             var profileStart = DateTime.Now;
 
             // Initial system state capture
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_START");
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_START);
 
             // Phase 1: Pre-save diagnostics
-            logger.Msg(2, "[PROFILE] Phase 1: Pre-save diagnostics");
+            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.PROFILE_PHASE1_MESSAGE);
             var phase1Start = DateTime.Now;
 
             double phase1Time = 0;
@@ -776,15 +770,15 @@ namespace MixerThreholdMod_1_0_0
 
             try
             {
-                logger.Msg(3, string.Format("[PROFILE] Current save path: {0}", CurrentSavePath ?? "[not set]"));
-                logger.Msg(3, string.Format("[PROFILE] Mixer count: {0}", savedMixerValues?.Count ?? 0));
-                logger.Msg(3, string.Format("[PROFILE] Memory usage: {0} KB", GC.GetTotalMemory(false) / 1024));
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_SAVE_PATH_TEMPLATE, CurrentSavePath ?? ModConstants.NOT_SET_PATH_FALLBACK));
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_MIXER_COUNT_TEMPLATE, savedMixerValues?.Count ?? 0));
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_MEMORY_USAGE_TEMPLATE, GC.GetTotalMemory(false) / ModConstants.BYTES_TO_KB));
 
                 // Enhanced system diagnostics
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE1");
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_PHASE1);
 
                 phase1Time = (DateTime.Now - phase1Start).TotalMilliseconds;
-                logger.Msg(2, string.Format("[PROFILE] Phase 1 completed in {0:F1}ms", phase1Time));
+                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.PROFILE_PHASE_COMPLETE_TEMPLATE, "1", phase1Time));
             }
             catch (Exception ex)
             {
@@ -792,64 +786,64 @@ namespace MixerThreholdMod_1_0_0
             }
 
             // Phase 2: Save operation profiling - yield return outside try/catch for .NET 4.8.1 compatibility
-            logger.Msg(2, "[PROFILE] Phase 2: Save operation profiling");
+            logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.PROFILE_PHASE2_MESSAGE);
             var phase2Start = DateTime.Now;
 
             // System state before save operation
-            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_BEFORE_SAVE");
+            Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_BEFORE_SAVE);
 
             yield return Save.CrashResistantSaveManager.TriggerSaveWithCooldown();
 
             try
             {
                 phase2Time = (DateTime.Now - phase2Start).TotalMilliseconds;
-                logger.Msg(2, string.Format("[PROFILE] Phase 2 (save) completed in {0:F1}ms", phase2Time));
+                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.PROFILE_PHASE_COMPLETE_TEMPLATE, "2 (save)", phase2Time));
 
                 // System state after save operation
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_AFTER_SAVE");
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_AFTER_SAVE);
 
                 // Phase 3: Post-save diagnostics
-                logger.Msg(2, "[PROFILE] Phase 3: Post-save diagnostics");
+                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.PROFILE_PHASE3_MESSAGE);
                 var phase3Start = DateTime.Now;
 
-                logger.Msg(3, string.Format("[PROFILE] Final memory usage: {0} KB", GC.GetTotalMemory(false) / 1024));
-                logger.Msg(3, string.Format("[PROFILE] Mixer count after save: {0}", savedMixerValues?.Count ?? 0));
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_FINAL_MEMORY_TEMPLATE, GC.GetTotalMemory(false) / ModConstants.BYTES_TO_KB));
+                logger.Msg(ModConstants.LOG_LEVEL_VERBOSE, string.Format(ModConstants.PROFILE_MIXER_COUNT_AFTER_TEMPLATE, savedMixerValues?.Count ?? 0));
 
                 // Final system state capture
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_PHASE3");
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_PHASE3);
 
                 phase3Time = (DateTime.Now - phase3Start).TotalMilliseconds;
-                logger.Msg(2, string.Format("[PROFILE] Phase 3 completed in {0:F1}ms", phase3Time));
+                logger.Msg(ModConstants.LOG_LEVEL_IMPORTANT, string.Format(ModConstants.PROFILE_PHASE_COMPLETE_TEMPLATE, "3", phase3Time));
 
                 var totalTime = (DateTime.Now - profileStart).TotalMilliseconds;
 
                 // Comprehensive performance summary
-                logger.Msg(1, string.Format("[PROFILE] Advanced profiling complete. Total time: {0:F1}ms", totalTime));
-                logger.Msg(1, string.Format("[PROFILE] Breakdown: PreSave={0:F1}ms, Save={1:F1}ms, PostSave={2:F1}ms",
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.PROFILE_COMPLETE_TEMPLATE, totalTime));
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.PROFILE_BREAKDOWN_TEMPLATE,
                     phase1Time, phase2Time, phase3Time));
-                logger.Msg(1, string.Format("[PROFILE] Performance: {0:F3} saves/second", 1000.0 / phase2Time));
-                logger.Msg(1, string.Format("[PROFILE] Overhead ratio: {0:F1}% (diagnostics vs save time)",
-                    ((phase1Time + phase3Time) / phase2Time) * 100));
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.PROFILE_PERFORMANCE_TEMPLATE, ModConstants.MS_PER_SECOND / phase2Time));
+                logger.Msg(ModConstants.LOG_LEVEL_CRITICAL, string.Format(ModConstants.PROFILE_OVERHEAD_TEMPLATE,
+                    ((phase1Time + phase3Time) / phase2Time) * ModConstants.PERCENTAGE_CALCULATION_FACTOR));
 
                 // Final system state
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_COMPLETE");
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_COMPLETE);
             }
             catch (Exception ex)
             {
                 // System state on error
-                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance("PROFILE_ERROR");
+                Core.AdvancedSystemPerformanceMonitor.LogCurrentPerformance(ModConstants.PERF_TAG_PROFILE_ERROR);
 
                 if (profileError != null)
                 {
-                    logger.Err(string.Format("[PROFILE] Advanced profiling FAILED in Phase 1: {0}", profileError.Message));
+                    logger.Err(string.Format(ModConstants.PROFILE_PHASE1_FAILED_TEMPLATE, profileError.Message));
                 }
-                logger.Err(string.Format("[PROFILE] Advanced profiling FAILED in Phase 2/3: {0}", ex.Message));
+                logger.Err(string.Format(ModConstants.PROFILE_PHASE23_FAILED_TEMPLATE, ex.Message));
             }
 
             // Log phase 1 error if no other errors occurred
             if (profileError != null)
             {
-                logger.Err(string.Format("[PROFILE] Advanced profiling had Phase 1 error: {0}", profileError.Message));
+                logger.Err(string.Format(ModConstants.PROFILE_PHASE1_ERROR_TEMPLATE, profileError.Message));
             }
         }
 
@@ -857,16 +851,16 @@ namespace MixerThreholdMod_1_0_0
         {
             try
             {
-                logger?.Msg(2, "[MAIN] Application shutting down - cleaning up resources");
+                logger?.Msg(ModConstants.LOG_LEVEL_IMPORTANT, ModConstants.APPLICATION_SHUTDOWN_MESSAGE);
 
                 // Cleanup system monitoring resources
                 Core.AdvancedSystemPerformanceMonitor.Cleanup();
 
-                logger?.Msg(1, "[MAIN] Cleanup completed successfully");
+                logger?.Msg(ModConstants.LOG_LEVEL_CRITICAL, ModConstants.CLEANUP_COMPLETE_MESSAGE);
             }
             catch (Exception ex)
             {
-                logger?.Err(string.Format("[MAIN] Cleanup error: {0}", ex.Message));
+                logger?.Err(string.Format(ModConstants.CLEANUP_ERROR_TEMPLATE, ex.Message));
                 // Don't throw here - we're shutting down anyway
             }
         }
