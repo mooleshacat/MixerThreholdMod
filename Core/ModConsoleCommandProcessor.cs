@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.U2D;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -182,9 +183,9 @@ namespace MixerThreholdMod_1_0_0.Core
                         // Check if command is recognized
                         var recognizedCommands = new string[] 
                         { 
-                            "mixer_reset", "mixer_save", "mixer_path", "mixer_emergency",
-                            "saveprefstress", "savegamestress", "savemonitor", "transactionalsave", "profile",
-                            "msg", "warn", "err", "help", "?"
+                            COMMAND_MIXER_RESET, COMMAND_MIXER_SAVE, COMMAND_MIXER_PATH, COMMAND_MIXER_EMERGENCY,
+                            COMMAND_SAVE_PREF_STRESS, COMMAND_SAVE_GAME_STRESS, COMMAND_SAVE_MONITOR, "transactionalsave", "profile",
+                            "msg", "warn", "err", COMMAND_HELP, "?"
                         };
                         
                         bool isRecognized = false;
@@ -232,7 +233,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (commandError != null)
                 {
                     Main.logger?.Err(string.Format("[CONSOLE] OnConsoleCommand error: {0}\n{1}", commandError.Message, commandError.StackTrace));
-                    Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? "[null]"));
+                    Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? NULL_COMMAND_FALLBACK));
                     Main.logger?.Err(string.Format("[CONSOLE] Command processing failed after {0:F3}ms", (DateTime.UtcNow - commandStartTime).TotalMilliseconds));
                 }
             }
@@ -240,7 +241,7 @@ namespace MixerThreholdMod_1_0_0.Core
             /// <summary>
             /// Process specific console commands
             /// </summary>
-                    Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? "[null]"));
+                    Main.logger?.Err(string.Format("[CONSOLE] Failed command was: '{0}'", command ?? NULL_COMMAND_FALLBACK));
                     Main.logger?.Err(string.Format("[CONSOLE] Command processing failed after {0:F3}ms", (DateTime.UtcNow - commandStartTime).TotalMilliseconds));
                 }
             }
@@ -260,33 +261,33 @@ namespace MixerThreholdMod_1_0_0.Core
 
                     switch (baseCommand)
                     {
-                        case "mixer_reset":
+                        case COMMAND_MIXER_RESET:
                             ResetMixerValues();
                             break;
-                        case "mixer_save":
+                        case COMMAND_MIXER_SAVE:
                             ForceSave();
                             break;
-                        case "mixer_path":
+                        case COMMAND_MIXER_PATH:
                             PrintSavePath();
                             break;
-                        case "mixer_emergency":
+                        case COMMAND_MIXER_EMERGENCY:
                             EmergencySave();
                             break;
                         case "mixer_saveprefstress":
-                        case "saveprefstress":
+                        case COMMAND_SAVE_PREF_STRESS:
                             HandleStressSavePrefCommand(parts);
                             break;
                         case "mixer_savegamestress":
-                        case "savegamestress":
+                        case COMMAND_SAVE_GAME_STRESS:
                             HandleStressSaveGameCommand(parts);
                             break;
                         case "mixer_savemonitor":
-                        case "savemonitor":
+                        case COMMAND_SAVE_MONITOR:
                             HandleComprehensiveSaveMonitoringCommand(parts);
                             if (parts.Length < 2)
                             {
                                 Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: count");
-                                ShowCommandHelp("saveprefstress");
+                                ShowCommandHelp(COMMAND_SAVE_PREF_STRESS);
                             }
                             else
                             {
@@ -294,11 +295,11 @@ namespace MixerThreholdMod_1_0_0.Core
                             }
                             break;
                         case "mixer_savegamestress":
-                        case "savegamestress":
+                        case COMMAND_SAVE_GAME_STRESS:
                             if (parts.Length < 2)
                             {
                                 Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: count");
-                                ShowCommandHelp("savegamestress");
+                                ShowCommandHelp(COMMAND_SAVE_GAME_STRESS);
                             }
                             else
                             {
@@ -306,11 +307,11 @@ namespace MixerThreholdMod_1_0_0.Core
                             }
                             break;
                         case "mixer_savemonitor":
-                        case "savemonitor":
+                        case COMMAND_SAVE_MONITOR:
                             if (parts.Length < 2)
                             {
                                 Main.logger?.Msg(1, "[CONSOLE] Missing required parameter: count");
-                                ShowCommandHelp("savemonitor");
+                                ShowCommandHelp(COMMAND_SAVE_MONITOR);
                             }
                             else
                             {
@@ -388,12 +389,12 @@ namespace MixerThreholdMod_1_0_0.Core
                                 HandleSingleLogCommand("err", parts, lowerCommand);
                             }
                             break;
-                        case "help":
+                        case COMMAND_HELP:
                         case "?":
                             ShowHelpMessage();
                             break;
                         default:
-                            if (baseCommand == "help" || baseCommand == "?")
+                            if (baseCommand == COMMAND_HELP || baseCommand == "?")
                             {
                                 ShowHelpMessage();
                             }
@@ -430,7 +431,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     switch (commandName.ToLower())
                     {
-                        case "saveprefstress":
+                        case COMMAND_SAVE_PREF_STRESS:
                             Main.logger?.Msg(1, "[CONSOLE] === SAVEPREFSTRESS HELP ===");
                             Main.logger?.Msg(1, "[CONSOLE] Usage: saveprefstress <count> [delay_seconds] [bypass_cooldown]");
                             Main.logger?.Msg(1, "[CONSOLE] ");
@@ -448,7 +449,7 @@ namespace MixerThreholdMod_1_0_0.Core
                             Main.logger?.Msg(1, "[CONSOLE]   saveprefstress 10 0.1 false");
                             break;
 
-                        case "savegamestress":
+                        case COMMAND_SAVE_GAME_STRESS:
                             Main.logger?.Msg(1, "[CONSOLE] === SAVEGAMESTRESS HELP ===");
                             Main.logger?.Msg(1, "[CONSOLE] Usage: savegamestress <count> [delay_seconds] [bypass_cooldown]");
                             Main.logger?.Msg(1, "[CONSOLE] ");
@@ -466,7 +467,7 @@ namespace MixerThreholdMod_1_0_0.Core
                             Main.logger?.Msg(1, "[CONSOLE]   savegamestress 5 2.0 false");
                             break;
 
-                        case "savemonitor":
+                        case COMMAND_SAVE_MONITOR:
                             Main.logger?.Msg(1, "[CONSOLE] === SAVEMONITOR HELP ===");
                             Main.logger?.Msg(1, "[CONSOLE] Usage: savemonitor <count> [delay_seconds] [bypass_cooldown]");
                             Main.logger?.Msg(1, "[CONSOLE] ");
@@ -1244,7 +1245,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 
                 // Test help command
                 Main.logger?.Msg(3, "[CONSOLE] Testing help display...");
-                hookInstance.OnConsoleCommand("help");
+                hookInstance.OnConsoleCommand(COMMAND_HELP);
                 
                 Main.logger?.Msg(2, "[CONSOLE] Console command tests completed");
                 Main.logger?.Msg(1, "[CONSOLE] Note: Console commands work but may need game console integration for user input");

@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Save
 {
@@ -84,7 +85,7 @@ namespace MixerThreholdMod_1_0_0.Save
             Exception loadError = null;
             try
             {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+                string saveFile = Path.Combine(Main.CurrentSavePath, MIXER_SAVE_FILENAME);
                 string emergencyFile = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave_Emergency.json");
 
                 // Try main save file first, then emergency backup
@@ -99,9 +100,9 @@ namespace MixerThreholdMod_1_0_0.Save
                         string json = File.ReadAllText(filePath);
                         var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
 
-                        if (data != null && data.ContainsKey("MixerValues"))
+                        if (data != null && data.ContainsKey(MIXER_VALUES_KEY))
                         {
-                            var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data["MixerValues"].ToString());
+                            var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data[MIXER_VALUES_KEY].ToString());
 
                             foreach (var kvp in mixerValues)
                             {
@@ -515,7 +516,7 @@ namespace MixerThreholdMod_1_0_0.Save
             Exception saveError = null;
             try
             {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+                string saveFile = Path.Combine(Main.CurrentSavePath, MIXER_SAVE_FILENAME);
                 string tempFile = saveFile + ".tmp";
 
                 // Convert ConcurrentDictionary to regular dictionary for serialization
@@ -527,9 +528,9 @@ namespace MixerThreholdMod_1_0_0.Save
 
                 var saveData = new Dictionary<string, object>
                 {
-                    ["MixerValues"] = mixerValuesDict,
-                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    ["Version"] = "1.0.0",
+                    [MIXER_VALUES_KEY] = mixerValuesDict,
+                    [SAVE_TIME_KEY] = DateTime.Now.ToString(STANDARD_DATETIME_FORMAT),
+                    [VERSION_KEY] = "1.0.0",
                     ["SessionID"] = System.Guid.NewGuid().ToString()
                 };
 
@@ -588,7 +589,7 @@ namespace MixerThreholdMod_1_0_0.Save
             {
                 Main.logger.Msg(3, "[SAVE] CreateSafeBackup: Creating backup");
 
-                string sourceFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+                string sourceFile = Path.Combine(Main.CurrentSavePath, MIXER_SAVE_FILENAME);
                 if (File.Exists(sourceFile))
                 {
                     string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
@@ -642,8 +643,8 @@ namespace MixerThreholdMod_1_0_0.Save
 
                 var saveData = new Dictionary<string, object>
                 {
-                    ["MixerValues"] = mixerValuesDict,
-                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    [MIXER_VALUES_KEY] = mixerValuesDict,
+                    [SAVE_TIME_KEY] = DateTime.Now.ToString(STANDARD_DATETIME_FORMAT),
                     ["Reason"] = "Emergency save before crash/shutdown"
                 };
 
@@ -771,7 +772,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 Main.logger.Warn(1, string.Format("[SAVE] - SavedMixerValues: {0}", Main.savedMixerValues.Count));
                 Main.logger.Warn(1, string.Format("[SAVE] - TrackedMixers: {0}", trackedMixersCount >= 0 ? trackedMixersCount.ToString() : "FAILED"));
                 Main.logger.Warn(1, string.Format("[SAVE] - QueuedInstances: {0}", queuedInstancesCount));
-                Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? "[null]"));
+                Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? NULL_COMMAND_FALLBACK));
                 Main.logger.Warn(1, string.Format("[SAVE] - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
                 Main.logger.Warn(1, string.Format("[SAVE] - Load coroutine started: {0}", Main.LoadCoroutineStarted));
 =======

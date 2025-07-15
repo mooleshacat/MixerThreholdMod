@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.U2D;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -130,28 +131,28 @@ namespace MixerThreholdMod_1_0_0.Core
 
                     switch (baseCommand)
                     {
-                        case "mixer_reset":
+                        case COMMAND_MIXER_RESET:
                             ResetMixerValues();
                             break;
-                        case "mixer_save":
+                        case COMMAND_MIXER_SAVE:
                             ForceSave();
                             break;
-                        case "mixer_path":
+                        case COMMAND_MIXER_PATH:
                             PrintSavePath();
                             break;
-                        case "mixer_emergency":
+                        case COMMAND_MIXER_EMERGENCY:
                             EmergencySave();
                             break;
                         case "mixer_saveprefstress":
-                        case "saveprefstress":
+                        case COMMAND_SAVE_PREF_STRESS:
                             HandleStressSavePrefCommand(parts);
                             break;
                         case "mixer_savegamestress":
-                        case "savegamestress":
+                        case COMMAND_SAVE_GAME_STRESS:
                             HandleStressSaveGameCommand(parts);
                             break;
                         case "mixer_savemonitor":
-                        case "savemonitor":
+                        case COMMAND_SAVE_MONITOR:
                             HandleComprehensiveSaveMonitoringCommand(parts);
                             break;
                         // REMOVED: case "mixer_log": and case "log":

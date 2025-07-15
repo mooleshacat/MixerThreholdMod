@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -48,19 +49,19 @@ namespace MixerThreholdMod_1_0_0.Core
         // These are statically defined at compile time, no dynamic type creation
         private static readonly IModCommand[] _modCommands = new IModCommand[]
         {
-            new ModCommand("mixer_reset", "Reset all mixer values", "mixer_reset"),
-            new ModCommand("mixer_save", "Save current mixer configuration", "mixer_save"),
-            new ModCommand("mixer_path", "Show current save path", "mixer_path"),
-            new ModCommand("mixer_emergency", "Emergency mixer reset", "mixer_emergency"),
-            new ModCommand("saveprefstress", "Stress test mixer preferences saves", "saveprefstress <count> [delay] [bypass]"),
-            new ModCommand("savegamestress", "Stress test game saves", "savegamestress <count> [delay] [bypass]"),
-            new ModCommand("savemonitor", "Comprehensive save monitoring", "savemonitor <count> [delay] [bypass]"),
+            new ModCommand(COMMAND_MIXER_RESET, "Reset all mixer values", COMMAND_MIXER_RESET),
+            new ModCommand(COMMAND_MIXER_SAVE, "Save current mixer configuration", COMMAND_MIXER_SAVE),
+            new ModCommand(COMMAND_MIXER_PATH, "Show current save path", COMMAND_MIXER_PATH),
+            new ModCommand(COMMAND_MIXER_EMERGENCY, "Emergency mixer reset", COMMAND_MIXER_EMERGENCY),
+            new ModCommand(COMMAND_SAVE_PREF_STRESS, "Stress test mixer preferences saves", "saveprefstress <count> [delay] [bypass]"),
+            new ModCommand(COMMAND_SAVE_GAME_STRESS, "Stress test game saves", "savegamestress <count> [delay] [bypass]"),
+            new ModCommand(COMMAND_SAVE_MONITOR, "Comprehensive save monitoring", "savemonitor <count> [delay] [bypass]"),
             new ModCommand("transactionalsave", "Perform atomic transactional save", "transactionalsave"),
             new ModCommand("profile", "Advanced save operation profiling", "profile"),
             new ModCommand("msg", "Log info message", "msg <message>"),
             new ModCommand("warn", "Log warning message", "warn <message>"),
             new ModCommand("err", "Log error message", "err <message>"),
-            new ModCommand("help", "Show available commands", "help"),
+            new ModCommand(COMMAND_HELP, "Show available commands", COMMAND_HELP),
             new ModCommand("?", "Show available commands", "?")
         };
 
@@ -408,7 +409,7 @@ namespace MixerThreholdMod_1_0_0.Core
             if (patchError != null)
             {
                 Main.logger?.Err(string.Format("[BRIDGE] IL2CPPSafeConsolePrefix error: {0}", patchError.Message));
-                Main.logger?.Err(string.Format("[BRIDGE] Failed command was: '{0}'", args ?? "[null]"));
+                Main.logger?.Err(string.Format("[BRIDGE] Failed command was: '{0}'", args ?? NULL_COMMAND_FALLBACK));
             }
             
             return true; // Continue with original method on error

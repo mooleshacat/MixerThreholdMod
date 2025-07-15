@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using UnityEngine;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -108,7 +109,7 @@ namespace MixerThreholdMod_1_0_0.Core
             try
             {
                 // Forward to our custom logger
-                string messageStr = message?.ToString() ?? "[null]";
+                string messageStr = message?.ToString() ?? NULL_COMMAND_FALLBACK;
                 Main.logger?.Msg(2, string.Format("[GAME] {0}", messageStr));
 
                 // Check if this is potentially mod-related
@@ -147,7 +148,7 @@ namespace MixerThreholdMod_1_0_0.Core
             try
             {
                 // Forward to our custom logger
-                string messageStr = message?.ToString() ?? "[null]";
+                string messageStr = message?.ToString() ?? NULL_COMMAND_FALLBACK;
                 Main.logger?.Warn(1, string.Format("[GAME WARNING] {0}", messageStr));
 
                 // Check if this is potentially mod-related
@@ -187,7 +188,7 @@ namespace MixerThreholdMod_1_0_0.Core
             try
             {
                 // Forward to our custom logger with enhanced error handling
-                string messageStr = message?.ToString() ?? "[null]";
+                string messageStr = message?.ToString() ?? NULL_COMMAND_FALLBACK;
                 Main.logger?.Err(string.Format("[GAME ERROR] {0}", messageStr));
 
                 // Enhanced analysis for errors - more comprehensive than warnings

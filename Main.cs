@@ -20,6 +20,7 @@ using static MelonLoader.MelonLaunchOptions;
 using static MelonLoader.MelonLogger;
 using static ScheduleOne.Console;
 using static VLB.Consts;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 // Reminder: Add to steam game startup command: "--melonloader.captureplayerlogs" for extra MelonLogger verbosity :)
 
@@ -163,8 +164,8 @@ namespace MixerThreholdMod_0_0_1
                     if (!string.IsNullOrEmpty(Main.CurrentSavePath))
                     {
                         string persistentPath = MelonEnvironment.UserDataDirectory;
-                        string sourceFile = Path.Combine(persistentPath, "MixerThresholdSave.json").Replace('/', '\\');
-                        string targetFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json").Replace('/', '\\');
+                        string sourceFile = Path.Combine(persistentPath, MIXER_SAVE_FILENAME).Replace('/', '\\');
+                        string targetFile = Path.Combine(Main.CurrentSavePath, MIXER_SAVE_FILENAME).Replace('/', '\\');
                         if (File.Exists(sourceFile))
                         {
                             FileOperations.SafeCopy(sourceFile, targetFile, overwrite: true);

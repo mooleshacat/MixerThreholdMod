@@ -6,6 +6,7 @@ using MixerThreholdMod_1_0_0.Save;
 // using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
 using System.Reflection;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Patches
 {
@@ -27,7 +28,7 @@ namespace MixerThreholdMod_1_0_0.Patches
                 {
                     Main.CurrentSavePath = __result;
 
-                    string path = Utils.NormalizePath(Path.Combine(__savePath, "MixerThresholdSave.json"));
+                    string path = Utils.NormalizePath(Path.Combine(__savePath, MIXER_SAVE_FILENAME));
                     
                     int _mixerCount = 0;
                     try

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_0_0_1
 {
@@ -111,7 +112,7 @@ namespace MixerThreholdMod_0_0_1
                 {
                     switch (lowerCommand)
                     {
-                        case "resetmixervalues":
+                        case COMMAND_RESET_MIXER_VALUES:
                             ResetMixerValues();
                             break;
 
@@ -121,7 +122,7 @@ namespace MixerThreholdMod_0_0_1
 
                         default:
                             // Handle commands that start with specific prefixes
-                            if (lowerCommand.StartsWith("resetmixervalues"))
+                            if (lowerCommand.StartsWith(COMMAND_RESET_MIXER_VALUES))
                             {
                                 ResetMixerValues();
                             }
@@ -149,7 +150,7 @@ namespace MixerThreholdMod_0_0_1
                         Main.savedMixerValues.Clear();
 
                     // Optional: Reset the saved JSON file
-                    string path = Path.Combine(MelonEnvironment.UserDataDirectory, "MixerThresholdSave.json").Replace('/', '\\');
+                    string path = Path.Combine(MelonEnvironment.UserDataDirectory, MIXER_SAVE_FILENAME).Replace('/', '\\');
                     if (File.Exists(path))
                     {
                         File.Delete(path);
@@ -169,7 +170,7 @@ namespace MixerThreholdMod_0_0_1
                 try
                 {
                     // msgLogLevel = 1 because user initiated something, user wants to see results
-                    string currentPath = Main.CurrentSavePath ?? "[null]";
+                    string currentPath = Main.CurrentSavePath ?? NULL_COMMAND_FALLBACK;
                     Main.logger?.Msg(1, $"Current Save Path: {currentPath}");
                 }
                 catch (Exception ex)

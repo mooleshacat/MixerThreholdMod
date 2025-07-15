@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_0_0_1.Helpers
 {
@@ -329,7 +330,7 @@ namespace MixerThreholdMod_0_0_1.Helpers
                     return;
                 }
 
-                string path = Path.Combine(saveDir, "MixerThresholdSave.json").Replace('/', '\\');
+                string path = Path.Combine(saveDir, MIXER_SAVE_FILENAME).Replace('/', '\\');
                 bool exists = File.Exists(path);
                 Main.logger?.Msg(3, string.Format("File exists at '{0}': {1}", path, exists));
             }
@@ -343,7 +344,7 @@ namespace MixerThreholdMod_0_0_1.Helpers
         {
             try
             {
-                return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                return DateTime.Now.ToString(UTC_DATETIME_FORMAT_WITH_MS);
             }
             catch (Exception ex)
             {

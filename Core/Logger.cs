@@ -3,6 +3,7 @@ using System;
 
 namespace MixerThreholdMod_1_0_0.Core
 using System;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Core
 {
@@ -40,7 +41,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (!IsDebugEnabled || CurrentMsgLogLevel < logLevel) return;
                 
                 var calcAdd = ShowLogLevelCalc ? string.Format("[{0}]>=[{1}]", CurrentMsgLogLevel, logLevel) : "";
-                MelonLogger.Msg(string.Format("[Info]{0} {1}", calcAdd, message ?? "[null message]"));
+                MelonLogger.Msg(string.Format("[Info]{0} {1}", calcAdd, message ?? NULL_MESSAGE_FALLBACK));
             }
             catch
             {
@@ -80,7 +81,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
                 // ShowLogLevelCalc is used to show the current log level calculation for clarity in logs
                 var calcAdd = ShowLogLevelCalc ? string.Format("[{0}]>=[{1}]", CurrentMsgLogLevel, msgLogLevel) : "";
-                MelonLogger.Msg(string.Format("[Info]{0} {1}", calcAdd, message ?? "[null message]"));
+                MelonLogger.Msg(string.Format("[Info]{0} {1}", calcAdd, message ?? NULL_MESSAGE_FALLBACK));
             }
             // Always log exceptions AND stack traces to ensure we capture critical failures (even in logger)
             // Fallback when exception occurs during Logger.Msg call uses System.Console.WriteLine directly
@@ -101,7 +102,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (!IsDebugEnabled || CurrentWarnLogLevel < logLevel) return;
                 
                 var calcAdd = ShowLogLevelCalc ? string.Format("[{0}]>=[{1}]", CurrentWarnLogLevel, logLevel) : "";
-                MelonLogger.Warning(string.Format("[WARN]{0} {1}", calcAdd, message ?? "[null message]"));
+                MelonLogger.Warning(string.Format("[WARN]{0} {1}", calcAdd, message ?? NULL_MESSAGE_FALLBACK));
             }
             catch
             {
@@ -128,7 +129,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 if (!IsDebugEnabled || CurrentWarnLogLevel < warnLogLevel) return;
                 // ShowLogLevelCalc is used to show the current log level calculation for clarity in logs
                 var calcAdd = ShowLogLevelCalc ? string.Format("[{0}]>=[{1}]", CurrentWarnLogLevel, warnLogLevel) : "";
-                MelonLogger.Warning(string.Format("[WARN]{0} {1}", calcAdd, warningMessage ?? "[null message]"));
+                MelonLogger.Warning(string.Format("[WARN]{0} {1}", calcAdd, warningMessage ?? NULL_MESSAGE_FALLBACK));
             }
             catch (Exception ex)
             {

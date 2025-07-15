@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
@@ -98,7 +99,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             try
             {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+                string saveFile = Path.Combine(Main.CurrentSavePath, MIXER_SAVE_FILENAME);
 
                 if (File.Exists(saveFile))
                 {
@@ -109,9 +110,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     {
                         var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
 
-                        if (data != null && data.ContainsKey("MixerValues"))
+                        if (data != null && data.ContainsKey(MIXER_VALUES_KEY))
                         {
-                            var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data["MixerValues"].ToString());
+                            var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data[MIXER_VALUES_KEY].ToString());
 
                             foreach (var kvp in mixerValues)
                             {
@@ -501,7 +502,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             try
             {
-                string saveFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+                string saveFile = Path.Combine(Main.CurrentSavePath, MIXER_SAVE_FILENAME);
 
                 // Convert to regular dictionary for JSON serialization
                 var mixerValuesDict = new Dictionary<int, float>();
@@ -512,9 +513,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 var saveData = new Dictionary<string, object>
                 {
-                    ["MixerValues"] = mixerValuesDict,
-                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    ["Version"] = "1.0.0"
+                    [MIXER_VALUES_KEY] = mixerValuesDict,
+                    [SAVE_TIME_KEY] = DateTime.Now.ToString(STANDARD_DATETIME_FORMAT),
+                    [VERSION_KEY] = "1.0.0"
                 };
 
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
@@ -527,7 +528,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 string persistentPath = MelonEnvironment.UserDataDirectory;
                 if (!string.IsNullOrEmpty(persistentPath))
                 {
-                    string persistentFile = Path.Combine(persistentPath, "MixerThresholdSave.json");
+                    string persistentFile = Path.Combine(persistentPath, MIXER_SAVE_FILENAME);
                     await ThreadSafeFileOperations.SafeWriteAllTextAsync(persistentFile, json);
                     Main.logger.Msg(3, "SaveMixerValuesToFileAsync: Copied to persistent location");
                 }
@@ -612,7 +613,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         private static void PerformBackupOperations()
         {
             string backupDir = Path.Combine(Main.CurrentSavePath, "MixerThresholdBackups");
-            string sourceFile = Path.Combine(Main.CurrentSavePath, "MixerThresholdSave.json");
+            string sourceFile = Path.Combine(Main.CurrentSavePath, MIXER_SAVE_FILENAME);
 
             if (!File.Exists(sourceFile))
             {
@@ -698,8 +699,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 var saveData = new Dictionary<string, object>
                 {
-                    ["MixerValues"] = mixerValuesDict,
-                    ["SaveTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    [MIXER_VALUES_KEY] = mixerValuesDict,
+                    [SAVE_TIME_KEY] = DateTime.Now.ToString(STANDARD_DATETIME_FORMAT),
                     ["Reason"] = "Emergency save before crash/shutdown"
                 };
 
