@@ -85,13 +85,13 @@ namespace MixerThreholdMod_1_0_0.Core
                         mixer.CreatedAt = DateTime.Now;
                         mixer.LastUpdated = DateTime.Now;
                         _trackedMixers.Add(mixer);
-                        Main.logger?.Msg(3, string.Format("TrackedMixers.AddAsync: Added {0}", mixer));
+                        Main.logger?.Msg(3, string.Format("MixerConfigurationTracker.AddAsync: Added {0}", mixer));
                     }
                 });
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.AddAsync: Error adding mixer: {0}", ex));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.AddAsync: Error adding mixer: {0}", ex));
                 throw;
             }
         }
@@ -123,14 +123,14 @@ namespace MixerThreholdMod_1_0_0.Core
                                 _trackedMixers.Add(keeper);
                             }
 
-                            Main.logger?.Msg(3, string.Format("TrackedMixers.RemoveAllAsync: Removed {0} mixers", toRemove.Count));
+                            Main.logger?.Msg(3, string.Format("MixerConfigurationTracker.RemoveAllAsync: Removed {0} mixers", toRemove.Count));
                         }
                     }
                 });
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.RemoveAllAsync: Error removing mixers: {0}", ex));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.RemoveAllAsync: Error removing mixers: {0}", ex));
                 throw;
             }
         }
@@ -161,7 +161,7 @@ namespace MixerThreholdMod_1_0_0.Core
                                 _trackedMixers.Add(keeper);
                             }
 
-                            Main.logger?.Msg(3, string.Format("TrackedMixers.RemoveAsync: Removed mixer {0}", toRemove));
+                            Main.logger?.Msg(3, string.Format("MixerConfigurationTracker.RemoveAsync: Removed mixer {0}", toRemove));
                             return true;
                         }
 
@@ -171,7 +171,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.RemoveAsync: Error removing mixer: {0}", ex));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.RemoveAsync: Error removing mixer: {0}", ex));
                 return false;
             }
         }
@@ -190,7 +190,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.AnyAsync: Error checking mixers: {0}", ex));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.AnyAsync: Error checking mixers: {0}", ex));
                 return false;
             }
         }
@@ -209,7 +209,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.FirstOrDefaultAsync: Error finding mixer: {0}", ex));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.FirstOrDefaultAsync: Error finding mixer: {0}", ex));
                 return null;
             }
         }
@@ -228,7 +228,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.ToListAsync: Error getting mixer list: {0}", ex));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.ToListAsync: Error getting mixer list: {0}", ex));
                 return new List<TrackedMixer>();
             }
         }
@@ -248,7 +248,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.CountAsync: Error counting mixers: {0}", ex));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.CountAsync: Error counting mixers: {0}", ex));
                 return 0;
             }
         }
@@ -266,13 +266,13 @@ namespace MixerThreholdMod_1_0_0.Core
                     {
                         int count = _trackedMixers.Count;
                         while (_trackedMixers.TryTake(out TrackedMixer item)) { }
-                        Main.logger?.Msg(2, string.Format("TrackedMixers.ClearAsync: Cleared {0} mixers", count));
+                        Main.logger?.Msg(2, string.Format("MixerConfigurationTracker.ClearAsync: Cleared {0} mixers", count));
                     }
                 });
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.ClearAsync: Error clearing mixers: {0}", ex));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.ClearAsync: Error clearing mixers: {0}", ex));
                 throw;
             }
         }
@@ -292,7 +292,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.Count CRASH PREVENTION: Error: {0}", ex.Message));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.Count CRASH PREVENTION: Error: {0}", ex.Message));
                 return 0;
             }
         }
@@ -311,7 +311,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.Any CRASH PREVENTION: Error: {0}", ex.Message));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.Any CRASH PREVENTION: Error: {0}", ex.Message));
                 return false;
             }
         }
@@ -329,7 +329,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.Add CRASH PREVENTION: Error: {0}", ex.Message));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.Add CRASH PREVENTION: Error: {0}", ex.Message));
             }
         }
 
@@ -346,7 +346,7 @@ namespace MixerThreholdMod_1_0_0.Core
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("TrackedMixers.RemoveAll CRASH PREVENTION: Error: {0}", ex.Message));
+                Main.logger?.Err(string.Format("MixerConfigurationTracker.RemoveAll CRASH PREVENTION: Error: {0}", ex.Message));
             }
         }
     }

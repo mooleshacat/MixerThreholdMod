@@ -744,18 +744,18 @@ namespace MixerThreholdMod_1_0_0.Save
                 if (countTask.IsCompleted && !countTask.IsFaulted)
                 {
                     trackedMixersCount = countTask.Result;
-                    Main.logger.Msg(3, "[SAVE] DIAGNOSIS: Successfully retrieved TrackedMixers count");
+                    Main.logger.Msg(3, "[SAVE] DIAGNOSIS: Successfully retrieved MixerConfigurationTracker count");
                 }
                 else
                 {
-                    Main.logger.Warn(1, "[SAVE] DIAGNOSIS: TrackedMixers count task failed or timed out");
+                    Main.logger.Warn(1, "[SAVE] DIAGNOSIS: MixerConfigurationTracker count task failed or timed out");
                     trackedMixersCount = -1; // Indicates failure
                 }
 
                 // Output comprehensive diagnostics
                 Main.logger.Warn(1, "[SAVE] ===== COMPREHENSIVE MIXER DIAGNOSTICS =====");
                 Main.logger.Warn(1, string.Format("[SAVE] - SavedMixerValues: {0}", Main.savedMixerValues.Count));
-                Main.logger.Warn(1, string.Format("[SAVE] - TrackedMixers: {0}", trackedMixersCount >= 0 ? trackedMixersCount.ToString() : "FAILED"));
+                Main.logger.Warn(1, string.Format("[SAVE] - MixerConfigurationTracker: {0}", trackedMixersCount >= 0 ? trackedMixersCount.ToString() : "FAILED"));
                 Main.logger.Warn(1, string.Format("[SAVE] - QueuedInstances: {0}", queuedInstancesCount));
                 Main.logger.Warn(1, string.Format("[SAVE] - SavePath: {0}", Main.CurrentSavePath ?? NULL_COMMAND_FALLBACK));
                 Main.logger.Warn(1, string.Format("[SAVE] - MixerInstanceMap count: {0}", Core.MixerIDManager.GetMixerCount()));
@@ -786,7 +786,7 @@ namespace MixerThreholdMod_1_0_0.Save
                 else if (trackedMixersCount < 0)
                 {
                     Main.logger.Err("[SAVE] DIAGNOSIS: 💥 TRACKING SYSTEM FAILURE");
-                    Main.logger.Err("[SAVE] - TrackedMixers async operations timing out");
+                    Main.logger.Err("[SAVE] - MixerConfigurationTracker async operations timing out");
                     Main.logger.Err("[SAVE] - Threading/synchronization issues detected");
                 }
 
