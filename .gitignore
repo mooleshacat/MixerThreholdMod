@@ -6,3 +6,4 @@ obj\*
 .vs/*
 /bin/x64/Debug
 /obj
+ForCopilot/*
