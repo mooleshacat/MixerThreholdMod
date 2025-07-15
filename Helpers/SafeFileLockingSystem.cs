@@ -39,13 +39,6 @@ namespace MixerThreholdMod_1_0_0.Helpers
         private bool disposed = false;
         private const int DefaultTimeoutMs = 5000;
         private const int RetryDelayMs = 50;
-    public class FileLockHelper : IDisposable
-    {
-        private readonly string _lockFilePath;
-        private FileStream _lockStream;
-        private volatile bool _isLocked;
-        private readonly object _lockObject = new object();
-        private const int DefaultTimeoutMs = 5000;
 
         public FileLockHelper(string lockFilePath)
         {
@@ -58,11 +51,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
 
                 this.lockFilePath = lockFilePath;
-                Main.logger?.Msg(3, string.Format("FileLockHelper created for: {0}", lockFilePath));
+                Main.logger?.Msg(3, string.Format("{0} FileLockHelper created for: {1}", FILE_LOCK_PREFIX, lockFilePath));
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("FileLockHelper constructor failed: {0}\n{1}", ex.Message, ex.StackTrace));
+                Main.logger?.Err(string.Format("{0} FileLockHelper constructor failed: {1}\n{2}", FILE_LOCK_PREFIX, ex.Message, ex.StackTrace));
                 throw;
             }
         }
@@ -95,7 +88,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         return true;
                     }
 
-                    Main.logger?.Msg(3, string.Format("FileLockHelper.AcquireSharedLock: Attempting shared lock on {0}", lockFilePath));
+                    Main.logger?.Msg(3, string.Format("{0} FileLockHelper.AcquireSharedLock: Attempting shared lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
 
                     var startTime = DateTime.Now;
                     var timeout = TimeSpan.FromMilliseconds(timeoutMs);
@@ -109,11 +102,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                 FileMode.OpenOrCreate,
                                 FileAccess.Read,
                                 FileShare.Read,
-                                4096,
+                                DEFAULT_FILE_BUFFER_SIZE,
                                 FileOptions.None
                             );
                             isLocked = true;
-                            Main.logger?.Msg(2, string.Format("FileLockHelper.AcquireSharedLock: Successfully acquired shared lock on {0}", lockFilePath));
+                            Main.logger?.Msg(2, string.Format("{0} FileLockHelper.AcquireSharedLock: Successfully acquired shared lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                             return true;
                         }
                         catch (IOException)
@@ -130,26 +123,20 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         }
                     }
 
-                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireSharedLock: Timeout acquiring shared lock on {0}", lockFilePath));
+                    Main.logger?.Warn(1, string.Format("{0} FileLockHelper.AcquireSharedLock: Timeout acquiring shared lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                Main.logger?.Err(string.Format("{0} FileLockHelper.AcquireSharedLock: Caught exception: {1}\n{2}", FILE_LOCK_PREFIX, ex.Message, ex.StackTrace));
                 try
                 {
                     ReleaseLock();
                 }
                 catch (Exception releaseEx)
                 {
-                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
-                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
-                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
-                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
+                    Main.logger?.Err(string.Format("{0} Error during lock release in exception handler: {1}", FILE_LOCK_PREFIX, releaseEx.Message));
                 }
                 return false;
             }
@@ -183,7 +170,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         return true;
                     }
 
-                    Main.logger?.Msg(3, string.Format("FileLockHelper.AcquireExclusiveLock: Attempting exclusive lock on {0}", lockFilePath));
+                    Main.logger?.Msg(3, string.Format("{0} FileLockHelper.AcquireExclusiveLock: Attempting exclusive lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
 
                     var startTime = DateTime.Now;
                     var timeout = TimeSpan.FromMilliseconds(timeoutMs);
@@ -197,11 +184,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                 FileMode.OpenOrCreate,
                                 FileAccess.ReadWrite,
                                 FileShare.None,
-                                4096,
+                                DEFAULT_FILE_BUFFER_SIZE,
                                 FileOptions.None
                             );
                             isLocked = true;
-                            Main.logger?.Msg(2, string.Format("FileLockHelper.AcquireExclusiveLock: Successfully acquired exclusive lock on {0}", lockFilePath));
+                            Main.logger?.Msg(2, string.Format("{0} FileLockHelper.AcquireExclusiveLock: Successfully acquired exclusive lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                             return true;
                         }
                         catch (IOException)
@@ -218,26 +205,20 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         }
                     }
 
-                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireExclusiveLock: Timeout acquiring exclusive lock on {0}", lockFilePath));
+                    Main.logger?.Warn(1, string.Format("{0} FileLockHelper.AcquireExclusiveLock: Timeout acquiring exclusive lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                Main.logger?.Err(string.Format("{0} FileLockHelper.AcquireExclusiveLock: Caught exception: {1}\n{2}", FILE_LOCK_PREFIX, ex.Message, ex.StackTrace));
                 try
                 {
                     ReleaseLock();
                 }
                 catch (Exception releaseEx)
                 {
-                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
-                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
-                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
-                    Main.logger?.Err(string.Format("Error during lock release in exception handler: {0}", releaseEx.Message));
+                    Main.logger?.Err(string.Format("{0} Error during lock release in exception handler: {1}", FILE_LOCK_PREFIX, releaseEx.Message));
                 }
                 return false;
             }
@@ -271,7 +252,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     return true;
                 }
 
-                Main.logger?.Msg(3, string.Format("FileLockHelper.AcquireSharedLockAsync: Attempting async shared lock on {0}", lockFilePath));
+                Main.logger?.Msg(3, string.Format("{0} FileLockHelper.AcquireSharedLockAsync: Attempting async shared lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
 
                 var startTime = DateTime.Now;
                 var timeout = TimeSpan.FromMilliseconds(timeoutMs);
@@ -289,11 +270,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                     FileMode.OpenOrCreate,
                                     FileAccess.Read,
                                     FileShare.Read,
-                                    4096,
+                                    DEFAULT_FILE_BUFFER_SIZE,
                                     FileOptions.None
                                 );
                                 isLocked = true;
-                                Main.logger?.Msg(2, string.Format("FileLockHelper.AcquireSharedLockAsync: Successfully acquired async shared lock on {0}", lockFilePath));
+                                Main.logger?.Msg(2, string.Format("{0} FileLockHelper.AcquireSharedLockAsync: Successfully acquired async shared lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                                 return true;
                             }
                         }
@@ -312,18 +293,18 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireSharedLockAsync: Cancelled acquiring shared lock on {0}", lockFilePath));
+                    Main.logger?.Warn(1, string.Format("{0} FileLockHelper.AcquireSharedLockAsync: Cancelled acquiring shared lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                 }
                 else
                 {
-                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireSharedLockAsync: Timeout acquiring shared lock on {0}", lockFilePath));
+                    Main.logger?.Warn(1, string.Format("{0} FileLockHelper.AcquireSharedLockAsync: Timeout acquiring shared lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                 }
 
                 return false;
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireSharedLockAsync: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                Main.logger?.Err(string.Format("{0} FileLockHelper.AcquireSharedLockAsync: Caught exception: {1}\n{2}", FILE_LOCK_PREFIX, ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -356,7 +337,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     return true;
                 }
 
-                Main.logger?.Msg(3, string.Format("FileLockHelper.AcquireExclusiveLockAsync: Attempting async exclusive lock on {0}", lockFilePath));
+                Main.logger?.Msg(3, string.Format("{0} FileLockHelper.AcquireExclusiveLockAsync: Attempting async exclusive lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
 
                 var startTime = DateTime.Now;
                 var timeout = TimeSpan.FromMilliseconds(timeoutMs);
@@ -374,11 +355,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                     FileMode.OpenOrCreate,
                                     FileAccess.ReadWrite,
                                     FileShare.None,
-                                    4096,
+                                    DEFAULT_FILE_BUFFER_SIZE,
                                     FileOptions.None
                                 );
                                 isLocked = true;
-                                Main.logger?.Msg(2, string.Format("FileLockHelper.AcquireExclusiveLockAsync: Successfully acquired async exclusive lock on {0}", lockFilePath));
+                                Main.logger?.Msg(2, string.Format("{0} FileLockHelper.AcquireExclusiveLockAsync: Successfully acquired async exclusive lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                                 return true;
                             }
                         }
@@ -397,18 +378,18 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireExclusiveLockAsync: Cancelled acquiring exclusive lock on {0}", lockFilePath));
+                    Main.logger?.Warn(1, string.Format("{0} FileLockHelper.AcquireExclusiveLockAsync: Cancelled acquiring exclusive lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                 }
                 else
                 {
-                    Main.logger?.Warn(1, string.Format("FileLockHelper.AcquireExclusiveLockAsync: Timeout acquiring exclusive lock on {0}", lockFilePath));
+                    Main.logger?.Warn(1, string.Format("{0} FileLockHelper.AcquireExclusiveLockAsync: Timeout acquiring exclusive lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                 }
 
                 return false;
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("FileLockHelper.AcquireExclusiveLockAsync: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                Main.logger?.Err(string.Format("{0} FileLockHelper.AcquireExclusiveLockAsync: Caught exception: {1}\n{2}", FILE_LOCK_PREFIX, ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -424,7 +405,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     if (isLocked && lockStream != null)
                     {
-                        Main.logger?.Msg(3, string.Format("FileLockHelper.ReleaseLock: Releasing lock on {0}", lockFilePath));
+                        Main.logger?.Msg(3, string.Format("{0} FileLockHelper.ReleaseLock: Releasing lock on {1}", FILE_LOCK_PREFIX, lockFilePath));
                         lockStream.Dispose();
                         lockStream = null;
                         isLocked = false;
@@ -435,19 +416,19 @@ namespace MixerThreholdMod_1_0_0.Helpers
                             if (File.Exists(lockFilePath))
                             {
                                 File.Delete(lockFilePath);
-                                Main.logger?.Msg(3, string.Format("FileLockHelper.ReleaseLock: Deleted lock file {0}", lockFilePath));
+                                Main.logger?.Msg(3, string.Format("{0} FileLockHelper.ReleaseLock: Deleted lock file {1}", FILE_LOCK_PREFIX, lockFilePath));
                             }
                         }
                         catch (Exception deleteEx)
                         {
-                            Main.logger?.Warn(1, string.Format("FileLockHelper.ReleaseLock: Could not delete lock file {0}: {1}", lockFilePath, deleteEx.Message));
+                            Main.logger?.Warn(1, string.Format("{0} FileLockHelper.ReleaseLock: Could not delete lock file {1}: {2}", FILE_LOCK_PREFIX, lockFilePath, deleteEx.Message));
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("FileLockHelper.ReleaseLock: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                Main.logger?.Err(string.Format("{0} FileLockHelper.ReleaseLock: Caught exception: {1}\n{2}", FILE_LOCK_PREFIX, ex.Message, ex.StackTrace));
                 // Force cleanup in case of catastrophic failure
                 isLocked = false;
                 lockStream = null;
@@ -460,12 +441,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 try
                 {
-                    Main.logger?.Msg(3, string.Format("FileLockHelper.Dispose: Disposing lock helper for {0}", lockFilePath));
+                    Main.logger?.Msg(3, string.Format("{0} FileLockHelper.Dispose: Disposing lock helper for {1}", FILE_LOCK_PREFIX, lockFilePath));
                     ReleaseLock();
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err(string.Format("FileLockHelper.Dispose: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
+                    Main.logger?.Err(string.Format("{0} FileLockHelper.Dispose: Caught exception: {1}\n{2}", FILE_LOCK_PREFIX, ex.Message, ex.StackTrace));
                 }
                 finally
                 {
