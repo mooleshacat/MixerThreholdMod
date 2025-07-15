@@ -31,7 +31,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"MixerConsoleHook.Instance getter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        Main.logger?.Err(string.Format("MixerConsoleHook.Instance getter: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                         return null;
                     }
                 }
@@ -46,7 +46,7 @@ namespace MixerThreholdMod_0_0_1
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"MixerConsoleHook.Instance setter: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        Main.logger?.Err(string.Format("MixerConsoleHook.Instance setter: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                     }
                 }
             }
@@ -68,7 +68,7 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"MixerConsoleHook.Awake: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("MixerConsoleHook.Awake: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
 
@@ -80,7 +80,7 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"MixerConsoleHook.Update: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("MixerConsoleHook.Update: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
 

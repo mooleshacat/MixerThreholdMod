@@ -58,7 +58,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"CoroutineHelper.Instance: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        Main.logger?.Err(string.Format("CoroutineHelper.Instance: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                         return null;
                         var go = new GameObject("CoroutineHelper");
                         _instance = go.AddComponent<CoroutineHelper>();
@@ -191,7 +191,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
                 catch (Exception ex)
                 {
-                    Main.logger?.Err($"CoroutineHelper.RunCoroutine: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger?.Err(string.Format("CoroutineHelper.RunCoroutine: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                     authError = ex;
                     return false;
                 }
@@ -207,7 +207,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     }
                     catch (Exception ex)
                     {
-                        Main.logger?.Err($"SafeCoroutineWrapper: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                        Main.logger?.Err(string.Format("SafeCoroutineWrapper: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                         hasMore = false;
                     }
                     if (hasMore)
@@ -313,7 +313,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             public static bool IsTurboModeEnabled()
             {
-                Main.logger?.Err($"Utils.RunCoroutine: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("Utils.RunCoroutine: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
                 return _turboModeEnabled;
@@ -392,14 +392,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 string path = Path.Combine(saveDir, MIXER_SAVE_FILENAME).Replace('/', '\\');
                 bool exists = File.Exists(path);
-                Main.logger?.Msg(3, $"File exists at '{path}': {exists}");
+                Main.logger?.Msg(3, string.Format("File exists at '{0}': {1}", path, exists));
                 _randomizationEfficiency = efficiencyValue;
                 Main.logger?.Msg(1, string.Format("[PERF] 🎲 Randomization efficiency set to {0}%", efficiencyValue));
             }
 
             public static void SetDataStructureMode(string structureName)
             {
-                Main.logger?.Err($"PrintFileExistsStatus: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("PrintFileExistsStatus: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 if (!CheckAdvancedAccess("datastructtest")) return;
 
                 ScheduleOne.Casino.SlotMachine.ESymbol symbol;
@@ -675,7 +675,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"GetFullTimestamp: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("GetFullTimestamp: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return "[TIMESTAMP_ERROR]";
             }
         }
@@ -692,7 +692,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeFileExists: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeFileExists: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }
@@ -709,7 +709,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                Main.logger?.Err($"SafeDirectoryExists: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                Main.logger?.Err(string.Format("SafeDirectoryExists: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }

@@ -47,8 +47,8 @@ namespace MixerThreholdMod_0_0_1
             // Test log
             Logger logger = new Logger();
             logger.Msg(1, "MixerThreholdMod initializing...");
-            logger.Msg(1, $"currentMsgLogLevel: {logger.CurrentMsgLogLevel}");
-            logger.Msg(1, $"currentWarnLogLevel: {logger.CurrentWarnLogLevel}");
+            logger.Msg(1, string.Format("currentMsgLogLevel: {0}", logger.CurrentMsgLogLevel));
+            logger.Msg(1, string.Format("currentWarnLogLevel: {0}", logger.CurrentWarnLogLevel));
             // Patch constructor to queue instance
             var constructor = typeof(MixingStationConfiguration).GetConstructor(
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
@@ -88,7 +88,7 @@ namespace MixerThreholdMod_0_0_1
                 // Prevent duplicate processing of the same instance
                 if (await TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
                 {
-                    logger.Warn(1, $"Instance already tracked — skipping duplicate: {instance}");
+                    logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
                     continue;
                 }
                 if (instance.StartThrehold == null)
@@ -110,19 +110,19 @@ namespace MixerThreholdMod_0_0_1
                             MixerInstanceID = MixerIDManager.GetMixerID(instance)
                         };
                         await TrackedMixers.AddAsync(newTrackedMixer);
-                        logger.Msg(3, $"Created mixer with Stable ID: {newTrackedMixer.MixerInstanceID}");
+                        logger.Msg(3, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
 
                         // Now safely add listener
                         if (!mixerData.ListenerAdded)
                         {
-                            logger.Msg(3, $"Attaching listener for Mixer {newTrackedMixer.MixerInstanceID}");
+                            logger.Msg(3, string.Format("Attaching listener for Mixer {0}", newTrackedMixer.MixerInstanceID));
                             Utils.CoroutineHelper.RunCoroutine(MixerSaveManager.AttachListenerWhenReady(instance, newTrackedMixer.MixerInstanceID));
                             newTrackedMixer.ListenerAdded = true;
                         }
                         // Restore saved value if exists
                         if (savedMixerValues.TryGetValue(mixerData.MixerInstanceID, out float savedValue))
                         {
-                            logger.Msg(2, $"Restoring Mixer {mixerData.MixerInstanceID} to {savedValue}");
+                            logger.Msg(2, string.Format("Restoring Mixer {0} to {1}", mixerData.MixerInstanceID, savedValue));
                             instance.StartThrehold.SetValue(savedValue, true);
                         }
                     }
@@ -175,7 +175,7 @@ namespace MixerThreholdMod_0_0_1
                 }
                 catch (Exception ex)
                 {
-                    Main.logger.Err($"OnSceneWasLoaded: Caught exception: {ex.Message}\n{ex.StackTrace}");
+                    Main.logger.Err(string.Format("OnSceneWasLoaded: Caught exception: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
             }
         }
