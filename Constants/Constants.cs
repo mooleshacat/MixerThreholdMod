@@ -106,6 +106,9 @@ namespace MixerThreholdMod_1_0_0.Constants
         /// <summary>Mod name with typo preserved</summary>
         public const string MOD_NAME = "MixerThreholdMod";
 
+        /// <summary>Patch name for EntityConfiguration Destroy patch</summary>
+        public const string PATCH_ENTITY_DESTROY_NAME = "EntityConfiguration_Destroy_Patch";
+
         // ===== ERROR MESSAGE CONSTANTS =====
         /// <summary>Error message template for invalid log levels</summary>
         public const string INVALID_MSG_LEVEL_ERROR = "[ERROR] Invalid log level {0} for Msg method. Must be {1} to {2}.";
