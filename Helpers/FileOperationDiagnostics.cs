@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
@@ -34,7 +35,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             _currentOperation = operationName;
             _operationTimer.Restart();
-            Main.logger?.Msg(3, string.Format("[FILE-DIAG] Starting {0}...", operationName));
+            Main.logger?.Msg(3, string.Format("{0} Starting {1}...", DIAGNOSTICS_PREFIX, operationName));
         }
 
         public void EndOperation(long fileSizeBytes = 0)
@@ -53,26 +54,26 @@ namespace MixerThreholdMod_1_0_0.Helpers
             // Log operation result with performance analysis
             if (result.DurationMs > 500)
             {
-                Main.logger?.Warn(1, string.Format("[FILE-DIAG] SLOW OPERATION: {0} took {1:F1}ms (>500ms threshold)",
-                    result.OperationName, result.DurationMs));
+                Main.logger?.Warn(1, string.Format("{0} SLOW OPERATION: {1} took {2:F1}ms (>500ms threshold)",
+                    DIAGNOSTICS_PREFIX, result.OperationName, result.DurationMs));
             }
             else if (result.DurationMs > 100)
             {
-                Main.logger?.Msg(2, string.Format("[FILE-DIAG] Moderate timing: {0} took {1:F1}ms",
-                    result.OperationName, result.DurationMs));
+                Main.logger?.Msg(2, string.Format("{0} Moderate timing: {1} took {2:F1}ms",
+                    DIAGNOSTICS_PREFIX, result.OperationName, result.DurationMs));
             }
             else
             {
-                Main.logger?.Msg(3, string.Format("[FILE-DIAG] Fast operation: {0} took {1:F1}ms",
-                    result.OperationName, result.DurationMs));
+                Main.logger?.Msg(3, string.Format("{0} Fast operation: {1} took {2:F1}ms",
+                    DIAGNOSTICS_PREFIX, result.OperationName, result.DurationMs));
             }
 
             // Calculate transfer rate if file size provided
             if (fileSizeBytes > 0 && result.DurationMs > 0)
             {
                 var transferRateMBps = (fileSizeBytes / 1048576.0) / (result.DurationMs / 1000.0);
-                Main.logger?.Msg(3, string.Format("[FILE-DIAG] Transfer rate: {0:F2} MB/s ({1} bytes in {2:F1}ms)",
-                    transferRateMBps, fileSizeBytes, result.DurationMs));
+                Main.logger?.Msg(3, string.Format("{0} Transfer rate: {1:F2} MB/s ({2} bytes in {3:F1}ms)",
+                    DIAGNOSTICS_PREFIX, transferRateMBps, fileSizeBytes, result.DurationMs));
             }
         }
 
@@ -87,7 +88,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 if (_operations.Count == 0)
                 {
-                    Main.logger?.Msg(3, string.Format("[FILE-DIAG] {0}: No file operations recorded", context));
+                    Main.logger?.Msg(3, string.Format("{0} {1}: No file operations recorded", DIAGNOSTICS_PREFIX, context));
                     return;
                 }
 
@@ -97,25 +98,25 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 var minTime = _operations.Min(op => op.DurationMs);
                 var slowOps = _operations.Count(op => op.DurationMs > 100);
 
-                Main.logger?.Msg(2, string.Format("[FILE-DIAG] {0} Summary:", context));
-                Main.logger?.Msg(2, string.Format("[FILE-DIAG] Operations: {0}, Total: {1:F1}ms, Avg: {2:F1}ms",
-                    _operations.Count, totalTime, avgTime));
-                Main.logger?.Msg(2, string.Format("[FILE-DIAG] Range: {0:F1}ms - {1:F1}ms, Slow ops (>100ms): {2}",
-                    minTime, maxTime, slowOps));
+                Main.logger?.Msg(2, string.Format("{0} {1} Summary:", DIAGNOSTICS_PREFIX, context));
+                Main.logger?.Msg(2, string.Format("{0} Operations: {1}, Total: {2:F1}ms, Avg: {3:F1}ms",
+                    DIAGNOSTICS_PREFIX, _operations.Count, totalTime, avgTime));
+                Main.logger?.Msg(2, string.Format("{0} Range: {1:F1}ms - {2:F1}ms, Slow ops (>100ms): {3}",
+                    DIAGNOSTICS_PREFIX, minTime, maxTime, slowOps));
 
                 // Log individual operations if there were performance issues
                 if (slowOps > 0 || maxTime > 200)
                 {
-                    Main.logger?.Msg(2, "[FILE-DIAG] Performance breakdown:");
+                    Main.logger?.Msg(2, string.Format("{0} Performance breakdown:", DIAGNOSTICS_PREFIX));
                     foreach (var op in _operations.Where(o => o.DurationMs > 50).OrderByDescending(o => o.DurationMs))
                     {
-                        Main.logger?.Msg(3, string.Format("[FILE-DIAG] - {0}: {1:F1}ms", op.OperationName, op.DurationMs));
+                        Main.logger?.Msg(3, string.Format("{0} - {1}: {2:F1}ms", DIAGNOSTICS_PREFIX, op.OperationName, op.DurationMs));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("[FILE-DIAG] Error generating summary: {0}", ex.Message));
+                Main.logger?.Err(string.Format("{0} Error generating summary: {1}", DIAGNOSTICS_PREFIX, ex.Message));
             }
         }
 

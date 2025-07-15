@@ -128,11 +128,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     if (_isInitialized)
                     {
-                        Main.logger.Msg(3, "[PERSISTENCE] MixerDataPersistenceManager: Already initialized");
+                        Main.logger.Msg(3, string.Format("{0} MixerDataPersistenceManager: Already initialized", PERSISTENCE_PREFIX));
                         return;
                     }
 
-                    Main.logger.Msg(2, "[PERSISTENCE] MixerDataPersistenceManager: Initializing persistence manager");
+                    Main.logger.Msg(2, string.Format("{0} MixerDataPersistenceManager: Initializing persistence manager", PERSISTENCE_PREFIX));
 
                     // Verify directory structure
                     EnsureDirectoryStructure();

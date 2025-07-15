@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
@@ -42,7 +43,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                         return File.ReadAllText(filePath);
                     }
-                }, ct);
+                }, ct).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -76,7 +77,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                         File.Move(tempFile, filePath);
                     }
-                }, ct);
+                }, ct).ConfigureAwait(false);
 
                 Main.logger?.Msg(3, string.Format("SafeWriteAllTextAsync: Successfully wrote to {0}", filePath));
             }

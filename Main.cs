@@ -83,10 +83,24 @@ namespace MixerThreholdMod_1_0_0
                 
                 Patches.LoadManager_LoadedGameFolderPath_Patch.Initialize();
                 logger.Msg(2, "LoadManager_LoadedGameFolderPath_Patch initialized");
+                
+                Patches.EntityConfiguration_Destroy_Patch.Initialize();
+                logger.Msg(2, "EntityConfiguration_Destroy_Patch initialized");
             }
             catch (Exception ex)
             {
                 logger.Err(string.Format("Failed to initialize patches: {0}\n{1}", ex.Message, ex.StackTrace));
+            }
+            
+            // Initialize performance optimizer
+            try
+            {
+                Helpers.PerformanceOptimizer.Initialize();
+                logger.Msg(2, "PerformanceOptimizer initialized");
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("Failed to initialize PerformanceOptimizer: {0}\n{1}", ex.Message, ex.StackTrace));
             }
         }
         private static void QueueInstance(MixingStationConfiguration __instance)

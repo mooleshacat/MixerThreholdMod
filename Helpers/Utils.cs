@@ -48,11 +48,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                         if (_instance != null)
                                         {
                                             DontDestroyOnLoad(go);
-                                            Main.logger?.Msg(3, "[UTILS] CoroutineHelper instance created successfully");
+                                            Main.logger?.Msg(3, string.Format("{0} CoroutineHelper instance created successfully", UTILS_PREFIX));
                                         }
                                         else
                                         {
-                                            Main.logger?.Err("[UTILS] Failed to add CoroutineHelper component");
+                                            Main.logger?.Err(string.Format("{0} Failed to add CoroutineHelper component", UTILS_PREFIX));
                                             if (go != null) Destroy(go);
                                         }
                                     }
@@ -88,7 +88,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     if (routine == null)
                     {
-                        Main.logger?.Warn(1, "[UTILS] RunCoroutine: routine is null");
+                        Main.logger?.Warn(1, string.Format("{0} RunCoroutine: routine is null", UTILS_PREFIX));
                         return;
                     }
 
