@@ -1,9 +1,9 @@
 *~
 *.dll
 *.log
-bin\*
-obj\*
+bin/*
+obj/*
 .vs/*
-/bin/x64/Debug
-/obj
+bin/x64/Debug
+obj
 ForCopilot/*
