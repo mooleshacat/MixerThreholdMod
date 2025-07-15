@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using MelonLoader;
 using MelonLoader.Utils;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
@@ -71,7 +72,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 if (_initialized && _directoryInfo != null)
                 {
-                    Main.logger?.Msg(2, "[DIR-RESOLVER] Directory detection already initialized - returning cached results");
+                    Main.logger?.Msg(2, DIRECTORY_RESOLVER_PREFIX + " Directory detection already initialized - returning cached results");
                     return _directoryInfo;
                 }
             }
@@ -81,7 +82,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             try
             {
-                Main.logger?.Msg(1, "[DIR-RESOLVER] 🚀 Starting GAME-BASED directory detection (ultra-fast)...");
+                Main.logger?.Msg(1, DIRECTORY_RESOLVER_PREFIX + " 🚀 Starting GAME-BASED directory detection (ultra-fast)...");
                 diagnostics.StartOperation("Game-Based Directory Detection");
 
                 _directoryInfo = new GameDirectoryInfo();
@@ -117,7 +118,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 if (detectionError != null)
                 {
-                    Main.logger?.Err(string.Format("[DIR-RESOLVER] CRASH PREVENTION: Game-based detection failed: {0}", detectionError.Message));
+                    Main.logger?.Err(string.Format(DIRECTORY_RESOLVER_PREFIX + " CRASH PREVENTION: Game-based detection failed: {0}", detectionError.Message));
                 }
 
                 diagnostics.LogSummary("Game-Based Directory Detection");
@@ -135,7 +136,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             try
             {
-                Main.logger?.Msg(2, "[DIR-RESOLVER] 🎮 Detecting game installation via Unity Application.dataPath...");
+                Main.logger?.Msg(2, DIRECTORY_RESOLVER_PREFIX + " 🎮 Detecting game installation via Unity Application.dataPath...");
 
                 // Strategy 1: Use Unity's Application.dataPath (most reliable)
                 // dnSpy confirmed: LoadManager.Bananas() uses this exact pattern
@@ -151,24 +152,24 @@ namespace MixerThreholdMod_1_0_0.Helpers
                             info.GameInstallDirectory = gameDirectory.FullName;
                             info.GameDirectoryFound = true;
 
-                            Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Game installation (Unity API): {0}", info.GameInstallDirectory));
+                            Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Game installation (Unity API): {0}", info.GameInstallDirectory));
 
                             // Verify it's actually the game by checking for key files
                             var gameExe = Path.Combine(info.GameInstallDirectory, "Schedule I.exe");
                             if (File.Exists(gameExe))
                             {
-                                Main.logger?.Msg(2, "[DIR-RESOLVER] ✅ Game executable verified");
+                                Main.logger?.Msg(2, DIRECTORY_RESOLVER_PREFIX + " ✅ Game executable verified");
                             }
                             else
                             {
-                                Main.logger?.Warn(2, "[DIR-RESOLVER] ⚠️ Game executable not found, but path detected");
+                                Main.logger?.Warn(2, DIRECTORY_RESOLVER_PREFIX + " ⚠️ Game executable not found, but path detected");
                             }
                         }
                     }
                 }
                 catch (Exception unityEx)
                 {
-                    Main.logger?.Warn(1, string.Format("[DIR-RESOLVER] Unity Application.dataPath failed: {0}", unityEx.Message));
+                    Main.logger?.Warn(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " Unity Application.dataPath failed: {0}", unityEx.Message));
                 }
 
                 // Strategy 2: Use MelonLoader's game root (fallback)
@@ -182,12 +183,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
                             info.GameInstallDirectory = melonGameRoot;
                             info.GameDirectoryFound = true;
 
-                            Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Game installation (MelonLoader): {0}", info.GameInstallDirectory));
+                            Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Game installation (MelonLoader): {0}", info.GameInstallDirectory));
                         }
                     }
                     catch (Exception melonEx)
                     {
-                        Main.logger?.Warn(1, string.Format("[DIR-RESOLVER] MelonEnvironment.GameRootDirectory failed: {0}", melonEx.Message));
+                        Main.logger?.Warn(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " MelonEnvironment.GameRootDirectory failed: {0}", melonEx.Message));
                     }
                 }
             }
@@ -201,10 +202,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 if (gameDetectionError != null)
                 {
-                    Main.logger?.Err(string.Format("[DIR-RESOLVER] Game detection error: {0}", gameDetectionError.Message));
+                    Main.logger?.Err(string.Format(DIRECTORY_RESOLVER_PREFIX + " Game detection error: {0}", gameDetectionError.Message));
                 }
 
-                Main.logger?.Msg(2, string.Format("[DIR-RESOLVER] Game detection completed in {0:F1}ms", gameDetectionSw.Elapsed.TotalMilliseconds));
+                Main.logger?.Msg(2, string.Format(DIRECTORY_RESOLVER_PREFIX + " Game detection completed in {0:F1}ms", gameDetectionSw.Elapsed.TotalMilliseconds));
             }
         }
 
@@ -219,7 +220,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             try
             {
-                Main.logger?.Msg(2, "[DIR-RESOLVER] 👤 Detecting user data via Unity Application.persistentDataPath...");
+                Main.logger?.Msg(2, DIRECTORY_RESOLVER_PREFIX + " 👤 Detecting user data via Unity Application.persistentDataPath...");
 
                 // Strategy 1: Use Unity's Application.persistentDataPath (exactly like SaveManager)
                 // dnSpy confirmed: SaveManager.Awake() uses this exact pattern
@@ -232,7 +233,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         info.UserDataDirectory = persistentDataPath;
                         info.UserDataDirectoryFound = true;
 
-                        Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ User data directory (Unity API): {0}", info.UserDataDirectory));
+                        Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ User data directory (Unity API): {0}", info.UserDataDirectory));
 
                         // Create directory if it doesn't exist (like SaveManager does)
                         if (!Directory.Exists(info.UserDataDirectory))
@@ -240,18 +241,18 @@ namespace MixerThreholdMod_1_0_0.Helpers
                             try
                             {
                                 Directory.CreateDirectory(info.UserDataDirectory);
-                                Main.logger?.Msg(2, "[DIR-RESOLVER] ✅ Created user data directory");
+                                Main.logger?.Msg(2, DIRECTORY_RESOLVER_PREFIX + " ✅ Created user data directory");
                             }
                             catch (Exception createEx)
                             {
-                                Main.logger?.Warn(1, string.Format("[DIR-RESOLVER] Could not create user data directory: {0}", createEx.Message));
+                                Main.logger?.Warn(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " Could not create user data directory: {0}", createEx.Message));
                             }
                         }
                     }
                 }
                 catch (Exception unityEx)
                 {
-                    Main.logger?.Warn(1, string.Format("[DIR-RESOLVER] Unity Application.persistentDataPath failed: {0}", unityEx.Message));
+                    Main.logger?.Warn(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " Unity Application.persistentDataPath failed: {0}", unityEx.Message));
                 }
 
                 // Strategy 2: Use MelonLoader user data directory (fallback)
@@ -265,12 +266,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
                             info.UserDataDirectory = melonUserData;
                             info.UserDataDirectoryFound = true;
 
-                            Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ User data directory (MelonLoader): {0}", info.UserDataDirectory));
+                            Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ User data directory (MelonLoader): {0}", info.UserDataDirectory));
                         }
                     }
                     catch (Exception melonEx)
                     {
-                        Main.logger?.Warn(1, string.Format("[DIR-RESOLVER] MelonEnvironment.UserDataDirectory failed: {0}", melonEx.Message));
+                        Main.logger?.Warn(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " MelonEnvironment.UserDataDirectory failed: {0}", melonEx.Message));
                     }
                 }
             }
@@ -284,10 +285,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 if (userDataError != null)
                 {
-                    Main.logger?.Err(string.Format("[DIR-RESOLVER] User data detection error: {0}", userDataError.Message));
+                    Main.logger?.Err(string.Format(DIRECTORY_RESOLVER_PREFIX + " User data detection error: {0}", userDataError.Message));
                 }
 
-                Main.logger?.Msg(2, string.Format("[DIR-RESOLVER] User data detection completed in {0:F1}ms", userDataSw.Elapsed.TotalMilliseconds));
+                Main.logger?.Msg(2, string.Format(DIRECTORY_RESOLVER_PREFIX + " User data detection completed in {0:F1}ms", userDataSw.Elapsed.TotalMilliseconds));
             }
         }
 
@@ -302,7 +303,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             try
             {
-                Main.logger?.Msg(2, "[DIR-RESOLVER] 💾 Detecting save directories via game's SaveManager...");
+                Main.logger?.Msg(2, DIRECTORY_RESOLVER_PREFIX + " 💾 Detecting save directories via game's SaveManager...");
 
                 // Strategy 1: Access SaveManager singleton directly (IL2CPP-compatible)
                 try
@@ -333,7 +334,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                             info.SavesDirectory = playersSavePath;
                                             info.SavesDirectoryFound = true;
 
-                                            Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Saves directory (SaveManager): {0}", info.SavesDirectory));
+                                            Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Saves directory (SaveManager): {0}", info.SavesDirectory));
                                         }
                                     }
 
@@ -346,7 +347,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                         {
                                             info.IndividualSavesPath = individualSavesPath;
 
-                                            Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Individual saves path (SaveManager): {0}", info.IndividualSavesPath));
+                                            Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Individual saves path (SaveManager): {0}", info.IndividualSavesPath));
                                         }
                                     }
                                 }
@@ -356,7 +357,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
                 catch (Exception saveManagerEx)
                 {
-                    Main.logger?.Msg(3, string.Format("[DIR-RESOLVER] SaveManager access failed (normal in some game states): {0}", saveManagerEx.Message));
+                    Main.logger?.Msg(3, string.Format(DIRECTORY_RESOLVER_PREFIX + " SaveManager access failed (normal in some game states): {0}", saveManagerEx.Message));
                 }
 
                 // Strategy 2: Access LoadManager for current save path
@@ -387,7 +388,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                         {
                                             info.CurrentSavePath = currentSavePath;
 
-                                            Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Current save path (LoadManager): {0}", info.CurrentSavePath));
+                                            Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Current save path (LoadManager): {0}", info.CurrentSavePath));
                                         }
                                     }
                                 }
@@ -397,7 +398,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
                 catch (Exception loadManagerEx)
                 {
-                    Main.logger?.Msg(3, string.Format("[DIR-RESOLVER] LoadManager access failed (normal in some game states): {0}", loadManagerEx.Message));
+                    Main.logger?.Msg(3, string.Format(DIRECTORY_RESOLVER_PREFIX + " LoadManager access failed (normal in some game states): {0}", loadManagerEx.Message));
                 }
 
                 // Strategy 3: Fallback using known pattern (like SaveManager does)
@@ -409,7 +410,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         info.SavesDirectory = fallbackSavesPath;
                         info.SavesDirectoryFound = true;
 
-                        Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Saves directory (fallback pattern): {0}", info.SavesDirectory));
+                        Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Saves directory (fallback pattern): {0}", info.SavesDirectory));
                     }
                 }
             }
@@ -423,10 +424,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 if (savesError != null)
                 {
-                    Main.logger?.Err(string.Format("[DIR-RESOLVER] Saves detection error: {0}", savesError.Message));
+                    Main.logger?.Err(string.Format(DIRECTORY_RESOLVER_PREFIX + " Saves detection error: {0}", savesError.Message));
                 }
 
-                Main.logger?.Msg(2, string.Format("[DIR-RESOLVER] Saves detection completed in {0:F1}ms", savesSw.Elapsed.TotalMilliseconds));
+                Main.logger?.Msg(2, string.Format(DIRECTORY_RESOLVER_PREFIX + " Saves detection completed in {0:F1}ms", savesSw.Elapsed.TotalMilliseconds));
             }
         }
 
@@ -441,7 +442,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             try
             {
-                Main.logger?.Msg(2, "[DIR-RESOLVER] 🍈 Detecting MelonLoader directories via MelonLoader APIs...");
+                Main.logger?.Msg(2, DIRECTORY_RESOLVER_PREFIX + " 🍈 Detecting MelonLoader directories via MelonLoader APIs...");
 
                 // Strategy 1: Use MelonEnvironment for mod directory
                 try
@@ -468,24 +469,24 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                     info.MelonLoaderLogFound = true;
 
                                     var logFileInfo = new FileInfo(logFilePath);
-                                    Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ MelonLoader log: {0} ({1:F1} KB, modified: {2:yyyy-MM-dd HH:mm:ss})",
+                                    Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ MelonLoader log: {0} ({1:F1} KB, modified: {2:yyyy-MM-dd HH:mm:ss})",
                                         logFilePath, logFileInfo.Length / 1024.0, logFileInfo.LastWriteTime));
                                     break;
                                 }
                             }
 
-                            Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ MelonLoader directory: {0}", melonLoaderPath));
+                            Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ MelonLoader directory: {0}", melonLoaderPath));
 
                             if (!info.MelonLoaderLogFound)
                             {
-                                Main.logger?.Warn(1, "[DIR-RESOLVER] ⚠️ MelonLoader directory found but no log files detected");
+                                Main.logger?.Warn(1, DIRECTORY_RESOLVER_PREFIX + " ⚠️ MelonLoader directory found but no log files detected");
                             }
                         }
                     }
                 }
                 catch (Exception melonEnvEx)
                 {
-                    Main.logger?.Warn(1, string.Format("[DIR-RESOLVER] MelonEnvironment access failed: {0}", melonEnvEx.Message));
+                    Main.logger?.Warn(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " MelonEnvironment access failed: {0}", melonEnvEx.Message));
                 }
 
                 // Strategy 2: Check relative to game directory (fallback)
@@ -504,7 +505,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                             info.MelonLoaderLogFound = true;
                         }
 
-                        Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ MelonLoader found relative to game: {0}", melonLoaderPath));
+                        Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ MelonLoader found relative to game: {0}", melonLoaderPath));
                     }
                 }
             }
@@ -518,10 +519,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 if (melonError != null)
                 {
-                    Main.logger?.Err(string.Format("[DIR-RESOLVER] MelonLoader detection error: {0}", melonError.Message));
+                    Main.logger?.Err(string.Format(DIRECTORY_RESOLVER_PREFIX + " MelonLoader detection error: {0}", melonError.Message));
                 }
 
-                Main.logger?.Msg(2, string.Format("[DIR-RESOLVER] MelonLoader detection completed in {0:F1}ms", melonSw.Elapsed.TotalMilliseconds));
+                Main.logger?.Msg(2, string.Format(DIRECTORY_RESOLVER_PREFIX + " MelonLoader detection completed in {0:F1}ms", melonSw.Elapsed.TotalMilliseconds));
             }
         }
 
@@ -532,111 +533,111 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             try
             {
-                Main.logger?.Msg(1, "[DIR-RESOLVER] 📊 === GAME-BASED DIRECTORY DETECTION RESULTS ===");
-                Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] Total detection time: {0:F1}ms (ultra-fast game API approach)", totalTimeMs));
-                Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] Detection completed: {0:yyyy-MM-dd HH:mm:ss}", info.DetectionTime));
+                Main.logger?.Msg(1, DIRECTORY_RESOLVER_PREFIX + " 📊 === GAME-BASED DIRECTORY DETECTION RESULTS ===");
+                Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " Total detection time: {0:F1}ms (ultra-fast game API approach)", totalTimeMs));
+                Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " Detection completed: {0:yyyy-MM-dd HH:mm:ss}", info.DetectionTime));
 
                 // Game Installation Directory
                 if (info.GameDirectoryFound)
                 {
-                    Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Game Install (Unity API): {0}", info.GameInstallDirectory));
+                    Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Game Install (Unity API): {0}", info.GameInstallDirectory));
                 }
                 else
                 {
-                    Main.logger?.Warn(1, "[DIR-RESOLVER] ❌ Game installation directory NOT FOUND");
+                    Main.logger?.Warn(1, DIRECTORY_RESOLVER_PREFIX + " ❌ Game installation directory NOT FOUND");
                 }
 
                 // User Data Directory
                 if (info.UserDataDirectoryFound)
                 {
-                    Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ User Data (Unity API): {0}", info.UserDataDirectory));
+                    Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ User Data (Unity API): {0}", info.UserDataDirectory));
                 }
                 else
                 {
-                    Main.logger?.Warn(1, "[DIR-RESOLVER] ❌ User data directory NOT FOUND");
+                    Main.logger?.Warn(1, DIRECTORY_RESOLVER_PREFIX + " ❌ User data directory NOT FOUND");
                 }
 
                 // Save Directories
                 if (info.SavesDirectoryFound)
                 {
-                    Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Saves Directory (SaveManager): {0}", info.SavesDirectory));
+                    Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Saves Directory (SaveManager): {0}", info.SavesDirectory));
 
                     if (!string.IsNullOrEmpty(info.IndividualSavesPath))
                     {
-                        Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Individual Saves (SaveManager): {0}", info.IndividualSavesPath));
+                        Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Individual Saves (SaveManager): {0}", info.IndividualSavesPath));
                     }
 
                     if (!string.IsNullOrEmpty(info.CurrentSavePath))
                     {
-                        Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ Current Save (LoadManager): {0}", info.CurrentSavePath));
+                        Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ Current Save (LoadManager): {0}", info.CurrentSavePath));
                     }
                 }
                 else
                 {
-                    Main.logger?.Warn(1, "[DIR-RESOLVER] ❌ Save directories NOT FOUND");
+                    Main.logger?.Warn(1, DIRECTORY_RESOLVER_PREFIX + " ❌ Save directories NOT FOUND");
                 }
 
                 // MelonLoader Directory and Logs
                 if (!string.IsNullOrEmpty(info.MelonLoaderDirectory))
                 {
-                    Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ MelonLoader: {0}", info.MelonLoaderDirectory));
+                    Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ MelonLoader: {0}", info.MelonLoaderDirectory));
 
                     if (info.MelonLoaderLogFound)
                     {
-                        Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] ✅ ML Log File: {0}", info.MelonLoaderLogFile));
+                        Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " ✅ ML Log File: {0}", info.MelonLoaderLogFile));
 
                         // Log file size and modification time for diagnostic purposes
                         try
                         {
                             var logFileInfo = new FileInfo(info.MelonLoaderLogFile);
-                            Main.logger?.Msg(2, string.Format("[DIR-RESOLVER] Log file: {0:F1} KB, modified: {1:yyyy-MM-dd HH:mm:ss}",
+                            Main.logger?.Msg(2, string.Format(DIRECTORY_RESOLVER_PREFIX + " Log file: {0:F1} KB, modified: {1:yyyy-MM-dd HH:mm:ss}",
                                 logFileInfo.Length / 1024.0, logFileInfo.LastWriteTime));
                         }
                         catch (Exception logInfoEx)
                         {
-                            Main.logger?.Warn(2, string.Format("[DIR-RESOLVER] Could not get log file info: {0}", logInfoEx.Message));
+                            Main.logger?.Warn(2, string.Format(DIRECTORY_RESOLVER_PREFIX + " Could not get log file info: {0}", logInfoEx.Message));
                         }
                     }
                     else
                     {
-                        Main.logger?.Warn(1, "[DIR-RESOLVER] ⚠️ MelonLoader directory found but no log files detected");
+                        Main.logger?.Warn(1, DIRECTORY_RESOLVER_PREFIX + " ⚠️ MelonLoader directory found but no log files detected");
                     }
                 }
                 else
                 {
-                    Main.logger?.Warn(1, "[DIR-RESOLVER] ❌ MelonLoader directory NOT FOUND");
+                    Main.logger?.Warn(1, DIRECTORY_RESOLVER_PREFIX + " ❌ MelonLoader directory NOT FOUND");
                 }
 
-                Main.logger?.Msg(1, "[DIR-RESOLVER] ==========================================");
+                Main.logger?.Msg(1, DIRECTORY_RESOLVER_PREFIX + " ==========================================");
 
                 // Summary for user
                 var foundCount = (info.GameDirectoryFound ? 1 : 0) + (info.UserDataDirectoryFound ? 1 : 0) +
                                 (info.SavesDirectoryFound ? 1 : 0) + (info.MelonLoaderLogFound ? 1 : 0);
-                Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] 📈 Detection Summary: {0}/4 key directories found", foundCount));
+                Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " 📈 Detection Summary: {0}/4 key directories found", foundCount));
 
                 if (foundCount == 4)
                 {
-                    Main.logger?.Msg(1, "[DIR-RESOLVER] 🎉 All directories detected using game APIs - PERFECT!");
+                    Main.logger?.Msg(1, DIRECTORY_RESOLVER_PREFIX + " 🎉 All directories detected using game APIs - PERFECT!");
                 }
                 else if (foundCount >= 3)
                 {
-                    Main.logger?.Msg(1, "[DIR-RESOLVER] ✅ Most directories found via game APIs - excellent results!");
+                    Main.logger?.Msg(1, DIRECTORY_RESOLVER_PREFIX + " ✅ Most directories found via game APIs - excellent results!");
                 }
                 else if (foundCount >= 2)
                 {
-                    Main.logger?.Msg(1, "[DIR-RESOLVER] ✅ Core directories found via game APIs - mod should function normally");
+                    Main.logger?.Msg(1, DIRECTORY_RESOLVER_PREFIX + " ✅ Core directories found via game APIs - mod should function normally");
                 }
                 else
                 {
-                    Main.logger?.Warn(1, "[DIR-RESOLVER] ⚠️ Limited directory detection - some features may not work optimally");
+                    Main.logger?.Warn(1, DIRECTORY_RESOLVER_PREFIX + " ⚠️ Limited directory detection - some features may not work optimally");
                 }
 
                 // Performance comparison note
-                Main.logger?.Msg(1, string.Format("[DIR-RESOLVER] 🚀 Performance: {0:F1}ms (vs 20+ seconds for filesystem recursion)", totalTimeMs));
+                Main.logger?.Msg(1, string.Format(DIRECTORY_RESOLVER_PREFIX + " 🚀 Performance: {0:F1}ms (vs 20+ seconds for filesystem recursion)", totalTimeMs));
             }
             catch (Exception ex)
             {
-                Main.logger?.Err(string.Format("[DIR-RESOLVER] Error logging detection results: {0}", ex.Message));
+                Main.logger?.Err(string.Format(DIRECTORY_RESOLVER_PREFIX + " Error logging detection results: {0}", ex.Message));
             }
         }
 
@@ -664,7 +665,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 _directoryInfo = null;
             }
 
-            Main.logger?.Msg(1, "[DIR-RESOLVER] 🔄 Forcing game-based directory detection refresh...");
+            Main.logger?.Msg(1, DIRECTORY_RESOLVER_PREFIX + " 🔄 Forcing game-based directory detection refresh...");
             return await InitializeDirectoryDetectionAsync();
         }
     }

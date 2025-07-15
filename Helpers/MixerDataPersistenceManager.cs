@@ -144,7 +144,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     InitializeIntegrityTracking();
 
                     _isInitialized = true;
-                    Main.logger.Msg(1, "[PERSISTENCE] MixerDataPersistenceManager: Initialization completed successfully");
+                    Main.logger.Msg(1, PERSISTENCE_PREFIX + " MixerDataPersistenceManager: Initialization completed successfully");
                 }
             }
             catch (Exception ex)
@@ -154,7 +154,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (initError != null)
             {
-                Main.logger.Err(string.Format("[PERSISTENCE] MixerDataPersistenceManager CRASH PREVENTION: Initialization failed: {0}\nStackTrace: {1}",
+                Main.logger.Err(string.Format(PERSISTENCE_PREFIX + " MixerDataPersistenceManager CRASH PREVENTION: Initialization failed: {0}\nStackTrace: {1}",
                     initError.Message, initError.StackTrace));
                 // Don't re-throw - allow fallback to basic persistence
             }
@@ -171,14 +171,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             if (mixerData == null || mixerData.Count == 0)
             {
-                Main.logger.Warn(1, "[PERSISTENCE] PersistMixerDataAsync: No data to persist");
+                Main.logger.Warn(1, PERSISTENCE_PREFIX + " PersistMixerDataAsync: No data to persist");
                 return false;
             }
 
             // Check cooldown period
             if (DateTime.Now - _lastPersistenceTime < PERSISTENCE_COOLDOWN)
             {
-                Main.logger.Msg(3, "[PERSISTENCE] PersistMixerDataAsync: Skipping due to cooldown");
+                Main.logger.Msg(3, PERSISTENCE_PREFIX + " PersistMixerDataAsync: Skipping due to cooldown");
                 return true; // Not an error - just throttled
             }
 
@@ -196,7 +196,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (!canProceed)
             {
-                Main.logger.Msg(3, "[PERSISTENCE] PersistMixerDataAsync: Persistence already in progress");
+                Main.logger.Msg(3, PERSISTENCE_PREFIX + " PersistMixerDataAsync: Persistence already in progress");
                 return false;
             }
 
@@ -206,7 +206,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             try
             {
-                Main.logger.Msg(2, string.Format("[PERSISTENCE] PersistMixerDataAsync: Starting persistence operation for {0} mixers", mixerData.Count));
+                Main.logger.Msg(2, string.Format(PERSISTENCE_PREFIX + " PersistMixerDataAsync: Starting persistence operation for {0} mixers", mixerData.Count));
 
                 // Ensure initialization
                 if (!_isInitialized)
@@ -218,7 +218,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 var validationResult = await ValidateMixerDataAsync(mixerData, cancellationToken).ConfigureAwait(false);
                 if (!validationResult.IsValid)
                 {
-                    Main.logger.Warn(1, string.Format("[PERSISTENCE] PersistMixerDataAsync: Data validation failed: {0}", validationResult.ErrorMessage));
+                    Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " PersistMixerDataAsync: Data validation failed: {0}", validationResult.ErrorMessage));
                     return false;
                 }
 
@@ -241,17 +241,17 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         _totalPersistenceTime = _totalPersistenceTime.Add(operationTime);
                     }
 
-                    Main.logger.Msg(1, string.Format("[PERSISTENCE] PersistMixerDataAsync: Successfully persisted {0} mixer values in {1:F3}s",
+                    Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " PersistMixerDataAsync: Successfully persisted {0} mixer values in {1:F3}s",
                         mixerData.Count, operationTime.TotalSeconds));
                 }
                 else
                 {
-                    Main.logger.Err("[PERSISTENCE] PersistMixerDataAsync: Atomic persistence operation failed");
+                    Main.logger.Err(PERSISTENCE_PREFIX + " PersistMixerDataAsync: Atomic persistence operation failed");
                 }
             }
             catch (OperationCanceledException)
             {
-                Main.logger.Warn(1, "[PERSISTENCE] PersistMixerDataAsync: Operation was cancelled");
+                Main.logger.Warn(1, PERSISTENCE_PREFIX + " PersistMixerDataAsync: Operation was cancelled");
                 success = false;
             }
             catch (Exception ex)
@@ -269,7 +269,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (persistenceError != null)
             {
-                Main.logger.Err(string.Format("[PERSISTENCE] PersistMixerDataAsync CRASH PREVENTION: Persistence failed: {0}\nStackTrace: {1}",
+                Main.logger.Err(string.Format(PERSISTENCE_PREFIX + " PersistMixerDataAsync CRASH PREVENTION: Persistence failed: {0}\nStackTrace: {1}",
                     persistenceError.Message, persistenceError.StackTrace));
             }
 
@@ -290,7 +290,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             try
             {
-                Main.logger.Msg(2, "[PERSISTENCE] LoadMixerDataAsync: Starting load operation");
+                Main.logger.Msg(2, PERSISTENCE_PREFIX + " LoadMixerDataAsync: Starting load operation");
 
                 // Ensure initialization
                 if (!_isInitialized)
@@ -303,25 +303,25 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 if (primaryResult.Success && primaryResult.Data.Count > 0)
                 {
                     result = primaryResult.Data;
-                    Main.logger.Msg(2, string.Format("[PERSISTENCE] LoadMixerDataAsync: Successfully loaded {0} mixers from primary source", result.Count));
+                    Main.logger.Msg(2, string.Format(PERSISTENCE_PREFIX + " LoadMixerDataAsync: Successfully loaded {0} mixers from primary source", result.Count));
                 }
                 else
                 {
                     // Fallback to backup sources
-                    Main.logger.Warn(1, "[PERSISTENCE] LoadMixerDataAsync: Primary source failed, trying backup sources");
+                    Main.logger.Warn(1, PERSISTENCE_PREFIX + " LoadMixerDataAsync: Primary source failed, trying backup sources");
 
                     var backupResult = await LoadFromBackupSourcesAsync(cancellationToken).ConfigureAwait(false);
                     if (backupResult.Success && backupResult.Data.Count > 0)
                     {
                         result = backupResult.Data;
-                        Main.logger.Msg(1, string.Format("[PERSISTENCE] LoadMixerDataAsync: Successfully recovered {0} mixers from backup", result.Count));
+                        Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " LoadMixerDataAsync: Successfully recovered {0} mixers from backup", result.Count));
 
                         // Attempt to restore primary source from backup
                         await RestorePrimaryFromBackupAsync(result, cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
-                        Main.logger.Warn(1, "[PERSISTENCE] LoadMixerDataAsync: All data sources failed, starting with empty data");
+                        Main.logger.Warn(1, PERSISTENCE_PREFIX + " LoadMixerDataAsync: All data sources failed, starting with empty data");
                     }
                 }
 
@@ -331,7 +331,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     var validationResult = await ValidateMixerDataAsync(result, cancellationToken).ConfigureAwait(false);
                     if (!validationResult.IsValid)
                     {
-                        Main.logger.Warn(1, string.Format("[PERSISTENCE] LoadMixerDataAsync: Loaded data validation failed: {0}", validationResult.ErrorMessage));
+                        Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " LoadMixerDataAsync: Loaded data validation failed: {0}", validationResult.ErrorMessage));
                         // Don't clear the data - it might still be usable
                     }
                 }
@@ -344,11 +344,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     _totalLoadTime = _totalLoadTime.Add(operationTime);
                 }
 
-                Main.logger.Msg(2, string.Format("[PERSISTENCE] LoadMixerDataAsync: Load operation completed in {0:F3}s", operationTime.TotalSeconds));
+                Main.logger.Msg(2, string.Format(PERSISTENCE_PREFIX + " LoadMixerDataAsync: Load operation completed in {0:F3}s", operationTime.TotalSeconds));
             }
             catch (OperationCanceledException)
             {
-                Main.logger.Warn(1, "[PERSISTENCE] LoadMixerDataAsync: Operation was cancelled");
+                Main.logger.Warn(1, PERSISTENCE_PREFIX + " LoadMixerDataAsync: Operation was cancelled");
             }
             catch (Exception ex)
             {
@@ -357,7 +357,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (loadError != null)
             {
-                Main.logger.Err(string.Format("[PERSISTENCE] LoadMixerDataAsync CRASH PREVENTION: Load failed but continuing: {0}\nStackTrace: {1}",
+                Main.logger.Err(string.Format(PERSISTENCE_PREFIX + " LoadMixerDataAsync CRASH PREVENTION: Load failed but continuing: {0}\nStackTrace: {1}",
                     loadError.Message, loadError.StackTrace));
                 // Return empty dictionary instead of crashing
             }
@@ -403,14 +403,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                         if (kvp.Value < 0f || kvp.Value > 100f)
                         {
-                            Main.logger.Warn(1, string.Format("[PERSISTENCE] ValidateMixerDataAsync: Mixer {0} has unusual value: {1}", kvp.Key, kvp.Value));
+                            Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " ValidateMixerDataAsync: Mixer {0} has unusual value: {1}", kvp.Key, kvp.Value));
                         }
                     }
 
                     // Check for data corruption patterns
                     if (mixerData.Count > 1000)
                     {
-                        Main.logger.Warn(1, string.Format("[PERSISTENCE] ValidateMixerDataAsync: Unusually large dataset: {0} mixers", mixerData.Count));
+                        Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " ValidateMixerDataAsync: Unusually large dataset: {0} mixers", mixerData.Count));
                     }
 
                     // Update validation metrics
@@ -438,7 +438,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 if (string.IsNullOrEmpty(Main.CurrentSavePath))
                 {
-                    Main.logger.Warn(1, "[PERSISTENCE] PerformAtomicPersistenceAsync: No save path available");
+                    Main.logger.Warn(1, PERSISTENCE_PREFIX + " PerformAtomicPersistenceAsync: No save path available");
                     return false;
                 }
 
@@ -465,14 +465,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 // Verify the temporary file was written correctly
                 if (!File.Exists(tempFile))
                 {
-                    Main.logger.Err("[PERSISTENCE] PerformAtomicPersistenceAsync: Temporary file was not created");
+                    Main.logger.Err(PERSISTENCE_PREFIX + " PerformAtomicPersistenceAsync: Temporary file was not created");
                     return false;
                 }
 
                 var tempFileInfo = new FileInfo(tempFile);
                 if (tempFileInfo.Length == 0)
                 {
-                    Main.logger.Err("[PERSISTENCE] PerformAtomicPersistenceAsync: Temporary file is empty");
+                    Main.logger.Err(PERSISTENCE_PREFIX + " PerformAtomicPersistenceAsync: Temporary file is empty");
                     File.Delete(tempFile);
                     return false;
                 }
@@ -488,11 +488,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 // Verify the final file exists and has content
                 if (!File.Exists(targetFile))
                 {
-                    Main.logger.Err("[PERSISTENCE] PerformAtomicPersistenceAsync: Target file was not created after move");
+                    Main.logger.Err(PERSISTENCE_PREFIX + " PerformAtomicPersistenceAsync: Target file was not created after move");
                     return false;
                 }
 
-                Main.logger.Msg(3, string.Format("[PERSISTENCE] PerformAtomicPersistenceAsync: Successfully wrote {0} bytes to {1}",
+                Main.logger.Msg(3, string.Format(PERSISTENCE_PREFIX + " PerformAtomicPersistenceAsync: Successfully wrote {0} bytes to {1}",
                     new FileInfo(targetFile).Length, targetFile));
 
                 return true;
@@ -511,7 +511,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
                 catch (Exception cleanupEx)
                 {
-                    Main.logger.Warn(1, string.Format("[PERSISTENCE] PerformAtomicPersistenceAsync: Cleanup failed: {0}", cleanupEx.Message));
+                    Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " PerformAtomicPersistenceAsync: Cleanup failed: {0}", cleanupEx.Message));
                 }
 
                 return false;
@@ -520,7 +520,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 if (atomicError != null)
                 {
-                    Main.logger.Err(string.Format("[PERSISTENCE] PerformAtomicPersistenceAsync CRASH PREVENTION: Atomic operation failed: {0}",
+                    Main.logger.Err(string.Format(PERSISTENCE_PREFIX + " PerformAtomicPersistenceAsync CRASH PREVENTION: Atomic operation failed: {0}",
                         atomicError.Message));
                 }
             }
@@ -589,14 +589,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data[MIXER_VALUES_KEY].ToString());
                         if (mixerValues != null && mixerValues.Count > 0)
                         {
-                            Main.logger.Msg(1, "[PERSISTENCE] LoadFromBackupSourcesAsync: Recovered data from emergency backup");
+                            Main.logger.Msg(1, PERSISTENCE_PREFIX + " LoadFromBackupSourcesAsync: Recovered data from emergency backup");
                             return new LoadResult { Success = true, Data = mixerValues, ErrorMessage = null };
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Main.logger.Warn(1, string.Format("[PERSISTENCE] LoadFromBackupSourcesAsync: Emergency backup failed: {0}", ex.Message));
+                    Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " LoadFromBackupSourcesAsync: Emergency backup failed: {0}", ex.Message));
                 }
             }
 
@@ -623,20 +623,20 @@ namespace MixerThreholdMod_1_0_0.Helpers
                                     var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data[MIXER_VALUES_KEY].ToString());
                                     if (mixerValues != null && mixerValues.Count > 0)
                                     {
-                                        Main.logger.Msg(1, string.Format("[PERSISTENCE] LoadFromBackupSourcesAsync: Recovered data from backup: {0}", Path.GetFileName(backupFile)));
+                                        Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " LoadFromBackupSourcesAsync: Recovered data from backup: {0}", Path.GetFileName(backupFile)));
                                         return new LoadResult { Success = true, Data = mixerValues, ErrorMessage = null };
                                     }
                                 }
                             }
                             catch (Exception ex)
                             {
-                                Main.logger.Warn(1, string.Format("[PERSISTENCE] LoadFromBackupSourcesAsync: Backup file {0} failed: {1}", Path.GetFileName(backupFile), ex.Message));
+                                Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " LoadFromBackupSourcesAsync: Backup file {0} failed: {1}", Path.GetFileName(backupFile), ex.Message));
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Main.logger.Warn(1, string.Format("[PERSISTENCE] LoadFromBackupSourcesAsync: Backup directory scan failed: {0}", ex.Message));
+                        Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " LoadFromBackupSourcesAsync: Backup directory scan failed: {0}", ex.Message));
                     }
                 }
             }
@@ -670,7 +670,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, string.Format("[PERSISTENCE] EnsureDirectoryStructure: Error: {0}", ex.Message));
+                Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " EnsureDirectoryStructure: Error: {0}", ex.Message));
             }
         }
 
@@ -681,7 +681,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             try
             {
-                Main.logger.Msg(3, "[PERSISTENCE] ValidateExistingDataFiles: Validating existing data files");
+                Main.logger.Msg(3, PERSISTENCE_PREFIX + " ValidateExistingDataFiles: Validating existing data files");
 
                 // Check primary save file
                 if (!string.IsNullOrEmpty(Main.CurrentSavePath))
@@ -696,7 +696,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, string.Format("[PERSISTENCE] ValidateExistingDataFiles: Error: {0}", ex.Message));
+                Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " ValidateExistingDataFiles: Error: {0}", ex.Message));
             }
         }
 
@@ -709,14 +709,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 if (!File.Exists(filePath))
                 {
-                    Main.logger.Msg(3, string.Format("[PERSISTENCE] ValidateDataFile: {0} does not exist: {1}", fileDescription, filePath));
+                    Main.logger.Msg(3, string.Format(PERSISTENCE_PREFIX + " ValidateDataFile: {0} does not exist: {1}", fileDescription, filePath));
                     return;
                 }
 
                 var fileInfo = new FileInfo(filePath);
                 if (fileInfo.Length == 0)
                 {
-                    Main.logger.Warn(1, string.Format("[PERSISTENCE] ValidateDataFile: {0} is empty: {1}", fileDescription, filePath));
+                    Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " ValidateDataFile: {0} is empty: {1}", fileDescription, filePath));
                     return;
                 }
 
@@ -725,21 +725,21 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
                 if (data == null)
                 {
-                    Main.logger.Warn(1, string.Format("[PERSISTENCE] ValidateDataFile: {0} contains invalid JSON: {1}", fileDescription, filePath));
+                    Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " ValidateDataFile: {0} contains invalid JSON: {1}", fileDescription, filePath));
                     return;
                 }
 
                 if (!data.ContainsKey(MIXER_VALUES_KEY))
                 {
-                    Main.logger.Warn(1, string.Format("[PERSISTENCE] ValidateDataFile: {0} missing mixer values key: {1}", fileDescription, filePath));
+                    Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " ValidateDataFile: {0} missing mixer values key: {1}", fileDescription, filePath));
                     return;
                 }
 
-                Main.logger.Msg(3, string.Format("[PERSISTENCE] ValidateDataFile: {0} validation passed: {1}", fileDescription, filePath));
+                Main.logger.Msg(3, string.Format(PERSISTENCE_PREFIX + " ValidateDataFile: {0} validation passed: {1}", fileDescription, filePath));
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, string.Format("[PERSISTENCE] ValidateDataFile: {0} validation failed: {1} - {2}", fileDescription, filePath, ex.Message));
+                Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " ValidateDataFile: {0} validation failed: {1} - {2}", fileDescription, filePath, ex.Message));
             }
         }
 
@@ -752,11 +752,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 _dataIntegrityHashes.Clear();
                 _lastValidationTimes.Clear();
-                Main.logger.Msg(3, "[PERSISTENCE] InitializeIntegrityTracking: Integrity tracking initialized");
+                Main.logger.Msg(3, PERSISTENCE_PREFIX + " InitializeIntegrityTracking: Integrity tracking initialized");
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, string.Format("[PERSISTENCE] InitializeIntegrityTracking: Error: {0}", ex.Message));
+                Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " InitializeIntegrityTracking: Error: {0}", ex.Message));
             }
         }
 
@@ -778,11 +778,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     _lastValidationTimes.TryAdd(key, DateTime.Now);
                     _lastValidationTimes.TryUpdate(key, DateTime.Now, _lastValidationTimes.GetValueOrDefault(key, DateTime.MinValue));
 
-                    Main.logger.Msg(3, string.Format("[PERSISTENCE] UpdateIntegrityTrackingAsync: Updated integrity hash: {0}", dataHash.Substring(0, 8)));
+                    Main.logger.Msg(3, string.Format(PERSISTENCE_PREFIX + " UpdateIntegrityTrackingAsync: Updated integrity hash: {0}", dataHash.Substring(0, 8)));
                 }
                 catch (Exception ex)
                 {
-                    Main.logger.Warn(1, string.Format("[PERSISTENCE] UpdateIntegrityTrackingAsync: Error: {0}", ex.Message));
+                    Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " UpdateIntegrityTrackingAsync: Error: {0}", ex.Message));
                 }
             }, cancellationToken).ConfigureAwait(false);
         }
@@ -818,14 +818,14 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                     File.Copy(sourceFile, backupFile, overwrite: false);
 
-                    Main.logger.Msg(3, string.Format("[PERSISTENCE] CreateDataBackupAsync: Created backup: {0}", Path.GetFileName(backupFile)));
+                    Main.logger.Msg(3, string.Format(PERSISTENCE_PREFIX + " CreateDataBackupAsync: Created backup: {0}", Path.GetFileName(backupFile)));
 
                     // Cleanup old backups
                     CleanupOldBackups(backupDir);
                 }
                 catch (Exception ex)
                 {
-                    Main.logger.Warn(1, string.Format("[PERSISTENCE] CreateDataBackupAsync: Error: {0}", ex.Message));
+                    Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " CreateDataBackupAsync: Error: {0}", ex.Message));
                 }
             }, cancellationToken).ConfigureAwait(false);
         }
@@ -837,21 +837,21 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             try
             {
-                Main.logger.Msg(1, "[PERSISTENCE] RestorePrimaryFromBackupAsync: Attempting to restore primary data source");
+                Main.logger.Msg(1, PERSISTENCE_PREFIX + " RestorePrimaryFromBackupAsync: Attempting to restore primary data source");
 
                 bool success = await PerformAtomicPersistenceAsync(recoveredData, cancellationToken).ConfigureAwait(false);
                 if (success)
                 {
-                    Main.logger.Msg(1, "[PERSISTENCE] RestorePrimaryFromBackupAsync: Successfully restored primary data source");
+                    Main.logger.Msg(1, PERSISTENCE_PREFIX + " RestorePrimaryFromBackupAsync: Successfully restored primary data source");
                 }
                 else
                 {
-                    Main.logger.Warn(1, "[PERSISTENCE] RestorePrimaryFromBackupAsync: Failed to restore primary data source");
+                    Main.logger.Warn(1, PERSISTENCE_PREFIX + " RestorePrimaryFromBackupAsync: Failed to restore primary data source");
                 }
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, string.Format("[PERSISTENCE] RestorePrimaryFromBackupAsync: Error: {0}", ex.Message));
+                Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " RestorePrimaryFromBackupAsync: Error: {0}", ex.Message));
             }
         }
 
@@ -876,11 +876,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     File.Delete(oldBackup);
                 }
 
-                Main.logger.Msg(3, string.Format("[PERSISTENCE] CleanupOldBackups: Cleaned up {0} old backup files", oldBackups.Count));
+                Main.logger.Msg(3, string.Format(PERSISTENCE_PREFIX + " CleanupOldBackups: Cleaned up {0} old backup files", oldBackups.Count));
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, string.Format("[PERSISTENCE] CleanupOldBackups: Error: {0}", ex.Message));
+                Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " CleanupOldBackups: Error: {0}", ex.Message));
             }
         }
 
@@ -902,7 +902,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             }
             catch (Exception ex)
             {
-                Main.logger.Warn(1, string.Format("[PERSISTENCE] ComputeDataHash: Error: {0}", ex.Message));
+                Main.logger.Warn(1, string.Format(PERSISTENCE_PREFIX + " ComputeDataHash: Error: {0}", ex.Message));
                 return string.Format("ERROR_{0}", DateTime.Now.Ticks);
             }
         }
@@ -918,26 +918,26 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 lock (_persistenceLock)
                 {
-                    Main.logger.Msg(1, "[PERSISTENCE] ===== PERSISTENCE PERFORMANCE METRICS =====");
-                    Main.logger.Msg(1, string.Format("[PERSISTENCE] Total persistence operations: {0}", _totalPersistenceOperations));
-                    Main.logger.Msg(1, string.Format("[PERSISTENCE] Total load operations: {0}", _totalLoadOperations));
-                    Main.logger.Msg(1, string.Format("[PERSISTENCE] Total validation operations: {0}", _totalValidationOperations));
+                    Main.logger.Msg(1, PERSISTENCE_PREFIX + " ===== PERSISTENCE PERFORMANCE METRICS =====");
+                    Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " Total persistence operations: {0}", _totalPersistenceOperations));
+                    Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " Total load operations: {0}", _totalLoadOperations));
+                    Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " Total validation operations: {0}", _totalValidationOperations));
 
                     if (_totalPersistenceOperations > 0)
                     {
                         double avgPersistenceTime = _totalPersistenceTime.TotalSeconds / _totalPersistenceOperations;
-                        Main.logger.Msg(1, string.Format("[PERSISTENCE] Average persistence time: {0:F3}s", avgPersistenceTime));
+                        Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " Average persistence time: {0:F3}s", avgPersistenceTime));
                     }
 
                     if (_totalLoadOperations > 0)
                     {
                         double avgLoadTime = _totalLoadTime.TotalSeconds / _totalLoadOperations;
-                        Main.logger.Msg(1, string.Format("[PERSISTENCE] Average load time: {0:F3}s", avgLoadTime));
+                        Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " Average load time: {0:F3}s", avgLoadTime));
                     }
 
-                    Main.logger.Msg(1, string.Format("[PERSISTENCE] Integrity hashes tracked: {0}", _dataIntegrityHashes.Count));
-                    Main.logger.Msg(1, string.Format("[PERSISTENCE] Initialization status: {0}", _isInitialized));
-                    Main.logger.Msg(1, "[PERSISTENCE] ==========================================");
+                    Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " Integrity hashes tracked: {0}", _dataIntegrityHashes.Count));
+                    Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " Initialization status: {0}", _isInitialized));
+                    Main.logger.Msg(1, PERSISTENCE_PREFIX + " ==========================================");
                 }
             }
             catch (Exception ex)
@@ -947,7 +947,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
             if (metricsError != null)
             {
-                Main.logger.Err(string.Format("[PERSISTENCE] LogPerformanceMetrics CRASH PREVENTION: Error: {0}", metricsError.Message));
+                Main.logger.Err(string.Format(PERSISTENCE_PREFIX + " LogPerformanceMetrics CRASH PREVENTION: Error: {0}", metricsError.Message));
             }
         }
 
@@ -984,11 +984,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 string json = JsonConvert.SerializeObject(saveData, Formatting.Indented);
                 File.WriteAllText(emergencyFile, json);
 
-                Main.logger.Msg(1, string.Format("[PERSISTENCE] EmergencySave: Emergency save completed for {0} mixers", mixerData.Count));
+                Main.logger.Msg(1, string.Format(PERSISTENCE_PREFIX + " EmergencySave: Emergency save completed for {0} mixers", mixerData.Count));
             }
             catch (Exception ex)
             {
-                Main.logger.Err(string.Format("[PERSISTENCE] EmergencySave: Emergency save failed: {0}", ex.Message));
+                Main.logger.Err(string.Format(PERSISTENCE_PREFIX + " EmergencySave: Emergency save failed: {0}", ex.Message));
                 // Don't re-throw in emergency scenarios
             }
         }
