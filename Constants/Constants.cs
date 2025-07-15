@@ -134,5 +134,128 @@ namespace MixerThreholdMod_1_0_0.Constants
 
         /// <summary>Default delay value for operations (no delay)</summary>
         public const float DEFAULT_OPERATION_DELAY = 0f;
+
+        // ===== COMMAND NAME CONSTANTS =====
+        /// <summary>Console command for resetting mixer values</summary>
+        public const string COMMAND_RESET_MIXER_VALUES = "mixer_reset";
+
+        /// <summary>Console command for saving mixer values</summary>
+        public const string COMMAND_MIXER_SAVE = "mixer_save";
+
+        /// <summary>Console command for displaying mixer path</summary>
+        public const string COMMAND_MIXER_PATH = "mixer_path";
+
+        /// <summary>Console command for emergency save</summary>
+        public const string COMMAND_MIXER_EMERGENCY = "mixer_emergency";
+
+        /// <summary>Console command for stress testing mixer preferences saves</summary>
+        public const string COMMAND_SAVE_PREF_STRESS = "saveprefstress";
+
+        /// <summary>Console command for stress testing game saves</summary>
+        public const string COMMAND_SAVE_GAME_STRESS = "savegamestress";
+
+        /// <summary>Console command for comprehensive save monitoring</summary>
+        public const string COMMAND_SAVE_MONITOR = "savemonitor";
+
+        /// <summary>Console command for help information</summary>
+        public const string COMMAND_HELP = "help";
+
+        /// <summary>Command name for resetting mixer values (alternative)</summary>
+        public const string COMMAND_MIXER_RESET = "mixer_reset";
+
+        // ===== PARAMETER NAME CONSTANTS =====
+        /// <summary>Parameter name for timeout in milliseconds</summary>
+        public const string TIMEOUT_MS_PARAM = "timeoutMs";
+
+        /// <summary>Parameter name for cancellation token</summary>
+        public const string CANCELLATION_TOKEN_PARAM = "cancellationToken";
+
+        /// <summary>Parameter name for operation context</summary>
+        public const string OPERATION_CONTEXT_PARAM = "operationContext";
+
+        // ===== KEY NAME CONSTANTS =====
+        /// <summary>JSON key for mixer values in save data</summary>
+        public const string MIXER_VALUES_KEY = "MixerValues";
+
+        /// <summary>JSON key for save timestamp</summary>
+        public const string SAVE_TIME_KEY = "SaveTime";
+
+        /// <summary>JSON key for mod version in save data</summary>
+        public const string VERSION_KEY = "Version";
+
+        /// <summary>JSON key for mixer ID in save data</summary>
+        public const string MIXER_ID_KEY = "MixerID";
+
+        /// <summary>JSON key for threshold value in save data</summary>
+        public const string THRESHOLD_VALUE_KEY = "ThresholdValue";
+
+        // ===== DATETIME FORMAT CONSTANTS =====
+        /// <summary>Standard datetime format for save files and logging</summary>
+        public const string STANDARD_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+        /// <summary>UTC datetime format with milliseconds for precise timestamps</summary>
+        public const string UTC_DATETIME_FORMAT_WITH_MS = "yyyy-MM-dd HH:mm:ss.fff";
+
+        /// <summary>Filename-safe datetime format for backup files</summary>
+        public const string FILENAME_DATETIME_FORMAT = "yyyy-MM-dd_HH-mm-ss";
+
+        /// <summary>ISO 8601 datetime format for compatibility</summary>
+        public const string ISO_DATETIME_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffZ";
+
+        // ===== FALLBACK AND DEFAULT VALUES =====
+        /// <summary>Fallback value for null or empty commands</summary>
+        public const string NULL_COMMAND_FALLBACK = "[null_command]";
+
+        /// <summary>Fallback value for null or empty paths</summary>
+        public const string NULL_PATH_FALLBACK = "[null_path]";
+
+        /// <summary>Fallback value for null or empty strings</summary>
+        public const string NULL_STRING_FALLBACK = "[null_string]";
+
+        /// <summary>Default mixer ID when none is assigned</summary>
+        public const int DEFAULT_MIXER_ID = -1;
+
+        /// <summary>Invalid mixer ID indicator</summary>
+        public const int INVALID_MIXER_ID = -999;
+
+        // ===== ERROR HANDLING CONSTANTS =====
+        /// <summary>Maximum retry attempts for file operations</summary>
+        public const int MAX_RETRY_ATTEMPTS = 3;
+
+        /// <summary>Retry delay in milliseconds</summary>
+        public const int RETRY_DELAY_MS = 500;
+
+        /// <summary>Maximum error message length for logging</summary>
+        public const int MAX_ERROR_MESSAGE_LENGTH = 500;
+
+        // ===== SYSTEM MONITORING CONSTANTS =====
+        /// <summary>Memory leak detection threshold in MB</summary>
+        public const double MEMORY_LEAK_THRESHOLD_MB = 100.0;
+
+        /// <summary>Performance monitoring sample interval</summary>
+        public const int PERFORMANCE_SAMPLE_INTERVAL_MS = 100;
+
+        /// <summary>System health check interval in seconds</summary>
+        public const int SYSTEM_HEALTH_CHECK_INTERVAL_SECONDS = 30;
+
+        // ===== VALIDATION CONSTANTS =====
+        /// <summary>Minimum valid file size in bytes</summary>
+        public const int MIN_VALID_FILE_SIZE_BYTES = 10;
+
+        /// <summary>Maximum expected save file size in bytes (1MB)</summary>
+        public const int MAX_EXPECTED_SAVE_FILE_SIZE_BYTES = 1048576;
+
+        /// <summary>Minimum valid JSON string length</summary>
+        public const int MIN_VALID_JSON_LENGTH = 2;
+
+        // ===== THREAD SAFETY CONSTANTS =====
+        /// <summary>Thread safety lock timeout in milliseconds</summary>
+        public const int THREAD_LOCK_TIMEOUT_MS = 5000;
+
+        /// <summary>Async operation cancellation timeout in seconds</summary>
+        public const int ASYNC_CANCELLATION_TIMEOUT_SECONDS = 10;
+
+        /// <summary>Task completion timeout in milliseconds</summary>
+        public const int TASK_COMPLETION_TIMEOUT_MS = 15000;
     }
 }

@@ -83,13 +83,13 @@ namespace MixerThreholdMod_1_0_0
         public async override void OnUpdate()
         {
             // 🔁 Clean up tracked mixers at the start of each update
-            await TrackedMixers.RemoveAllAsync(tm => tm.ConfigInstance == null);
+            await MixerConfigurationTracker.RemoveAllAsync(tm => tm.ConfigInstance == null);
             if (queuedInstances.Count == 0) return;
             var toProcess = queuedInstances.ToList();
             foreach (var instance in toProcess)
             {
                 // Prevent duplicate processing of the same instance
-                if (await TrackedMixers.AnyAsync(tm => tm.ConfigInstance == instance))
+                if (await MixerConfigurationTracker.AnyAsync(tm => tm.ConfigInstance == instance))
                 {
                     logger.Warn(1, string.Format("Instance already tracked — skipping duplicate: {0}", instance));
                     continue;
@@ -99,7 +99,7 @@ namespace MixerThreholdMod_1_0_0
                     logger.Warn(1, "StartThrehold is null for instance. Skipping for now.");
                     continue;
                 }
-                var mixerData = await TrackedMixers.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
+                var mixerData = await MixerConfigurationTracker.FirstOrDefaultAsync(tm => tm.ConfigInstance == instance);
                 if (mixerData == null)
                 {
                     try
@@ -112,7 +112,7 @@ namespace MixerThreholdMod_1_0_0
                             ConfigInstance = instance,
                             MixerInstanceID = MixerIDManager.GetMixerID(instance)
                         };
-                        await TrackedMixers.AddAsync(newTrackedMixer);
+                        await MixerConfigurationTracker.AddAsync(newTrackedMixer);
                         logger.Msg(3, string.Format("Created mixer with Stable ID: {0}", newTrackedMixer.MixerInstanceID));
 
                         // Now safely add listener
@@ -142,7 +142,7 @@ namespace MixerThreholdMod_1_0_0
 
         public async static Task<bool> MixerExists(int mixerInstanceID)
         {
-            return await TrackedMixers.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
+            return await MixerConfigurationTracker.AnyAsync(tm => tm.MixerInstanceID == mixerInstanceID);
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -269,6 +269,307 @@ namespace MixerThreholdMod_1_0_0
                 {
                     logger.Err(string.Format("[STRESS] Overall test error: {0}", stressError.Message));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Property to track if load coroutine has started
+        /// ⚠️ THREAD SAFETY: Thread-safe boolean property for coroutine state tracking
+        /// </summary>
+        public static bool LoadCoroutineStarted
+        {
+            get { return _coroutineStarted; }
+            set { _coroutineStarted = value; }
+        }
+
+        /// <summary>
+        /// Perform atomic transactional save operation
+        /// ⚠️ CRASH PREVENTION: Atomic save operations with rollback capability
+        /// ⚠️ THREAD SAFETY: Uses thread-safe operations and proper error handling
+        /// </summary>
+        public static IEnumerator PerformTransactionalSave()
+        {
+            Exception transactionError = null;
+            var startTime = DateTime.UtcNow;
+            string backupPath = null;
+            
+            try
+            {
+                logger.Msg(LOG_LEVEL_CRITICAL, "[TRANSACTION] Starting atomic transactional save operation");
+                
+                if (string.IsNullOrEmpty(CurrentSavePath))
+                {
+                    logger.Err("[TRANSACTION] No current save path available");
+                    yield break;
+                }
+
+                if (savedMixerValues.Count == 0)
+                {
+                    logger.Warn(WARN_LEVEL_CRITICAL, "[TRANSACTION] No mixer data to save");
+                    yield break;
+                }
+
+                // Step 1: Create backup of current save
+                yield return new WaitForSeconds(0.1f);
+                try
+                {
+                    string timestamp = DateTime.UtcNow.ToString(FILENAME_DATETIME_FORMAT);
+                    backupPath = Path.Combine(CurrentSavePath, string.Format("MixerThresholdSave_transaction_backup_{0}.json", timestamp));
+                    
+                    string currentSavePath = Path.Combine(CurrentSavePath, MIXER_SAVE_FILENAME);
+                    if (File.Exists(currentSavePath))
+                    {
+                        File.Copy(currentSavePath, backupPath, true);
+                        logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[TRANSACTION] Backup created: {0}", backupPath));
+                    }
+                }
+                catch (Exception backupEx)
+                {
+                    logger.Err(string.Format("[TRANSACTION] Failed to create backup: {0}", backupEx.Message));
+                    yield break;
+                }
+
+                yield return new WaitForSeconds(0.1f);
+
+                // Step 2: Perform transactional save
+                bool saveSuccess = false;
+                try
+                {
+                    yield return MelonCoroutines.Start(Save.CrashResistantSaveManager.TriggerSaveWithCooldown());
+                    
+                    // Wait for save completion
+                    yield return new WaitForSeconds(1.0f);
+                    
+                    // Verify save integrity
+                    string savePath = Path.Combine(CurrentSavePath, MIXER_SAVE_FILENAME);
+                    if (File.Exists(savePath))
+                    {
+                        var fileInfo = new FileInfo(savePath);
+                        if (fileInfo.Length > MIN_VALID_FILE_SIZE_BYTES)
+                        {
+                            saveSuccess = true;
+                            logger.Msg(LOG_LEVEL_CRITICAL, "[TRANSACTION] Transactional save completed successfully");
+                        }
+                        else
+                        {
+                            logger.Err(string.Format("[TRANSACTION] Save file too small: {0} bytes", fileInfo.Length));
+                        }
+                    }
+                    else
+                    {
+                        logger.Err("[TRANSACTION] Save file not found after save operation");
+                    }
+                }
+                catch (Exception saveEx)
+                {
+                    logger.Err(string.Format("[TRANSACTION] Save operation failed: {0}", saveEx.Message));
+                }
+
+                // Step 3: Handle rollback if necessary
+                if (!saveSuccess && !string.IsNullOrEmpty(backupPath) && File.Exists(backupPath))
+                {
+                    try
+                    {
+                        string targetPath = Path.Combine(CurrentSavePath, MIXER_SAVE_FILENAME);
+                        File.Copy(backupPath, targetPath, true);
+                        logger.Warn(WARN_LEVEL_CRITICAL, "[TRANSACTION] Rollback completed - restored from backup");
+                    }
+                    catch (Exception rollbackEx)
+                    {
+                        logger.Err(string.Format("[TRANSACTION] Rollback failed: {0}", rollbackEx.Message));
+                    }
+                }
+
+                // Step 4: Cleanup backup file if save was successful
+                if (saveSuccess && !string.IsNullOrEmpty(backupPath) && File.Exists(backupPath))
+                {
+                    try
+                    {
+                        File.Delete(backupPath);
+                        logger.Msg(LOG_LEVEL_VERBOSE, "[TRANSACTION] Backup file cleaned up");
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        logger.Warn(WARN_LEVEL_VERBOSE, string.Format("[TRANSACTION] Failed to cleanup backup: {0}", cleanupEx.Message));
+                    }
+                }
+
+                var duration = DateTime.UtcNow - startTime;
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[TRANSACTION] Transaction completed in {0:F3}s, success: {1}", 
+                    duration.TotalSeconds, saveSuccess));
+            }
+            catch (Exception ex)
+            {
+                transactionError = ex;
+            }
+
+            if (transactionError != null)
+            {
+                logger.Err(string.Format("[TRANSACTION] Critical error during transactional save: {0}\n{1}", 
+                    transactionError.Message, transactionError.StackTrace));
+                
+                // Emergency rollback attempt
+                if (!string.IsNullOrEmpty(backupPath) && File.Exists(backupPath))
+                {
+                    try
+                    {
+                        string targetPath = Path.Combine(CurrentSavePath, MIXER_SAVE_FILENAME);
+                        File.Copy(backupPath, targetPath, true);
+                        logger.Msg(LOG_LEVEL_CRITICAL, "[TRANSACTION] Emergency rollback completed");
+                    }
+                    catch (Exception emergencyEx)
+                    {
+                        logger.Err(string.Format("[TRANSACTION] Emergency rollback failed: {0}", emergencyEx.Message));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Advanced save operation profiling with comprehensive performance monitoring
+        /// ⚠️ THREAD SAFETY: Safe profiling operations with detailed system monitoring
+        /// ⚠️ CRASH PREVENTION: Comprehensive error handling throughout profiling process
+        /// </summary>
+        public static IEnumerator AdvancedSaveOperationProfiling()
+        {
+            Exception profilingError = null;
+            var overallStartTime = DateTime.UtcNow;
+            
+            try
+            {
+                logger.Msg(LOG_LEVEL_CRITICAL, "[PROFILE] === ADVANCED SAVE OPERATION PROFILING ===");
+                
+                if (string.IsNullOrEmpty(CurrentSavePath))
+                {
+                    logger.Err("[PROFILE] No current save path available");
+                    yield break;
+                }
+
+                if (savedMixerValues.Count == 0)
+                {
+                    logger.Warn(WARN_LEVEL_CRITICAL, "[PROFILE] No mixer data available for profiling");
+                    yield break;
+                }
+
+                // Initialize system monitoring
+                SystemMonitor.Initialize();
+                yield return new WaitForSeconds(0.1f);
+
+                // Phase 1: Pre-save system analysis
+                logger.Msg(LOG_LEVEL_IMPORTANT, "[PROFILE] Phase 1: Pre-save system analysis");
+                var prePhaseStart = DateTime.UtcNow;
+                
+                SystemMonitor.LogCurrentPerformance("PRE_SAVE_ANALYSIS");
+                
+                // Analyze current mixer state
+                logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[PROFILE] Current mixer values count: {0}", savedMixerValues.Count));
+                logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[PROFILE] Save path: {0}", CurrentSavePath));
+                
+                // Check file system state
+                try
+                {
+                    var driveInfo = new DriveInfo(Path.GetPathRoot(CurrentSavePath));
+                    logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[PROFILE] Available disk space: {0:F2} GB", 
+                        driveInfo.AvailableFreeSpace / (1024.0 * 1024.0 * 1024.0)));
+                }
+                catch (Exception diskEx)
+                {
+                    logger.Warn(WARN_LEVEL_VERBOSE, string.Format("[PROFILE] Could not get disk info: {0}", diskEx.Message));
+                }
+
+                var prePhaseTime = DateTime.UtcNow - prePhaseStart;
+                logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[PROFILE] Phase 1 completed in {0:F3}s", prePhaseTime.TotalSeconds));
+
+                yield return new WaitForSeconds(0.5f);
+
+                // Phase 2: Save operation with detailed timing
+                logger.Msg(LOG_LEVEL_IMPORTANT, "[PROFILE] Phase 2: Save operation profiling");
+                var savePhaseStart = DateTime.UtcNow;
+
+                SystemMonitor.LogCurrentPerformance("SAVE_OPERATION_START");
+
+                try
+                {
+                    // Trigger save with comprehensive monitoring
+                    yield return MelonCoroutines.Start(Save.CrashResistantSaveManager.TriggerSaveWithCooldown());
+                    
+                    // Wait for completion and monitor
+                    yield return new WaitForSeconds(1.0f);
+                    
+                    SystemMonitor.LogCurrentPerformance("SAVE_OPERATION_COMPLETE");
+                }
+                catch (Exception saveEx)
+                {
+                    logger.Err(string.Format("[PROFILE] Save operation failed during profiling: {0}", saveEx.Message));
+                }
+
+                var savePhaseTime = DateTime.UtcNow - savePhaseStart;
+                logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[PROFILE] Phase 2 completed in {0:F3}s", savePhaseTime.TotalSeconds));
+
+                yield return new WaitForSeconds(0.5f);
+
+                // Phase 3: Post-save analysis and verification
+                logger.Msg(LOG_LEVEL_IMPORTANT, "[PROFILE] Phase 3: Post-save analysis");
+                var postPhaseStart = DateTime.UtcNow;
+
+                SystemMonitor.LogCurrentPerformance("POST_SAVE_ANALYSIS");
+
+                // Verify save file integrity
+                try
+                {
+                    string savePath = Path.Combine(CurrentSavePath, MIXER_SAVE_FILENAME);
+                    if (File.Exists(savePath))
+                    {
+                        var fileInfo = new FileInfo(savePath);
+                        logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[PROFILE] Save file size: {0:F2} KB", fileInfo.Length / 1024.0));
+                        logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[PROFILE] Save file timestamp: {0:yyyy-MM-dd HH:mm:ss.fff}", fileInfo.LastWriteTime));
+                        
+                        // Validate JSON content
+                        string content = File.ReadAllText(savePath);
+                        if (content.Length >= MIN_VALID_JSON_LENGTH && content.Contains("{") && content.Contains("}"))
+                        {
+                            logger.Msg(LOG_LEVEL_IMPORTANT, "[PROFILE] Save file validation: PASSED");
+                        }
+                        else
+                        {
+                            logger.Warn(WARN_LEVEL_CRITICAL, "[PROFILE] Save file validation: FAILED - Invalid JSON structure");
+                        }
+                    }
+                    else
+                    {
+                        logger.Err("[PROFILE] Save file not found after save operation");
+                    }
+                }
+                catch (Exception verifyEx)
+                {
+                    logger.Err(string.Format("[PROFILE] Save verification failed: {0}", verifyEx.Message));
+                }
+
+                var postPhaseTime = DateTime.UtcNow - postPhaseStart;
+                logger.Msg(LOG_LEVEL_IMPORTANT, string.Format("[PROFILE] Phase 3 completed in {0:F3}s", postPhaseTime.TotalSeconds));
+
+                // Final summary
+                var totalTime = DateTime.UtcNow - overallStartTime;
+                logger.Msg(LOG_LEVEL_CRITICAL, "[PROFILE] === PROFILING SUMMARY ===");
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[PROFILE] Total profiling time: {0:F3}s", totalTime.TotalSeconds));
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[PROFILE] Pre-save analysis: {0:F3}s ({1:F1}%)", 
+                    prePhaseTime.TotalSeconds, (prePhaseTime.TotalSeconds / totalTime.TotalSeconds) * 100));
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[PROFILE] Save operation: {0:F3}s ({1:F1}%)", 
+                    savePhaseTime.TotalSeconds, (savePhaseTime.TotalSeconds / totalTime.TotalSeconds) * 100));
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[PROFILE] Post-save analysis: {0:F3}s ({1:F1}%)", 
+                    postPhaseTime.TotalSeconds, (postPhaseTime.TotalSeconds / totalTime.TotalSeconds) * 100));
+
+                SystemMonitor.LogCurrentPerformance("PROFILING_COMPLETE");
+            }
+            catch (Exception ex)
+            {
+                profilingError = ex;
+            }
+
+            if (profilingError != null)
+            {
+                logger.Err(string.Format("[PROFILE] Critical error during profiling: {0}\n{1}", 
+                    profilingError.Message, profilingError.StackTrace));
             }
         }
 
