@@ -1,7 +1,7 @@
-﻿# MixerThreholdMod DevOps Tool: Release Notes Generator  
+﻿# MixerThreholdMod DevOps Tool: Release Notes Generator (NON-INTERACTIVE)
 # Creates professional release notes from git commits and closed issues
 # Integrates with changelog and generates formatted release documentation
-# Excludes: ForCopilot, ForConstants, Scripts, and Legacy directories
+# Excludes: ForCopilot, Scripts, and Legacy directories
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 if ((Split-Path $ScriptDir -Leaf) -ieq "Scripts") {
@@ -10,24 +10,40 @@ if ((Split-Path $ScriptDir -Leaf) -ieq "Scripts") {
     $ProjectRoot = $ScriptDir
 }
 
+# Check if running interactively or from another script
+$IsInteractive = [Environment]::UserInteractive -and $Host.Name -ne "ConsoleHost"
+$RunningFromScript = $MyInvocation.InvocationName -notmatch "\.ps1$"
+
+Write-Host "🕐 Release notes generation started: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 Write-Host "Generating release notes in: $ProjectRoot" -ForegroundColor DarkCyan
+Write-Host "🚀 NON-INTERACTIVE VERSION - Compatible with automation" -ForegroundColor Green
 
 # Function to get current version
 function Get-CurrentVersion {
-    $constantsFile = Join-Path $ProjectRoot "Constants\SystemConstants.cs"
+    # Try multiple locations for version constants
+    $constantsFiles = @(
+        "Constants\SystemConstants.cs",
+        "Constants\Constants.cs",
+        "Main.cs"
+    )
     
-    if (Test-Path $constantsFile) {
-        try {
-            $content = Get-Content -Path $constantsFile -Raw
-            if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
-                return $matches[1]
+    foreach ($fileName in $constantsFiles) {
+        $constantsFile = Join-Path $ProjectRoot $fileName
+        if (Test-Path $constantsFile) {
+            try {
+                $content = Get-Content -Path $constantsFile -Raw -ErrorAction Stop
+                if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
+                    Write-Host "   📋 Found version in $fileName`: $($matches[1])" -ForegroundColor Gray
+                    return $matches[1]
+                }
             }
-        }
-        catch {
-            Write-Host "⚠️  Error reading version from SystemConstants.cs" -ForegroundColor DarkYellow
+            catch {
+                Write-Host "   ⚠️  Error reading $fileName`: $_" -ForegroundColor DarkYellow
+            }
         }
     }
     
+    Write-Host "   📋 Using default version: 1.0.0" -ForegroundColor Gray
     return "1.0.0"  # Default version
 }
 
@@ -38,7 +54,7 @@ function Test-GitRepository {
     try {
         Push-Location $path
         $null = git rev-parse --git-dir 2>$null
-        return $true
+        return $LASTEXITCODE -eq 0
     }
     catch {
         return $false
@@ -48,12 +64,32 @@ function Test-GitRepository {
     }
 }
 
-# Function to get git tags
+# Function to get git tags with dates
 function Get-GitTags {
     try {
         $tags = git tag --sort=-version:refname 2>$null
         if ($LASTEXITCODE -ne 0) { return @() }
-        return $tags | Where-Object { $_ -ne $null -and $_ -ne "" }
+        
+        $tagData = @()
+        foreach ($tag in $tags) {
+            if ($tag) {
+                try {
+                    $tagDate = git log -1 --format=%ai $tag 2>$null
+                    $tagData += [PSCustomObject]@{
+                        Name = $tag
+                        Date = if ($tagDate) { [DateTime]::Parse($tagDate) } else { [DateTime]::Now }
+                    }
+                }
+                catch {
+                    $tagData += [PSCustomObject]@{
+                        Name = $tag
+                        Date = [DateTime]::Now
+                    }
+                }
+            }
+        }
+        
+        return $tagData | Sort-Object Date -Descending
     }
     catch {
         return @()
@@ -66,10 +102,12 @@ function Get-ReleaseCommits {
     
     try {
         if ($fromTag) {
-            $gitRange = "$fromTag..$toRef"
+            $gitRange = "$($fromTag.Name)..$toRef"
         } else {
             $gitRange = $toRef
         }
+        
+        Write-Host "   📈 Fetching commits from range: $gitRange" -ForegroundColor DarkGray
         
         $gitLogFormat = '--pretty=format:%H|%s|%an|%ad|%b'
         $commits = git log $gitRange $gitLogFormat --date=short --no-merges 2>$null
@@ -96,17 +134,19 @@ function Get-ReleaseCommits {
             
             $commitData += [PSCustomObject]@{
                 Hash = $hash.Substring(0, 7)
+                FullHash = $hash
                 Subject = $subject
                 Author = $author
-                Date = $date
+                Date = [DateTime]::Parse($date)
                 Body = $body
                 Category = Get-CommitCategory -message $subject
             }
         }
         
-        return $commitData
+        return $commitData | Sort-Object Date -Descending
     }
     catch {
+        Write-Host "   ⚠️  Error fetching commits: $_" -ForegroundColor DarkYellow
         return @()
     }
 }
@@ -128,16 +168,10 @@ function Get-CommitCategory {
     if ($message -match '(thread|async|lock|concurrent)') { return "THREAD_SAFETY" }
     if ($message -match '(mixer|audio|volume|threshold)') { return "MIXER_FEATURES" }
     if ($message -match '(performance|optimize|memory|cpu)') { return "PERFORMANCE" }
-    if ($message -match '(patch|harmony|hook)') { return "GAME_PATCHES" }
     
     # Standard categories
     if ($message -match '^docs(\(.+\))?:') { return "DOCUMENTATION" }
-    if ($message -match '^perf(\(.+\))?:') { return "PERFORMANCE" }
-    if ($message -match '^refactor(\(.+\))?:') { return "REFACTORING" }
-    if ($message -match '^test(\(.+\))?:') { return "TESTING" }
     if ($message -match '^chore(\(.+\))?:') { return "MAINTENANCE" }
-    if ($message -match '^build(\(.+\))?:') { return "BUILD" }
-    if ($message -match '^ci(\(.+\))?:') { return "CI_CD" }
     
     return "OTHER"
 }
@@ -174,149 +208,54 @@ function Get-ReleaseType {
     return "Maintenance Release"
 }
 
-# Function to generate download links
-function Get-DownloadSection {
-    param($version)
-    
-    return @"
-## 📥 Downloads
-
-| Platform | Download | Checksum |
-|----------|----------|----------|
-| **Windows (x64)** | [MixerThreholdMod-$version-win-x64.dll](../../releases/download/v$version/MixerThreholdMod-$version-win-x64.dll) | [SHA256](../../releases/download/v$version/MixerThreholdMod-$version-win-x64.dll.sha256) |
-| **Linux (x64)** | [MixerThreholdMod-$version-linux-x64.dll](../../releases/download/v$version/MixerThreholdMod-$version-linux-x64.dll) | [SHA256](../../releases/download/v$version/MixerThreholdMod-$version-linux-x64.dll.sha256) |
-| **Source Code** | [Source (zip)](../../archive/v$version.zip) | [Source (tar.gz)](../../archive/v$version.tar.gz) |
-
-### Installation
-1. Install [MelonLoader](https://melonwiki.xyz/#/) for Schedule 1
-2. Download the appropriate DLL for your platform
-3. Place the DLL in your `Mods` folder
-4. Launch Schedule 1
-
-"@
-}
-
-# Function to generate compatibility matrix
-function Get-CompatibilitySection {
-    return @"
-## ⚙️ Compatibility
-
-| Component | Version | Status |
-|-----------|---------|--------|
-| **Schedule 1** | Latest | ✅ Supported |
-| **MelonLoader** | 0.5.7+ | ✅ Required |
-| **.NET Framework** | 4.8.1 | ✅ Compatible |
-| **Unity Runtime** | MONO/IL2CPP | ✅ Both Supported |
-| **Platform** | Windows/Linux | ✅ Cross-platform |
-
-"@
-}
-
 # Main script execution
 if (-not (Test-GitRepository -path $ProjectRoot)) {
     Write-Host "❌ Not a git repository or git not available" -ForegroundColor Red
     Write-Host "This script requires git and must be run in a git repository" -ForegroundColor DarkYellow
-    Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
-    Read-Host
+    if ($IsInteractive -and -not $RunningFromScript) {
+        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Read-Host
+    }
     return
 }
 
 Push-Location $ProjectRoot
 
-Write-Host "=== Release Notes Generator ===" -ForegroundColor DarkCyan
+Write-Host "`n📊 Analyzing release data..." -ForegroundColor DarkGray
 
 # Get current version and tags
 $currentVersion = Get-CurrentVersion
 $tags = Get-GitTags
 
-Write-Host ("Current version: {0}" -f $currentVersion) -ForegroundColor Gray
-Write-Host ("Available tags: {0}" -f $tags.Count) -ForegroundColor Gray
+Write-Host "📋 Current version: $currentVersion" -ForegroundColor Gray
+Write-Host "📋 Available tags: $($tags.Count)" -ForegroundColor Gray
 
-# Determine release range
+# AUTOMATED: Always use current version with latest tag as FROM reference
 $releaseVersion = $currentVersion
-$fromTag = $null
+$fromTag = if ($tags.Count -gt 0) { $tags[0] } else { $null }
 $toRef = "HEAD"
 
-Write-Host "`nRelease Notes Options:" -ForegroundColor DarkCyan
-Write-Host "  1. Generate for current version ($currentVersion)" -ForegroundColor Gray
-Write-Host "  2. Generate for custom version" -ForegroundColor Gray
-Write-Host "  3. Generate from specific tag range" -ForegroundColor Gray
-Write-Host "  4. Generate from latest tag to HEAD" -ForegroundColor Gray
-
-do {
-    $choice = Read-Host "`nEnter choice (1-4)"
-    $validChoice = $choice -in @('1', '2', '3', '4')
-    if (-not $validChoice) {
-        Write-Host "Invalid choice. Please enter 1-4." -ForegroundColor Red
-    }
-} while (-not $validChoice)
-
-switch ($choice) {
-    '1' {
-        # Use current version
-        if ($tags.Count -gt 0) {
-            $fromTag = $tags[0]  # Latest tag
-        }
-        Write-Host ("Generating release notes for version {0}" -f $releaseVersion) -ForegroundColor Green
-    }
-    '2' {
-        $releaseVersion = Read-Host "Enter release version (e.g., 1.2.0)"
-        if ($tags.Count -gt 0) {
-            $fromTag = $tags[0]  # Latest tag
-        }
-        Write-Host ("Generating release notes for version {0}" -f $releaseVersion) -ForegroundColor Green
-    }
-    '3' {
-        if ($tags.Count -eq 0) {
-            Write-Host "❌ No tags available for range selection" -ForegroundColor Red
-            Pop-Location
-            return
-        }
-        
-        Write-Host "`nAvailable tags:" -ForegroundColor DarkCyan
-        for ($i = 0; $i -lt [Math]::Min(10, $tags.Count); $i++) {
-            Write-Host ("  {0}. {1}" -f ($i + 1), $tags[$i]) -ForegroundColor Gray
-        }
-        
-        do {
-            $fromChoice = Read-Host "Enter FROM tag number"
-            $fromIndex = [int]$fromChoice - 1
-            $validFrom = $fromIndex -ge 0 -and $fromIndex -lt $tags.Count
-            if (-not $validFrom) {
-                Write-Host "Invalid tag number." -ForegroundColor Red
-            }
-        } while (-not $validFrom)
-        
-        $fromTag = $tags[$fromIndex]
-        $releaseVersion = Read-Host "Enter release version for these changes"
-        Write-Host ("Generating release notes from {0} to HEAD for version {1}" -f $fromTag, $releaseVersion) -ForegroundColor Green
-    }
-    '4' {
-        if ($tags.Count -eq 0) {
-            Write-Host "❌ No tags available" -ForegroundColor Red
-            Pop-Location
-            return
-        }
-        
-        $fromTag = $tags[0]
-        $releaseVersion = Read-Host "Enter release version"
-        Write-Host ("Generating release notes from {0} to HEAD for version {1}" -f $fromTag, $releaseVersion) -ForegroundColor Green
-    }
+if ($fromTag) {
+    Write-Host "📋 Generating release notes from $($fromTag.Name) to HEAD for version $releaseVersion" -ForegroundColor Green
+} else {
+    Write-Host "📋 Generating release notes from beginning to HEAD for version $releaseVersion" -ForegroundColor Green
 }
 
 # Get commits for this release
-Write-Host "`nFetching commits..." -ForegroundColor DarkGray
+Write-Host "`n🔍 Fetching commits..." -ForegroundColor DarkGray
 $commits = Get-ReleaseCommits -fromTag $fromTag -toRef $toRef
 
 if ($commits.Count -eq 0) {
     Write-Host "❌ No commits found for release range" -ForegroundColor Red
     Pop-Location
-    Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
-    Read-Host
+    if ($IsInteractive -and -not $RunningFromScript) {
+        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Read-Host
+    }
     return
 }
 
-Write-Host ("Found {0} commits for release" -f $commits.Count) -ForegroundColor Gray
+Write-Host "✅ Found $($commits.Count) commits for release" -ForegroundColor Gray
 
 # Categorize commits
 $categorizedCommits = $commits | Group-Object Category | Sort-Object @{
@@ -330,13 +269,8 @@ $categorizedCommits = $commits | Group-Object Category | Sort-Object @{
             "THREAD_SAFETY" { 6 }
             "MIXER_FEATURES" { 7 }
             "PERFORMANCE" { 8 }
-            "GAME_PATCHES" { 9 }
-            "DOCUMENTATION" { 10 }
-            "REFACTORING" { 11 }
-            "TESTING" { 12 }
-            "BUILD" { 13 }
-            "CI_CD" { 14 }
-            "MAINTENANCE" { 15 }
+            "DOCUMENTATION" { 9 }
+            "MAINTENANCE" { 10 }
             "OTHER" { 99 }
             default { 50 }
         }
@@ -346,7 +280,7 @@ $categorizedCommits = $commits | Group-Object Category | Sort-Object @{
 # Determine release type
 $releaseType = Get-ReleaseType -commits $commits
 
-# Generate release notes content
+# Generate release notes content (streamlined for automation)
 $releaseNotes = @()
 
 # Header
@@ -393,11 +327,16 @@ if ($highlights.Count -eq 0) {
 
 $releaseNotes += ""
 
-# Downloads section
-$releaseNotes += Get-DownloadSection -version $releaseVersion
+# Downloads section (simplified)
+$releaseNotes += "## 📥 Downloads"
+$releaseNotes += ""
+$releaseNotes += "| Platform | Download |"
+$releaseNotes += "|----------|----------|"
+$releaseNotes += "| **Windows (x64)** | [MixerThreholdMod-$releaseVersion-win-x64.dll](../../releases/download/v$releaseVersion/MixerThreholdMod-$releaseVersion-win-x64.dll) |"
+$releaseNotes += "| **Source Code** | [Source (zip)](../../archive/v$releaseVersion.zip) |"
 $releaseNotes += ""
 
-# What's Changed section
+# What's Changed section (condensed)
 $releaseNotes += "## 📋 What's Changed"
 $releaseNotes += ""
 
@@ -407,126 +346,100 @@ foreach ($categoryGroup in $categorizedCommits) {
     
     # Map category to display info
     $categoryInfo = switch ($categoryName) {
-        "BREAKING" { @{ Icon = "🚨"; Title = "Breaking Changes"; Color = "Red" } }
-        "SECURITY" { @{ Icon = "🔒"; Title = "Security Updates"; Color = "Red" } }
-        "FEATURE" { @{ Icon = "✨"; Title = "New Features"; Color = "Green" } }
-        "BUGFIX" { @{ Icon = "🐛"; Title = "Bug Fixes"; Color = "DarkYellow" } }
-        "SAVE_SYSTEM" { @{ Icon = "💾"; Title = "Save System"; Color = "Green" } }
-        "THREAD_SAFETY" { @{ Icon = "🔒"; Title = "Thread Safety"; Color = "Green" } }
-        "MIXER_FEATURES" { @{ Icon = "🎵"; Title = "Mixer Features"; Color = "Green" } }
-        "PERFORMANCE" { @{ Icon = "⚡"; Title = "Performance"; Color = "Green" } }
-        "GAME_PATCHES" { @{ Icon = "🔧"; Title = "Game Patches"; Color = "DarkYellow" } }
-        "DOCUMENTATION" { @{ Icon = "📝"; Title = "Documentation"; Color = "Gray" } }
-        "REFACTORING" { @{ Icon = "♻️"; Title = "Code Refactoring"; Color = "Gray" } }
-        "TESTING" { @{ Icon = "✅"; Title = "Testing"; Color = "Gray" } }
-        "BUILD" { @{ Icon = "📦"; Title = "Build System"; Color = "Gray" } }
-        "CI_CD" { @{ Icon = "🚀"; Title = "CI/CD"; Color = "Gray" } }
-        "MAINTENANCE" { @{ Icon = "🧹"; Title = "Maintenance"; Color = "Gray" } }
-        default { @{ Icon = "📌"; Title = "Other Changes"; Color = "Gray" } }
+        "BREAKING" { @{ Icon = "🚨"; Title = "Breaking Changes" } }
+        "SECURITY" { @{ Icon = "🔒"; Title = "Security Updates" } }
+        "FEATURE" { @{ Icon = "✨"; Title = "New Features" } }
+        "BUGFIX" { @{ Icon = "🐛"; Title = "Bug Fixes" } }
+        "SAVE_SYSTEM" { @{ Icon = "💾"; Title = "Save System" } }
+        "THREAD_SAFETY" { @{ Icon = "🔒"; Title = "Thread Safety" } }
+        "MIXER_FEATURES" { @{ Icon = "🎵"; Title = "Mixer Features" } }
+        "PERFORMANCE" { @{ Icon = "⚡"; Title = "Performance" } }
+        "DOCUMENTATION" { @{ Icon = "📝"; Title = "Documentation" } }
+        "MAINTENANCE" { @{ Icon = "🧹"; Title = "Maintenance" } }
+        default { @{ Icon = "📌"; Title = "Other Changes" } }
     }
     
     $releaseNotes += "### $($categoryInfo.Icon) $($categoryInfo.Title)"
     $releaseNotes += ""
     
-    foreach ($commit in $categoryCommits | Sort-Object Date -Descending) {
+    foreach ($commit in $categoryCommits | Sort-Object Date -Descending | Select-Object -First 10) {  # Limit for automation
         $formattedMessage = Format-CommitForRelease -commit $commit
-        $releaseNotes += "- $formattedMessage ([``$($commit.Hash)``](../../commit/$($commit.Hash)))"
-        
-        # Add body for important categories
-        if ($categoryName -in @("BREAKING", "SECURITY", "FEATURE")) {
-            if ($commit.Body -and $commit.Body.Trim().Length -gt 20) {
-                $bodyLines = $commit.Body -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 2
-                foreach ($line in $bodyLines) {
-                    $releaseNotes += "  - $($line.Trim())"
-                }
-            }
-        }
+        $releaseNotes += "- $formattedMessage ([``$($commit.Hash)``](../../commit/$($commit.FullHash)))"
     }
-    $releaseNotes += ""
-}
-
-# Breaking changes migration guide
-$breakingCommits = $categorizedCommits | Where-Object { $_.Name -eq "BREAKING" }
-if ($breakingCommits) {
-    $releaseNotes += "## 🚨 Breaking Changes & Migration Guide"
-    $releaseNotes += ""
-    $releaseNotes += "This release contains breaking changes. Please review the following:"
-    $releaseNotes += ""
     
-    foreach ($commit in $breakingCommits.Group) {
-        $releaseNotes += "### $($commit.Subject -replace '^[^:]*:\s*', '')"
-        $releaseNotes += ""
-        if ($commit.Body) {
-            $bodyLines = $commit.Body -split "`n" | Where-Object { $_.Trim() }
-            foreach ($line in $bodyLines) {
-                $releaseNotes += "- $($line.Trim())"
-            }
-        } else {
-            $releaseNotes += "- Review your integration with this change"
-            $releaseNotes += "- Test thoroughly before deploying"
-        }
-        $releaseNotes += ""
+    if ($categoryCommits.Count -gt 10) {
+        $releaseNotes += "- ... and $($categoryCommits.Count - 10) more changes"
     }
+    
+    $releaseNotes += ""
 }
 
-# Compatibility section
-$releaseNotes += Get-CompatibilitySection
+# Compatibility section (simplified)
+$releaseNotes += "## ⚙️ Compatibility"
+$releaseNotes += ""
+$releaseNotes += "- **Schedule 1**: Latest version"
+$releaseNotes += "- **MelonLoader**: 0.5.7+"
+$releaseNotes += "- **.NET Framework**: 4.8.1"
+$releaseNotes += "- **Platform**: Windows/Linux"
+$releaseNotes += ""
 
-# Installation/Upgrade instructions
-$releaseNotes += "## 🔄 Upgrade Instructions"
+# Installation instructions
+$releaseNotes += "## 🔄 Installation"
 $releaseNotes += ""
 if ($breakingCommits) {
-    $releaseNotes += "⚠️ **Important**: This release contains breaking changes. Please:"
+    $releaseNotes += "⚠️ **Important**: This release contains breaking changes."
     $releaseNotes += ""
     $releaseNotes += "1. **Backup your saves** before upgrading"
-    $releaseNotes += "2. **Read the migration guide** above"
-    $releaseNotes += "3. **Test in a non-production environment** first"
-    $releaseNotes += "4. Replace the old DLL with the new version"
-    $releaseNotes += "5. **Verify functionality** after upgrade"
+    $releaseNotes += "2. Download the new version"
+    $releaseNotes += "3. Replace the old DLL in your `Mods` folder"
+    $releaseNotes += "4. **Test thoroughly** after upgrade"
 } else {
-    $releaseNotes += "1. Download the new version from the links above"
-    $releaseNotes += "2. Replace the old DLL in your `Mods` folder"
+    $releaseNotes += "1. Download the DLL from the links above"
+    $releaseNotes += "2. Place in your `Mods` folder"
     $releaseNotes += "3. Restart Schedule 1"
-    $releaseNotes += "4. Verify the mod loads correctly in the console"
 }
-$releaseNotes += ""
-
-# Technical details
-$releaseNotes += "## 🔧 Technical Details"
-$releaseNotes += ""
-$releaseNotes += "- **Build Target**: .NET Framework 4.8.1"
-$releaseNotes += "- **Unity Compatibility**: MONO and IL2CPP"
-$releaseNotes += "- **Thread Safety**: All operations thread-safe"
-$releaseNotes += "- **Save System**: Atomic operations with backup recovery"
-$releaseNotes += "- **Performance**: Optimized for extended gameplay sessions"
 $releaseNotes += ""
 
 # Footer
 $releaseNotes += "---"
 $releaseNotes += ""
-$releaseNotes += "**Full Changelog**: https://github.com/YourRepo/MixerThreholdMod/compare/$fromTag...v$releaseVersion"
 if ($fromTag) {
-    $releaseNotes += "**Previous Release**: [$fromTag](../../releases/tag/$fromTag)"
+    $releaseNotes += "**Full Changelog**: https://github.com/YourRepo/MixerThreholdMod/compare/$($fromTag.Name)...v$releaseVersion"
 }
 $releaseNotes += ""
-$releaseNotes += "*Generated automatically by Generate-ReleaseNotes.ps1*"
+$releaseNotes += "_Generated automatically by Generate-ReleaseNotes.ps1 on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')_"
 
 # Save release notes
 $outputPath = Join-Path $ProjectRoot "RELEASE-NOTES-v$releaseVersion.md"
-$releaseNotes | Out-File -FilePath $outputPath -Encoding UTF8
+
+try {
+    $releaseNotes | Out-File -FilePath $outputPath -Encoding UTF8
+    $savedSuccessfully = $true
+}
+catch {
+    Write-Host "⚠️  Error saving release notes: $_" -ForegroundColor DarkYellow
+    $savedSuccessfully = $false
+}
 
 Pop-Location
 
-# Summary
-Write-Host "`n=== Release Notes Generation Complete ===" -ForegroundColor DarkCyan
-Write-Host ("✅ Generated release notes: {0}" -f $outputPath) -ForegroundColor Green
-Write-Host ("📋 Release type: {0}" -f $releaseType) -ForegroundColor Gray
-Write-Host ("📊 Total commits: {0}" -f $commits.Count) -ForegroundColor Gray
-Write-Host ("🏷️  Version: {0}" -f $releaseVersion) -ForegroundColor Gray
+Write-Host "`n=== RELEASE NOTES GENERATION REPORT ===" -ForegroundColor DarkCyan
+Write-Host "🕐 Generation completed: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 
-# Category breakdown
+if ($savedSuccessfully) {
+    Write-Host "✅ Release notes generated successfully!" -ForegroundColor Green
+    Write-Host "📄 Output saved to: $outputPath" -ForegroundColor Gray
+} else {
+    Write-Host "❌ Failed to save release notes" -ForegroundColor Red
+}
+
+Write-Host "📋 Release type: $releaseType" -ForegroundColor Gray
+Write-Host "📊 Total commits: $($commits.Count)" -ForegroundColor Gray
+Write-Host "🏷️  Version: $releaseVersion" -ForegroundColor Gray
+
+# Category breakdown (condensed)
 Write-Host "`n📋 Changes by Category:" -ForegroundColor DarkCyan
-foreach ($category in $categorizedCommits | Sort-Object Count -Descending) {
+foreach ($category in $categorizedCommits | Sort-Object Count -Descending | Select-Object -First 5) {
     $color = switch ($category.Name) {
         "BREAKING" { "Red" }
         "SECURITY" { "Red" }
@@ -543,31 +456,359 @@ foreach ($category in $categorizedCommits | Sort-Object Count -Descending) {
         "THREAD_SAFETY" { "Thread Safety" }
         "MIXER_FEATURES" { "Mixer Features" }
         "PERFORMANCE" { "Performance" }
-        "GAME_PATCHES" { "Game Patches" }
         "DOCUMENTATION" { "Documentation" }
-        "REFACTORING" { "Refactoring" }
-        "TESTING" { "Testing" }
-        "BUILD" { "Build System" }
-        "CI_CD" { "CI/CD" }
         "MAINTENANCE" { "Maintenance" }
         default { "Other Changes" }
     }
-    Write-Host ("  {0,-20}: {1,3} changes" -f $displayName, $category.Count) -ForegroundColor $color
+    Write-Host "   $displayName`: $($category.Count) changes" -ForegroundColor $color
 }
 
-Write-Host "`n💡 Next Steps:" -ForegroundColor DarkCyan
-Write-Host "  📝 Review the generated release notes" -ForegroundColor Gray
-Write-Host "  ✏️  Edit manually for clarity if needed" -ForegroundColor Gray
-Write-Host "  📋 Copy content for GitHub release" -ForegroundColor Gray
-Write-Host "  🏷️  Create git tag: git tag v$releaseVersion" -ForegroundColor Gray
-Write-Host "  🚀 Publish the release" -ForegroundColor Gray
+if ($categorizedCommits.Count -gt 5) {
+    Write-Host "   ... and $($categorizedCommits.Count - 5) more categories" -ForegroundColor DarkGray
+}
 
+# Create Reports directory if it doesn't exist
+$reportsDir = Join-Path $ProjectRoot "Reports"
+if (-not (Test-Path $reportsDir)) {
+    try {
+        New-Item -Path $reportsDir -ItemType Directory -Force | Out-Null
+        Write-Host "`n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "`n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
+        $reportsDir = $ProjectRoot
+    }
+}
+
+# Generate detailed release notes analysis report
+Write-Host "`n📝 Generating detailed release notes analysis report..." -ForegroundColor DarkGray
+
+$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$reportPath = Join-Path $reportsDir "RELEASE-NOTES-ANALYSIS-REPORT_$timestamp.md"
+
+$reportContent = @()
+$reportContent += "# Release Notes Generation Analysis Report"
+$reportContent += ""
+$reportContent += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$reportContent += "**Release Version**: $releaseVersion"
+$reportContent += "**Release Type**: $releaseType"
+$reportContent += "**Commits Analyzed**: $($commits.Count)"
+$reportContent += ""
+
+# Executive Summary
+$reportContent += "## Executive Summary"
+$reportContent += ""
+
+if ($savedSuccessfully) {
+    $reportContent += "✅ **RELEASE NOTES GENERATED SUCCESSFULLY** - Ready for publication."
+    $reportContent += ""
+    $reportContent += "Professional release notes created for version $releaseVersion with $($commits.Count) commits analyzed."
+} else {
+    $reportContent += "❌ **GENERATION FAILED** - Unable to create release notes file."
+    $reportContent += ""
+    $reportContent += "Check file permissions and disk space."
+}
+
+$reportContent += ""
+$reportContent += "| Metric | Value | Status |"
+$reportContent += "|--------|-------|--------|"
+$reportContent += "| **Release Version** | $releaseVersion | - |"
+$reportContent += "| **Release Type** | $releaseType | $(if ($releaseType -eq "Major Release") { "🚨 Breaking Changes" } elseif ($releaseType -eq "Minor Release") { "✨ Features Added" } else { "🔧 Maintenance" }) |"
+$reportContent += "| **Commits Analyzed** | $($commits.Count) | $(if ($commits.Count -gt 0) { "✅ Changes Found" } else { "⚠️ No Changes" }) |"
+$reportContent += "| **Categories** | $($categorizedCommits.Count) | $(if ($categorizedCommits.Count -gt 3) { "✅ Diverse Changes" } else { "📝 Focused Changes" }) |"
+$reportContent += "| **Release Notes Saved** | $(if ($savedSuccessfully) { "Yes" } else { "No" }) | $(if ($savedSuccessfully) { "✅ Success" } else { "❌ Failed" }) |"
+
+# Check for critical items
+$hasCritical = $breakingCommits -or $securityCommits
+$reportContent += "| **Critical Items** | $(if ($hasCritical) { "Yes" } else { "No" }) | $(if ($hasCritical) { "🚨 Review Required" } else { "✅ Standard Release" }) |"
+
+$reportContent += ""
+
+# Release Composition Analysis
+if ($categorizedCommits.Count -gt 0) {
+    $reportContent += "## Release Composition Analysis"
+    $reportContent += ""
+    
+    $reportContent += "### Changes by Category"
+    $reportContent += ""
+    $reportContent += "| Category | Count | Percentage | Impact |"
+    $reportContent += "|----------|-------|------------|--------|"
+    
+    foreach ($categoryGroup in $categorizedCommits | Sort-Object Count -Descending) {
+        $percentage = [Math]::Round(($categoryGroup.Count / $commits.Count) * 100, 1)
+        
+        $impact = switch ($categoryGroup.Name) {
+            "BREAKING" { "🚨 HIGH - Breaking changes" }
+            "SECURITY" { "🔒 HIGH - Security updates" }
+            "FEATURE" { "✨ MEDIUM - New functionality" }
+            "BUGFIX" { "🐛 MEDIUM - Fixes issues" }
+            "PERFORMANCE" { "⚡ MEDIUM - Improves speed" }
+            default { "📝 LOW - Maintenance" }
+        }
+        
+        $displayName = switch ($categoryGroup.Name) {
+            "BREAKING" { "🚨 Breaking Changes" }
+            "SECURITY" { "🔒 Security Updates" }
+            "FEATURE" { "✨ New Features" }
+            "BUGFIX" { "🐛 Bug Fixes" }
+            "SAVE_SYSTEM" { "💾 Save System" }
+            "THREAD_SAFETY" { "🔒 Thread Safety" }
+            "MIXER_FEATURES" { "🎵 Mixer Features" }
+            "PERFORMANCE" { "⚡ Performance" }
+            "DOCUMENTATION" { "📝 Documentation" }
+            "MAINTENANCE" { "🧹 Maintenance" }
+            default { "📌 Other Changes" }
+        }
+        
+        $reportContent += "| $displayName | $($categoryGroup.Count) | $percentage% | $impact |"
+    }
+    
+    $reportContent += ""
+    
+    # Highlight important categories
+    if ($breakingCommits) {
+        $reportContent += "### ⚠️ Breaking Changes Alert"
+        $reportContent += ""
+        $reportContent += "**$($breakingCommits.Count) breaking changes** detected in this release:"
+        $reportContent += ""
+        foreach ($commit in $breakingCommits | Select-Object -First 5) {
+            $formattedMessage = Format-CommitForRelease -commit $commit
+            $reportContent += "- $formattedMessage ([`$($commit.Hash)`](../../commit/$($commit.FullHash)))"
+        }
+        if ($breakingCommits.Count -gt 5) {
+            $reportContent += "- ... and $($breakingCommits.Count - 5) more breaking changes"
+        }
+        $reportContent += ""
+        $reportContent += "**Required Actions:**"
+        $reportContent += "1. Add migration guide to release notes"
+        $reportContent += "2. Update documentation for breaking changes"
+        $reportContent += "3. Notify users about required updates"
+        $reportContent += ""
+    }
+    
+    if ($securityCommits) {
+        $reportContent += "### 🔒 Security Updates"
+        $reportContent += ""
+        $reportContent += "**Security improvements** included in this release."
+        $reportContent += ""
+        $reportContent += "Ensure security updates are highlighted in release announcement."
+        $reportContent += ""
+    }
+}
+
+# Git Analysis
+$reportContent += "## Git Analysis"
+$reportContent += ""
+
+if ($fromTag) {
+    $reportContent += "### Release Range"
+    $reportContent += ""
+    $reportContent += "- **From**: $($fromTag.Name) ($($fromTag.Date.ToString('yyyy-MM-dd')))"
+    $reportContent += "- **To**: HEAD (current)"
+    $reportContent += "- **Range**: $($fromTag.Name)..HEAD"
+    $reportContent += ""
+} else {
+    $reportContent += "### Full History Release"
+    $reportContent += ""
+    $reportContent += "- **Range**: Complete repository history"
+    $reportContent += "- **Note**: No previous tags found - this appears to be the first tagged release"
+    $reportContent += ""
+}
+
+# Contributor Analysis
+$contributors = $commits | Group-Object Author | Sort-Object Count -Descending
+if ($contributors.Count -gt 0) {
+    $reportContent += "### Contributors"
+    $reportContent += ""
+    $reportContent += "| Contributor | Commits | Percentage |"
+    $reportContent += "|-------------|---------|------------|"
+    
+    foreach ($contributor in $contributors | Select-Object -First 5) {
+        $percentage = [Math]::Round(($contributor.Count / $commits.Count) * 100, 1)
+        $reportContent += "| $($contributor.Name) | $($contributor.Count) | $percentage% |"
+    }
+    
+    if ($contributors.Count -gt 5) {
+        $reportContent += ""
+        $reportContent += "*... and $($contributors.Count - 5) more contributors*"
+    }
+    $reportContent += ""
+}
+
+# Generated Files
+$reportContent += "## Generated Files"
+$reportContent += ""
+
+if ($savedSuccessfully) {
+    $reportContent += "### Release Notes"
+    $reportContent += ""
+    $reportContent += "- **File**: `RELEASE-NOTES-v$releaseVersion.md`"
+    $reportContent += "- **Location**: Project root directory"
+    $reportContent += "- **Size**: $(if (Test-Path $outputPath) { "$([Math]::Round((Get-Item $outputPath).Length / 1KB, 1)) KB" } else { "Unknown" })"
+    $reportContent += "- **Format**: GitHub-compatible markdown"
+    $reportContent += ""
+    $reportContent += "### Content Sections"
+    $reportContent += ""
+    $reportContent += "- ✅ Release highlights and summary"
+    $reportContent += "- ✅ Download links for releases"
+    $reportContent += "- ✅ Categorized change list"
+    $reportContent += "- ✅ Compatibility information"
+    $reportContent += "- ✅ Installation instructions"
+    if ($breakingCommits) {
+        $reportContent += "- ⚠️ Breaking changes warnings"
+    }
+    $reportContent += ""
+} else {
+    $reportContent += "### ❌ Release Notes Generation Failed"
+    $reportContent += ""
+    $reportContent += "**Issues to resolve:**"
+    $reportContent += "- Check file system permissions"
+    $reportContent += "- Verify disk space availability"
+    $reportContent += "- Ensure project root is writable"
+    $reportContent += ""
+}
+
+# Recommendations
+$reportContent += "## 🎯 Recommendations"
+$reportContent += ""
+
+if ($savedSuccessfully) {
+    $reportContent += "### ✅ Pre-Publication Checklist"
+    $reportContent += ""
+    $reportContent += "1. **Review Content**: Verify generated release notes for accuracy"
+    $reportContent += "2. **Update Links**: Ensure download links point to correct releases"
+    $reportContent += "3. **Test Downloads**: Verify release assets are available"
+    
+    if ($breakingCommits) {
+        $reportContent += "4. **⚠️ Breaking Changes**: Add detailed migration guide"
+        $reportContent += "5. **⚠️ User Communication**: Prepare announcement about breaking changes"
+    } else {
+        $reportContent += "4. **Smooth Update**: Standard release - no special precautions needed"
+    }
+    
+    $reportContent += ""
+    $reportContent += "### 🚀 Publication Steps"
+    $reportContent += ""
+    $reportContent += "1. **Create Git Tag**: `git tag v$releaseVersion && git push origin v$releaseVersion`"
+    $reportContent += "2. **GitHub Release**: Create release on GitHub with generated notes"
+    $reportContent += "3. **Upload Assets**: Attach compiled DLL and documentation"
+    $reportContent += "4. **Announce**: Share release information with community"
+} else {
+    $reportContent += "### ❌ Fix Generation Issues"
+    $reportContent += ""
+    $reportContent += "1. **Resolve Errors**: Fix file system or permission issues"
+    $reportContent += "2. **Re-run Script**: Generate release notes again"
+    $reportContent += "3. **Verify Output**: Ensure files are created successfully"
+}
+
+# Technical Details
+$reportContent += ""
+$reportContent += "## Technical Generation Details"
+$reportContent += ""
+$reportContent += "### Process Summary"
+$reportContent += ""
+$reportContent += "- **Git Repository**: $(if (Test-GitRepository $ProjectRoot) { "✅ Valid" } else { "❌ Invalid" })"
+$reportContent += "- **Version Detection**: Automatic from constants files"
+$reportContent += "- **Commit Range**: $(if ($fromTag) { "Tag-based ($($fromTag.Name)..HEAD)" } else { "Full history" })"
+$reportContent += "- **Categorization**: Conventional commit patterns + project-specific rules"
+$reportContent += "- **Output Format**: GitHub release-compatible markdown"
+$reportContent += ""
+$reportContent += "### Release Type Logic"
+$reportContent += ""
+$reportContent += "- **Major Release**: Contains breaking changes"
+$reportContent += "- **Minor Release**: New features or security updates"
+$reportContent += "- **Patch Release**: Bug fixes only"
+$reportContent += "- **Maintenance Release**: Documentation or maintenance changes"
+
+# Footer
+$reportContent += ""
+$reportContent += "---"
+$reportContent += ""
+$reportContent += "**Release Management**: Follow semantic versioning for consistent releases"
+$reportContent += ""
+$reportContent += "*Generated by MixerThreholdMod DevOps Suite - Release Notes Generator*"
+
+try {
+    $reportContent | Out-File -FilePath $reportPath -Encoding UTF8
+    $reportSaveSuccess = $true
+}
+catch {
+    Write-Host "⚠️ Error saving analysis report: $_" -ForegroundColor DarkYellow
+    $reportSaveSuccess = $false
+}
+
+# Quick recommendations
+Write-Host "`n💡 Recommendations:" -ForegroundColor DarkCyan
 if ($breakingCommits) {
-    Write-Host "`n⚠️  Important Reminders:" -ForegroundColor DarkYellow
-    Write-Host "  🚨 This release has breaking changes" -ForegroundColor Red
-    Write-Host "  📖 Ensure migration guide is complete" -ForegroundColor Red
-    Write-Host "  🧪 Recommend thorough testing to users" -ForegroundColor Red
+    Write-Host "   🚨 CRITICAL: Review breaking changes in generated notes" -ForegroundColor Red
+    Write-Host "   • Update migration documentation" -ForegroundColor Red
+} else {
+    Write-Host "   ✅ Release notes ready for publication" -ForegroundColor Green
 }
 
-Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
-Read-Host
+if ($savedSuccessfully) {
+    Write-Host "   • Review generated content for accuracy" -ForegroundColor Gray
+    Write-Host "   • Create git tag: git tag v$releaseVersion" -ForegroundColor Gray
+    Write-Host "   • Publish the release on GitHub" -ForegroundColor Gray
+} else {
+    Write-Host "   ❌ Fix file saving issues and regenerate" -ForegroundColor Red
+}
+
+Write-Host "`n🚀 Release notes generation complete!" -ForegroundColor Green
+
+# OUTPUT PATH AT THE END for easy finding
+if ($reportSaveSuccess) {
+    Write-Host "`n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
+    Write-Host "   Location: $reportPath" -ForegroundColor Cyan
+    Write-Host "   Size: $([Math]::Round((Get-Item $reportPath).Length / 1KB, 1)) KB" -ForegroundColor Gray
+} else {
+    Write-Host "`n⚠️ No detailed report generated" -ForegroundColor DarkYellow
+}
+
+# INTERACTIVE WORKFLOW LOOP (only when running standalone)
+if ($IsInteractive -and -not $RunningFromScript) {
+    do {
+        Write-Host "`n🎯 What would you like to do next?" -ForegroundColor DarkCyan
+        Write-Host "   D - Display report in console" -ForegroundColor Green
+        Write-Host "   R - Re-run release notes generation" -ForegroundColor DarkYellow
+        Write-Host "   X - Exit to DevOps menu" -ForegroundColor Gray
+        
+        $choice = Read-Host "`nEnter choice (D/R/X)"
+        $choice = $choice.ToUpper()
+        
+        switch ($choice) {
+            'D' {
+                if ($reportSaveSuccess) {
+                    Write-Host "`n📋 DISPLAYING RELEASE NOTES ANALYSIS REPORT:" -ForegroundColor DarkCyan
+                    Write-Host "===========================================" -ForegroundColor DarkCyan
+                    try {
+                        $reportDisplay = Get-Content -Path $reportPath -Raw
+                        Write-Host $reportDisplay -ForegroundColor White
+                        Write-Host "`n===========================================" -ForegroundColor DarkCyan
+                        Write-Host "📋 END OF REPORT" -ForegroundColor DarkCyan
+                    }
+                    catch {
+                        Write-Host "❌ Could not display report: $_" -ForegroundColor Red
+                    }
+                } else {
+                    Write-Host "❌ No report available to display" -ForegroundColor Red
+                }
+            }
+            'R' {
+                Write-Host "`n🔄 RE-RUNNING RELEASE NOTES GENERATION..." -ForegroundColor DarkYellow
+                Write-Host "=========================================" -ForegroundColor DarkYellow
+                & $MyInvocation.MyCommand.Path
+                return
+            }
+            'X' {
+                Write-Host "`n👋 Returning to DevOps menu..." -ForegroundColor Gray
+                return
+            }
+            default {
+                Write-Host "❌ Invalid choice. Please enter D, R, or X." -ForegroundColor Red
+            }
+        }
+    } while ($choice -notin @('X'))
+} else {
+    Write-Host "📄 Script completed - returning to caller" -ForegroundColor DarkGray
+}

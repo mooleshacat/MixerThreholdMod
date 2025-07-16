@@ -1,7 +1,7 @@
-﻿# MixerThreholdMod DevOps Tool: Version Numbers Synchronizer
+﻿# MixerThreholdMod DevOps Tool: Version Numbers Synchronizer (NON-INTERACTIVE)
 # Synchronizes version numbers across all project files
 # Updates Constants, AssemblyInfo, manifests, and documentation
-# Excludes: ForCopilot, ForConstants, Scripts, and Legacy directories
+# Excludes: ForCopilot, Scripts, and Legacy directories
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 if ((Split-Path $ScriptDir -Leaf) -ieq "Scripts") {
@@ -10,7 +10,14 @@ if ((Split-Path $ScriptDir -Leaf) -ieq "Scripts") {
     $ProjectRoot = $ScriptDir
 }
 
-Write-Host "Updating version numbers in: $ProjectRoot" -ForegroundColor DarkCyan
+# Check if running interactively or from another script
+$IsInteractive = [Environment]::UserInteractive -and $Host.Name -ne "ConsoleHost"
+$RunningFromScript = $MyInvocation.InvocationName -notmatch "\.ps1$"
+
+Write-Host "🕐 Version synchronization started: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
+Write-Host "Synchronizing version numbers in: $ProjectRoot" -ForegroundColor DarkCyan
+Write-Host "🚀 NON-INTERACTIVE VERSION - Compatible with automation" -ForegroundColor Green
+Write-Host "Excluding: ForCopilot, Scripts, and Legacy directories" -ForegroundColor DarkGray
 
 # Function to validate semantic version
 function Test-SemanticVersion {
@@ -45,393 +52,626 @@ function Get-SemanticVersionParts {
     return $null
 }
 
-# Function to get current version from SystemConstants.cs
+# Function to get current version from Constants files
 function Get-CurrentVersion {
-    $constantsFile = Join-Path $ProjectRoot "Constants\SystemConstants.cs"
+    # Try multiple locations for version constants
+    $constantsFiles = @(
+        "Constants\SystemConstants.cs",
+        "Constants\Constants.cs",
+        "Constants\AllConstants.cs",
+        "Main.cs"
+    )
     
-    if (-not (Test-Path $constantsFile)) {
-        Write-Host "⚠️  SystemConstants.cs not found, trying fallback locations..." -ForegroundColor DarkYellow
-        
-        # Try alternative locations
-        $alternatives = @(
-            "Constants\Constants.cs",
-            "Main.cs"
-        )
-        
-        foreach ($alt in $alternatives) {
-            $altPath = Join-Path $ProjectRoot $alt
-            if (Test-Path $altPath) {
-                $constantsFile = $altPath
-                break
+    foreach ($fileName in $constantsFiles) {
+        $constantsFile = Join-Path $ProjectRoot $fileName
+        if (Test-Path $constantsFile) {
+            try {
+                $content = Get-Content -Path $constantsFile -Raw -ErrorAction Stop
+                if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
+                    Write-Host "   📋 Found version in $fileName`: $($matches[1])" -ForegroundColor Gray
+                    return $matches[1]
+                }
+            }
+            catch {
+                Write-Host "   ⚠️  Error reading $fileName`: $_" -ForegroundColor DarkYellow
             }
         }
     }
     
-    if (-not (Test-Path $constantsFile)) {
-        return $null
-    }
-    
-    try {
-        $content = Get-Content -Path $constantsFile -Raw
-        if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
-            return $matches[1]
-        }
-    }
-    catch {
-        Write-Host "❌ Error reading constants file: $_" -ForegroundColor Red
-    }
-    
+    Write-Host "   ⚠️  No MOD_VERSION found in constants files" -ForegroundColor DarkYellow
     return $null
 }
 
-# Function to find version-containing files
+# Function to find version-containing files (optimized)
 function Find-VersionFiles {
-    $versionFiles = @()
-    
-    # Find all potential files
-    $files = Get-ChildItem -Path $ProjectRoot -Recurse -Include *.cs,*.json,*.xml,*.md,*.txt,*.info,*.config | Where-Object {
-        $_.PSIsContainer -eq $false -and
-        $_.FullName -notmatch "[\\/](ForCopilot)[\\/]" -and
-        $_.FullName -notmatch "[\\/](Scripts)[\\/]" -and
-        $_.FullName -notmatch "[\\/](Legacy)[\\/]" -and
-        $_.FullName -notmatch "[\\/]\.git[\\/]"
-    }
-    
-    foreach ($file in $files) {
-        try {
-            $content = Get-Content -Path $file.FullName -Raw -ErrorAction SilentlyContinue
-            if (-not $content) { continue }
+    try {
+        $versionFiles = @()
+        
+        # Find all potential files with CORRECTED exclusions
+        $files = Get-ChildItem -Path $ProjectRoot -Recurse -Include *.cs,*.json,*.xml,*.md -ErrorAction SilentlyContinue | Where-Object {
+            $_.PSIsContainer -eq $false -and
+            $_.FullName -notmatch "[\\/](ForCopilot|Scripts|Legacy)[\\/]" -and
+            $_.FullName -notmatch "[\\/]\.git[\\/]"
+        }
+        
+        Write-Host "   📈 Scanning $($files.Count) files for version patterns..." -ForegroundColor DarkGray
+        
+        $processedFiles = 0
+        foreach ($file in $files) {
+            $processedFiles++
             
-            $hasVersion = $false
-            $versionPatterns = @()
-            
-            # Check for various version patterns
-            if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
-                $hasVersion = $true
-                $versionPatterns += "MOD_VERSION constant"
+            # Show progress every 50 files
+            if ($processedFiles % 50 -eq 0) {
+                Write-Host "   📈 Progress: $processedFiles/$($files.Count) files scanned..." -ForegroundColor DarkGray
             }
             
-            if ($content -match 'AssemblyVersion\s*\(\s*"([^"]+)"\s*\)') {
-                $hasVersion = $true
-                $versionPatterns += "AssemblyVersion attribute"
-            }
-            
-            if ($content -match 'AssemblyFileVersion\s*\(\s*"([^"]+)"\s*\)') {
-                $hasVersion = $true
-                $versionPatterns += "AssemblyFileVersion attribute"
-            }
-            
-            if ($content -match '"version"\s*:\s*"([^"]+)"') {
-                $hasVersion = $true
-                $versionPatterns += "JSON version field"
-            }
-            
-            if ($content -match '<version>([^<]+)</version>') {
-                $hasVersion = $true
-                $versionPatterns += "XML version element"
-            }
-            
-            if ($content -match 'Version:\s*([0-9]+\.[0-9]+\.[0-9]+)') {
-                $hasVersion = $true
-                $versionPatterns += "Documentation version"
-            }
-            
-            # MelonLoader mod patterns
-            if ($content -match 'MelonModInfo\s*\([^)]*"([^"]*)"[^)]*"([^"]*)"[^)]*"([^"]*)"') {
-                $hasVersion = $true
-                $versionPatterns += "MelonModInfo attribute"
-            }
-            
-            if ($hasVersion) {
-                $versionFiles += [PSCustomObject]@{
-                    File = $file.FullName
-                    RelativePath = $file.FullName.Replace($ProjectRoot, "").TrimStart('\', '/')
-                    Name = $file.Name
-                    Patterns = $versionPatterns
-                    Content = $content
+            try {
+                $content = Get-Content -Path $file.FullName -Raw -ErrorAction SilentlyContinue
+                if (-not $content) { continue }
+                
+                $hasVersion = $false
+                $versionPatterns = @()
+                $foundVersions = @()
+                
+                # Check for various version patterns
+                if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
+                    $hasVersion = $true
+                    $versionPatterns += "MOD_VERSION constant"
+                    $foundVersions += [PSCustomObject]@{ Type = "MOD_VERSION"; Version = $matches[1]; Valid = (Test-SemanticVersion $matches[1]) }
+                }
+                
+                if ($content -match 'AssemblyVersion\s*\(\s*"([^"]+)"\s*\)') {
+                    $hasVersion = $true
+                    $versionPatterns += "AssemblyVersion attribute"
+                    $foundVersions += [PSCustomObject]@{ Type = "AssemblyVersion"; Version = $matches[1]; Valid = (Test-SemanticVersion $matches[1]) }
+                }
+                
+                if ($content -match 'AssemblyFileVersion\s*\(\s*"([^"]+)"\s*\)') {
+                    $hasVersion = $true
+                    $versionPatterns += "AssemblyFileVersion attribute"
+                    $foundVersions += [PSCustomObject]@{ Type = "AssemblyFileVersion"; Version = $matches[1]; Valid = (Test-SemanticVersion $matches[1]) }
+                }
+                
+                if ($content -match '"version"\s*:\s*"([^"]+)"') {
+                    $hasVersion = $true
+                    $versionPatterns += "JSON version field"
+                    $foundVersions += [PSCustomObject]@{ Type = "JSON version"; Version = $matches[1]; Valid = (Test-SemanticVersion $matches[1]) }
+                }
+                
+                if ($content -match 'MelonModInfo\s*\([^)]*"([^"]*)"[^)]*"([^"]*)"[^)]*"([^"]*)"') {
+                    $hasVersion = $true
+                    $versionPatterns += "MelonModInfo attribute"
+                    $foundVersions += [PSCustomObject]@{ Type = "MelonModInfo"; Version = $matches[3]; Valid = (Test-SemanticVersion $matches[3]) }
+                }
+                
+                if ($hasVersion) {
+                    $versionFiles += [PSCustomObject]@{
+                        File = $file.FullName
+                        RelativePath = $file.FullName.Replace($ProjectRoot, "").TrimStart('\', '/')
+                        Name = $file.Name
+                        Patterns = $versionPatterns
+                        FoundVersions = $foundVersions
+                        Content = $content
+                    }
                 }
             }
-        }
-        catch {
-            # Skip files that can't be read
-            continue
-        }
-    }
-    
-    return $versionFiles
-}
-
-# Function to update version in file
-function Update-VersionInFile {
-    param($filePath, $newVersion, $dryRun = $false)
-    
-    try {
-        $content = Get-Content -Path $filePath -Raw
-        $originalContent = $content
-        $changesCount = 0
-        
-        # Update MOD_VERSION constant
-        if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
-            $oldVersion = $matches[1]
-            $content = $content -replace 'MOD_VERSION\s*=\s*"[^"]+"', "MOD_VERSION = `"$newVersion`""
-            $changesCount++
-            Write-Host ("    MOD_VERSION: {0} → {1}" -f $oldVersion, $newVersion) -ForegroundColor Green
-        }
-        
-        # Update AssemblyVersion
-        if ($content -match 'AssemblyVersion\s*\(\s*"([^"]+)"\s*\)') {
-            $oldVersion = $matches[1]
-            $content = $content -replace 'AssemblyVersion\s*\(\s*"[^"]+"\s*\)', "AssemblyVersion(`"$newVersion`")"
-            $changesCount++
-            Write-Host ("    AssemblyVersion: {0} → {1}" -f $oldVersion, $newVersion) -ForegroundColor Green
-        }
-        
-        # Update AssemblyFileVersion
-        if ($content -match 'AssemblyFileVersion\s*\(\s*"([^"]+)"\s*\)') {
-            $oldVersion = $matches[1]
-            $content = $content -replace 'AssemblyFileVersion\s*\(\s*"[^"]+"\s*\)', "AssemblyFileVersion(`"$newVersion`")"
-            $changesCount++
-            Write-Host ("    AssemblyFileVersion: {0} → {1}" -f $oldVersion, $newVersion) -ForegroundColor Green
-        }
-        
-        # Update JSON version
-        if ($content -match '"version"\s*:\s*"([^"]+)"') {
-            $oldVersion = $matches[1]
-            $content = $content -replace '"version"\s*:\s*"[^"]+"', "`"version`": `"$newVersion`""
-            $changesCount++
-            Write-Host ("    JSON version: {0} → {1}" -f $oldVersion, $newVersion) -ForegroundColor Green
-        }
-        
-        # Update XML version
-        if ($content -match '<version>([^<]+)</version>') {
-            $oldVersion = $matches[1]
-            $content = $content -replace '<version>[^<]+</version>', "<version>$newVersion</version>"
-            $changesCount++
-            Write-Host ("    XML version: {0} → {1}" -f $oldVersion, $newVersion) -ForegroundColor Green
-        }
-        
-        # Update documentation version
-        if ($content -match 'Version:\s*([0-9]+\.[0-9]+\.[0-9]+)') {
-            $oldVersion = $matches[1]
-            $versionParts = Get-SemanticVersionParts -version $newVersion
-            if ($versionParts) {
-                $content = $content -replace 'Version:\s*[0-9]+\.[0-9]+\.[0-9]+', "Version: $($versionParts.Simple)"
-                $changesCount++
-                Write-Host ("    Documentation version: {0} → {1}" -f $oldVersion, $versionParts.Simple) -ForegroundColor Green
+            catch {
+                # Skip files that can't be read
+                continue
             }
         }
         
-        # Update MelonModInfo (more complex pattern)
-        if ($content -match 'MelonModInfo\s*\(\s*typeof\([^)]+\)\s*,\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)"') {
-            $oldVersion = $matches[3]
-            $modName = $matches[1]
-            $modAuthor = $matches[2]
-            $content = $content -replace 'MelonModInfo\s*\(\s*typeof\([^)]+\)\s*,\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)"', "MelonModInfo(typeof(`$1), `"$modName`", `"$newVersion`", `"$modAuthor`")"
-            $changesCount++
-            Write-Host ("    MelonModInfo version: {0} → {1}" -f $oldVersion, $newVersion) -ForegroundColor Green
-        }
-        
-        # Write changes if not dry run
-        if ($changesCount -gt 0 -and -not $dryRun) {
-            $content | Out-File -FilePath $filePath -Encoding UTF8 -NoNewline
-        }
-        
-        return $changesCount
+        return $versionFiles
     }
     catch {
-        Write-Host ("    ❌ Error updating file: {0}" -f $_.Message) -ForegroundColor Red
-        return 0
+        Write-Host "   ⚠️  Error scanning for version files: $_" -ForegroundColor DarkYellow
+        return @()
     }
 }
 
 # Main script execution
-Write-Host "`n=== Version Number Synchronization Tool ===" -ForegroundColor DarkCyan
+Write-Host "`n=== VERSION NUMBER SYNCHRONIZATION REPORT ===" -ForegroundColor DarkCyan
+Write-Host "🕐 Analysis completed: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 
 # Get current version
+Write-Host "`n📂 Detecting current version..." -ForegroundColor DarkGray
 $currentVersion = Get-CurrentVersion
 if ($currentVersion) {
-    Write-Host ("Current version detected: {0}" -f $currentVersion) -ForegroundColor Gray
+    Write-Host "📊 Current version detected: $currentVersion" -ForegroundColor Gray
     
     if (-not (Test-SemanticVersion -version $currentVersion)) {
         Write-Host "⚠️  Current version is not a valid semantic version" -ForegroundColor DarkYellow
+    } else {
+        Write-Host "✅ Current version follows semantic versioning" -ForegroundColor Green
     }
 } else {
-    Write-Host "⚠️  No current version detected" -ForegroundColor DarkYellow
-    $currentVersion = "1.0.0"  # Default version
+    Write-Host "⚠️  No current version detected in constants files" -ForegroundColor DarkYellow
+    $currentVersion = "Unknown"
 }
 
-# Options
-Write-Host "`nVersion Update Options:" -ForegroundColor DarkCyan
-Write-Host "  1. Set specific version" -ForegroundColor Gray
-Write-Host "  2. Increment patch (X.Y.Z+1)" -ForegroundColor Gray
-Write-Host "  3. Increment minor (X.Y+1.0)" -ForegroundColor Gray
-Write-Host "  4. Increment major (X+1.0.0)" -ForegroundColor Gray
-Write-Host "  5. Add pre-release suffix" -ForegroundColor Gray
-Write-Host "  6. Scan files only (no changes)" -ForegroundColor Gray
-
-do {
-    $choice = Read-Host "`nEnter choice (1-6)"
-    $validChoice = $choice -in @('1', '2', '3', '4', '5', '6')
-    if (-not $validChoice) {
-        Write-Host "Invalid choice. Please enter 1-6." -ForegroundColor Red
-    }
-} while (-not $validChoice)
-
-$newVersion = $currentVersion
-$dryRun = $false
-
-switch ($choice) {
-    '1' {
-        do {
-            $inputVersion = Read-Host "Enter new version (e.g., 1.2.3, 2.0.0-beta, 1.0.0+build123)"
-            $isValid = Test-SemanticVersion -version $inputVersion
-            if (-not $isValid) {
-                Write-Host "Invalid semantic version format. Use MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]" -ForegroundColor Red
-            }
-        } while (-not $isValid)
-        $newVersion = $inputVersion
-    }
-    '2' {
-        $versionParts = Get-SemanticVersionParts -version $currentVersion
-        if ($versionParts) {
-            $newVersion = "$($versionParts.Major).$($versionParts.Minor).$($versionParts.Patch + 1)"
-        } else {
-            Write-Host "❌ Cannot parse current version for increment" -ForegroundColor Red
-            return
-        }
-    }
-    '3' {
-        $versionParts = Get-SemanticVersionParts -version $currentVersion
-        if ($versionParts) {
-            $newVersion = "$($versionParts.Major).$($versionParts.Minor + 1).0"
-        } else {
-            Write-Host "❌ Cannot parse current version for increment" -ForegroundColor Red
-            return
-        }
-    }
-    '4' {
-        $versionParts = Get-SemanticVersionParts -version $currentVersion
-        if ($versionParts) {
-            $newVersion = "$($versionParts.Major + 1).0.0"
-        } else {
-            Write-Host "❌ Cannot parse current version for increment" -ForegroundColor Red
-            return
-        }
-    }
-    '5' {
-        $versionParts = Get-SemanticVersionParts -version $currentVersion
-        if ($versionParts) {
-            $suffix = Read-Host "Enter pre-release suffix (e.g., alpha, beta, rc1)"
-            $newVersion = "$($versionParts.Simple)-$suffix"
-        } else {
-            Write-Host "❌ Cannot parse current version for suffix" -ForegroundColor Red
-            return
-        }
-    }
-    '6' {
-        $dryRun = $true
-        Write-Host "📋 Dry run mode - scanning files only" -ForegroundColor DarkCyan
-    }
-}
-
-if (-not $dryRun) {
-    Write-Host ("New version will be: {0}" -f $newVersion) -ForegroundColor Green
-    
-    $confirm = Read-Host "`nProceed with version update? (y/N)"
-    if ($confirm -ne 'y' -and $confirm -ne 'Y') {
-        Write-Host "❌ Operation cancelled" -ForegroundColor Red
-        return
-    }
-}
+# AUTOMATED: Always run in scan mode (dry run) for comprehensive report
+Write-Host "`n🔍 Running in scan mode - analyzing version consistency..." -ForegroundColor DarkCyan
 
 # Find all version-containing files
-Write-Host "`nScanning for version-containing files..." -ForegroundColor DarkGray
+Write-Host "`n📂 Scanning for version-containing files..." -ForegroundColor DarkGray
 $versionFiles = Find-VersionFiles
 
-Write-Host ("Found {0} files containing version information:" -f $versionFiles.Count) -ForegroundColor Gray
+Write-Host "`n📊 Found $($versionFiles.Count) files containing version information" -ForegroundColor Gray
 
-# Display files and update versions
-$totalChanges = 0
-foreach ($versionFile in $versionFiles) {
-    Write-Host ("`n📄 {0}" -f $versionFile.RelativePath) -ForegroundColor DarkCyan
-    Write-Host ("   Patterns: {0}" -f ($versionFile.Patterns -join ", ")) -ForegroundColor DarkGray
+if ($versionFiles.Count -eq 0) {
+    Write-Host "⚠️  No version-containing files found" -ForegroundColor DarkYellow
+} else {
+    # Analyze version consistency
+    $versionInconsistencies = @()
+    $allVersions = @()
+    $semanticIssues = @()
     
-    if (-not $dryRun) {
-        $changes = Update-VersionInFile -filePath $versionFile.File -newVersion $newVersion -dryRun $dryRun
-        $totalChanges += $changes
+    foreach ($versionFile in $versionFiles) {
+        $fileVersions = $versionFile.FoundVersions
         
-        if ($changes -eq 0) {
-            Write-Host "   No changes made" -ForegroundColor DarkGray
+        # Collect all versions
+        foreach ($foundVersion in $fileVersions) {
+            $allVersions += $foundVersion.Version
+            
+            if (-not $foundVersion.Valid) {
+                $semanticIssues += [PSCustomObject]@{
+                    File = $versionFile.RelativePath
+                    Type = $foundVersion.Type
+                    Version = $foundVersion.Version
+                    Issue = "Not semantic versioning compliant"
+                }
+            }
+        }
+        
+        # Check for inconsistencies within this file
+        $uniqueVersionsInFile = $fileVersions.Version | Select-Object -Unique
+        if ($uniqueVersionsInFile.Count -gt 1) {
+            $versionInconsistencies += [PSCustomObject]@{
+                File = $versionFile.RelativePath
+                Issue = "Multiple versions in same file"
+                Versions = $uniqueVersionsInFile
+            }
+        }
+    }
+    
+    # Display top files with version info (limited for automation)
+    Write-Host "`n📋 Top Version-Containing Files:" -ForegroundColor DarkCyan
+    
+    $topFiles = $versionFiles | Select-Object -First 8  # Reduced for automation
+    foreach ($versionFile in $topFiles) {
+        Write-Host "   📄 $($versionFile.RelativePath)" -ForegroundColor Gray
+        Write-Host "      Patterns: $($versionFile.Patterns -join ', ')" -ForegroundColor DarkGray
+        
+        # Show versions found in this file
+        foreach ($foundVersion in $versionFile.FoundVersions) {
+            $validIcon = if ($foundVersion.Valid) { "✅" } else { "⚠️" }
+            Write-Host "      $validIcon $($foundVersion.Type): $($foundVersion.Version)" -ForegroundColor DarkGray
+        }
+    }
+    
+    if ($versionFiles.Count -gt 8) {
+        Write-Host "   ... and $($versionFiles.Count - 8) more files" -ForegroundColor DarkGray
+    }
+    
+    # Version consistency analysis
+    Write-Host "`n📊 Version Consistency Analysis:" -ForegroundColor DarkCyan
+    
+    $uniqueVersions = $allVersions | Select-Object -Unique | Sort-Object
+    Write-Host "   Unique versions found: $($uniqueVersions.Count)" -ForegroundColor Gray
+    
+    foreach ($version in $uniqueVersions) {
+        $count = ($allVersions | Where-Object { $_ -eq $version }).Count
+        $color = if ($version -eq $currentVersion) { "Green" } else { "DarkYellow" }
+        $validIcon = if (Test-SemanticVersion $version) { "✅" } else { "⚠️" }
+        Write-Host "   $validIcon $version`: $count occurrences" -ForegroundColor $color
+    }
+    
+    # Inconsistency warnings
+    if ($versionInconsistencies.Count -gt 0) {
+        Write-Host "`n⚠️  Version Inconsistencies Detected:" -ForegroundColor DarkYellow
+        foreach ($inconsistency in $versionInconsistencies) {
+            Write-Host "   • $($inconsistency.File)`: $($inconsistency.Issue)" -ForegroundColor Red
+            Write-Host "     Versions: $($inconsistency.Versions -join ', ')" -ForegroundColor DarkGray
         }
     } else {
-        # In dry run, just show what would be updated
-        $content = $versionFile.Content
-        
-        if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
-            Write-Host ("   Would update MOD_VERSION: {0} → {1}" -f $matches[1], $newVersion) -ForegroundColor DarkYellow
+        Write-Host "`n✅ No version inconsistencies detected within files" -ForegroundColor Green
+    }
+    
+    # Semantic versioning issues
+    if ($semanticIssues.Count -gt 0) {
+        Write-Host "`n⚠️  Semantic Versioning Issues:" -ForegroundColor DarkYellow
+        $topSemanticIssues = $semanticIssues | Select-Object -First 5
+        foreach ($issue in $topSemanticIssues) {
+            Write-Host "   • $($issue.File): $($issue.Type) = '$($issue.Version)'" -ForegroundColor Red
         }
-        if ($content -match 'AssemblyVersion\s*\(\s*"([^"]+)"\s*\)') {
-            Write-Host ("   Would update AssemblyVersion: {0} → {1}" -f $matches[1], $newVersion) -ForegroundColor DarkYellow
-        }
-        if ($content -match 'AssemblyFileVersion\s*\(\s*"([^"]+)"\s*\)') {
-            Write-Host ("   Would update AssemblyFileVersion: {0} → {1}" -f $matches[1], $newVersion) -ForegroundColor DarkYellow
-        }
-        if ($content -match '"version"\s*:\s*"([^"]+)"') {
-            Write-Host ("   Would update JSON version: {0} → {1}" -f $matches[1], $newVersion) -ForegroundColor DarkYellow
+        if ($semanticIssues.Count -gt 5) {
+            Write-Host "   ... and $($semanticIssues.Count - 5) more semantic issues" -ForegroundColor DarkGray
         }
     }
 }
 
-# Summary
-Write-Host "`n=== Version Update Summary ===" -ForegroundColor DarkCyan
+# Overall assessment
+Write-Host "`n🎯 Overall Assessment:" -ForegroundColor DarkCyan
 
-if ($dryRun) {
-    Write-Host ("📋 Dry run completed") -ForegroundColor DarkCyan
-    Write-Host ("Files scanned: {0}" -f $versionFiles.Count) -ForegroundColor Gray
-    Write-Host ("Files with version info: {0}" -f $versionFiles.Count) -ForegroundColor Gray
-} else {
-    Write-Host ("✅ Version update completed") -ForegroundColor Green
-    Write-Host ("Files processed: {0}" -f $versionFiles.Count) -ForegroundColor Gray
-    Write-Host ("Total changes made: {0}" -f $totalChanges) -ForegroundColor Gray
-    Write-Host ("New version: {0}" -f $newVersion) -ForegroundColor Green
+$overallStatus = "Good"
+$criticalIssues = 0
+
+if ($currentVersion -eq "Unknown") {
+    Write-Host "   🚨 CRITICAL: No MOD_VERSION constant found" -ForegroundColor Red
+    $overallStatus = "Critical"
+    $criticalIssues++
+}
+
+if ($versionFiles.Count -eq 0) {
+    Write-Host "   🚨 CRITICAL: No version-containing files found" -ForegroundColor Red
+    $overallStatus = "Critical"
+    $criticalIssues++
+}
+
+if ($uniqueVersions -and $uniqueVersions.Count -gt 1) {
+    Write-Host "   ⚠️  WARNING: Multiple different versions detected" -ForegroundColor DarkYellow
+    if ($overallStatus -eq "Good") { $overallStatus = "Needs Attention" }
+}
+
+if ($semanticIssues.Count -gt 0) {
+    Write-Host "   ⚠️  WARNING: $($semanticIssues.Count) semantic versioning issues" -ForegroundColor DarkYellow
+    if ($overallStatus -eq "Good") { $overallStatus = "Needs Attention" }
+}
+
+if ($criticalIssues -eq 0 -and $uniqueVersions.Count -le 1 -and $semanticIssues.Count -eq 0) {
+    Write-Host "   ✅ EXCELLENT: Version management is well-maintained" -ForegroundColor Green
 }
 
 # Recommendations
-Write-Host "`n💡 Next Steps:" -ForegroundColor DarkCyan
+Write-Host "`n💡 Recommendations:" -ForegroundColor DarkCyan
 
-if (-not $dryRun) {
-    Write-Host "  🔍 Review changed files for accuracy" -ForegroundColor Gray
-    Write-Host "  🧪 Test the build with new version" -ForegroundColor Gray
-    Write-Host "  📝 Update CHANGELOG.md if needed" -ForegroundColor Gray
-    Write-Host "  📋 Create release notes" -ForegroundColor Gray
-    Write-Host "  🏷️  Tag the release: git tag v$newVersion" -ForegroundColor Gray
-    Write-Host "  🚀 Build and publish release" -ForegroundColor Gray
+if ($currentVersion -eq "Unknown") {
+    Write-Host "   🚨 CRITICAL: Add MOD_VERSION constant to a Constants file" -ForegroundColor Red
+    Write-Host "      Example: public const string MOD_VERSION = \"1.0.0\";" -ForegroundColor Gray
+} else {
+    if (-not (Test-SemanticVersion -version $currentVersion)) {
+        Write-Host "   ⚠️  WARNING: Current version '$currentVersion' is not semantic versioning compliant" -ForegroundColor DarkYellow
+        Write-Host "      Consider using format: MAJOR.MINOR.PATCH (e.g., 1.0.0)" -ForegroundColor DarkYellow
+    }
+}
+
+if ($versionFiles.Count -gt 0) {
+    $uniqueVersions = $allVersions | Select-Object -Unique
+    if ($uniqueVersions.Count -gt 1) {
+        Write-Host "   ⚠️  WARNING: Multiple version values detected across files" -ForegroundColor DarkYellow
+        Write-Host "      Run this script interactively to synchronize versions" -ForegroundColor DarkYellow
+    }
+}
+
+Write-Host "   • Use semantic versioning: MAJOR.MINOR.PATCH" -ForegroundColor Gray
+Write-Host "   • Keep version references synchronized across all files" -ForegroundColor Gray
+Write-Host "   • Tag releases with git: git tag v<VERSION>" -ForegroundColor Gray
+Write-Host "   • Run interactively to update versions across all files" -ForegroundColor Gray
+
+# Create Reports directory if it doesn't exist
+$reportsDir = Join-Path $ProjectRoot "Reports"
+if (-not (Test-Path $reportsDir)) {
+    try {
+        New-Item -Path $reportsDir -ItemType Directory -Force | Out-Null
+        Write-Host "`n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "`n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
+        $reportsDir = $ProjectRoot
+    }
+}
+
+# Generate detailed version synchronization report
+Write-Host "`n📝 Generating detailed version synchronization report..." -ForegroundColor DarkGray
+
+$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$reportPath = Join-Path $reportsDir "VERSION-SYNCHRONIZATION-REPORT_$timestamp.md"
+
+$reportContent = @()
+$reportContent += "# Version Synchronization Report"
+$reportContent += ""
+$reportContent += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$reportContent += "**Current Version**: $currentVersion"
+$reportContent += "**Files Analyzed**: $($versionFiles.Count)"
+$reportContent += "**Overall Status**: $overallStatus"
+$reportContent += ""
+
+# Executive Summary
+$reportContent += "## Executive Summary"
+$reportContent += ""
+
+$versionCount = if ($uniqueVersions) { $uniqueVersions.Count } else { 0 }
+
+if ($overallStatus -eq "Critical") {
+    $reportContent += "🚨 **CRITICAL ISSUES DETECTED** - Immediate action required."
+    $reportContent += ""
+    $reportContent += "Critical problems found that prevent proper version management."
+} elseif ($overallStatus -eq "Needs Attention") {
+    $reportContent += "⚠️ **VERSION INCONSISTENCIES** - Review and synchronization needed."
+    $reportContent += ""
+    $reportContent += "Multiple versions or formatting issues detected across files."
+} else {
+    $reportContent += "✅ **EXCELLENT VERSION MANAGEMENT** - All versions are synchronized."
+    $reportContent += ""
+    $reportContent += "Your project demonstrates good version control practices."
+}
+
+$reportContent += ""
+$reportContent += "| Metric | Value | Status |"
+$reportContent += "|--------|-------|--------|"
+$reportContent += "| **Current Version** | $currentVersion | $(if ($currentVersion -eq "Unknown") { "🚨 Missing" } elseif (Test-SemanticVersion $currentVersion) { "✅ Valid" } else { "⚠️ Invalid Format" }) |"
+$reportContent += "| **Unique Versions** | $versionCount | $(if ($versionCount -eq 0) { "🚨 None Found" } elseif ($versionCount -eq 1) { "✅ Consistent" } else { "⚠️ Inconsistent" }) |"
+$reportContent += "| **Files with Versions** | $($versionFiles.Count) | $(if ($versionFiles.Count -eq 0) { "🚨 None" } elseif ($versionFiles.Count -lt 3) { "⚠️ Few" } else { "✅ Good Coverage" }) |"
+$reportContent += "| **Semantic Issues** | $($semanticIssues.Count) | $(if ($semanticIssues.Count -eq 0) { "✅ None" } elseif ($semanticIssues.Count -le 2) { "⚠️ Minor" } else { "🚨 Multiple" }) |"
+$reportContent += "| **Inconsistencies** | $($versionInconsistencies.Count) | $(if ($versionInconsistencies.Count -eq 0) { "✅ None" } else { "⚠️ Found" }) |"
+$reportContent += ""
+
+# Version Analysis
+if ($versionFiles.Count -gt 0) {
+    $reportContent += "## Version Distribution"
+    $reportContent += ""
     
-    # Git integration
-    if (Test-Path (Join-Path $ProjectRoot ".git")) {
-        Write-Host "`n🔧 Git Commands:" -ForegroundColor DarkCyan
-        Write-Host "  git add -A" -ForegroundColor Gray
-        Write-Host "  git commit -m `"chore: bump version to $newVersion`"" -ForegroundColor Gray
-        Write-Host "  git tag v$newVersion" -ForegroundColor Gray
-        Write-Host "  git push origin main --tags" -ForegroundColor Gray
+    if ($uniqueVersions) {
+        $reportContent += "### Current Version Usage"
+        $reportContent += ""
+        $reportContent += "| Version | Occurrences | Semantic Valid | Status |"
+        $reportContent += "|---------|-------------|----------------|--------|"
+        
+        foreach ($version in $uniqueVersions | Sort-Object) {
+            $count = ($allVersions | Where-Object { $_ -eq $version }).Count
+            $isValid = Test-SemanticVersion $version
+            $isCurrent = $version -eq $currentVersion
+            
+            $status = if ($isCurrent -and $isValid) { "✅ Current & Valid" } 
+                     elseif ($isCurrent) { "⚠️ Current (Invalid Format)" }
+                     elseif ($isValid) { "📝 Valid Format" }
+                     else { "❌ Invalid Format" }
+            
+            $reportContent += "| `$version` | $count | $(if ($isValid) { "✅ Yes" } else { "❌ No" }) | $status |"
+        }
+        $reportContent += ""
+    }
+}
+
+# File Analysis
+if ($versionFiles.Count -gt 0) {
+    $reportContent += "## Files with Version Information"
+    $reportContent += ""
+    
+    foreach ($versionFile in $versionFiles | Sort-Object RelativePath) {
+        $reportContent += "### $($versionFile.RelativePath)"
+        $reportContent += ""
+        $reportContent += "**Patterns Found**: $($versionFile.Patterns -join ', ')"
+        $reportContent += ""
+        
+        if ($versionFile.FoundVersions.Count -gt 0) {
+            $reportContent += "| Type | Version | Format Valid |"
+            $reportContent += "|------|---------|--------------|"
+            
+            foreach ($foundVersion in $versionFile.FoundVersions) {
+                $validIcon = if ($foundVersion.Valid) { "✅" } else { "❌" }
+                $reportContent += "| $($foundVersion.Type) | `$($foundVersion.Version)` | $validIcon |"
+            }
+            $reportContent += ""
+        }
+    }
+}
+
+# Issues Analysis
+if ($versionInconsistencies.Count -gt 0 -or $semanticIssues.Count -gt 0) {
+    $reportContent += "## Issues Requiring Attention"
+    $reportContent += ""
+    
+    if ($versionInconsistencies.Count -gt 0) {
+        $reportContent += "### Version Inconsistencies"
+        $reportContent += ""
+        $reportContent += "Files with multiple different versions:"
+        $reportContent += ""
+        
+        foreach ($inconsistency in $versionInconsistencies) {
+            $reportContent += "#### $($inconsistency.File)"
+            $reportContent += ""
+            $reportContent += "**Issue**: $($inconsistency.Issue)"
+            $reportContent += "**Versions Found**: $($inconsistency.Versions -join ', ')"
+            $reportContent += ""
+        }
+    }
+    
+    if ($semanticIssues.Count -gt 0) {
+        $reportContent += "### Semantic Versioning Issues"
+        $reportContent += ""
+        $reportContent += "Versions that don't follow semantic versioning (MAJOR.MINOR.PATCH):"
+        $reportContent += ""
+        $reportContent += "| File | Type | Current Version | Issue |"
+        $reportContent += "|------|------|-----------------|-------|"
+        
+        foreach ($issue in $semanticIssues) {
+            $reportContent += "| `$($issue.File)` | $($issue.Type) | `$($issue.Version)` | $($issue.Issue) |"
+        }
+        $reportContent += ""
+    }
+}
+
+# Recommendations
+$reportContent += "## 🎯 Action Plan"
+$reportContent += ""
+
+if ($overallStatus -eq "Critical") {
+    $reportContent += "### 🚨 IMMEDIATE ACTION REQUIRED"
+    $reportContent += ""
+    
+    if ($currentVersion -eq "Unknown") {
+        $reportContent += "#### Missing MOD_VERSION Constant"
+        $reportContent += ""
+        $reportContent += "**Priority**: CRITICAL"
+        $reportContent += ""
+        $reportContent += "1. **Add MOD_VERSION constant** to a Constants file:"
+        $reportContent += "   ```csharp"
+        $reportContent += "   public const string MOD_VERSION = \"1.0.0\";"
+        $reportContent += "   ```"
+        $reportContent += "2. **Choose semantic version** following MAJOR.MINOR.PATCH format"
+        $reportContent += "3. **Update all version references** to use this constant"
+        $reportContent += ""
+    }
+    
+    if ($versionFiles.Count -eq 0) {
+        $reportContent += "#### No Version Files Found"
+        $reportContent += ""
+        $reportContent += "**Priority**: CRITICAL"
+        $reportContent += ""
+        $reportContent += "1. **Add version information** to at least one of:"
+        $reportContent += "   - Constants files (MOD_VERSION)"
+        $reportContent += "   - AssemblyInfo.cs (AssemblyVersion)"
+        $reportContent += "   - MelonModInfo attribute"
+        $reportContent += "2. **Establish version source of truth**"
+        $reportContent += ""
+    }
+} elseif ($overallStatus -eq "Needs Attention") {
+    $reportContent += "### ⚠️ SYNCHRONIZATION NEEDED"
+    $reportContent += ""
+    
+    if ($uniqueVersions -and $uniqueVersions.Count -gt 1) {
+        $reportContent += "#### Multiple Versions Detected"
+        $reportContent += ""
+        $reportContent += "**Action**: Synchronize all version references to use the same value"
+        $reportContent += ""
+        $reportContent += "1. **Choose authoritative version**: $currentVersion"
+        $reportContent += "2. **Update all files** to use this version"
+        $reportContent += "3. **Run synchronization** using this script interactively"
+        $reportContent += ""
+    }
+    
+    if ($semanticIssues.Count -gt 0) {
+        $reportContent += "#### Semantic Versioning Issues"
+        $reportContent += ""
+        $reportContent += "**Action**: Convert versions to semantic versioning format"
+        $reportContent += ""
+        $reportContent += "1. **Review current versions** that don't follow MAJOR.MINOR.PATCH"
+        $reportContent += "2. **Convert to semantic format** (e.g., \"v1.0\" → \"1.0.0\")"
+        $reportContent += "3. **Update all references** to use new format"
+        $reportContent += ""
     }
 } else {
-    Write-Host "  ✏️  Run again without dry run to apply changes" -ForegroundColor Gray
-    Write-Host "  📋 Review the file list above" -ForegroundColor Gray
+    $reportContent += "### ✅ MAINTENANCE MODE"
+    $reportContent += ""
+    $reportContent += "Excellent work! Your version management is well-maintained. Continue with:"
+    $reportContent += ""
+    $reportContent += "1. **Regular Audits**: Run this analysis before releases"
+    $reportContent += "2. **Version Bumping**: Follow semantic versioning for updates"
+    $reportContent += "3. **Git Tagging**: Tag releases with version numbers"
+    $reportContent += "4. **Documentation**: Keep changelogs updated with versions"
 }
 
-# Version validation
-if (-not $dryRun) {
-    Write-Host "`n🔍 Verifying version consistency..." -ForegroundColor DarkGray
-    Start-Sleep -Seconds 1
-    
-    $verificationVersion = Get-CurrentVersion
-    if ($verificationVersion -eq $newVersion) {
-        Write-Host "✅ Version verification successful" -ForegroundColor Green
-    } else {
-        Write-Host ("⚠️  Version verification warning: Expected {0}, found {1}" -f $newVersion, $verificationVersion) -ForegroundColor DarkYellow
-    }
+# Best Practices
+$reportContent += ""
+$reportContent += "### Best Practices"
+$reportContent += ""
+$reportContent += "1. **Semantic Versioning**: Use MAJOR.MINOR.PATCH format"
+$reportContent += "   - MAJOR: Breaking changes"
+$reportContent += "   - MINOR: New features (backward compatible)"
+$reportContent += "   - PATCH: Bug fixes (backward compatible)"
+$reportContent += ""
+$reportContent += "2. **Single Source of Truth**: Use MOD_VERSION constant as primary source"
+$reportContent += ""
+$reportContent += "3. **Consistent Updates**: Update all version references simultaneously"
+$reportContent += ""
+$reportContent += "4. **Git Integration**: Tag releases with version numbers"
+$reportContent += "   ```bash"
+$reportContent += "   git tag v1.0.0"
+$reportContent += "   git push origin v1.0.0"
+$reportContent += "   ```"
+
+# Technical Details
+$reportContent += ""
+$reportContent += "## Technical Analysis Details"
+$reportContent += ""
+$reportContent += "### Detection Patterns"
+$reportContent += ""
+$reportContent += "This analysis searches for versions using these patterns:"
+$reportContent += ""
+$reportContent += "- **MOD_VERSION**: `MOD_VERSION = \"version\"`"
+$reportContent += "- **Assembly Attributes**: `[AssemblyVersion(\"version\")]`"
+$reportContent += "- **JSON Fields**: `\"version\": \"version\"`"
+$reportContent += "- **MelonModInfo**: Third parameter in MelonModInfo attribute"
+$reportContent += ""
+$reportContent += "### File Coverage"
+$reportContent += ""
+$reportContent += "- **File Types**: .cs, .json, .xml, .md"
+$reportContent += "- **Exclusions**: ForCopilot/, Scripts/, Legacy/, .git/"
+$reportContent += "- **Total Scanned**: $($versionFiles.Count) files with version information"
+
+# Footer
+$reportContent += ""
+$reportContent += "---"
+$reportContent += ""
+$reportContent += "**Semantic Versioning**: [semver.org](https://semver.org) - MAJOR.MINOR.PATCH"
+$reportContent += ""
+$reportContent += "*Generated by MixerThreholdMod DevOps Suite - Version Synchronizer*"
+
+try {
+    $reportContent | Out-File -FilePath $reportPath -Encoding UTF8
+    $saveSuccess = $true
+}
+catch {
+    Write-Host "⚠️ Error saving detailed report: $_" -ForegroundColor DarkYellow
+    $saveSuccess = $false
 }
 
-Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
-Read-Host
+Write-Host "`n🚀 Version synchronization scan complete!" -ForegroundColor Green
+
+# OUTPUT PATH AT THE END for easy finding
+if ($saveSuccess) {
+    Write-Host "`n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
+    Write-Host "   Location: $reportPath" -ForegroundColor Cyan
+    Write-Host "   Size: $([Math]::Round((Get-Item $reportPath).Length / 1KB, 1)) KB" -ForegroundColor Gray
+} else {
+    Write-Host "`n⚠️ No detailed report generated" -ForegroundColor DarkYellow
+}
+
+# INTERACTIVE WORKFLOW LOOP (only when running standalone)
+if ($IsInteractive -and -not $RunningFromScript) {
+    do {
+        Write-Host "`n🎯 What would you like to do next?" -ForegroundColor DarkCyan
+        Write-Host "   D - Display report in console" -ForegroundColor Green
+        Write-Host "   R - Re-run version synchronization analysis" -ForegroundColor DarkYellow
+        Write-Host "   X - Exit to DevOps menu" -ForegroundColor Gray
+        
+        $choice = Read-Host "`nEnter choice (D/R/X)"
+        $choice = $choice.ToUpper()
+        
+        switch ($choice) {
+            'D' {
+                if ($saveSuccess) {
+                    Write-Host "`n📋 DISPLAYING VERSION SYNCHRONIZATION REPORT:" -ForegroundColor DarkCyan
+                    Write-Host "=============================================" -ForegroundColor DarkCyan
+                    try {
+                        $reportDisplay = Get-Content -Path $reportPath -Raw
+                        Write-Host $reportDisplay -ForegroundColor White
+                        Write-Host "`n=============================================" -ForegroundColor DarkCyan
+                        Write-Host "📋 END OF REPORT" -ForegroundColor DarkCyan
+                    }
+                    catch {
+                        Write-Host "❌ Could not display report: $_" -ForegroundColor Red
+                    }
+                } else {
+                    Write-Host "❌ No report available to display" -ForegroundColor Red
+                }
+            }
+            'R' {
+                Write-Host "`n🔄 RE-RUNNING VERSION SYNCHRONIZATION ANALYSIS..." -ForegroundColor DarkYellow
+                Write-Host "================================================" -ForegroundColor DarkYellow
+                & $MyInvocation.MyCommand.Path
+                return
+            }
+            'X' {
+                Write-Host "`n👋 Returning to DevOps menu..." -ForegroundColor Gray
+                return
+            }
+            default {
+                Write-Host "❌ Invalid choice. Please enter D, R, or X." -ForegroundColor Red
+            }
+        }
+    } while ($choice -notin @('X'))
+} else {
+    Write-Host "📄 Script completed - returning to caller" -ForegroundColor DarkGray
+}

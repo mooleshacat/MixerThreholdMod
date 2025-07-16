@@ -1,6 +1,6 @@
 ﻿# MixerThreholdMod DevOps Menu Launcher
 # A PowerShell-based categorized menu for launching DevOps scripts with prefix-based organization
-# Groups scripts by their filename prefixes for better organization and user experience
+# Groups scripts by their filename patterns for better organization and user experience
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 if ((Split-Path $ScriptDir -Leaf) -ieq "Scripts") {
@@ -9,7 +9,7 @@ if ((Split-Path $ScriptDir -Leaf) -ieq "Scripts") {
     $ProjectRoot = $ScriptDir
 }
 
-# Function to categorize scripts by prefix
+# Function to categorize scripts by prefix and patterns
 function Get-CategorizedScripts {
     param($ScriptDirectory)
     
@@ -18,37 +18,43 @@ function Get-CategorizedScripts {
         Where-Object { $_.Name -ne "DevOps-Menu.ps1" } | 
         Sort-Object Name
     
-    # Define script categories with their prefixes and metadata
+    # Define script categories with their patterns and metadata
     $categories = @{
-        "Analysis & Quality" = @{
-            Prefixes = @("Analyze-", "Check-", "Find-", "Verify-")
+        "High-Level Reports" = @{
+            Patterns = @("*-Report.ps1")  # Scripts with -Report in filename
+            Icon = "🛡️"
+            Color = "Red"
+            Description = "Comprehensive orchestrators that run multiple analysis tools and provide project-wide insights"
+        }
+        "Analysis & Quality Assurance" = @{
+            Patterns = @("Analyze-*", "Check-*", "Find-*", "Verify-*")
             Icon = "🔍"
             Color = "DarkCyan"
-            Description = "Code analysis, quality checks, and verification tools"
+            Description = "Code analysis, quality checks, and verification tools for maintaining code standards"
         }
-        "Documentation & Reports" = @{
-            Prefixes = @("Generate-")
+        "Report Generation" = @{
+            Patterns = @("Generate-*")  # Scripts without -Report suffix
             Icon = "📋"
             Color = "DarkGreen"
-            Description = "Documentation generation and comprehensive reporting"
+            Description = "Detailed report generators for specific aspects of the codebase"
         }
-        "Version & Release" = @{
-            Prefixes = @("Update-")
+        "Version & Release Management" = @{
+            Patterns = @("Update-*")
             Icon = "🚀"
             Color = "DarkMagenta"
             Description = "Version management and release preparation tools"
         }
         "Git & Source Control" = @{
-            Prefixes = @("Git-")
+            Patterns = @("Git-*")
             Icon = "🌿"
             Color = "DarkYellow"
-            Description = "Git operations and source control management"
+            Description = "Git operations and source control management utilities"
         }
-        "Other Tools" = @{
-            Prefixes = @()  # Catch-all for uncategorized scripts
+        "Development Tools" = @{
+            Patterns = @()  # Catch-all for uncategorized scripts
             Icon = "🔧"
             Color = "Gray"
-            Description = "Miscellaneous DevOps utilities and tools"
+            Description = "Miscellaneous development utilities and tools"
         }
     }
     
@@ -65,23 +71,33 @@ function Get-CategorizedScripts {
     foreach ($script in $allScripts) {
         $assigned = $false
         
-        foreach ($categoryName in $categories.Keys) {
-            $prefixes = $categories[$categoryName].Prefixes
-            
-            foreach ($prefix in $prefixes) {
-                if ($script.Name.StartsWith($prefix)) {
-                    $categorizedScripts[$categoryName].Scripts += $script
-                    $assigned = $true
-                    break
+        # Special handling for high-level reports (must contain -Report in filename)
+        if ($script.Name -match ".*-Report\.ps1$") {
+            $categorizedScripts["High-Level Reports"].Scripts += $script
+            $assigned = $true
+        }
+        # Handle other categories (excluding -Report scripts from Generate- category)
+        elseif (-not ($script.Name -match ".*-Report\.ps1$")) {
+            foreach ($categoryName in $categories.Keys) {
+                if ($categoryName -eq "High-Level Reports") { continue }  # Skip high-level reports category
+                
+                $patterns = $categories[$categoryName].Patterns
+                
+                foreach ($pattern in $patterns) {
+                    if ($script.Name -like $pattern) {
+                        $categorizedScripts[$categoryName].Scripts += $script
+                        $assigned = $true
+                        break
+                    }
                 }
+                
+                if ($assigned) { break }
             }
-            
-            if ($assigned) { break }
         }
         
-        # If not assigned to any specific category, put in "Other Tools"
+        # If not assigned to any specific category, put in "Development Tools"
         if (-not $assigned) {
-            $categorizedScripts["Other Tools"].Scripts += $script
+            $categorizedScripts["Development Tools"].Scripts += $script
         }
     }
     
@@ -103,9 +119,9 @@ function Show-CategorizedMenu {
     Clear-Host
     
     Write-Host ""
-    Write-Host "════════════════════════════════════════════════" -ForegroundColor DarkCyan
-    Write-Host " 🚀 MixerThreholdMod DevOps Suite" -ForegroundColor White
-    Write-Host "════════════════════════════════════════════════" -ForegroundColor DarkCyan
+    Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor DarkCyan
+    Write-Host " 🚀 MixerThreholdMod DevOps Suite v2.0" -ForegroundColor White
+    Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor DarkCyan
     Write-Host ""
     
     $totalScripts = 0
@@ -113,18 +129,30 @@ function Show-CategorizedMenu {
         $totalScripts += $category.Scripts.Count
     }
     
-    Write-Host "📊 Available Tools: $totalScripts scripts across $($CategorizedScripts.Count) categories" -ForegroundColor Gray
+    Write-Host "📊 Professional DevOps Tools: $totalScripts scripts across $($CategorizedScripts.Count) categories" -ForegroundColor Gray
     Write-Host ""
     
     $optionNumber = 1
     $scriptMap = @{}
     
-    # Display each category
-    foreach ($categoryName in $CategorizedScripts.Keys | Sort-Object) {
+    # Define category display order for better UX
+    $categoryOrder = @(
+        "High-Level Reports",
+        "Analysis & Quality Assurance", 
+        "Report Generation",
+        "Version & Release Management",
+        "Git & Source Control",
+        "Development Tools"
+    )
+    
+    # Display each category in the defined order
+    foreach ($categoryName in $categoryOrder) {
+        if (-not $CategorizedScripts.ContainsKey($categoryName)) { continue }
+        
         $category = $CategorizedScripts[$categoryName]
         $metadata = $category.Metadata
         
-        # Category header
+        # Category header with enhanced styling
         Write-Host "$($metadata.Icon) $categoryName" -ForegroundColor $metadata.Color
         Write-Host "   $($metadata.Description)" -ForegroundColor DarkGray
         Write-Host ""
@@ -134,7 +162,7 @@ function Show-CategorizedMenu {
             $scriptMap[$optionNumber] = $script
             
             # Extract description from script if available
-            $description = Get-ScriptDescription -ScriptPath $script.FullName
+            $description = Get-ScriptDescription -ScriptPath $script.FullName -ScriptName $script.Name
             
             Write-Host "   $optionNumber. " -NoNewline -ForegroundColor Gray
             Write-Host $script.Name -NoNewline -ForegroundColor White
@@ -150,36 +178,44 @@ function Show-CategorizedMenu {
         Write-Host ""
     }
     
-    # Special options
-    Write-Host "🎯 Special Actions:" -ForegroundColor DarkCyan
-    Write-Host ""
-    Write-Host "   C. " -NoNewline -ForegroundColor Gray
-    Write-Host "Generate-Comprehensive-Report.ps1" -NoNewline -ForegroundColor Yellow
-    Write-Host " - Run ALL analysis tools" -ForegroundColor DarkGray
+    # Special exit option
+    Write-Host "🎯 Navigation:" -ForegroundColor DarkCyan
     Write-Host ""
     Write-Host "   Q. " -NoNewline -ForegroundColor Gray
-    Write-Host "Quit" -ForegroundColor Red
+    Write-Host "Quit DevOps Suite" -ForegroundColor Red
     Write-Host ""
     
     return $scriptMap
 }
 
-# Function to extract description from script header
+# Function to extract description from script header with enhanced patterns
 function Get-ScriptDescription {
-    param($ScriptPath)
+    param($ScriptPath, $ScriptName)
     
     try {
-        $firstFewLines = Get-Content -Path $ScriptPath -TotalCount 10 -ErrorAction SilentlyContinue
+        # Special descriptions for high-level orchestrators
+        if ($ScriptName -eq "Generate-Comprehensive-Report.ps1") {
+            return "Comprehensive project analysis - runs ALL DevOps tools and provides unified dashboard"
+        }
+        if ($ScriptName -eq "Generate-Corruption-Report.ps1") {
+            return "Ultimate corruption detection - identifies merge conflicts, encoding issues, and structural problems"
+        }
+        
+        $firstFewLines = Get-Content -Path $ScriptPath -TotalCount 15 -ErrorAction SilentlyContinue
         
         foreach ($line in $firstFewLines) {
             # Look for description patterns in comments
             if ($line -match '^#\s*(.+)$' -and 
                 $line -notmatch '^#\s*MixerThreholdMod' -and 
                 $line -notmatch '^#\s*Excludes:' -and
-                $line -notmatch '^#\s*\$') {
+                $line -notmatch '^#\s*\$' -and
+                $line -notmatch '^#\s*(Master|Ultimate|Orchestrator)') {
                 
                 $description = $matches[1].Trim()
-                if ($description.Length -gt 5 -and $description.Length -lt 80) {
+                
+                # Enhanced description filtering
+                if ($description.Length -gt 10 -and $description.Length -lt 100 -and
+                    $description -notmatch '(DevOps Tool:|COMPATIBLE|VERSION)') {
                     return $description
                 }
             }
@@ -192,84 +228,120 @@ function Get-ScriptDescription {
     return $null
 }
 
-# Function to handle user selection
+# Function to handle user selection with enhanced messaging
 function Process-UserSelection {
     param($Choice, $ScriptMap, $CategorizedScripts)
     
+    # Handle quit
     if ($Choice -ieq "Q") {
-        Write-Host "👋 Exiting DevOps Suite..." -ForegroundColor Gray
+        Write-Host "👋 Exiting MixerThreholdMod DevOps Suite..." -ForegroundColor Gray
         return $false
     }
     
-    if ($Choice -ieq "C") {
-        # Run comprehensive report
-        $comprehensiveScript = Join-Path $ScriptDir "Generate-Comprehensive-Report.ps1"
-        if (Test-Path $comprehensiveScript) {
-            Write-Host ""
-            Write-Host "🚀 Running Comprehensive Analysis..." -ForegroundColor Green
-            Write-Host "This will execute ALL analysis tools sequentially." -ForegroundColor DarkYellow
-            Write-Host ""
-            
-            & $comprehensiveScript
-        } else {
-            Write-Host "❌ Comprehensive report script not found!" -ForegroundColor Red
-        }
-        return $true
-    }
-    
-    # Handle numeric selection
+    # Handle numeric selection with enhanced error handling
     try {
         $choiceNum = [int]$Choice
-        if ($ScriptMap.ContainsKey($choiceNum)) {
+        
+        if ($choiceNum -ge 1 -and $choiceNum -le $ScriptMap.Count -and $ScriptMap.ContainsKey($choiceNum)) {
             $selectedScript = $ScriptMap[$choiceNum]
             
-            Write-Host ""
-            Write-Host "🔍 Running: " -NoNewline -ForegroundColor Gray
-            Write-Host $selectedScript.Name -ForegroundColor Green
-            Write-Host ""
+            # Enhanced messaging for different script types
+            if ($selectedScript.Name -match ".*-Report\.ps1$") {
+                Write-Host ""
+                Write-Host "🛡️  LAUNCHING HIGH-LEVEL ORCHESTRATOR: " -NoNewline -ForegroundColor Red
+                Write-Host $selectedScript.Name -ForegroundColor Yellow
+                Write-Host ""
+                Write-Host "📊 This script will:" -ForegroundColor DarkCyan
+                Write-Host "   • Run multiple analysis tools automatically" -ForegroundColor Gray
+                Write-Host "   • Generate comprehensive reports in Reports/ directory" -ForegroundColor Gray
+                Write-Host "   • Display summary results in console" -ForegroundColor Gray
+                Write-Host "   • Identify critical issues requiring attention" -ForegroundColor Gray
+                Write-Host ""
+                Write-Host "💡 For detailed analysis, check Reports/* or run specific tools from this menu" -ForegroundColor DarkYellow
+                Write-Host ""
+            } else {
+                Write-Host ""
+                Write-Host "🔍 Running DevOps Tool: " -NoNewline -ForegroundColor Gray
+                Write-Host $selectedScript.Name -ForegroundColor Green
+                Write-Host ""
+            }
             
-            # Execute the script
-            & $selectedScript.FullName
+            try {
+                # Execute the script with proper error handling
+                & $selectedScript.FullName
+                
+                if ($selectedScript.Name -match ".*-Report\.ps1$") {
+                    Write-Host ""
+                    Write-Host "✅ High-level analysis completed successfully!" -ForegroundColor Green
+                    Write-Host "📄 Detailed reports saved to Reports/ directory" -ForegroundColor Cyan
+                } else {
+                    Write-Host ""
+                    Write-Host "✅ DevOps tool completed successfully!" -ForegroundColor Green
+                }
+            } catch {
+                Write-Host "❌ Script execution error: $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "📋 Stack trace: $($_.ScriptStackTrace)" -ForegroundColor DarkYellow
+            }
         } else {
-            Write-Host "❌ Invalid selection: $Choice" -ForegroundColor Red
+            Write-Host "❌ Invalid selection: $Choice (valid range: 1-$($ScriptMap.Count), Q)" -ForegroundColor Red
         }
     } catch {
-        Write-Host "❌ Invalid selection: $Choice" -ForegroundColor Red
+        Write-Host "❌ Invalid input format: $Choice (please enter a number or Q)" -ForegroundColor Red
     }
     
     return $true
 }
 
-# Main menu loop
+# Main menu loop with enhanced error handling
 function Start-DevOpsMenu {
-    do {
-        # Get categorized scripts
-        $categorizedScripts = Get-CategorizedScripts -ScriptDirectory $ScriptDir
+    try {
+        do {
+            # Get categorized scripts
+            $categorizedScripts = Get-CategorizedScripts -ScriptDirectory $ScriptDir
+            
+            if ($categorizedScripts.Count -eq 0) {
+                Write-Host "❌ No PowerShell scripts found in Scripts folder!" -ForegroundColor Red
+                Write-Host "Press ENTER to exit..." -ForegroundColor Gray -NoNewline
+                Read-Host
+                return
+            }
+            
+            # Show menu and get user choice
+            $scriptMap = Show-CategorizedMenu -CategorizedScripts $categorizedScripts
+            
+            Write-Host "Select a DevOps tool (1-$($scriptMap.Count)) or Q to quit: " -NoNewline -ForegroundColor Green
+            $choice = Read-Host
+            
+            # Skip processing if user just pressed ENTER
+            if ([string]::IsNullOrWhiteSpace($choice)) {
+                Write-Host "⚠️  No selection made. Please choose a DevOps tool." -ForegroundColor DarkYellow
+                Start-Sleep -Seconds 1
+                continue
+            }
+            
+            # Process the selection
+            $continue = Process-UserSelection -Choice $choice.Trim() -ScriptMap $scriptMap -CategorizedScripts $categorizedScripts
+            
+            if ($continue) {
+                Write-Host ""
+                Write-Host "Press ENTER to return to DevOps Suite menu..." -ForegroundColor Gray -NoNewline
+                Read-Host
+            }
+            
+        } while ($continue)
         
-        if ($categorizedScripts.Count -eq 0) {
-            Write-Host "❌ No PowerShell scripts found in Scripts folder!" -ForegroundColor Red
-            Write-Host "Press ENTER to exit..." -ForegroundColor Gray -NoNewline
-            Read-Host
-            return
-        }
-        
-        # Show menu and get user choice
-        $scriptMap = Show-CategorizedMenu -CategorizedScripts $categorizedScripts
-        
-        Write-Host "Select an option (1-$($scriptMap.Count), C for comprehensive, Q to quit): " -NoNewline -ForegroundColor Green
-        $choice = Read-Host
-        
-        # Process the selection
-        $continue = Process-UserSelection -Choice $choice -ScriptMap $scriptMap -CategorizedScripts $categorizedScripts
-        
-        if ($continue) {
-            Write-Host ""
-            Write-Host "Press ENTER to return to menu..." -ForegroundColor Gray -NoNewline
-            Read-Host
-        }
-        
-    } while ($continue)
+    } catch {
+        Write-Host "💥 Unexpected error in DevOps Suite: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "📋 Stack trace: $($_.ScriptStackTrace)" -ForegroundColor DarkYellow
+        Write-Host "Press ENTER to exit..." -ForegroundColor Gray -NoNewline
+        Read-Host
+    }
 }
 
-# Start the menu system
+# Display startup banner
+Write-Host ""
+Write-Host "🚀 Initializing MixerThreholdMod DevOps Suite..." -ForegroundColor DarkCyan
+Start-Sleep -Milliseconds 500
+
+# Start the enhanced menu system
 Start-DevOpsMenu
