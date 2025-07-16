@@ -28,9 +28,9 @@ namespace MixerThreholdMod_1_0_0.Core
 #else
         public bool IsDebugEnabled = false; // Disable for production builds (disables all logging except errors)
 #endif
-        public int CurrentMsgLogLevel = 3; // Current dev desired msg log level (1, 2, or 3)
-        public int CurrentWarnLogLevel = 2; // Current dev desired warn log level (1 or 2)
-        public bool ShowLogLevelCalc = true; // Show log level calculation for clarity
+        public int CurrentMsgLogLevel = 3;
+        public int CurrentWarnLogLevel = 2;
+        public bool ShowLogLevelCalc = true;
 
         /// <summary>
         /// Info (Msg) logging with level filtering.

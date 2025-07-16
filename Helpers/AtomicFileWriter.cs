@@ -1,44 +1,56 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+using MixerThreholdMod_1_0_0.Core;
 
-/// <summary>
-/// Provides atomic file write operations for MixerThreholdMod.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe and use async patterns.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
-/// </summary>
-public static class AtomicFileWriter
+namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
-    /// Atomically writes content to a file by writing to a temp file and renaming.
+    /// Atomic file writer for safe, crash-resistant save operations.
+    /// ⚠️ THREAD SAFETY: All operations are thread-safe and async.
+    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
+    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
-    public static async Task<bool> WriteAllTextAtomicAsync(string filePath, string content)
+    public static class AtomicFileWriter
     {
-        string tempFilePath = filePath + ".tmp";
-        try
+        private static readonly Logger logger = new Logger();
+
+        /// <summary>
+        /// Writes data to a file atomically. Uses a temp file and renames on success.
+        /// </summary>
+        /// <param name="filePath">Target file path</param>
+        /// <param name="data">Data to write</param>
+        public static async Task<bool> WriteAsync(string filePath, byte[] data)
         {
-            await Task.Run(() =>
+            string tempPath = filePath + ".tmp";
+            try
             {
-                File.WriteAllText(tempFilePath, content);
+                // Write to temp file first
+                using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    await fs.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+                }
+
+                // Replace original file atomically
                 if (File.Exists(filePath))
                 {
-                    File.Delete(filePath);
+                    File.Replace(tempPath, filePath, null);
                 }
-                File.Move(tempFilePath, filePath);
-            }).ConfigureAwait(false);
+                else
+                {
+                    File.Move(tempPath, filePath);
+                }
 
-            Main.logger?.Msg(1, string.Format("{0} Atomic write completed: {1}", ATOMIC_WRITE_PREFIX, filePath));
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Main.logger?.Err(string.Format("{0} Error during atomic write: {1}\n{2}", ATOMIC_WRITE_PREFIX, ex.Message, ex.StackTrace));
-            if (File.Exists(tempFilePath))
-            {
-                try { File.Delete(tempFilePath); } catch { }
+                logger.Msg(1, string.Format("Atomic write succeeded for {0}", filePath));
+                return true;
             }
-            return false;
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("Atomic write failed for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                // Emergency fallback: try to clean up temp file
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { /* ignore */ }
+                return false;
+            }
         }
     }
 }
