@@ -1,50 +1,68 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+using MixerThreholdMod_1_0_0.Core;
 
-/// <summary>
-/// Reads mixer data from disk with crash prevention and error handling.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe and async.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses Task.Run, string.Format, and proper cancellation tokens.
-/// </summary>
-public static class MixerDataReader
+namespace MixerThreholdMod_1_0_0.Helpers
 {
-    public static async Task<Dictionary<int, float>> ReadMixerDataAsync(string filePath, CancellationToken cancellationToken = default(CancellationToken))
+    /// <summary>
+    /// Robust, thread-safe reader for mixer data files.
+    /// ⚠️ THREAD SAFETY: All operations are thread-safe and async.
+    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
+    /// </summary>
+    public static class MixerDataReader
     {
-        try
+        private static readonly Logger logger = new Logger();
+
+        /// <summary>
+        /// Reads mixer data from the specified file path asynchronously.
+        /// </summary>
+        /// <param name="filePath">Path to the mixer data file.</param>
+        /// <returns>Byte array of mixer data, or null if read fails.</returns>
+        public static async Task<byte[]> ReadAsync(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            if (string.IsNullOrEmpty(filePath))
             {
-                Main.logger?.Warn(1, string.Format("{0} MixerDataReader: File not found: {1}", PERSISTENCE_PREFIX, filePath));
-                return new Dictionary<int, float>();
+                logger.Err("[MixerDataReader] ReadAsync: filePath is null or empty.");
+                return null;
             }
 
-            string json = await Task.Run(() => File.ReadAllText(filePath, Encoding.UTF8), cancellationToken).ConfigureAwait(false);
-            if (string.IsNullOrEmpty(json))
+            try
             {
-                Main.logger?.Warn(1, string.Format("{0} MixerDataReader: File empty: {1}", PERSISTENCE_PREFIX, filePath));
-                return new Dictionary<int, float>();
-            }
+                if (!File.Exists(filePath))
+                {
+                    logger.Warn(1, string.Format("ReadAsync: File not found {0}", filePath));
+                    return null;
+                }
 
-            var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-            if (data == null || !data.ContainsKey(MIXER_VALUES_KEY))
+                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    var buffer = new byte[fs.Length];
+                    int bytesRead = await fs.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                    if (bytesRead != buffer.Length)
+                    {
+                        logger.Warn(2, string.Format("ReadAsync: Incomplete read for {0}", filePath));
+                    }
+                    logger.Msg(1, string.Format("[MixerDataReader] ReadAsync succeeded for {0}", filePath));
+                    return buffer;
+                }
+            }
+            catch (ArgumentNullException ex)
             {
-                Main.logger?.Warn(1, string.Format("{0} MixerDataReader: Invalid data format: {1}", PERSISTENCE_PREFIX, filePath));
-                return new Dictionary<int, float>();
+                logger.Err(string.Format("ReadAsync ArgumentNullException for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                return null;
             }
-
-            var mixerValues = JsonConvert.DeserializeObject<Dictionary<int, float>>(data[MIXER_VALUES_KEY].ToString());
-            return mixerValues ?? new Dictionary<int, float>();
-        }
-        catch (Exception ex)
-        {
-            Main.logger?.Err(string.Format("{0} MixerDataReader: Read failed: {1}", PERSISTENCE_PREFIX, ex.Message));
-            return new Dictionary<int, float>();
+            catch (IOException ex)
+            {
+                logger.Err(string.Format("ReadAsync IOException for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                return null;
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("ReadAsync failed for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                return null;
+            }
         }
     }
 }

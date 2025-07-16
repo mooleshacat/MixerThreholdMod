@@ -1,70 +1,78 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+using MixerThreholdMod_1_0_0.Core;
 
-/// <summary>
-/// Handles backup and restore operations for mixer data.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe and use async patterns.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
-/// </summary>
-public static class MixerBackupManager
+namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
-    /// Creates a backup of the specified mixer data file.
+    /// Manages atomic backup of mixer data files.
+    /// ⚠️ THREAD SAFETY: All operations are thread-safe and async.
+    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
-    public static async Task<bool> CreateBackupAsync(string sourceFilePath, string backupDirectory)
+    public static class MixerDataBackupManager
     {
-        try
+        private static readonly Logger logger = new Logger();
+
+        /// <summary>
+        /// Creates a backup of the specified mixer data file.
+        /// </summary>
+        /// <param name="filePath">Path to the original mixer data file.</param>
+        public static async Task<bool> BackupAsync(string filePath)
         {
-            if (!File.Exists(sourceFilePath))
+            if (string.IsNullOrEmpty(filePath))
             {
-                Main.logger?.Warn(1, string.Format("{0} Source file does not exist: {1}", BACKUP_PREFIX, sourceFilePath));
+                logger.Err("[MixerDataBackupManager] BackupAsync: filePath is null or empty.");
                 return false;
             }
 
-            if (!Directory.Exists(backupDirectory))
+            string backupPath = filePath + ".bak";
+            try
             {
-                Directory.CreateDirectory(backupDirectory);
+                if (!File.Exists(filePath))
+                {
+                    logger.Warn(1, string.Format("BackupAsync: Source file not found {0}", filePath));
+                    return false;
+                }
+
+                // Read source file asynchronously
+                byte[] data;
+                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    data = new byte[fs.Length];
+                    int bytesRead = await fs.ReadAsync(data, 0, data.Length).ConfigureAwait(false);
+                    if (bytesRead != data.Length)
+                    {
+                        logger.Warn(2, string.Format("BackupAsync: Incomplete read for {0}", filePath));
+                        return false;
+                    }
+                }
+
+                // Write backup file asynchronously
+                using (var fs = new FileStream(backupPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    await fs.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+                }
+
+                logger.Msg(1, string.Format("BackupAsync succeeded for {0} → {1}", filePath, backupPath));
+                return true;
             }
-
-            string backupFileName = string.Format("MixerBackup_{0:yyyyMMdd_HHmmss}.json", DateTime.UtcNow);
-            string backupFilePath = Path.Combine(backupDirectory, backupFileName);
-
-            await Task.Run(() => File.Copy(sourceFilePath, backupFilePath, true)).ConfigureAwait(false);
-
-            Main.logger?.Msg(1, string.Format("{0} Backup created: {1}", BACKUP_PREFIX, backupFilePath));
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Main.logger?.Err(string.Format("{0} Error creating backup: {1}\n{2}", BACKUP_PREFIX, ex.Message, ex.StackTrace));
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Restores mixer data from a backup file.
-    /// </summary>
-    public static async Task<bool> RestoreBackupAsync(string backupFilePath, string targetFilePath)
-    {
-        try
-        {
-            if (!File.Exists(backupFilePath))
+            catch (ArgumentNullException ex)
             {
-                Main.logger?.Warn(1, string.Format("{0} Backup file does not exist: {1}", BACKUP_PREFIX, backupFilePath));
+                logger.Err(string.Format("BackupAsync ArgumentNullException for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
                 return false;
             }
-
-            await Task.Run(() => File.Copy(backupFilePath, targetFilePath, true)).ConfigureAwait(false);
-
-            Main.logger?.Msg(1, string.Format("{0} Backup restored to: {1}", BACKUP_PREFIX, targetFilePath));
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Main.logger?.Err(string.Format("{0} Error restoring backup: {1}\n{2}", BACKUP_PREFIX, ex.Message, ex.StackTrace));
-            return false;
+            catch (IOException ex)
+            {
+                logger.Err(string.Format("BackupAsync IOException for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("BackupAsync failed for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                return false;
+            }
         }
     }
 }

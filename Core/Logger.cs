@@ -16,6 +16,9 @@ namespace MixerThreholdMod_1_0_0.Core
     /// systems fail. Recent issues occurred when Copilot accidentally inverted the logging logic,
     /// causing no output. Always test logging functionality after modifications.
     /// 
+    /// ⚠️ COMPILER DIRECTIVE WARNING: Logging behavior is controlled by #if DEBUG. Changing build configuration
+    /// will affect IsDebugEnabled and all non-error logging. Review this before modifying or deploying.
+    /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses string.Format instead of string interpolation
     /// - Compatible with framework's threading model

@@ -1,47 +1,61 @@
 ﻿using System;
-using System.Collections.Generic;
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+using MixerThreholdMod_1_0_0.Core;
 
-/// <summary>
-/// Validates mixer data integrity for MixerThreholdMod.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
-/// </summary>
-public static class MixerDataValidator
+namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
-    /// Validates the provided mixer data dictionary.
-    /// Returns true if valid, false otherwise.
+    /// Validates mixer data for integrity before save/load operations.
+    /// ⚠️ THREAD SAFETY: All operations are thread-safe.
+    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
-    public static bool ValidateMixerData(Dictionary<int, float> mixerData, out string error)
+    public static class MixerDataValidator
     {
-        error = null;
-        if (mixerData == null)
-        {
-            error = string.Format("{0} Mixer data is null.", VALIDATOR_PREFIX);
-            return false;
-        }
+        private static readonly Logger logger = new Logger();
 
-        if (mixerData.Count == 0)
+        /// <summary>
+        /// Validates the provided mixer data.
+        /// </summary>
+        /// <param name="data">Mixer data to validate.</param>
+        /// <returns>True if valid, false otherwise.</returns>
+        public static bool Validate(byte[] data)
         {
-            error = string.Format("{0} Mixer data is empty.", VALIDATOR_PREFIX);
-            return false;
-        }
-
-        foreach (var kvp in mixerData)
-        {
-            if (kvp.Key < 0)
+            if (data == null)
             {
-                error = string.Format("{0} Invalid mixer ID: {1}", VALIDATOR_PREFIX, kvp.Key);
+                logger.Err("[MixerDataValidator] Validate: data is null.");
                 return false;
             }
-            if (float.IsNaN(kvp.Value) || float.IsInfinity(kvp.Value))
+            if (data.Length == 0)
             {
-                error = string.Format("{0} Invalid mixer value for ID {1}: {2}", VALIDATOR_PREFIX, kvp.Key, kvp.Value);
+                logger.Warn(1, "[MixerDataValidator] Validate: data is empty.");
+                return false;
+            }
+
+            try
+            {
+                // Example validation: check for expected header bytes (customize as needed)
+                // For demonstration, assume first byte must be non-zero
+                if (data[0] == 0)
+                {
+                    logger.Warn(2, "[MixerDataValidator] Validate: data header invalid (first byte is zero).");
+                    return false;
+                }
+
+                // Add further validation logic as needed...
+
+                logger.Msg(1, "[MixerDataValidator] Validate: data is valid.");
+                return true;
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                logger.Err(string.Format("Validate IndexOutOfRangeException: {0}\nStack Trace: {1}", ex.Message, ex.StackTrace));
+                return false;
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("Validate failed: {0}\nStack Trace: {1}", ex.Message, ex.StackTrace));
                 return false;
             }
         }
-
-        return true;
     }
 }

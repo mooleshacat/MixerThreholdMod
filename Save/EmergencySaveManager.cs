@@ -1,50 +1,57 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Helpers;
 
-/// <summary>
-/// Handles emergency save operations for MixerThreholdMod.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe and use async patterns.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
-/// </summary>
-public static class EmergencySaveManager
+namespace MixerThreholdMod_1_0_0.Save
 {
     /// <summary>
-    /// Performs an emergency save of mixer data to a dedicated file.
+    /// Handles emergency save operations for mixer data to prevent data loss during crashes.
+    /// ⚠️ THREAD SAFETY: All operations are thread-safe and async.
+    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
-    public static async Task<bool> PerformEmergencySaveAsync(string mixerDataJson, string emergencySavePath)
+    public static class EmergencySaveManager
     {
-        try
+        private static readonly Logger logger = new Logger();
+
+        /// <summary>
+        /// Performs an emergency save of mixer data to a dedicated emergency file.
+        /// </summary>
+        /// <param name="filePath">Original mixer data file path.</param>
+        /// <param name="data">Mixer data to save.</param>
+        public static async Task<bool> EmergencySaveAsync(string filePath, byte[] data)
         {
-            await Task.Run(() =>
+            if (string.IsNullOrEmpty(filePath))
             {
-                File.WriteAllText(emergencySavePath, mixerDataJson);
-            }).ConfigureAwait(false);
+                logger.Err("[EmergencySaveManager] EmergencySaveAsync: filePath is null or empty.");
+                return false;
+            }
+            if (data == null)
+            {
+                logger.Err(string.Format("[EmergencySaveManager] EmergencySaveAsync: data is null for {0}.", filePath));
+                return false;
+            }
 
-            Main.logger?.Msg(1, string.Format("{0} Emergency save completed: {1}", EMERGENCY_SAVE_PREFIX, emergencySavePath));
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Main.logger?.Err(string.Format("{0} Error during emergency save: {1}\n{2}", EMERGENCY_SAVE_PREFIX, ex.Message, ex.StackTrace));
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Checks if an emergency save file exists.
-    /// </summary>
-    public static bool EmergencySaveExists(string emergencySavePath)
-    {
-        try
-        {
-            return File.Exists(emergencySavePath);
-        }
-        catch (Exception ex)
-        {
-            Main.logger?.Err(string.Format("{0} Error checking emergency save existence: {1}", EMERGENCY_SAVE_PREFIX, ex.Message));
-            return false;
+            string emergencyPath = filePath + ".emergency";
+            try
+            {
+                // Use atomic file writer for emergency save
+                bool result = await AtomicFileWriter.WriteAsync(emergencyPath, data).ConfigureAwait(false);
+                if (!result)
+                {
+                    logger.Err(string.Format("EmergencySaveAsync: Atomic write failed for {0}", emergencyPath));
+                    return false;
+                }
+                logger.Msg(1, string.Format("EmergencySaveAsync succeeded for {0}", emergencyPath));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("EmergencySaveAsync failed for {0}: {1}\nStack Trace: {2}", emergencyPath, ex.Message, ex.StackTrace));
+                return false;
+            }
         }
     }
 }

@@ -1,68 +1,71 @@
 ﻿using System;
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+using System.Diagnostics;
+using MixerThreholdMod_1_0_0.Core;
 
-/// <summary>
-/// Tracks and logs performance metrics for mixer data persistence operations.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
-/// </summary>
-public static class MixerDataPerformanceMetrics
+namespace MixerThreholdMod_1_0_0.Helpers
 {
-    private static readonly object _lock = new object();
-    private static long _totalPersistenceOperations = 0;
-    private static long _totalLoadOperations = 0;
-    private static long _totalValidationOperations = 0;
-    private static TimeSpan _totalPersistenceTime = TimeSpan.Zero;
-    private static TimeSpan _totalLoadTime = TimeSpan.Zero;
-
-    public static void RecordPersistence(TimeSpan duration)
+    /// <summary>
+    /// Tracks and logs performance metrics for mixer data operations.
+    /// ⚠️ THREAD SAFETY: All operations are thread-safe.
+    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
+    /// </summary>
+    public static class MixerDataPerformanceMetrics
     {
-        lock (_lock)
-        {
-            _totalPersistenceOperations++;
-            _totalPersistenceTime = _totalPersistenceTime.Add(duration);
-        }
-    }
+        private static readonly Logger logger = new Logger();
 
-    public static void RecordLoad(TimeSpan duration)
-    {
-        lock (_lock)
+        /// <summary>
+        /// Measures and logs the time taken for a mixer data operation.
+        /// </summary>
+        /// <param name="operationName">Name of the operation being measured.</param>
+        /// <param name="action">Action representing the operation.</param>
+        public static void Measure(string operationName, Action action)
         {
-            _totalLoadOperations++;
-            _totalLoadTime = _totalLoadTime.Add(duration);
-        }
-    }
-
-    public static void RecordValidation()
-    {
-        lock (_lock)
-        {
-            _totalValidationOperations++;
-        }
-    }
-
-    public static void LogMetrics()
-    {
-        lock (_lock)
-        {
-            Main.logger?.Msg(1, PERSISTENCE_PREFIX + " ===== PERSISTENCE PERFORMANCE METRICS =====");
-            Main.logger?.Msg(1, string.Format(PERSISTENCE_PREFIX + " Total persistence operations: {0}", _totalPersistenceOperations));
-            Main.logger?.Msg(1, string.Format(PERSISTENCE_PREFIX + " Total load operations: {0}", _totalLoadOperations));
-            Main.logger?.Msg(1, string.Format(PERSISTENCE_PREFIX + " Total validation operations: {0}", _totalValidationOperations));
-
-            if (_totalPersistenceOperations > 0)
+            if (string.IsNullOrEmpty(operationName))
             {
-                double avgPersistenceTime = _totalPersistenceTime.TotalSeconds / _totalPersistenceOperations;
-                Main.logger?.Msg(1, string.Format(PERSISTENCE_PREFIX + " Average persistence time: {0:F3}s", avgPersistenceTime));
+                logger.Err("[MixerDataPerformanceMetrics] Measure: operationName is null or empty.");
+                return;
+            }
+            if (action == null)
+            {
+                logger.Err(string.Format("[MixerDataPerformanceMetrics] Measure: action is null for {0}.", operationName));
+                return;
             }
 
-            if (_totalLoadOperations > 0)
+            Stopwatch stopwatch = null;
+            try
             {
-                double avgLoadTime = _totalLoadTime.TotalSeconds / _totalLoadOperations;
-                Main.logger?.Msg(1, string.Format(PERSISTENCE_PREFIX + " Average load time: {0:F3}s", avgLoadTime));
+                stopwatch = Stopwatch.StartNew();
+                action();
+                stopwatch.Stop();
+                logger.Msg(1, string.Format("[MixerDataPerformanceMetrics] {0} completed in {1} ms.", operationName, stopwatch.ElapsedMilliseconds));
             }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("Measure failed for {0}: {1}\nStack Trace: {2}", operationName, ex.Message, ex.StackTrace));
+            }
+        }
 
-            Main.logger?.Msg(1, PERSISTENCE_PREFIX + " ==========================================");
+        /// <summary>
+        /// Logs a custom performance metric value.
+        /// </summary>
+        /// <param name="metricName">Name of the metric.</param>
+        /// <param name="value">Value to log.</param>
+        public static void LogMetric(string metricName, double value)
+        {
+            if (string.IsNullOrEmpty(metricName))
+            {
+                logger.Err("[MixerDataPerformanceMetrics] LogMetric: metricName is null or empty.");
+                return;
+            }
+            try
+            {
+                logger.Msg(1, string.Format("[MixerDataPerformanceMetrics] Metric {0}: {1}", metricName, value));
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("LogMetric failed for {0}: {1}\nStack Trace: {2}", metricName, ex.Message, ex.StackTrace));
+            }
         }
     }
 }
