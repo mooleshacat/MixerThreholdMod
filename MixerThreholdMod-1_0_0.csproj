@@ -118,7 +118,12 @@
     <Compile Include="Helpers\GameInstallDirectoryResolver.cs" />
     <Compile Include="Helpers\MelonLoaderDirectoryResolver.cs" />
     <Compile Include="Helpers\MixerBackupManager.cs" />
+    <Compile Include="Helpers\MixerDataBackupManager.cs" />
+    <Compile Include="Helpers\MixerDataIntegrityTracker.cs" />
+    <Compile Include="Helpers\MixerDataPerformanceMetrics.cs" />
+    <Compile Include="Helpers\MixerDataReader.cs" />
     <Compile Include="Helpers\MixerDataValidator.cs" />
+    <Compile Include="Helpers\MixerDataWriter.cs" />
     <Compile Include="Helpers\SaveDirectoryResolver.cs" />
     <Compile Include="Helpers\ThreadSafeFileReader.cs" />
     <Compile Include="Helpers\ThreadSafeFileWriter.cs" />
@@ -127,9 +132,7 @@
     <!-- Save System -->
     <Compile Include="Save\EmergencySaveManager.cs" />
     <!-- Threading -->
-    <Compile Include="Threading\ThreadSafeCollections.cs" />
     <!-- Enhanced File Operations -->
-    <Compile Include="Helpers\GameDirectoryResolver.cs" />
     <Compile Include="Helpers\MixerDataPersistenceManager.cs" />
     <!-- Patches -->
     <Compile Include="Patches\EntityConfiguration_Destroy_Patch.cs" />
@@ -145,6 +148,7 @@
     <Compile Include="Threading\ThreadSafeList.cs" />
     <Compile Include="Threading\ThreadSafeQueue.cs" />
     <Compile Include="Threading\ThreadSafeSet.cs" />
+    <Compile Include="Threading\AsyncLocker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
