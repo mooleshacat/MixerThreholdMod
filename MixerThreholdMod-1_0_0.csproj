@@ -97,6 +97,19 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Core Components -->
+    <Compile Include="Constants\Constants_LargeOriginal.cs" />
+    <Compile Include="Constants\Constants_Original.cs" />
+    <Compile Include="Constants\ErrorConstants.cs" />
+    <Compile Include="Constants\FileConstants.cs" />
+    <Compile Include="Constants\GameConstants.cs" />
+    <Compile Include="Constants\LoggingConstants.cs" />
+    <Compile Include="Constants\MixerConstants.cs" />
+    <Compile Include="Constants\NetworkConstants.cs" />
+    <Compile Include="Constants\PerformanceConstants.cs" />
+    <Compile Include="Constants\SystemConstants.cs" />
+    <Compile Include="Constants\ThreadingConstants.cs" />
+    <Compile Include="Constants\UtilityConstants.cs" />
+    <Compile Include="Constants\ValidationConstants.cs" />
     <Compile Include="Core\Console.cs" />
     <Compile Include="Core\CpuMonitor.cs" />
     <Compile Include="Core\GameExceptionMonitor.cs" />
@@ -141,7 +154,6 @@
     <Compile Include="Patches\LoadManager_LoadedGameFolderPath_Patch.cs" />
     <Compile Include="Patches\SaveManager_Save_Patch.cs" />
     <!-- Constants -->
-    <Compile Include="Constants\Constants.cs" />
     <!-- Main entry point and configuration -->
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Main.cs" />
@@ -158,6 +170,10 @@
     <None Include="LICENSE.md" />
     <None Include="packages.config" />
     <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ForCopilot\" />
+    <Folder Include="Scripts\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
