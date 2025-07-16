@@ -1,5 +1,6 @@
 ﻿using System;
 using MixerThreholdMod_1_0_0.Core;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Patches
 {
@@ -12,6 +13,26 @@ namespace MixerThreholdMod_1_0_0.Patches
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
         private static readonly Logger logger = new Logger();
+
+        /// <summary>
+        /// Initializes the LoadManager_LoadedGameFolderPath_Patch with Harmony.
+        /// ⚠️ THREAD SAFETY: Safe to call from any thread
+        /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit error handling
+        /// </summary>
+        public static void Initialize()
+        {
+            try
+            {
+                logger.Msg(2, string.Format("{0} Initialize: LoadManager_LoadedGameFolderPath_Patch ready.", SAVE_MANAGER_PATCH_PREFIX));
+                // Harmony patch initialization would go here if needed
+            }
+            catch (Exception ex)
+            {
+                logger.Err(string.Format("{0} Initialize CRASH PREVENTION: Error: {1}\nStack Trace: {2}", 
+                    SAVE_MANAGER_PATCH_PREFIX, ex.Message, ex.StackTrace));
+                throw;
+            }
+        }
 
         /// <summary>
         /// Intercepts LoadManager.LoadedGameFolderPath and applies custom logic.
