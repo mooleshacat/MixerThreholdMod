@@ -41,13 +41,13 @@ namespace MixerThreholdMod_1_0_0.Save
                     bool result = await MixerDataBackupManager.BackupAsync(path).ConfigureAwait(false);
                     if (!result)
                     {
-                        logger.Warn(1, string.Format("BackupAllAsync: Backup failed for {0}", path));
+                        logger.Warn(LOG_LEVEL_CRITICAL, string.Format(BACKUP_FAILED_MSG, path, "", ""));
                         allSucceeded = false;
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.Err(string.Format("BackupAllAsync failed for {0}: {1}\nStack Trace: {2}", path, ex.Message, ex.StackTrace));
+                    logger.Err(string.Format(GENERAL_EXCEPTION_MSG, path, ex.Message, ex.StackTrace));
                     allSucceeded = false;
                 }
             }

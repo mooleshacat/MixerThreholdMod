@@ -1,5 +1,7 @@
 ﻿
 
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -27,12 +29,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                logger.Err("[MixerDataWriter] WriteAsync: filePath is null or empty.");
+                logger.Err(string.Format("{0} WriteAsync: filePath is null or empty.", MIXER_DATA_READER_PREFIX));
                 return false;
             }
             if (data == null)
             {
-                logger.Err(string.Format("[MixerDataWriter] WriteAsync: data is null for {0}.", filePath));
+                logger.Err(string.Format("{0} WriteAsync: data is null for {1}.", MIXER_DATA_READER_PREFIX, filePath));
                 return false;
             }
 
@@ -42,22 +44,22 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 {
                     await fs.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
                 }
-                logger.Msg(1, string.Format("[MixerDataWriter] WriteAsync succeeded for {0}", filePath));
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format(OPERATION_SUCCESS_MSG, filePath));
                 return true;
             }
             catch (ArgumentNullException ex)
             {
-                logger.Err(string.Format("WriteAsync ArgumentNullException for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                logger.Err(string.Format(ARGUMENT_NULL_EXCEPTION_MSG, filePath, ex.Message, ex.StackTrace));
                 return false;
             }
             catch (IOException ex)
             {
-                logger.Err(string.Format("WriteAsync IOException for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                logger.Err(string.Format(IO_EXCEPTION_MSG, filePath, ex.Message, ex.StackTrace));
                 return false;
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("WriteAsync failed for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                logger.Err(string.Format(GENERAL_EXCEPTION_MSG, filePath, ex.Message, ex.StackTrace));
                 return false;
             }
         }

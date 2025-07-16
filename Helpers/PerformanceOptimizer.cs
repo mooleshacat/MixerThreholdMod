@@ -105,7 +105,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     // Memory monitoring
                     try
                     {
-                        metrics.MemoryUsageMB = GC.GetTotalMemory(false) / 1048576.0;
+                        metrics.MemoryUsageMB = GC.GetTotalMemory(false) / MEMORY_THRESHOLD_BYTES;
                     }
                     catch (Exception memEx)
                     {
@@ -125,12 +125,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     // Frame rate monitoring (Unity specific)
                     try
                     {
-                        metrics.FrameRate = Application.targetFrameRate > 0 ? Application.targetFrameRate : 60.0;
+                        metrics.FrameRate = Application.targetFrameRate > ZERO_INT ? Application.targetFrameRate : DEFAULT_FRAME_RATE;
                     }
                     catch (Exception frameEx)
                     {
                         Main.logger?.Warn(2, string.Format("{0} Frame rate monitoring failed: {1}", PERFORMANCE_OPTIMIZER_NAME, frameEx.Message));
-                        metrics.FrameRate = 60.0; // Default fallback
+                        metrics.FrameRate = DEFAULT_FRAME_RATE; // Default fallback
                     }
 
                     // Store metrics
@@ -171,7 +171,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     lock (_optimizationLock)
                     {
                         var now = DateTime.Now;
-                        if ((now - _lastOptimizationRun).TotalSeconds < 5.0)
+                        if ((now - _lastOptimizationRun).TotalSeconds < OPTIMIZATION_INTERVAL_SECONDS)
                         {
                             Main.logger?.Msg(3, string.Format("{0} Optimization cooldown active", PERFORMANCE_OPTIMIZER_NAME));
                             return;
@@ -185,13 +185,13 @@ namespace MixerThreholdMod_1_0_0.Helpers
                         // Memory optimization
                         try
                         {
-                            var beforeMemory = GC.GetTotalMemory(false) / 1048576.0;
+                            var beforeMemory = GC.GetTotalMemory(false) / MEMORY_THRESHOLD_BYTES;
                             GC.Collect();
                             GC.WaitForPendingFinalizers();
                             GC.Collect();
-                            var afterMemory = GC.GetTotalMemory(false) / 1048576.0;
+                            var afterMemory = GC.GetTotalMemory(false) / MEMORY_THRESHOLD_BYTES;
                             
-                            if (beforeMemory - afterMemory > 1.0) // Freed more than 1MB
+                            if (beforeMemory - afterMemory > ONE_FLOAT) // Freed more than 1MB
                             {
                                 Main.logger?.Msg(1, string.Format("{0} Memory optimization: Freed {1:F1}MB ({2:F1}MB → {3:F1}MB)",
                                     PERFORMANCE_OPTIMIZER_NAME, beforeMemory - afterMemory, beforeMemory, afterMemory));

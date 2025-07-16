@@ -39,22 +39,22 @@ namespace MixerThreholdMod_1_0_0.Save
                 return false;
             }
 
-            string emergencyPath = filePath + ".emergency";
+            string emergencyPath = filePath + EMERGENCY_FILE_EXTENSION;
             try
             {
                 // Use atomic file writer for emergency save
                 bool result = await AtomicFileWriter.WriteAsync(emergencyPath, data).ConfigureAwait(false);
                 if (!result)
                 {
-                    logger.Err(string.Format("EmergencySaveAsync: Atomic write failed for {0}", emergencyPath));
+                    logger.Err(string.Format(ATOMIC_WRITE_FAILED_MSG, emergencyPath, "", ""));
                     return false;
                 }
-                logger.Msg(1, string.Format("EmergencySaveAsync succeeded for {0}", emergencyPath));
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format(OPERATION_SUCCESS_MSG, emergencyPath));
                 return true;
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("EmergencySaveAsync failed for {0}: {1}\nStack Trace: {2}", emergencyPath, ex.Message, ex.StackTrace));
+                logger.Err(string.Format(GENERAL_EXCEPTION_MSG, emergencyPath, ex.Message, ex.StackTrace));
                 return false;
             }
         }

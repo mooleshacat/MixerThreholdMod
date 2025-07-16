@@ -1,12 +1,13 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
-[assembly: AssemblyTitle("MixerThreholdMod-1_0_0")]
-[assembly: AssemblyDescription("Schedule 1 MixerThreholdMod")]
+[assembly: AssemblyTitle(ASSEMBLY_TITLE)]
+[assembly: AssemblyDescription(ASSEMBLY_DESCRIPTION)]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MixerThreholdMod-1_0_0")]
+[assembly: AssemblyProduct(ASSEMBLY_PRODUCT)]
 [assembly: AssemblyCopyright("Copyright �  2025 mooleshacat")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -17,7 +18,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("17e5161c-09cb-40a1-b3ae-2d7e968e8660")]
+[assembly: Guid(ASSEMBLY_GUID)]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -26,5 +27,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion(ASSEMBLY_VERSION)]
+[assembly: AssemblyFileVersion(ASSEMBLY_FILE_VERSION)]

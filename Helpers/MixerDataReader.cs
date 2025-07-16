@@ -37,7 +37,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 if (!File.Exists(filePath))
                 {
-                    logger.Warn(1, string.Format("ReadAsync: File not found {0}", filePath));
+                logger.Warn(LOG_LEVEL_CRITICAL, string.Format(FILE_NOT_FOUND_WARNING, filePath));
                     return null;
                 }
 
@@ -47,25 +47,25 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     int bytesRead = await fs.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
                     if (bytesRead != buffer.Length)
                     {
-                        logger.Warn(2, string.Format("ReadAsync: Incomplete read for {0}", filePath));
+                        logger.Warn(LOG_LEVEL_VERBOSE, string.Format(BACKUP_INCOMPLETE_READ_WARNING, filePath));
                     }
-                    logger.Msg(1, string.Format("{0} ReadAsync succeeded for {1}", MIXER_DATA_READER_PREFIX, filePath));
+                    logger.Msg(LOG_LEVEL_CRITICAL, string.Format(OPERATION_SUCCESS_MSG, filePath));
                     return buffer;
                 }
             }
             catch (ArgumentNullException ex)
             {
-                logger.Err(string.Format("ReadAsync ArgumentNullException for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                logger.Err(string.Format(ARGUMENT_NULL_EXCEPTION_MSG, filePath, ex.Message, ex.StackTrace));
                 return null;
             }
             catch (IOException ex)
             {
-                logger.Err(string.Format("ReadAsync IOException for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                logger.Err(string.Format(IO_EXCEPTION_MSG, filePath, ex.Message, ex.StackTrace));
                 return null;
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("ReadAsync failed for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                logger.Err(string.Format(GENERAL_EXCEPTION_MSG, filePath, ex.Message, ex.StackTrace));
                 return null;
             }
         }

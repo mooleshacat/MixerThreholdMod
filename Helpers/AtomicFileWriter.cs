@@ -43,12 +43,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     File.Move(tempPath, filePath);
                 }
 
-                logger.Msg(1, string.Format("Atomic write succeeded for {0}", filePath));
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format(ATOMIC_WRITE_SUCCESS_MSG, filePath));
                 return true;
             }
             catch (Exception ex)
             {
-                logger.Err(string.Format("Atomic write failed for {0}: {1}\nStack Trace: {2}", filePath, ex.Message, ex.StackTrace));
+                logger.Err(string.Format(ATOMIC_WRITE_FAILED_MSG, filePath, ex.Message, ex.StackTrace));
                 // Emergency fallback: try to clean up temp file
                 try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { /* ignore */ }
                 return false;
