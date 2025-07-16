@@ -393,5 +393,884 @@ namespace MixerThreholdMod_1_0_0.Constants
 
         /// <summary>MONO build identifier</summary>
         public const string MONO_BUILD = "MONO";
+
+        // ===== REFLECTION AND TYPE CONSTANTS =====
+        /// <summary>Exception Message property name for reflection</summary>
+        public const string EXCEPTION_MESSAGE_PROPERTY = "Message";
+
+        /// <summary>Exception StackTrace property name for reflection</summary>
+        public const string EXCEPTION_STACKTRACE_PROPERTY = "StackTrace";
+
+        /// <summary>GetType method name for reflection</summary>
+        public const string GET_TYPE_METHOD_NAME = "GetType";
+
+        /// <summary>GetExecutingAssembly method name for reflection</summary>
+        public const string GET_EXECUTING_ASSEMBLY_METHOD = "GetExecutingAssembly";
+
+        /// <summary>Load method name for Assembly loading</summary>
+        public const string ASSEMBLY_LOAD_METHOD = "Load";
+
+        /// <summary>Location property name for Assembly</summary>
+        public const string ASSEMBLY_LOCATION_PROPERTY = "Location";
+
+        /// <summary>Length property name for arrays and collections</summary>
+        public const string LENGTH_PROPERTY_NAME = "Length";
+
+        /// <summary>Count property name for collections</summary>
+        public const string COUNT_PROPERTY_NAME = "Count";
+
+        /// <summary>CurrentDomain property name for AppDomain</summary>
+        public const string CURRENT_DOMAIN_PROPERTY = "CurrentDomain";
+
+        // ===== BINDING FLAGS CONSTANTS =====
+        /// <summary>Public binding flag identifier</summary>
+        public const string BINDING_FLAGS_PUBLIC = "Public";
+
+        /// <summary>NonPublic binding flag identifier</summary>
+        public const string BINDING_FLAGS_NON_PUBLIC = "NonPublic";
+
+        /// <summary>Static binding flag identifier</summary>
+        public const string BINDING_FLAGS_STATIC = "Static";
+
+        /// <summary>Instance binding flag identifier</summary>
+        public const string BINDING_FLAGS_INSTANCE = "Instance";
+
+        // ===== FILE OPERATION METHOD NAMES =====
+        /// <summary>File.Exists method name</summary>
+        public const string FILE_EXISTS_METHOD = "Exists";
+
+        /// <summary>Directory.Exists method name</summary>
+        public const string DIRECTORY_EXISTS_METHOD = "Exists";
+
+        /// <summary>File.ReadAllText method name</summary>
+        public const string FILE_READ_ALL_TEXT_METHOD = "ReadAllText";
+
+        /// <summary>File.WriteAllText method name</summary>
+        public const string FILE_WRITE_ALL_TEXT_METHOD = "WriteAllText";
+
+        /// <summary>File.Delete method name</summary>
+        public const string FILE_DELETE_METHOD = "Delete";
+
+        /// <summary>Directory.CreateDirectory method name</summary>
+        public const string DIRECTORY_CREATE_METHOD = "CreateDirectory";
+
+        /// <summary>Path.Combine method name</summary>
+        public const string PATH_COMBINE_METHOD = "Combine";
+
+        /// <summary>Path.GetDirectoryName method name</summary>
+        public const string PATH_GET_DIRECTORY_NAME_METHOD = "GetDirectoryName";
+
+        /// <summary>Path.GetFileName method name</summary>
+        public const string PATH_GET_FILENAME_METHOD = "GetFileName";
+
+        // ===== STRING OPERATION CONSTANTS =====
+        /// <summary>String.Format method name</summary>
+        public const string STRING_FORMAT_METHOD = "Format";
+
+        /// <summary>String.IsNullOrEmpty method name</summary>
+        public const string STRING_IS_NULL_OR_EMPTY_METHOD = "IsNullOrEmpty";
+
+        /// <summary>String.StartsWith method name</summary>
+        public const string STRING_STARTS_WITH_METHOD = "StartsWith";
+
+        /// <summary>String.Contains method name</summary>
+        public const string STRING_CONTAINS_METHOD = "Contains";
+
+        /// <summary>String.Split method name</summary>
+        public const string STRING_SPLIT_METHOD = "Split";
+
+        /// <summary>String.Substring method name</summary>
+        public const string STRING_SUBSTRING_METHOD = "Substring";
+
+        /// <summary>String.IndexOf method name</summary>
+        public const string STRING_INDEX_OF_METHOD = "IndexOf";
+
+        // ===== GUID AND VERSION CONSTANTS =====
+        /// <summary>Assembly GUID for project identification</summary>
+        public const string ASSEMBLY_GUID = "17e5161c-09cb-40a1-b3ae-2d7e968e8660";
+
+        /// <summary>Assembly version string</summary>
+        public const string ASSEMBLY_VERSION = "1.0.0.0";
+
+        /// <summary>Assembly file version string</summary>
+        public const string ASSEMBLY_FILE_VERSION = "1.0.0.0";
+
+        /// <summary>Assembly copyright string</summary>
+        public const string ASSEMBLY_COPYRIGHT = "Copyright ©  2025 mooleshacat";
+
+        /// <summary>Assembly title string</summary>
+        public const string ASSEMBLY_TITLE = "MixerThreholdMod-1_0_0";
+
+        /// <summary>Assembly product string</summary>
+        public const string ASSEMBLY_PRODUCT = "MixerThreholdMod-1_0_0";
+
+        /// <summary>Assembly description string</summary>
+        public const string ASSEMBLY_DESCRIPTION = "Schedule 1 MixerThreholdMod";
+
+        // ===== EXTENDED FILE EXTENSIONS =====
+        /// <summary>Backup file extension (alternative)</summary>
+        public const string BAK_FILE_EXTENSION = ".bak";
+
+        /// <summary>Emergency file extension</summary>
+        public const string EMERGENCY_FILE_EXTENSION = ".emergency";
+
+        // ===== PERFORMANCE THRESHOLD CONSTANTS =====
+        /// <summary>Framework compatibility version for .NET 4.8</summary>
+        public const float FRAMEWORK_VERSION_4_8 = 4.8f;
+
+        /// <summary>Memory optimization threshold in KB</summary>
+        public const double MEMORY_OPTIMIZATION_THRESHOLD_KB = 512.0;
+
+        /// <summary>Memory optimization threshold in MB</summary>
+        public const double MEMORY_OPTIMIZATION_THRESHOLD_MB = 0.5;
+
+        /// <summary>GC collection threshold</summary>
+        public const double GC_COLLECTION_THRESHOLD_MB = 100.0;
+
+        /// <summary>Performance monitoring sample rate</summary>
+        public const float PERFORMANCE_SAMPLE_RATE = 0.1f;
+
+        /// <summary>High performance threshold</summary>
+        public const float HIGH_PERFORMANCE_THRESHOLD = 0.001f;
+
+        /// <summary>Standard wait time in seconds (alternative)</summary>
+        public const float STANDARD_WAIT_TIME_SECONDS = 1.0f;
+
+        /// <summary>Medium wait time in seconds (alternative)</summary>
+        public const float MEDIUM_WAIT_TIME_SECONDS = 0.5f;
+
+        /// <summary>Performance critical threshold</summary>
+        public const float PERFORMANCE_CRITICAL_THRESHOLD = 2.0f;
+
+        /// <summary>Memory threshold for optimization in bytes</summary>
+        public const double MEMORY_THRESHOLD_BYTES = 1048576.0;
+
+        /// <summary>Memory threshold in KB</summary>
+        public const double MEMORY_THRESHOLD_KB = 1024.0;
+
+        /// <summary>Default frame rate target</summary>
+        public const double DEFAULT_FRAME_RATE = 60.0;
+
+        /// <summary>Frame rate monitoring threshold</summary>
+        public const double FRAME_RATE_THRESHOLD = 30.0;
+
+        /// <summary>Performance optimization interval</summary>
+        public const double OPTIMIZATION_INTERVAL_SECONDS = 5.0;
+
+        /// <summary>System monitoring threshold</summary>
+        public const double SYSTEM_MONITORING_THRESHOLD = 3.0;
+
+        /// <summary>Performance tolerance threshold</summary>
+        public const float PERFORMANCE_TOLERANCE = 1.5f;
+
+        // ===== UNIT MULTIPLIER CONSTANTS =====
+        /// <summary>Bytes to KB multiplier (alternative)</summary>
+        public const int BYTES_TO_KILOBYTES = 1024;
+
+        /// <summary>KB to MB multiplier</summary>
+        public const int KB_TO_MB = 1024;
+
+        /// <summary>MB to GB multiplier</summary>
+        public const int MB_TO_GB = 1024;
+
+        /// <summary>Milliseconds to seconds divisor</summary>
+        public const int MS_TO_SECONDS = 1000;
+
+        /// <summary>Seconds to minutes divisor</summary>
+        public const int SECONDS_TO_MINUTES = 60;
+
+        /// <summary>Minutes to hours divisor</summary>
+        public const int MINUTES_TO_HOURS = 60;
+
+        // ===== SPECIAL CHARACTER CONSTANTS =====
+        /// <summary>Single space character</summary>
+        public const string SINGLE_SPACE = " ";
+
+        /// <summary>Comma separator with space</summary>
+        public const string COMMA_SEPARATOR = ", ";
+
+        /// <summary>Ellipsis character sequence</summary>
+        public const string ELLIPSIS = "...";
+
+        /// <summary>Question mark character</summary>
+        public const string QUESTION_MARK = "?";
+
+        /// <summary>Forward slash separator</summary>
+        public const string FORWARD_SLASH = "/";
+
+        /// <summary>Backslash separator</summary>
+        public const string BACKSLASH = "\\";
+
+        /// <summary>Double backslash escape</summary>
+        public const string DOUBLE_BACKSLASH = "\\\\";
+
+        /// <summary>Newline character sequence</summary>
+        public const string NEWLINE = "\n";
+
+        /// <summary>Carriage return and newline</summary>
+        public const string CRLF = "\r\n";
+
+        /// <summary>Tab character</summary>
+        public const string TAB = "\t";
+
+        // ===== ARRAY AND COLLECTION CONSTANTS =====
+        /// <summary>Empty string array identifier</summary>
+        public const string EMPTY_STRING_ARRAY = "EmptyStringArray";
+
+        /// <summary>Array copy method name</summary>
+        public const string ARRAY_COPY_METHOD = "Copy";
+
+        /// <summary>Array empty method name</summary>
+        public const string ARRAY_EMPTY_METHOD = "Empty";
+
+        /// <summary>OrderByDescending LINQ method name</summary>
+        public const string ORDER_BY_DESCENDING_METHOD = "OrderByDescending";
+
+        /// <summary>Skip LINQ method name</summary>
+        public const string SKIP_METHOD = "Skip";
+
+        /// <summary>Take LINQ method name</summary>
+        public const string TAKE_METHOD = "Take";
+
+        // ===== ERROR HANDLING RESULT CONSTANTS =====
+        /// <summary>CreateFailure method name for result patterns</summary>
+        public const string CREATE_FAILURE_METHOD = "CreateFailure";
+
+        /// <summary>CreateSuccess method name for result patterns</summary>
+        public const string CREATE_SUCCESS_METHOD = "CreateSuccess";
+
+        /// <summary>Success result indicator</summary>
+        public const string SUCCESS_RESULT = "SUCCESS";
+
+        /// <summary>Failure result indicator</summary>
+        public const string FAILURE_RESULT = "FAILURE";
+
+        /// <summary>Available status indicator</summary>
+        public const string AVAILABLE_STATUS = "AVAILABLE";
+
+        /// <summary>Unavailable status indicator</summary>
+        public const string UNAVAILABLE_STATUS = "UNAVAILABLE";
+
+        // ===== CONSOLE AND UI CONSTANTS =====
+        /// <summary>Console prefix for user messages</summary>
+        public const string CONSOLE_MESSAGE_PREFIX = "[CONSOLE] ";
+
+        /// <summary>Manual operation prefix</summary>
+        public const string MANUAL_OPERATION_PREFIX = "[MANUAL] ";
+
+        /// <summary>Patch operation prefix</summary>
+        public const string PATCH_OPERATION_PREFIX = "[PATCH] ";
+
+        /// <summary>Error operation prefix</summary>
+        public const string ERROR_OPERATION_PREFIX = "[ERROR] ";
+
+        /// <summary>Warning operation prefix</summary>
+        public const string WARNING_OPERATION_PREFIX = "[WARNING] ";
+
+        /// <summary>Info operation prefix</summary>
+        public const string INFO_OPERATION_PREFIX = "[INFO] ";
+
+        // ===== CONSOLE HELP AND MESSAGES =====
+        /// <summary>Console examples header</summary>
+        public const string CONSOLE_EXAMPLES_HEADER = "[CONSOLE] Examples:";
+
+        /// <summary>Console required parameters header</summary>
+        public const string CONSOLE_REQUIRED_HEADER = "[CONSOLE] Required:";
+
+        /// <summary>Console optional parameters header</summary>
+        public const string CONSOLE_OPTIONAL_HEADER = "[CONSOLE] Optional (auto-detected order):";
+
+        /// <summary>Console parameters info message</summary>
+        public const string CONSOLE_PARAMETERS_INFO = "[CONSOLE] Parameters can be in any order after count (auto-detected):";
+
+        /// <summary>Console formatting note</summary>
+        public const string CONSOLE_FORMATTING_NOTE = "[CONSOLE] Note: Message preserves all spaces and formatting";
+
+        /// <summary>Console missing count parameter error</summary>
+        public const string CONSOLE_MISSING_COUNT_ERROR = "[CONSOLE] Missing required parameter: count";
+
+        /// <summary>Console missing message parameter error</summary>
+        public const string CONSOLE_MISSING_MESSAGE_ERROR = "[CONSOLE] Missing required parameter: message";
+
+        /// <summary>Console invalid iteration count error template</summary>
+        public const string CONSOLE_INVALID_COUNT_ERROR = "[CONSOLE] Invalid iteration count '{0}'. Must be a positive integer.";
+
+        /// <summary>Console delay parameter description</summary>
+        public const string CONSOLE_DELAY_PARAM_DESC = "[CONSOLE]   delay_seconds - Delay between saves (number ≥ 0, default: 0)";
+
+        /// <summary>Console count parameter description</summary>
+        public const string CONSOLE_COUNT_PARAM_DESC = "[CONSOLE]   count - Number of save iterations (positive integer)";
+
+        /// <summary>Console bypass cooldown parameter description</summary>
+        public const string CONSOLE_BYPASS_PARAM_DESC = "[CONSOLE]   bypass_cooldown - Skip save cooldown (true/false, default: true)";
+
+        // ===== LOGGING LEVEL STRINGS =====
+        /// <summary>Message log level identifier</summary>
+        public const string LOG_LEVEL_MSG = "msg";
+
+        /// <summary>Warning log level identifier</summary>
+        public const string LOG_LEVEL_WARN = "warn";
+
+        /// <summary>Error log level identifier</summary>
+        public const string LOG_LEVEL_ERR = "err";
+
+        // ===== DATA TYPE CONSTANTS =====
+        /// <summary>Boolean data type identifier</summary>
+        public const string DATA_TYPE_BOOLEAN = "BOOLEAN";
+
+        /// <summary>String data type identifier</summary>
+        public const string DATA_TYPE_STRING = "STRING";
+
+        /// <summary>Integer data type identifier</summary>
+        public const string DATA_TYPE_INTEGER = "INTEGER";
+
+        /// <summary>Float data type identifier</summary>
+        public const string DATA_TYPE_FLOAT = "FLOAT";
+
+        /// <summary>Double data type identifier</summary>
+        public const string DATA_TYPE_DOUBLE = "DOUBLE";
+
+        /// <summary>Object data type identifier</summary>
+        public const string DATA_TYPE_OBJECT = "OBJECT";
+
+        // ===== PREDICATE AND FUNCTION CONSTANTS =====
+        /// <summary>Predicate parameter name</summary>
+        public const string PREDICATE_PARAM_NAME = "predicate";
+
+        /// <summary>Action parameter name</summary>
+        public const string ACTION_PARAM_NAME = "action";
+
+        /// <summary>Function parameter name</summary>
+        public const string FUNCTION_PARAM_NAME = "function";
+
+        /// <summary>Callback parameter name</summary>
+        public const string CALLBACK_PARAM_NAME = "callback";
+
+        /// <summary>Delegate parameter name</summary>
+        public const string DELEGATE_PARAM_NAME = "delegate";
+
+        // ===== SPECIAL IDENTIFIERS =====
+        /// <summary>Pending justification identifier</summary>
+        public const string PENDING_JUSTIFICATION = "<Pending>";
+
+        /// <summary>SaveData identifier</summary>
+        public const string SAVE_DATA_IDENTIFIER = "saveData";
+
+        /// <summary>Paths identifier</summary>
+        public const string PATHS_IDENTIFIER = "paths";
+
+        /// <summary>Directories identifier</summary>
+        public const string DIRECTORIES_IDENTIFIER = "directories";
+
+        /// <summary>DetectDirs identifier</summary>
+        public const string DETECT_DIRS_IDENTIFIER = "detectdirs";
+
+        // ===== ADDITIONAL LOGGING MESSAGES =====
+        /// <summary>Atomic write failure message template</summary>
+        public const string ATOMIC_WRITE_FAILED_MSG = "Atomic write failed for {0}: {1}\nStack Trace: {2}";
+
+        /// <summary>Atomic write success message template</summary>
+        public const string ATOMIC_WRITE_SUCCESS_MSG = "Atomic write succeeded for {0}";
+
+        /// <summary>File not found warning template</summary>
+        public const string FILE_NOT_FOUND_WARNING = "File not found {0}";
+
+        /// <summary>Operation succeeded message template</summary>
+        public const string OPERATION_SUCCESS_MSG = "Operation succeeded for {0}";
+
+        /// <summary>Operation failed message template</summary>
+        public const string OPERATION_FAILED_MSG = "Operation failed for {0}: {1}\nStack Trace: {2}";
+
+        /// <summary>ArgumentNullException message template</summary>
+        public const string ARGUMENT_NULL_EXCEPTION_MSG = "ArgumentNullException for {0}: {1}\nStack Trace: {2}";
+
+        /// <summary>IOException message template</summary>
+        public const string IO_EXCEPTION_MSG = "IOException for {0}: {1}\nStack Trace: {2}";
+
+        /// <summary>General exception message template</summary>
+        public const string GENERAL_EXCEPTION_MSG = "Exception for {0}: {1}\nStack Trace: {2}";
+
+        // ===== BACKUP OPERATION MESSAGES =====
+        /// <summary>Backup succeeded message template</summary>
+        public const string BACKUP_SUCCESS_MSG = "BackupAsync succeeded for {0} → {1}";
+
+        /// <summary>Backup failed message template</summary>
+        public const string BACKUP_FAILED_MSG = "BackupAsync failed for {0}: {1}\nStack Trace: {2}";
+
+        /// <summary>Backup incomplete read warning</summary>
+        public const string BACKUP_INCOMPLETE_READ_WARNING = "BackupAsync: Incomplete read for {0}";
+
+        /// <summary>Backup source not found warning</summary>
+        public const string BACKUP_SOURCE_NOT_FOUND_WARNING = "BackupAsync: Source file not found {0}";
+
+        /// <summary>Backup cleanup completed message</summary>
+        public const string BACKUP_CLEANUP_COMPLETED_MSG = "Backup cleanup completed. Deleted {0} old directories.";
+
+        /// <summary>Access denied backup delete warning</summary>
+        public const string BACKUP_ACCESS_DENIED_WARNING = "Access denied while deleting backup directory: {0}";
+
+        /// <summary>Backup directory not exist warning</summary>
+        public const string BACKUP_DIRECTORY_NOT_EXIST_WARNING = "Backup root directory does not exist: {0}";
+
+        /// <summary>Attempting backup message</summary>
+        public const string ATTEMPTING_BACKUP_MSG = "Attempting backup of savegame directory!";
+
+        /// <summary>Attempting delete backup message</summary>
+        public const string ATTEMPTING_DELETE_BACKUP_MSG = "Attempting to delete backup directory: {0}";
+
+        // ===== MIXER OPERATION MESSAGES =====
+        /// <summary>Mixer attach listener started message</summary>
+        public const string MIXER_ATTACH_STARTED_MSG = "AttachListenerWhenReady: Started for Mixer {0}";
+
+        /// <summary>Mixer attach listener finished message</summary>
+        public const string MIXER_ATTACH_FINISHED_MSG = "AttachListenerWhenReady: Finished for Mixer {0}";
+
+        /// <summary>Mixer start threshold found message</summary>
+        public const string MIXER_START_THRESHOLD_FOUND_MSG = "AttachListenerWhenReady: StartThrehold found for Mixer {0}";
+
+        /// <summary>Mixer using polling method message</summary>
+        public const string MIXER_USING_POLLING_MSG = "AttachListenerWhenReady: Using polling method for Mixer {0}";
+
+        /// <summary>Mixer attach listener error message</summary>
+        public const string MIXER_ATTACH_ERROR_MSG = "AttachListenerWhenReady error for Mixer {0}: {1}\nStackTrace: {2}";
+
+        // ===== SAVE OPERATION MESSAGES =====
+        /// <summary>Backup save folder started message</summary>
+        public const string BACKUP_SAVE_FOLDER_STARTED_MSG = "BackupSaveFolder started for: {0}";
+
+        /// <summary>Backup save folder in progress message</summary>
+        public const string BACKUP_SAVE_FOLDER_IN_PROGRESS_MSG = "BackupSaveFolder: Already in progress, skipping duplicate call";
+
+        /// <summary>Backup save folder completed message</summary>
+        public const string BACKUP_SAVE_FOLDER_COMPLETED_MSG = "BackupSaveFolder: Backup operation completed successfully";
+
+        /// <summary>Backup save folder null path message</summary>
+        public const string BACKUP_SAVE_FOLDER_NULL_PATH_MSG = "BackupSaveFolder: CurrentSavePath is null/empty, cannot backup";
+
+        /// <summary>Backup save folder error message</summary>
+        public const string BACKUP_SAVE_FOLDER_ERROR_MSG = "BackupSaveFolder: Error in backup task: {0}\n{1}";
+
+        /// <summary>Backup save folder finished message</summary>
+        public const string BACKUP_SAVE_FOLDER_FINISHED_MSG = "BackupSaveFolder: Finished and cleanup completed";
+
+        /// <summary>Backup save folder generic started message</summary>
+        public const string BACKUP_SAVE_FOLDER_GENERIC_STARTED_MSG = "BackupSaveFolder: Started";
+
+        /// <summary>Backup task failed message</summary>
+        public const string BACKUP_TASK_FAILED_MSG = "Backup task failed: {0}";
+
+        /// <summary>Backup root message</summary>
+        public const string BACKUP_ROOT_MSG = "BACKUP ROOT: {0}";
+
+        /// <summary>Starting backup cleanup message</summary>
+        public const string STARTING_BACKUP_CLEANUP_MSG = "Starting backup cleanup process for: {0}";
+
+        // ===== SYSTEM AND REFLECTION MESSAGES =====
+        /// <summary>SaveManager type not found message</summary>
+        public const string SAVE_MANAGER_TYPE_NOT_FOUND_MSG = "[PATCH] SaveManager type not found - patch will not be applied";
+
+        // ===== DIRECTORY AND PATH CONSTANTS =====
+        /// <summary>Unity Application.dataPath reference comment</summary>
+        public const string UNITY_DATA_PATH_COMMENT = "Unity Application.dataPath points to \"Schedule I_Data\", parent is install dir";
+
+        /// <summary>Schedule I_Data directory name</summary>
+        public const string SCHEDULE_I_DATA_DIR = "Schedule I_Data";
+
+        // ===== LOG FILE NAMES =====
+        /// <summary>Latest.log filename</summary>
+        public const string LATEST_LOG_FILENAME = "Latest.log";
+
+        /// <summary>Console.log filename</summary>
+        public const string CONSOLE_LOG_FILENAME = "Console.log";
+
+        /// <summary>MelonLoader.log filename</summary>
+        public const string MELONLOADER_LOG_FILENAME = "MelonLoader.log";
+
+        // ===== EXTENDED NUMERIC CONSTANTS =====
+        /// <summary>Zero float value</summary>
+        public const float ZERO_FLOAT = 0.0f;
+
+        /// <summary>One float value</summary>
+        public const float ONE_FLOAT = 1.0f;
+
+        /// <summary>Two float value</summary>
+        public const float TWO_FLOAT = 2.0f;
+
+        /// <summary>Three float value</summary>
+        public const float THREE_FLOAT = 3.0f;
+
+        /// <summary>Five float value</summary>
+        public const float FIVE_FLOAT = 5.0f;
+
+        /// <summary>Ten float value</summary>
+        public const float TEN_FLOAT = 10.0f;
+
+        /// <summary>Twenty float value</summary>
+        public const float TWENTY_FLOAT = 20.0f;
+
+        /// <summary>Thirty float value</summary>
+        public const float THIRTY_FLOAT = 30.0f;
+
+        /// <summary>Sixty float value</summary>
+        public const float SIXTY_FLOAT = 60.0f;
+
+        /// <summary>Hundred float value</summary>
+        public const float HUNDRED_FLOAT = 100.0f;
+
+        /// <summary>Thousand float value</summary>
+        public const float THOUSAND_FLOAT = 1000.0f;
+
+        /// <summary>Zero integer value</summary>
+        public const int ZERO_INT = 0;
+
+        /// <summary>One integer value</summary>
+        public const int ONE_INT = 1;
+
+        /// <summary>Two integer value</summary>
+        public const int TWO_INT = 2;
+
+        /// <summary>Three integer value</summary>
+        public const int THREE_INT = 3;
+
+        /// <summary>Five integer value</summary>
+        public const int FIVE_INT = 5;
+
+        /// <summary>Ten integer value</summary>
+        public const int TEN_INT = 10;
+
+        /// <summary>Twenty integer value</summary>
+        public const int TWENTY_INT = 20;
+
+        /// <summary>Thirty integer value</summary>
+        public const int THIRTY_INT = 30;
+
+        /// <summary>Fifty integer value</summary>
+        public const int FIFTY_INT = 50;
+
+        /// <summary>Hundred integer value</summary>
+        public const int HUNDRED_INT = 100;
+
+        /// <summary>Thousand integer value</summary>
+        public const int THOUSAND_INT = 1000;
+
+        // ===== EXTENDED WAIT TIME CONSTANTS =====
+        /// <summary>Ultra short wait time (10ms)</summary>
+        public const float ULTRA_SHORT_WAIT_SECONDS = 0.01f;
+
+        /// <summary>Tiny wait time (50ms)</summary>
+        public const float TINY_WAIT_SECONDS = 0.05f;
+
+        /// <summary>Brief wait time (200ms)</summary>
+        public const float BRIEF_WAIT_SECONDS = 0.2f;
+
+        /// <summary>Quick wait time (300ms)</summary>
+        public const float QUICK_WAIT_SECONDS = 0.3f;
+
+        /// <summary>Moderate wait time (800ms)</summary>
+        public const float MODERATE_WAIT_SECONDS = 0.8f;
+
+        /// <summary>Extended long wait time (3 seconds)</summary>
+        public const float EXTENDED_LONG_WAIT_SECONDS = 3.0f;
+
+        /// <summary>Very long wait time (5 seconds)</summary>
+        public const float VERY_LONG_WAIT_SECONDS = 5.0f;
+
+        /// <summary>Ultra long wait time (10 seconds)</summary>
+        public const float ULTRA_LONG_WAIT_SECONDS = 10.0f;
+
+        // ===== ADDITIONAL PERFORMANCE CONSTANTS =====
+        /// <summary>Memory pressure threshold in MB</summary>
+        public const double MEMORY_PRESSURE_THRESHOLD_MB = 128.0;
+
+        /// <summary>CPU usage threshold percentage</summary>
+        public const double CPU_USAGE_THRESHOLD_PERCENT = 80.0;
+
+        /// <summary>Disk usage threshold percentage</summary>
+        public const double DISK_USAGE_THRESHOLD_PERCENT = 90.0;
+
+        /// <summary>Network timeout threshold in seconds</summary>
+        public const double NETWORK_TIMEOUT_THRESHOLD_SECONDS = 30.0;
+
+        /// <summary>Database connection timeout in seconds</summary>
+        public const double DATABASE_TIMEOUT_THRESHOLD_SECONDS = 15.0;
+
+        /// <summary>Cache eviction threshold</summary>
+        public const double CACHE_EVICTION_THRESHOLD = 0.8;
+
+        // ===== CONFIGURATION AND SETTINGS CONSTANTS =====
+        /// <summary>Default language setting</summary>
+        public const string DEFAULT_LANGUAGE = "en-US";
+
+        /// <summary>Default culture setting</summary>
+        public const string DEFAULT_CULTURE = "en-US";
+
+        /// <summary>Default encoding name</summary>
+        public const string DEFAULT_ENCODING = "UTF-8";
+
+        /// <summary>Application configuration file name</summary>
+        public const string APP_CONFIG_FILENAME = "app.config";
+
+        /// <summary>Settings configuration file name</summary>
+        public const string SETTINGS_CONFIG_FILENAME = "settings.json";
+
+        /// <summary>User preferences file name</summary>
+        public const string USER_PREFERENCES_FILENAME = "preferences.json";
+
+        /// <summary>Cache directory name</summary>
+        public const string CACHE_DIRECTORY_NAME = "Cache";
+
+        /// <summary>Logs directory name</summary>
+        public const string LOGS_DIRECTORY_NAME = "Logs";
+
+        /// <summary>Config directory name</summary>
+        public const string CONFIG_DIRECTORY_NAME = "Config";
+
+        /// <summary>Data directory name</summary>
+        public const string DATA_DIRECTORY_NAME = "Data";
+
+        /// <summary>Temp directory name</summary>
+        public const string TEMP_DIRECTORY_NAME = "Temp";
+
+        /// <summary>Backup directory name</summary>
+        public const string BACKUP_DIRECTORY_NAME = "Backup";
+
+        // ===== REGISTRY AND SYSTEM CONSTANTS =====
+        /// <summary>Windows registry HKEY_CURRENT_USER</summary>
+        public const string REGISTRY_HKEY_CURRENT_USER = "HKEY_CURRENT_USER";
+
+        /// <summary>Windows registry HKEY_LOCAL_MACHINE</summary>
+        public const string REGISTRY_HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE";
+
+        /// <summary>System environment variable PATH</summary>
+        public const string ENVIRONMENT_PATH = "PATH";
+
+        /// <summary>System environment variable TEMP</summary>
+        public const string ENVIRONMENT_TEMP = "TEMP";
+
+        /// <summary>System environment variable USER</summary>
+        public const string ENVIRONMENT_USER = "USER";
+
+        /// <summary>System environment variable HOME</summary>
+        public const string ENVIRONMENT_HOME = "HOME";
+
+        // ===== THREAD AND SYNCHRONIZATION CONSTANTS =====
+        /// <summary>Thread sleep minimum interval</summary>
+        public const int THREAD_SLEEP_MIN_MS = 1;
+
+        /// <summary>Thread sleep maximum interval</summary>
+        public const int THREAD_SLEEP_MAX_MS = 10000;
+
+        /// <summary>Synchronization context timeout</summary>
+        public const int SYNC_CONTEXT_TIMEOUT_MS = 3000;
+
+        /// <summary>Task scheduler timeout</summary>
+        public const int TASK_SCHEDULER_TIMEOUT_MS = 5000;
+
+        /// <summary>Thread pool minimum threads</summary>
+        public const int THREAD_POOL_MIN_THREADS = 2;
+
+        /// <summary>Thread pool maximum threads</summary>
+        public const int THREAD_POOL_MAX_THREADS = 50;
+
+        // ===== HTTP AND NETWORK CONSTANTS =====
+        /// <summary>HTTP status OK code</summary>
+        public const int HTTP_STATUS_OK = 200;
+
+        /// <summary>HTTP status Not Found code</summary>
+        public const int HTTP_STATUS_NOT_FOUND = 404;
+
+        /// <summary>HTTP status Internal Server Error code</summary>
+        public const int HTTP_STATUS_INTERNAL_ERROR = 500;
+
+        /// <summary>Default HTTP port</summary>
+        public const int HTTP_DEFAULT_PORT = 80;
+
+        /// <summary>Default HTTPS port</summary>
+        public const int HTTPS_DEFAULT_PORT = 443;
+
+        /// <summary>localhost address</summary>
+        public const string LOCALHOST_ADDRESS = "127.0.0.1";
+
+        /// <summary>localhost hostname</summary>
+        public const string LOCALHOST_HOSTNAME = "localhost";
+
+        // ===== DATABASE AND STORAGE CONSTANTS =====
+        /// <summary>Default database page size</summary>
+        public const int DATABASE_DEFAULT_PAGE_SIZE = 4096;
+
+        /// <summary>Database connection pool size</summary>
+        public const int DATABASE_POOL_SIZE = 10;
+
+        /// <summary>SQL SELECT statement</summary>
+        public const string SQL_SELECT = "SELECT";
+
+        /// <summary>SQL INSERT statement</summary>
+        public const string SQL_INSERT = "INSERT";
+
+        /// <summary>SQL UPDATE statement</summary>
+        public const string SQL_UPDATE = "UPDATE";
+
+        /// <summary>SQL DELETE statement</summary>
+        public const string SQL_DELETE = "DELETE";
+
+        /// <summary>SQL WHERE clause</summary>
+        public const string SQL_WHERE = "WHERE";
+
+        /// <summary>SQL FROM clause</summary>
+        public const string SQL_FROM = "FROM";
+
+        // ===== ENCRYPTION AND SECURITY CONSTANTS =====
+        /// <summary>AES encryption algorithm name</summary>
+        public const string ENCRYPTION_AES = "AES";
+
+        /// <summary>RSA encryption algorithm name</summary>
+        public const string ENCRYPTION_RSA = "RSA";
+
+        /// <summary>SHA256 hash algorithm name</summary>
+        public const string HASH_SHA256 = "SHA256";
+
+        /// <summary>MD5 hash algorithm name</summary>
+        public const string HASH_MD5 = "MD5";
+
+        /// <summary>Default encryption key size</summary>
+        public const int ENCRYPTION_KEY_SIZE = 256;
+
+        /// <summary>Default salt size for hashing</summary>
+        public const int SALT_SIZE = 16;
+
+        // ===== REGEX AND PATTERN CONSTANTS =====
+        /// <summary>Email validation regex pattern</summary>
+        public const string EMAIL_REGEX_PATTERN = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+
+        /// <summary>Phone number regex pattern</summary>
+        public const string PHONE_REGEX_PATTERN = @"^\+?[\d\s\-\(\)]{10,}$";
+
+        /// <summary>URL validation regex pattern</summary>
+        public const string URL_REGEX_PATTERN = @"^https?://[^\s/$.?#].[^\s]*$";
+
+        /// <summary>Version number regex pattern</summary>
+        public const string VERSION_REGEX_PATTERN = @"^\d+\.\d+\.\d+(\.\d+)?$";
+
+        /// <summary>GUID regex pattern</summary>
+        public const string GUID_REGEX_PATTERN = @"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+
+        // ===== VALIDATION RULES CONSTANTS =====
+        /// <summary>Minimum password length</summary>
+        public const int MIN_PASSWORD_LENGTH = 8;
+
+        /// <summary>Maximum password length</summary>
+        public const int MAX_PASSWORD_LENGTH = 128;
+
+        /// <summary>Minimum username length</summary>
+        public const int MIN_USERNAME_LENGTH = 3;
+
+        /// <summary>Maximum username length</summary>
+        public const int MAX_USERNAME_LENGTH = 50;
+
+        /// <summary>Maximum email length</summary>
+        public const int MAX_EMAIL_LENGTH = 254;
+
+        /// <summary>Maximum file name length</summary>
+        public const int MAX_FILENAME_LENGTH = 255;
+
+        /// <summary>Maximum path length</summary>
+        public const int MAX_PATH_LENGTH = 260;
+
+        // ===== FORMATTING AND DISPLAY CONSTANTS =====
+        /// <summary>Currency format string</summary>
+        public const string CURRENCY_FORMAT = "C";
+
+        /// <summary>Percentage format string</summary>
+        public const string PERCENTAGE_FORMAT = "P";
+
+        /// <summary>Number format with 2 decimals</summary>
+        public const string NUMBER_FORMAT_2_DECIMALS = "F2";
+
+        /// <summary>Number format with 3 decimals</summary>
+        public const string NUMBER_FORMAT_3_DECIMALS = "F3";
+
+        /// <summary>Date format short</summary>
+        public const string DATE_FORMAT_SHORT = "MM/dd/yyyy";
+
+        /// <summary>Date format long</summary>
+        public const string DATE_FORMAT_LONG = "MMMM dd, yyyy";
+
+        /// <summary>Time format 12 hour</summary>
+        public const string TIME_FORMAT_12_HOUR = "hh:mm:ss tt";
+
+        /// <summary>Time format 24 hour</summary>
+        public const string TIME_FORMAT_24_HOUR = "HH:mm:ss";
+
+        // ===== UNITY SPECIFIC CONSTANTS =====
+        /// <summary>Unity GameObject tag for Player</summary>
+        public const string UNITY_TAG_PLAYER = "Player";
+
+        /// <summary>Unity GameObject tag for Enemy</summary>
+        public const string UNITY_TAG_ENEMY = "Enemy";
+
+        /// <summary>Unity GameObject tag for MainCamera</summary>
+        public const string UNITY_TAG_MAIN_CAMERA = "MainCamera";
+
+        /// <summary>Unity GameObject tag for UI</summary>
+        public const string UNITY_TAG_UI = "UI";
+
+        /// <summary>Unity layer name Default</summary>
+        public const string UNITY_LAYER_DEFAULT = "Default";
+
+        /// <summary>Unity layer name UI</summary>
+        public const string UNITY_LAYER_UI = "UI";
+
+        /// <summary>Unity Input axis Horizontal</summary>
+        public const string UNITY_INPUT_HORIZONTAL = "Horizontal";
+
+        /// <summary>Unity Input axis Vertical</summary>
+        public const string UNITY_INPUT_VERTICAL = "Vertical";
+
+        /// <summary>Unity Input Mouse X</summary>
+        public const string UNITY_INPUT_MOUSE_X = "Mouse X";
+
+        /// <summary>Unity Input Mouse Y</summary>
+        public const string UNITY_INPUT_MOUSE_Y = "Mouse Y";
+
+        // ===== IL2CPP AND MELONLOADER CONSTANTS =====
+        /// <summary>IL2CPP domain name</summary>
+        public const string IL2CPP_DOMAIN = "IL2CPP";
+
+        /// <summary>MelonLoader mod directory</summary>
+        public const string MELONLOADER_MODS_DIR = "Mods";
+
+        /// <summary>MelonLoader plugins directory</summary>
+        public const string MELONLOADER_PLUGINS_DIR = "Plugins";
+
+        /// <summary>MelonLoader libs directory</summary>
+        public const string MELONLOADER_LIBS_DIR = "MelonLoader";
+
+        /// <summary>MelonLoader user libs directory</summary>
+        public const string MELONLOADER_USER_LIBS_DIR = "UserLibs";
+
+        /// <summary>MelonLoader dependencies directory</summary>
+        public const string MELONLOADER_DEPENDENCIES_DIR = "Dependencies";
+
+        // ===== BUILD AND COMPILATION CONSTANTS =====
+        /// <summary>Debug build configuration</summary>
+        public const string BUILD_CONFIG_DEBUG = "Debug";
+
+        /// <summary>Release build configuration</summary>
+        public const string BUILD_CONFIG_RELEASE = "Release";
+
+        /// <summary>AnyCPU target platform</summary>
+        public const string TARGET_PLATFORM_ANY_CPU = "AnyCPU";
+
+        /// <summary>x86 target platform</summary>
+        public const string TARGET_PLATFORM_X86 = "x86";
+
+        /// <summary>x64 target platform</summary>
+        public const string TARGET_PLATFORM_X64 = "x64";
+
+        /// <summary>.NET Framework target</summary>
+        public const string TARGET_FRAMEWORK_NET48 = ".NETFramework,Version=v4.8.1";
+
+        /// <summary>C# language version</summary>
+        public const string CSHARP_LANGUAGE_VERSION = "7.3";
     }
 }
