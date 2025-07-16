@@ -19,14 +19,15 @@ namespace MixerThreholdMod_1_0_0.Core
         /// <summary>
         /// Initializes all required Harmony patches for the mod.
         /// </summary>
-        public async Task InitializeAllPatchesAsync()
+        /// <returns>True if all patches initialized successfully, false if any failed</returns>
+        public async Task<bool> InitializeAllPatchesAsync()
         {
             lock (_lock)
             {
                 if (_patchesInitialized)
                 {
                     Main.logger?.Msg(2, string.Format("{0} Patches already initialized.", PATCH_INIT_PREFIX));
-                    return;
+                    return true;
                 }
                 _patchesInitialized = true;
             }
@@ -57,4 +58,35 @@ namespace MixerThreholdMod_1_0_0.Core
                 catch (Exception ex)
                 {
                     errors.Add(string.Format("LoadManager_LoadedGameFolderPath_Patch: {0}", ex.Message));
-                    Main.logger?.Err(string.Format("{0} Error initializing LoadManager_LoadedGameFolderPath_Patch: {1}\n{2}", 
+                    Main.logger?.Err(string.Format("{0} Error initializing LoadManager_LoadedGameFolderPath_Patch: {1}\n{2}", PATCH_INIT_PREFIX, ex.Message, ex.StackTrace));
+                }
+
+                try
+                {
+                    Patches.EntityConfiguration_Destroy_Patch.Initialize();
+                    Main.logger?.Msg(2, string.Format("{0} EntityConfiguration_Destroy_Patch initialized.", PATCH_INIT_PREFIX));
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(string.Format("EntityConfiguration_Destroy_Patch: {0}", ex.Message));
+                    Main.logger?.Err(string.Format("{0} Error initializing EntityConfiguration_Destroy_Patch: {1}\n{2}", PATCH_INIT_PREFIX, ex.Message, ex.StackTrace));
+                }
+                }).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Main.logger?.Err(string.Format("{0} Critical error during patch initialization: {1}\n{2}", PATCH_INIT_PREFIX, ex.Message, ex.StackTrace));
+                return false;
+            }
+
+            if (errors.Count > 0)
+            {
+                Main.logger?.Warn(1, string.Format("{0} {1} patch(es) failed to initialize: {2}", PATCH_INIT_PREFIX, errors.Count, string.Join(", ", errors.ToArray())));
+                return false;
+            }
+
+            Main.logger?.Msg(1, string.Format("{0} All Harmony patches initialized successfully.", PATCH_INIT_PREFIX));
+            return true;
+        }
+    }
+} 

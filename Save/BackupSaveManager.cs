@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Helpers;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Save
 {
@@ -24,7 +25,7 @@ namespace MixerThreholdMod_1_0_0.Save
         {
             if (filePaths == null || filePaths.Length == 0)
             {
-                logger.Err("[BackupSaveManager] BackupAllAsync: filePaths is null or empty.");
+                logger.Err(string.Format("{0} BackupAllAsync: filePaths is null or empty.", BACKUP_SAVE_PREFIX));
                 return false;
             }
 

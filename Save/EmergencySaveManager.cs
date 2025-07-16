@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using MixerThreholdMod_1_0_0.Core;
 using MixerThreholdMod_1_0_0.Helpers;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Save
 {
@@ -25,12 +26,12 @@ namespace MixerThreholdMod_1_0_0.Save
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                logger.Err("[EmergencySaveManager] EmergencySaveAsync: filePath is null or empty.");
+                logger.Err(string.Format("{0} EmergencySaveAsync: filePath is null or empty.", EMERGENCY_SAVE_PREFIX));
                 return false;
             }
             if (data == null)
             {
-                logger.Err(string.Format("[EmergencySaveManager] EmergencySaveAsync: data is null for {0}.", filePath));
+                logger.Err(string.Format("{0} EmergencySaveAsync: data is null for {1}.", EMERGENCY_SAVE_PREFIX, filePath));
                 return false;
             }
 

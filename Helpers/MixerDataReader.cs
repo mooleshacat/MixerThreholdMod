@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using MixerThreholdMod_1_0_0.Core;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
@@ -24,7 +25,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                logger.Err("[MixerDataReader] ReadAsync: filePath is null or empty.");
+                logger.Err(string.Format("{0} ReadAsync: filePath is null or empty.", MIXER_DATA_READER_PREFIX));
                 return null;
             }
 
@@ -44,7 +45,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     {
                         logger.Warn(2, string.Format("ReadAsync: Incomplete read for {0}", filePath));
                     }
-                    logger.Msg(1, string.Format("[MixerDataReader] ReadAsync succeeded for {0}", filePath));
+                    logger.Msg(1, string.Format("{0} ReadAsync succeeded for {1}", MIXER_DATA_READER_PREFIX, filePath));
                     return buffer;
                 }
             }

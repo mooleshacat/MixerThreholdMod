@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using MixerThreholdMod_1_0_0.Core;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Helpers
 {
@@ -23,12 +24,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             if (string.IsNullOrEmpty(operationName))
             {
-                logger.Err("[MixerDataPerformanceMetrics] Measure: operationName is null or empty.");
+                logger.Err(string.Format("{0} Measure: operationName is null or empty.", PERFORMANCE_METRICS_PREFIX));
                 return;
             }
             if (action == null)
             {
-                logger.Err(string.Format("[MixerDataPerformanceMetrics] Measure: action is null for {0}.", operationName));
+                logger.Err(string.Format("{0} Measure: action is null for {1}.", PERFORMANCE_METRICS_PREFIX, operationName));
                 return;
             }
 
@@ -38,7 +39,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 stopwatch = Stopwatch.StartNew();
                 action();
                 stopwatch.Stop();
-                logger.Msg(1, string.Format("[MixerDataPerformanceMetrics] {0} completed in {1} ms.", operationName, stopwatch.ElapsedMilliseconds));
+                logger.Msg(1, string.Format("{0} {1} completed in {2} ms.", PERFORMANCE_METRICS_PREFIX, operationName, stopwatch.ElapsedMilliseconds));
             }
             catch (Exception ex)
             {
@@ -55,12 +56,12 @@ namespace MixerThreholdMod_1_0_0.Helpers
         {
             if (string.IsNullOrEmpty(metricName))
             {
-                logger.Err("[MixerDataPerformanceMetrics] LogMetric: metricName is null or empty.");
+                logger.Err(string.Format("{0} LogMetric: metricName is null or empty.", PERFORMANCE_METRICS_PREFIX));
                 return;
             }
             try
             {
-                logger.Msg(1, string.Format("[MixerDataPerformanceMetrics] Metric {0}: {1}", metricName, value));
+                logger.Msg(1, string.Format("{0} Metric {1}: {2}", PERFORMANCE_METRICS_PREFIX, metricName, value));
             }
             catch (Exception ex)
             {

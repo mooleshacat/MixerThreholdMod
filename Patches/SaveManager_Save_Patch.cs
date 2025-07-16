@@ -1,5 +1,6 @@
 using System;
 using MixerThreholdMod_1_0_0.Core;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Patches
 {
@@ -21,13 +22,13 @@ namespace MixerThreholdMod_1_0_0.Patches
         {
             try
             {
-                logger.Msg(1, "[SaveManager_Save_Patch] Prefix: Intercepted SaveManager.Save call.");
+                logger.Msg(1, string.Format("{0} Prefix: Intercepted SaveManager.Save call.", SAVE_MANAGER_PATCH_PREFIX));
 
                 // Insert custom save logic here, e.g. validation, backup, etc.
                 // Example: Validate save data before proceeding
                 if (saveData == null)
                 {
-                    logger.Warn(1, "[SaveManager_Save_Patch] Prefix: saveData is null.");
+                    logger.Warn(1, string.Format("{0} Prefix: saveData is null.", SAVE_MANAGER_PATCH_PREFIX));
                     return;
                 }
 

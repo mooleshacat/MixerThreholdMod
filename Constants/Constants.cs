@@ -141,6 +141,21 @@ namespace MixerThreholdMod_1_0_0.Constants
         /// <summary>Logging prefix for utility operations</summary>
         public const string UTILS_PREFIX = "[UTILS]";
 
+        /// <summary>Logging prefix for emergency save manager operations</summary>
+        public const string EMERGENCY_SAVE_PREFIX = "[EmergencySaveManager]";
+
+        /// <summary>Logging prefix for backup save manager operations</summary>
+        public const string BACKUP_SAVE_PREFIX = "[BackupSaveManager]";
+
+        /// <summary>Logging prefix for mixer data reader operations</summary>
+        public const string MIXER_DATA_READER_PREFIX = "[MixerDataReader]";
+
+        /// <summary>Logging prefix for mixer data performance metrics operations</summary>
+        public const string PERFORMANCE_METRICS_PREFIX = "[MixerDataPerformanceMetrics]";
+
+        /// <summary>Logging prefix for save manager patch operations</summary>
+        public const string SAVE_MANAGER_PATCH_PREFIX = "[SaveManager_Save_Patch]";
+
         // ===== ERROR MESSAGE CONSTANTS =====
         /// <summary>Error message template for invalid log levels</summary>
         public const string INVALID_MSG_LEVEL_ERROR = "[ERROR] Invalid log level {0} for Msg method. Must be {1} to {2}.";
