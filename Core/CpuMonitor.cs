@@ -1,8 +1,6 @@
 ﻿
 
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
-
-﻿using System;
+using System;
 using System.Diagnostics;
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
@@ -21,12 +19,12 @@ internal static class CpuMonitor
         try
         {
             // Dummy implementation for .NET 4.8.1; replace with actual CPU monitoring if needed
-            return 0.0;
+            return ZERO_DOUBLE;
         }
         catch (Exception ex)
         {
             Main.logger?.Err(string.Format("{0} Error getting CPU usage: {1}", CPU_MONITOR_PREFIX, ex.Message));
-            return -1;
+            return -ONE_DOUBLE;
         }
     }
 
@@ -36,6 +34,6 @@ internal static class CpuMonitor
     public static void LogCurrentCpuUsage()
     {
         double cpuUsage = GetCurrentCpuUsage();
-        Main.logger?.Msg(1, string.Format("{0} Current CPU usage: {1:F2}%", CPU_MONITOR_PREFIX, cpuUsage));
+        Main.logger?.Msg(LOG_LEVEL_CRITICAL, string.Format(STRING_FORMAT_TWO_ARGS, CPU_MONITOR_PREFIX, string.Format("Current CPU usage: {0:F2}%", cpuUsage)));
     }
 }

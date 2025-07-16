@@ -5,12 +5,12 @@ using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 [assembly: AssemblyTitle(ASSEMBLY_TITLE)]
 [assembly: AssemblyDescription(ASSEMBLY_DESCRIPTION)]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyConfiguration(ASSEMBLY_CONFIGURATION_EMPTY)]
+[assembly: AssemblyCompany(ASSEMBLY_COMPANY_EMPTY)]
 [assembly: AssemblyProduct(ASSEMBLY_PRODUCT)]
-[assembly: AssemblyCopyright("Copyright �  2025 mooleshacat")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+[assembly: AssemblyCopyright(ASSEMBLY_COPYRIGHT)]
+[assembly: AssemblyTrademark(ASSEMBLY_TRADEMARK_EMPTY)]
+[assembly: AssemblyCulture(ASSEMBLY_CULTURE_EMPTY)]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from

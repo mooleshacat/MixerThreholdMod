@@ -1,8 +1,6 @@
 ﻿
 
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
-
-﻿using System;
+using System;
 
 namespace MixerThreholdMod_1_0_0.Constants
 {
@@ -1272,5 +1270,1352 @@ namespace MixerThreholdMod_1_0_0.Constants
 
         /// <summary>C# language version</summary>
         public const string CSHARP_LANGUAGE_VERSION = "7.3";
+
+        // ===== PERFORMANCE OPTIMIZATION CONSTANTS =====
+        /// <summary>High memory usage threshold in MB (512MB)</summary>
+        public const double HIGH_MEMORY_THRESHOLD_MB = 512.0;
+
+        /// <summary>High thread count threshold (50 threads)</summary>
+        public const int HIGH_THREAD_COUNT_THRESHOLD = 50;
+
+        /// <summary>Maximum performance warnings before cleanup (20 warnings)</summary>
+        public const int MAX_PERFORMANCE_WARNINGS = 20;
+
+        /// <summary>Performance warnings cleanup batch size (10 warnings)</summary>
+        public const int PERFORMANCE_WARNINGS_CLEANUP_BATCH = 10;
+
+        /// <summary>Memory freed threshold for logging in MB (1MB)</summary>
+        public const double MEMORY_FREED_LOG_THRESHOLD_MB = 1.0;
+
+        /// <summary>Optimization interval in seconds (minimum time between optimizations)</summary>
+        public const int OPTIMIZATION_INTERVAL_SECONDS = 30;
+
+        /// <summary>Performance metrics history retention count</summary>
+        public const int PERFORMANCE_METRICS_HISTORY_COUNT = 100;
+
+        /// <summary>Performance summary log interval (every N cycles)</summary>
+        public const int PERFORMANCE_SUMMARY_LOG_INTERVAL = 50;
+
+        // ===== ASSEMBLY INFO CONSTANTS =====
+        /// <summary>Assembly configuration empty value</summary>
+        public const string ASSEMBLY_CONFIGURATION_EMPTY = "";
+
+        /// <summary>Assembly company empty value</summary>
+        public const string ASSEMBLY_COMPANY_EMPTY = "";
+
+        /// <summary>Assembly copyright notice</summary>
+        public const string ASSEMBLY_COPYRIGHT = "Copyright ©  2025 mooleshacat";
+
+        /// <summary>Assembly trademark empty value</summary>
+        public const string ASSEMBLY_TRADEMARK_EMPTY = "";
+
+        /// <summary>Assembly culture empty value</summary>
+        public const string ASSEMBLY_CULTURE_EMPTY = "";
+
+        /// <summary>Assembly version format pattern</summary>
+        public const string ASSEMBLY_VERSION_FORMAT = "1.0.0.0";
+
+        /// <summary>Assembly file version format pattern</summary>
+        public const string ASSEMBLY_FILE_VERSION_FORMAT = "1.0.0.0";
+
+        // ===== NUMERIC VALIDATION CONSTANTS =====
+        /// <summary>Zero integer value for comparisons</summary>
+        public const int ZERO_INT = 0;
+
+        /// <summary>One integer value for comparisons</summary>
+        public const int ONE_INT = 1;
+
+        /// <summary>Two integer value for comparisons</summary>
+        public const int TWO_INT = 2;
+
+        /// <summary>Three integer value for comparisons</summary>
+        public const int THREE_INT = 3;
+
+        /// <summary>Five integer value for comparisons</summary>
+        public const int FIVE_INT = 5;
+
+        /// <summary>Ten integer value for comparisons</summary>
+        public const int TEN_INT = 10;
+
+        /// <summary>Twenty integer value for comparisons</summary>
+        public const int TWENTY_INT = 20;
+
+        /// <summary>Fifty integer value for comparisons</summary>
+        public const int FIFTY_INT = 50;
+
+        /// <summary>One hundred integer value for comparisons</summary>
+        public const int ONE_HUNDRED_INT = 100;
+
+        /// <summary>One thousand integer value for comparisons</summary>
+        public const int ONE_THOUSAND_INT = 1000;
+
+        /// <summary>Zero float value for comparisons</summary>
+        public const float ZERO_FLOAT = 0.0f;
+
+        /// <summary>One float value for comparisons</summary>
+        public const float ONE_FLOAT = 1.0f;
+
+        /// <summary>Two float value for comparisons</summary>
+        public const float TWO_FLOAT = 2.0f;
+
+        /// <summary>Half float value for comparisons (0.5)</summary>
+        public const float HALF_FLOAT = 0.5f;
+
+        /// <summary>Quarter float value for comparisons (0.25)</summary>
+        public const float QUARTER_FLOAT = 0.25f;
+
+        /// <summary>Three quarters float value for comparisons (0.75)</summary>
+        public const float THREE_QUARTERS_FLOAT = 0.75f;
+
+        /// <summary>Zero double value for comparisons</summary>
+        public const double ZERO_DOUBLE = 0.0;
+
+        /// <summary>One double value for comparisons</summary>
+        public const double ONE_DOUBLE = 1.0;
+
+        /// <summary>Two double value for comparisons</summary>
+        public const double TWO_DOUBLE = 2.0;
+
+        /// <summary>Half double value for comparisons (0.5)</summary>
+        public const double HALF_DOUBLE = 0.5;
+
+        /// <summary>Zero long value for comparisons</summary>
+        public const long ZERO_LONG = 0L;
+
+        /// <summary>One long value for comparisons</summary>
+        public const long ONE_LONG = 1L;
+
+        /// <summary>Two long value for comparisons</summary>
+        public const long TWO_LONG = 2L;
+
+        // ===== COLLECTION SIZE CONSTANTS =====
+        /// <summary>Empty collection count</summary>
+        public const int EMPTY_COLLECTION_COUNT = 0;
+
+        /// <summary>Single item collection count</summary>
+        public const int SINGLE_ITEM_COUNT = 1;
+
+        /// <summary>Small collection default size</summary>
+        public const int SMALL_COLLECTION_SIZE = 10;
+
+        /// <summary>Medium collection default size</summary>
+        public const int MEDIUM_COLLECTION_SIZE = 50;
+
+        /// <summary>Large collection default size</summary>
+        public const int LARGE_COLLECTION_SIZE = 100;
+
+        /// <summary>Extra large collection default size</summary>
+        public const int EXTRA_LARGE_COLLECTION_SIZE = 500;
+
+        /// <summary>Maximum reasonable collection size</summary>
+        public const int MAX_REASONABLE_COLLECTION_SIZE = 1000;
+
+        // ===== ERROR HANDLING CONSTANTS =====
+        /// <summary>Default retry attempt count</summary>
+        public const int DEFAULT_RETRY_ATTEMPTS = 3;
+
+        /// <summary>Maximum retry attempt count</summary>
+        public const int MAX_RETRY_ATTEMPTS = 5;
+
+        /// <summary>Retry delay base in milliseconds</summary>
+        public const int RETRY_DELAY_BASE_MS = 100;
+
+        /// <summary>Retry delay multiplier for exponential backoff</summary>
+        public const int RETRY_DELAY_MULTIPLIER = 2;
+
+        /// <summary>Maximum retry delay in milliseconds</summary>
+        public const int MAX_RETRY_DELAY_MS = 5000;
+
+        /// <summary>Critical error escalation threshold</summary>
+        public const int CRITICAL_ERROR_THRESHOLD = 10;
+
+        /// <summary>Error recovery timeout in milliseconds</summary>
+        public const int ERROR_RECOVERY_TIMEOUT_MS = 10000;
+
+        // ===== MEMORY AND RESOURCE CONSTANTS =====
+        /// <summary>Bytes per kilobyte</summary>
+        public const int BYTES_PER_KB = 1024;
+
+        /// <summary>Bytes per megabyte</summary>
+        public const int BYTES_PER_MB = 1048576; // 1024 * 1024
+
+        /// <summary>Bytes per gigabyte</summary>
+        public const long BYTES_PER_GB = 1073741824L; // 1024 * 1024 * 1024
+
+        /// <summary>Memory threshold in bytes for optimization</summary>
+        public const long MEMORY_THRESHOLD_BYTES = BYTES_PER_MB;
+
+        /// <summary>Small memory allocation size in bytes</summary>
+        public const int SMALL_MEMORY_ALLOCATION_BYTES = 1024;
+
+        /// <summary>Medium memory allocation size in bytes</summary>
+        public const int MEDIUM_MEMORY_ALLOCATION_BYTES = 65536; // 64KB
+
+        /// <summary>Large memory allocation size in bytes</summary>
+        public const int LARGE_MEMORY_ALLOCATION_BYTES = BYTES_PER_MB;
+
+        /// <summary>Memory cleanup threshold percentage</summary>
+        public const double MEMORY_CLEANUP_THRESHOLD_PERCENT = 75.0;
+
+        /// <summary>Memory warning threshold percentage</summary>
+        public const double MEMORY_WARNING_THRESHOLD_PERCENT = 85.0;
+
+        /// <summary>Memory critical threshold percentage</summary>
+        public const double MEMORY_CRITICAL_THRESHOLD_PERCENT = 95.0;
+
+        // ===== THREADING CONSTANTS =====
+        /// <summary>Default thread priority</summary>
+        public const string DEFAULT_THREAD_PRIORITY = "Normal";
+
+        /// <summary>Background thread priority</summary>
+        public const string BACKGROUND_THREAD_PRIORITY = "BelowNormal";
+
+        /// <summary>High priority thread priority</summary>
+        public const string HIGH_THREAD_PRIORITY = "AboveNormal";
+
+        /// <summary>Critical thread priority</summary>
+        public const string CRITICAL_THREAD_PRIORITY = "Highest";
+
+        /// <summary>Minimum thread pool size</summary>
+        public const int MIN_THREAD_POOL_SIZE = 2;
+
+        /// <summary>Default thread pool size</summary>
+        public const int DEFAULT_THREAD_POOL_SIZE = 4;
+
+        /// <summary>Maximum thread pool size</summary>
+        public const int MAX_THREAD_POOL_SIZE = 16;
+
+        /// <summary>Thread monitoring interval in milliseconds</summary>
+        public const int THREAD_MONITORING_INTERVAL_MS = 5000;
+
+        /// <summary>Thread cleanup timeout in milliseconds</summary>
+        public const int THREAD_CLEANUP_TIMEOUT_MS = 30000;
+
+        /// <summary>Thread join timeout in milliseconds</summary>
+        public const int THREAD_JOIN_TIMEOUT_MS = 10000;
+
+        // ===== GAME SPECIFIC CONSTANTS =====
+        /// <summary>Game minimum frame rate target</summary>
+        public const int GAME_MIN_FRAME_RATE = 30;
+
+        /// <summary>Game target frame rate</summary>
+        public const int GAME_TARGET_FRAME_RATE = 60;
+
+        /// <summary>Game maximum frame rate</summary>
+        public const int GAME_MAX_FRAME_RATE = 120;
+
+        /// <summary>Game low performance threshold FPS</summary>
+        public const int GAME_LOW_PERFORMANCE_FPS = 20;
+
+        /// <summary>Game vsync enabled default</summary>
+        public const bool GAME_VSYNC_ENABLED_DEFAULT = true;
+
+        /// <summary>Game quality level minimum</summary>
+        public const int GAME_QUALITY_LEVEL_MIN = 0;
+
+        /// <summary>Game quality level maximum</summary>
+        public const int GAME_QUALITY_LEVEL_MAX = 5;
+
+        /// <summary>Game quality level default</summary>
+        public const int GAME_QUALITY_LEVEL_DEFAULT = 3;
+
+        // ===== STRING FORMATTING CONSTANTS =====
+        /// <summary>String format with one argument</summary>
+        public const string STRING_FORMAT_ONE_ARG = "{0}";
+
+        /// <summary>String format with two arguments</summary>
+        public const string STRING_FORMAT_TWO_ARGS = "{0} {1}";
+
+        /// <summary>String format with three arguments</summary>
+        public const string STRING_FORMAT_THREE_ARGS = "{0} {1} {2}";
+
+        /// <summary>String format with four arguments</summary>
+        public const string STRING_FORMAT_FOUR_ARGS = "{0} {1} {2} {3}";
+
+        /// <summary>String format with five arguments</summary>
+        public const string STRING_FORMAT_FIVE_ARGS = "{0} {1} {2} {3} {4}";
+
+        /// <summary>Decimal format with one decimal place</summary>
+        public const string DECIMAL_FORMAT_ONE_PLACE = "F1";
+
+        /// <summary>Decimal format with two decimal places</summary>
+        public const string DECIMAL_FORMAT_TWO_PLACES = "F2";
+
+        /// <summary>Decimal format with three decimal places</summary>
+        public const string DECIMAL_FORMAT_THREE_PLACES = "F3";
+
+        /// <summary>Integer format with no decimal places</summary>
+        public const string INTEGER_FORMAT_NO_DECIMALS = "F0";
+
+        /// <summary>Percentage format</summary>
+        public const string PERCENTAGE_FORMAT = "P0";
+
+        /// <summary>Percentage format with one decimal</summary>
+        public const string PERCENTAGE_FORMAT_ONE_DECIMAL = "P1";
+
+        // ===== VALIDATION CONSTANTS =====
+        /// <summary>Minimum valid string length</summary>
+        public const int MIN_VALID_STRING_LENGTH = 1;
+
+        /// <summary>Maximum reasonable string length</summary>
+        public const int MAX_REASONABLE_STRING_LENGTH = 1000;
+
+        /// <summary>Maximum safe string length</summary>
+        public const int MAX_SAFE_STRING_LENGTH = 10000;
+
+        /// <summary>Minimum valid array length</summary>
+        public const int MIN_VALID_ARRAY_LENGTH = 1;
+
+        /// <summary>Maximum reasonable array length</summary>
+        public const int MAX_REASONABLE_ARRAY_LENGTH = 1000;
+
+        /// <summary>Minimum valid numeric value</summary>
+        public const double MIN_VALID_NUMERIC_VALUE = 0.0;
+
+        /// <summary>Maximum safe numeric value</summary>
+        public const double MAX_SAFE_NUMERIC_VALUE = double.MaxValue;
+
+        // ===== DIAGNOSTIC CONSTANTS =====
+        /// <summary>Diagnostic check interval in seconds</summary>
+        public const int DIAGNOSTIC_CHECK_INTERVAL_SECONDS = 60;
+
+        /// <summary>Diagnostic log retention days</summary>
+        public const int DIAGNOSTIC_LOG_RETENTION_DAYS = 7;
+
+        /// <summary>Diagnostic metric collection interval in milliseconds</summary>
+        public const int DIAGNOSTIC_METRIC_INTERVAL_MS = 1000;
+
+        /// <summary>Diagnostic warning threshold count</summary>
+        public const int DIAGNOSTIC_WARNING_THRESHOLD = 10;
+
+        /// <summary>Diagnostic error threshold count</summary>
+        public const int DIAGNOSTIC_ERROR_THRESHOLD = 5;
+
+        /// <summary>Diagnostic critical threshold count</summary>
+        public const int DIAGNOSTIC_CRITICAL_THRESHOLD = 3;
+
+        // ===== CONFIGURATION CONSTANTS =====
+        /// <summary>Configuration file check interval in minutes</summary>
+        public const int CONFIG_FILE_CHECK_INTERVAL_MINUTES = 5;
+
+        /// <summary>Configuration backup retention count</summary>
+        public const int CONFIG_BACKUP_RETENTION_COUNT = 10;
+
+        /// <summary>Configuration validation timeout in milliseconds</summary>
+        public const int CONFIG_VALIDATION_TIMEOUT_MS = 5000;
+
+        /// <summary>Configuration auto-save interval in minutes</summary>
+        public const int CONFIG_AUTO_SAVE_INTERVAL_MINUTES = 2;
+
+        /// <summary>Configuration reload delay in milliseconds</summary>
+        public const int CONFIG_RELOAD_DELAY_MS = 500;
+
+        // ===== INITIALIZATION CONSTANTS =====
+        /// <summary>Initialization timeout in seconds</summary>
+        public const int INITIALIZATION_TIMEOUT_SECONDS = 30;
+
+        /// <summary>Initialization retry delay in milliseconds</summary>
+        public const int INITIALIZATION_RETRY_DELAY_MS = 1000;
+
+        /// <summary>Initialization max retry attempts</summary>
+        public const int INITIALIZATION_MAX_RETRIES = 5;
+
+        /// <summary>Initialization validation timeout in milliseconds</summary>
+        public const int INITIALIZATION_VALIDATION_TIMEOUT_MS = 10000;
+
+        /// <summary>Initialization cleanup timeout in milliseconds</summary>
+        public const int INITIALIZATION_CLEANUP_TIMEOUT_MS = 15000;
+
+        // ===== CLEANUP AND SHUTDOWN CONSTANTS =====
+        /// <summary>Graceful shutdown timeout in seconds</summary>
+        public const int GRACEFUL_SHUTDOWN_TIMEOUT_SECONDS = 30;
+
+        /// <summary>Force shutdown timeout in seconds</summary>
+        public const int FORCE_SHUTDOWN_TIMEOUT_SECONDS = 10;
+
+        /// <summary>Resource cleanup timeout in milliseconds</summary>
+        public const int RESOURCE_CLEANUP_TIMEOUT_MS = 5000;
+
+        /// <summary>Emergency cleanup timeout in milliseconds</summary>
+        public const int EMERGENCY_CLEANUP_TIMEOUT_MS = 2000;
+
+        /// <summary>Final cleanup attempts</summary>
+        public const int FINAL_CLEANUP_ATTEMPTS = 3;
+
+        // ===== MONITORING CONSTANTS =====
+        /// <summary>Health check interval in seconds</summary>
+        public const int HEALTH_CHECK_INTERVAL_SECONDS = 30;
+
+        /// <summary>Status report interval in minutes</summary>
+        public const int STATUS_REPORT_INTERVAL_MINUTES = 10;
+
+        /// <summary>Watchdog timeout in seconds</summary>
+        public const int WATCHDOG_TIMEOUT_SECONDS = 60;
+
+        /// <summary>Heartbeat interval in seconds</summary>
+        public const int HEARTBEAT_INTERVAL_SECONDS = 5;
+
+        /// <summary>Monitoring data retention hours</summary>
+        public const int MONITORING_DATA_RETENTION_HOURS = 24;
+
+        // ===== NETWORK AND COMMUNICATION CONSTANTS =====
+        /// <summary>Network connection timeout in milliseconds</summary>
+        public const int NETWORK_CONNECTION_TIMEOUT_MS = 10000;
+
+        /// <summary>Network read timeout in milliseconds</summary>
+        public const int NETWORK_READ_TIMEOUT_MS = 5000;
+
+        /// <summary>Network write timeout in milliseconds</summary>
+        public const int NETWORK_WRITE_TIMEOUT_MS = 5000;
+
+        /// <summary>Network retry delay in milliseconds</summary>
+        public const int NETWORK_RETRY_DELAY_MS = 1000;
+
+        /// <summary>Network max retry attempts</summary>
+        public const int NETWORK_MAX_RETRY_ATTEMPTS = 3;
+
+        /// <summary>Network buffer size in bytes</summary>
+        public const int NETWORK_BUFFER_SIZE_BYTES = 8192;
+
+        // ===== SECURITY CONSTANTS =====
+        /// <summary>Security validation timeout in milliseconds</summary>
+        public const int SECURITY_VALIDATION_TIMEOUT_MS = 3000;
+
+        /// <summary>Security token expiry in minutes</summary>
+        public const int SECURITY_TOKEN_EXPIRY_MINUTES = 60;
+
+        /// <summary>Security hash salt length</summary>
+        public const int SECURITY_HASH_SALT_LENGTH = 32;
+
+        /// <summary>Security max failed attempts</summary>
+        public const int SECURITY_MAX_FAILED_ATTEMPTS = 5;
+
+        /// <summary>Security lockout duration in minutes</summary>
+        public const int SECURITY_LOCKOUT_DURATION_MINUTES = 15;
+
+        // ===== QUALITY ASSURANCE CONSTANTS =====
+        /// <summary>Quality check interval in operations</summary>
+        public const int QUALITY_CHECK_INTERVAL_OPERATIONS = 100;
+
+        /// <summary>Quality threshold percentage</summary>
+        public const double QUALITY_THRESHOLD_PERCENT = 95.0;
+
+        /// <summary>Quality warning threshold percentage</summary>
+        public const double QUALITY_WARNING_THRESHOLD_PERCENT = 90.0;
+
+        /// <summary>Quality critical threshold percentage</summary>
+        public const double QUALITY_CRITICAL_THRESHOLD_PERCENT = 80.0;
+
+        /// <summary>Quality metrics history retention count</summary>
+        public const int QUALITY_METRICS_HISTORY_COUNT = 1000;
+
+        // ===== MIXER SPECIFIC OPERATIONAL CONSTANTS =====
+        /// <summary>Mixer component activation delay in milliseconds</summary>
+        public const int MIXER_ACTIVATION_DELAY_MS = 100;
+
+        /// <summary>Mixer component deactivation delay in milliseconds</summary>
+        public const int MIXER_DEACTIVATION_DELAY_MS = 50;
+
+        /// <summary>Mixer threshold validation attempts</summary>
+        public const int MIXER_THRESHOLD_VALIDATION_ATTEMPTS = 3;
+
+        /// <summary>Mixer data sync interval in seconds</summary>
+        public const int MIXER_DATA_SYNC_INTERVAL_SECONDS = 30;
+
+        /// <summary>Mixer component scan interval in seconds</summary>
+        public const int MIXER_COMPONENT_SCAN_INTERVAL_SECONDS = 10;
+
+        /// <summary>Mixer batch processing size</summary>
+        public const int MIXER_BATCH_PROCESSING_SIZE = 50;
+
+        /// <summary>Mixer priority queue capacity</summary>
+        public const int MIXER_PRIORITY_QUEUE_CAPACITY = 100;
+
+        /// <summary>Mixer threshold change sensitivity</summary>
+        public const float MIXER_THRESHOLD_CHANGE_SENSITIVITY = 0.01f;
+
+        /// <summary>Mixer auto-save threshold changes</summary>
+        public const int MIXER_AUTO_SAVE_THRESHOLD_CHANGES = 5;
+
+        /// <summary>Mixer configuration validation timeout in milliseconds</summary>
+        public const int MIXER_CONFIG_VALIDATION_TIMEOUT_MS = 2000;
+
+        // ===== GAME STATE CONSTANTS =====
+        /// <summary>Game state check interval in seconds</summary>
+        public const int GAME_STATE_CHECK_INTERVAL_SECONDS = 1;
+
+        /// <summary>Game state transition timeout in seconds</summary>
+        public const int GAME_STATE_TRANSITION_TIMEOUT_SECONDS = 10;
+
+        /// <summary>Game state persistence interval in minutes</summary>
+        public const int GAME_STATE_PERSISTENCE_INTERVAL_MINUTES = 1;
+
+        /// <summary>Game state backup interval in minutes</summary>
+        public const int GAME_STATE_BACKUP_INTERVAL_MINUTES = 5;
+
+        /// <summary>Game state validation attempts</summary>
+        public const int GAME_STATE_VALIDATION_ATTEMPTS = 3;
+
+        /// <summary>Game state recovery timeout in seconds</summary>
+        public const int GAME_STATE_RECOVERY_TIMEOUT_SECONDS = 30;
+
+        /// <summary>Game state emergency save threshold</summary>
+        public const int GAME_STATE_EMERGENCY_SAVE_THRESHOLD = 10;
+
+        // ===== USER INTERFACE CONSTANTS =====
+        /// <summary>UI update interval in milliseconds</summary>
+        public const int UI_UPDATE_INTERVAL_MS = 16; // ~60 FPS
+
+        /// <summary>UI animation duration in milliseconds</summary>
+        public const int UI_ANIMATION_DURATION_MS = 300;
+
+        /// <summary>UI element fade duration in milliseconds</summary>
+        public const int UI_ELEMENT_FADE_DURATION_MS = 150;
+
+        /// <summary>UI tooltip display delay in milliseconds</summary>
+        public const int UI_TOOLTIP_DISPLAY_DELAY_MS = 500;
+
+        /// <summary>UI notification display duration in seconds</summary>
+        public const int UI_NOTIFICATION_DISPLAY_DURATION_SECONDS = 3;
+
+        /// <summary>UI popup timeout in seconds</summary>
+        public const int UI_POPUP_TIMEOUT_SECONDS = 10;
+
+        /// <summary>UI element minimum width in pixels</summary>
+        public const int UI_ELEMENT_MIN_WIDTH_PIXELS = 50;
+
+        /// <summary>UI element minimum height in pixels</summary>
+        public const int UI_ELEMENT_MIN_HEIGHT_PIXELS = 20;
+
+        /// <summary>UI panel default width in pixels</summary>
+        public const int UI_PANEL_DEFAULT_WIDTH_PIXELS = 300;
+
+        /// <summary>UI panel default height in pixels</summary>
+        public const int UI_PANEL_DEFAULT_HEIGHT_PIXELS = 200;
+
+        // ===== AUDIO CONSTANTS =====
+        /// <summary>Audio volume minimum (0.0)</summary>
+        public const float AUDIO_VOLUME_MIN = 0.0f;
+
+        /// <summary>Audio volume maximum (1.0)</summary>
+        public const float AUDIO_VOLUME_MAX = 1.0f;
+
+        /// <summary>Audio volume default (0.7)</summary>
+        public const float AUDIO_VOLUME_DEFAULT = 0.7f;
+
+        /// <summary>Audio fade duration in seconds</summary>
+        public const float AUDIO_FADE_DURATION_SECONDS = 1.0f;
+
+        /// <summary>Audio sample rate standard (44100 Hz)</summary>
+        public const int AUDIO_SAMPLE_RATE_STANDARD = 44100;
+
+        /// <summary>Audio buffer size default</summary>
+        public const int AUDIO_BUFFER_SIZE_DEFAULT = 1024;
+
+        /// <summary>Audio channel count mono</summary>
+        public const int AUDIO_CHANNELS_MONO = 1;
+
+        /// <summary>Audio channel count stereo</summary>
+        public const int AUDIO_CHANNELS_STEREO = 2;
+
+        /// <summary>Audio bit depth standard (16 bits)</summary>
+        public const int AUDIO_BIT_DEPTH_STANDARD = 16;
+
+        /// <summary>Audio processing interval in milliseconds</summary>
+        public const int AUDIO_PROCESSING_INTERVAL_MS = 10;
+
+        // ===== GRAPHICS CONSTANTS =====
+        /// <summary>Graphics resolution minimum width</summary>
+        public const int GRAPHICS_MIN_WIDTH = 640;
+
+        /// <summary>Graphics resolution minimum height</summary>
+        public const int GRAPHICS_MIN_HEIGHT = 480;
+
+        /// <summary>Graphics resolution default width</summary>
+        public const int GRAPHICS_DEFAULT_WIDTH = 1920;
+
+        /// <summary>Graphics resolution default height</summary>
+        public const int GRAPHICS_DEFAULT_HEIGHT = 1080;
+
+        /// <summary>Graphics maximum width</summary>
+        public const int GRAPHICS_MAX_WIDTH = 3840;
+
+        /// <summary>Graphics maximum height</summary>
+        public const int GRAPHICS_MAX_HEIGHT = 2160;
+
+        /// <summary>Graphics texture quality minimum</summary>
+        public const int GRAPHICS_TEXTURE_QUALITY_MIN = 0;
+
+        /// <summary>Graphics texture quality maximum</summary>
+        public const int GRAPHICS_TEXTURE_QUALITY_MAX = 4;
+
+        /// <summary>Graphics shadow distance minimum</summary>
+        public const float GRAPHICS_SHADOW_DISTANCE_MIN = 10.0f;
+
+        /// <summary>Graphics shadow distance maximum</summary>
+        public const float GRAPHICS_SHADOW_DISTANCE_MAX = 500.0f;
+
+        /// <summary>Graphics LOD bias minimum</summary>
+        public const float GRAPHICS_LOD_BIAS_MIN = 0.1f;
+
+        /// <summary>Graphics LOD bias maximum</summary>
+        public const float GRAPHICS_LOD_BIAS_MAX = 2.0f;
+
+        /// <summary>Graphics anisotropic filtering levels</summary>
+        public const int GRAPHICS_ANISOTROPIC_LEVELS = 16;
+
+        /// <summary>Graphics anti-aliasing samples minimum</summary>
+        public const int GRAPHICS_ANTIALIASING_MIN = 0;
+
+        /// <summary>Graphics anti-aliasing samples maximum</summary>
+        public const int GRAPHICS_ANTIALIASING_MAX = 8;
+
+        // ===== INPUT CONSTANTS =====
+        /// <summary>Input polling rate in Hz</summary>
+        public const int INPUT_POLLING_RATE_HZ = 120;
+
+        /// <summary>Input deadzone threshold</summary>
+        public const float INPUT_DEADZONE_THRESHOLD = 0.1f;
+
+        /// <summary>Input sensitivity minimum</summary>
+        public const float INPUT_SENSITIVITY_MIN = 0.1f;
+
+        /// <summary>Input sensitivity maximum</summary>
+        public const float INPUT_SENSITIVITY_MAX = 10.0f;
+
+        /// <summary>Input sensitivity default</summary>
+        public const float INPUT_SENSITIVITY_DEFAULT = 1.0f;
+
+        /// <summary>Input double click interval in milliseconds</summary>
+        public const int INPUT_DOUBLE_CLICK_INTERVAL_MS = 300;
+
+        /// <summary>Input long press duration in milliseconds</summary>
+        public const int INPUT_LONG_PRESS_DURATION_MS = 1000;
+
+        /// <summary>Input key repeat delay in milliseconds</summary>
+        public const int INPUT_KEY_REPEAT_DELAY_MS = 500;
+
+        /// <summary>Input key repeat rate in milliseconds</summary>
+        public const int INPUT_KEY_REPEAT_RATE_MS = 30;
+
+        /// <summary>Input mouse wheel sensitivity</summary>
+        public const float INPUT_MOUSE_WHEEL_SENSITIVITY = 1.0f;
+
+        // ===== PHYSICS CONSTANTS =====
+        /// <summary>Physics gravity default (-9.81)</summary>
+        public const float PHYSICS_GRAVITY_DEFAULT = -9.81f;
+
+        /// <summary>Physics time step fixed (1/60)</summary>
+        public const float PHYSICS_TIME_STEP_FIXED = 0.016666f;
+
+        /// <summary>Physics collision detection mode discrete</summary>
+        public const int PHYSICS_COLLISION_MODE_DISCRETE = 0;
+
+        /// <summary>Physics collision detection mode continuous</summary>
+        public const int PHYSICS_COLLISION_MODE_CONTINUOUS = 1;
+
+        /// <summary>Physics solver iterations default</summary>
+        public const int PHYSICS_SOLVER_ITERATIONS_DEFAULT = 6;
+
+        /// <summary>Physics velocity threshold</summary>
+        public const float PHYSICS_VELOCITY_THRESHOLD = 0.1f;
+
+        /// <summary>Physics angular velocity threshold</summary>
+        public const float PHYSICS_ANGULAR_VELOCITY_THRESHOLD = 0.1f;
+
+        /// <summary>Physics bounce threshold</summary>
+        public const float PHYSICS_BOUNCE_THRESHOLD = 2.0f;
+
+        /// <summary>Physics friction coefficient default</summary>
+        public const float PHYSICS_FRICTION_COEFFICIENT_DEFAULT = 0.6f;
+
+        /// <summary>Physics restitution coefficient default</summary>
+        public const float PHYSICS_RESTITUTION_COEFFICIENT_DEFAULT = 0.0f;
+
+        // ===== ANIMATION CONSTANTS =====
+        /// <summary>Animation frame rate standard (30 FPS)</summary>
+        public const int ANIMATION_FRAME_RATE_STANDARD = 30;
+
+        /// <summary>Animation frame rate high (60 FPS)</summary>
+        public const int ANIMATION_FRAME_RATE_HIGH = 60;
+
+        /// <summary>Animation blend time default in seconds</summary>
+        public const float ANIMATION_BLEND_TIME_DEFAULT = 0.1f;
+
+        /// <summary>Animation crossfade time default in seconds</summary>
+        public const float ANIMATION_CROSSFADE_TIME_DEFAULT = 0.25f;
+
+        /// <summary>Animation playback speed minimum</summary>
+        public const float ANIMATION_PLAYBACK_SPEED_MIN = 0.1f;
+
+        /// <summary>Animation playback speed maximum</summary>
+        public const float ANIMATION_PLAYBACK_SPEED_MAX = 10.0f;
+
+        /// <summary>Animation playback speed default</summary>
+        public const float ANIMATION_PLAYBACK_SPEED_DEFAULT = 1.0f;
+
+        /// <summary>Animation curve tangent mode linear</summary>
+        public const int ANIMATION_TANGENT_MODE_LINEAR = 0;
+
+        /// <summary>Animation curve tangent mode smooth</summary>
+        public const int ANIMATION_TANGENT_MODE_SMOOTH = 1;
+
+        /// <summary>Animation loop count infinite</summary>
+        public const int ANIMATION_LOOP_COUNT_INFINITE = -1;
+
+        // ===== SHADER CONSTANTS =====
+        /// <summary>Shader compilation timeout in milliseconds</summary>
+        public const int SHADER_COMPILATION_TIMEOUT_MS = 30000;
+
+        /// <summary>Shader property float precision</summary>
+        public const int SHADER_FLOAT_PRECISION = 6;
+
+        /// <summary>Shader texture slot maximum</summary>
+        public const int SHADER_TEXTURE_SLOT_MAX = 16;
+
+        /// <summary>Shader uniform buffer size maximum</summary>
+        public const int SHADER_UNIFORM_BUFFER_SIZE_MAX = 65536;
+
+        /// <summary>Shader vertex attribute maximum</summary>
+        public const int SHADER_VERTEX_ATTRIBUTE_MAX = 16;
+
+        /// <summary>Shader pass maximum count</summary>
+        public const int SHADER_PASS_MAX_COUNT = 8;
+
+        /// <summary>Shader keyword maximum count</summary>
+        public const int SHADER_KEYWORD_MAX_COUNT = 256;
+
+        // ===== LIGHTING CONSTANTS =====
+        /// <summary>Lighting intensity minimum</summary>
+        public const float LIGHTING_INTENSITY_MIN = 0.0f;
+
+        /// <summary>Lighting intensity maximum</summary>
+        public const float LIGHTING_INTENSITY_MAX = 8.0f;
+
+        /// <summary>Lighting intensity default</summary>
+        public const float LIGHTING_INTENSITY_DEFAULT = 1.0f;
+
+        /// <summary>Lighting range minimum</summary>
+        public const float LIGHTING_RANGE_MIN = 0.1f;
+
+        /// <summary>Lighting range maximum</summary>
+        public const float LIGHTING_RANGE_MAX = 1000.0f;
+
+        /// <summary>Lighting spot angle minimum</summary>
+        public const float LIGHTING_SPOT_ANGLE_MIN = 1.0f;
+
+        /// <summary>Lighting spot angle maximum</summary>
+        public const float LIGHTING_SPOT_ANGLE_MAX = 179.0f;
+
+        /// <summary>Lighting shadow strength minimum</summary>
+        public const float LIGHTING_SHADOW_STRENGTH_MIN = 0.0f;
+
+        /// <summary>Lighting shadow strength maximum</summary>
+        public const float LIGHTING_SHADOW_STRENGTH_MAX = 1.0f;
+
+        /// <summary>Lighting color temperature minimum (Kelvin)</summary>
+        public const float LIGHTING_COLOR_TEMP_MIN = 1000.0f;
+
+        /// <summary>Lighting color temperature maximum (Kelvin)</summary>
+        public const float LIGHTING_COLOR_TEMP_MAX = 40000.0f;
+
+        // ===== PARTICLE SYSTEM CONSTANTS =====
+        /// <summary>Particle system maximum particles</summary>
+        public const int PARTICLE_SYSTEM_MAX_PARTICLES = 10000;
+
+        /// <summary>Particle system emission rate minimum</summary>
+        public const float PARTICLE_EMISSION_RATE_MIN = 0.0f;
+
+        /// <summary>Particle system emission rate maximum</summary>
+        public const float PARTICLE_EMISSION_RATE_MAX = 1000.0f;
+
+        /// <summary>Particle lifetime minimum in seconds</summary>
+        public const float PARTICLE_LIFETIME_MIN = 0.1f;
+
+        /// <summary>Particle lifetime maximum in seconds</summary>
+        public const float PARTICLE_LIFETIME_MAX = 100.0f;
+
+        /// <summary>Particle start speed minimum</summary>
+        public const float PARTICLE_START_SPEED_MIN = 0.0f;
+
+        /// <summary>Particle start speed maximum</summary>
+        public const float PARTICLE_START_SPEED_MAX = 100.0f;
+
+        /// <summary>Particle start size minimum</summary>
+        public const float PARTICLE_START_SIZE_MIN = 0.01f;
+
+        /// <summary>Particle start size maximum</summary>
+        public const float PARTICLE_START_SIZE_MAX = 10.0f;
+
+        /// <summary>Particle gravity modifier minimum</summary>
+        public const float PARTICLE_GRAVITY_MODIFIER_MIN = -2.0f;
+
+        /// <summary>Particle gravity modifier maximum</summary>
+        public const float PARTICLE_GRAVITY_MODIFIER_MAX = 2.0f;
+
+        // ===== TERRAIN CONSTANTS =====
+        /// <summary>Terrain height map resolution minimum</summary>
+        public const int TERRAIN_HEIGHT_MAP_RES_MIN = 33;
+
+        /// <summary>Terrain height map resolution maximum</summary>
+        public const int TERRAIN_HEIGHT_MAP_RES_MAX = 4097;
+
+        /// <summary>Terrain detail resolution minimum</summary>
+        public const int TERRAIN_DETAIL_RES_MIN = 0;
+
+        /// <summary>Terrain detail resolution maximum</summary>
+        public const int TERRAIN_DETAIL_RES_MAX = 4048;
+
+        /// <summary>Terrain control texture resolution minimum</summary>
+        public const int TERRAIN_CONTROL_TEX_RES_MIN = 16;
+
+        /// <summary>Terrain control texture resolution maximum</summary>
+        public const int TERRAIN_CONTROL_TEX_RES_MAX = 2048;
+
+        /// <summary>Terrain base map distance minimum</summary>
+        public const float TERRAIN_BASE_MAP_DISTANCE_MIN = 0.0f;
+
+        /// <summary>Terrain base map distance maximum</summary>
+        public const float TERRAIN_BASE_MAP_DISTANCE_MAX = 20000.0f;
+
+        /// <summary>Terrain tree distance minimum</summary>
+        public const float TERRAIN_TREE_DISTANCE_MIN = 0.0f;
+
+        /// <summary>Terrain tree distance maximum</summary>
+        public const float TERRAIN_TREE_DISTANCE_MAX = 5000.0f;
+
+        /// <summary>Terrain billboard start distance minimum</summary>
+        public const float TERRAIN_BILLBOARD_START_MIN = 5.0f;
+
+        /// <summary>Terrain billboard start distance maximum</summary>
+        public const float TERRAIN_BILLBOARD_START_MAX = 2000.0f;
+
+        // ===== CAMERA CONSTANTS =====
+        /// <summary>Camera field of view minimum</summary>
+        public const float CAMERA_FOV_MIN = 1.0f;
+
+        /// <summary>Camera field of view maximum</summary>
+        public const float CAMERA_FOV_MAX = 179.0f;
+
+        /// <summary>Camera field of view default</summary>
+        public const float CAMERA_FOV_DEFAULT = 60.0f;
+
+        /// <summary>Camera near clipping plane minimum</summary>
+        public const float CAMERA_NEAR_CLIP_MIN = 0.01f;
+
+        /// <summary>Camera near clipping plane maximum</summary>
+        public const float CAMERA_NEAR_CLIP_MAX = 10.0f;
+
+        /// <summary>Camera near clipping plane default</summary>
+        public const float CAMERA_NEAR_CLIP_DEFAULT = 0.3f;
+
+        /// <summary>Camera far clipping plane minimum</summary>
+        public const float CAMERA_FAR_CLIP_MIN = 1.0f;
+
+        /// <summary>Camera far clipping plane maximum</summary>
+        public const float CAMERA_FAR_CLIP_MAX = 50000.0f;
+
+        /// <summary>Camera far clipping plane default</summary>
+        public const float CAMERA_FAR_CLIP_DEFAULT = 1000.0f;
+
+        /// <summary>Camera orthographic size minimum</summary>
+        public const float CAMERA_ORTHO_SIZE_MIN = 0.1f;
+
+        /// <summary>Camera orthographic size maximum</summary>
+        public const float CAMERA_ORTHO_SIZE_MAX = 1000.0f;
+
+        // ===== MATERIAL CONSTANTS =====
+        /// <summary>Material metallic value minimum</summary>
+        public const float MATERIAL_METALLIC_MIN = 0.0f;
+
+        /// <summary>Material metallic value maximum</summary>
+        public const float MATERIAL_METALLIC_MAX = 1.0f;
+
+        /// <summary>Material smoothness value minimum</summary>
+        public const float MATERIAL_SMOOTHNESS_MIN = 0.0f;
+
+        /// <summary>Material smoothness value maximum</summary>
+        public const float MATERIAL_SMOOTHNESS_MAX = 1.0f;
+
+        /// <summary>Material normal map scale minimum</summary>
+        public const float MATERIAL_NORMAL_SCALE_MIN = 0.0f;
+
+        /// <summary>Material normal map scale maximum</summary>
+        public const float MATERIAL_NORMAL_SCALE_MAX = 2.0f;
+
+        /// <summary>Material parallax scale minimum</summary>
+        public const float MATERIAL_PARALLAX_SCALE_MIN = 0.0f;
+
+        /// <summary>Material parallax scale maximum</summary>
+        public const float MATERIAL_PARALLAX_SCALE_MAX = 0.1f;
+
+        /// <summary>Material emission intensity minimum</summary>
+        public const float MATERIAL_EMISSION_INTENSITY_MIN = 0.0f;
+
+        /// <summary>Material emission intensity maximum</summary>
+        public const float MATERIAL_EMISSION_INTENSITY_MAX = 10.0f;
+
+        /// <summary>Material alpha cutoff minimum</summary>
+        public const float MATERIAL_ALPHA_CUTOFF_MIN = 0.0f;
+
+        /// <summary>Material alpha cutoff maximum</summary>
+        public const float MATERIAL_ALPHA_CUTOFF_MAX = 1.0f;
+
+        // ===== TEXTURE CONSTANTS =====
+        /// <summary>Texture size minimum (power of 2)</summary>
+        public const int TEXTURE_SIZE_MIN = 1;
+
+        /// <summary>Texture size maximum (power of 2)</summary>
+        public const int TEXTURE_SIZE_MAX = 16384;
+
+        /// <summary>Texture mip map level maximum</summary>
+        public const int TEXTURE_MIP_LEVEL_MAX = 14;
+
+        /// <summary>Texture compression quality minimum</summary>
+        public const int TEXTURE_COMPRESSION_QUALITY_MIN = 0;
+
+        /// <summary>Texture compression quality maximum</summary>
+        public const int TEXTURE_COMPRESSION_QUALITY_MAX = 100;
+
+        /// <summary>Texture aniso level minimum</summary>
+        public const int TEXTURE_ANISO_LEVEL_MIN = 1;
+
+        /// <summary>Texture aniso level maximum</summary>
+        public const int TEXTURE_ANISO_LEVEL_MAX = 16;
+
+        /// <summary>Texture filter mode point</summary>
+        public const int TEXTURE_FILTER_MODE_POINT = 0;
+
+        /// <summary>Texture filter mode bilinear</summary>
+        public const int TEXTURE_FILTER_MODE_BILINEAR = 1;
+
+        /// <summary>Texture filter mode trilinear</summary>
+        public const int TEXTURE_FILTER_MODE_TRILINEAR = 2;
+
+        /// <summary>Texture wrap mode repeat</summary>
+        public const int TEXTURE_WRAP_MODE_REPEAT = 0;
+
+        /// <summary>Texture wrap mode clamp</summary>
+        public const int TEXTURE_WRAP_MODE_CLAMP = 1;
+
+        // ===== ERROR MESSAGE CONSTANTS =====
+        /// <summary>Error message null parameter</summary>
+        public const string ERROR_MSG_NULL_PARAMETER = "Parameter cannot be null";
+
+        /// <summary>Error message empty string</summary>
+        public const string ERROR_MSG_EMPTY_STRING = "String cannot be null or empty";
+
+        /// <summary>Error message invalid range</summary>
+        public const string ERROR_MSG_INVALID_RANGE = "Value is outside the valid range";
+
+        /// <summary>Error message file not found</summary>
+        public const string ERROR_MSG_FILE_NOT_FOUND = "File not found at specified path";
+
+        /// <summary>Error message access denied</summary>
+        public const string ERROR_MSG_ACCESS_DENIED = "Access denied to specified resource";
+
+        /// <summary>Error message timeout occurred</summary>
+        public const string ERROR_MSG_TIMEOUT_OCCURRED = "Operation timed out";
+
+        /// <summary>Error message operation cancelled</summary>
+        public const string ERROR_MSG_OPERATION_CANCELLED = "Operation was cancelled";
+
+        /// <summary>Error message invalid format</summary>
+        public const string ERROR_MSG_INVALID_FORMAT = "Invalid format specified";
+
+        /// <summary>Error message not supported</summary>
+        public const string ERROR_MSG_NOT_SUPPORTED = "Operation not supported";
+
+        /// <summary>Error message already initialized</summary>
+        public const string ERROR_MSG_ALREADY_INITIALIZED = "Component already initialized";
+
+        /// <summary>Error message not initialized</summary>
+        public const string ERROR_MSG_NOT_INITIALIZED = "Component not initialized";
+
+        /// <summary>Error message invalid operation</summary>
+        public const string ERROR_MSG_INVALID_OPERATION = "Invalid operation in current state";
+
+        /// <summary>Error message resource exhausted</summary>
+        public const string ERROR_MSG_RESOURCE_EXHAUSTED = "System resources exhausted";
+
+        /// <summary>Error message connection failed</summary>
+        public const string ERROR_MSG_CONNECTION_FAILED = "Connection failed";
+
+        /// <summary>Error message data corruption</summary>
+        public const string ERROR_MSG_DATA_CORRUPTION = "Data corruption detected";
+
+        /// <summary>Error message version mismatch</summary>
+        public const string ERROR_MSG_VERSION_MISMATCH = "Version mismatch detected";
+
+        /// <summary>Error message insufficient memory</summary>
+        public const string ERROR_MSG_INSUFFICIENT_MEMORY = "Insufficient memory available";
+
+        /// <summary>Error message invalid configuration</summary>
+        public const string ERROR_MSG_INVALID_CONFIGURATION = "Invalid configuration detected";
+
+        /// <summary>Error message operation failed</summary>
+        public const string ERROR_MSG_OPERATION_FAILED = "Operation failed to complete";
+
+        // ===== SUCCESS MESSAGE CONSTANTS =====
+        /// <summary>Success message operation completed</summary>
+        public const string SUCCESS_MSG_OPERATION_COMPLETED = "Operation completed successfully";
+
+        /// <summary>Success message file saved</summary>
+        public const string SUCCESS_MSG_FILE_SAVED = "File saved successfully";
+
+        /// <summary>Success message file loaded</summary>
+        public const string SUCCESS_MSG_FILE_LOADED = "File loaded successfully";
+
+        /// <summary>Success message connection established</summary>
+        public const string SUCCESS_MSG_CONNECTION_ESTABLISHED = "Connection established successfully";
+
+        /// <summary>Success message initialization complete</summary>
+        public const string SUCCESS_MSG_INITIALIZATION_COMPLETE = "Initialization completed successfully";
+
+        /// <summary>Success message validation passed</summary>
+        public const string SUCCESS_MSG_VALIDATION_PASSED = "Validation passed successfully";
+
+        /// <summary>Success message backup created</summary>
+        public const string SUCCESS_MSG_BACKUP_CREATED = "Backup created successfully";
+
+        /// <summary>Success message settings applied</summary>
+        public const string SUCCESS_MSG_SETTINGS_APPLIED = "Settings applied successfully";
+
+        /// <summary>Success message data synchronized</summary>
+        public const string SUCCESS_MSG_DATA_SYNCHRONIZED = "Data synchronized successfully";
+
+        /// <summary>Success message cleanup completed</summary>
+        public const string SUCCESS_MSG_CLEANUP_COMPLETED = "Cleanup completed successfully";
+
+        // ===== WARNING MESSAGE CONSTANTS =====
+        /// <summary>Warning message performance degraded</summary>
+        public const string WARNING_MSG_PERFORMANCE_DEGRADED = "Performance degradation detected";
+
+        /// <summary>Warning message memory usage high</summary>
+        public const string WARNING_MSG_MEMORY_USAGE_HIGH = "High memory usage detected";
+
+        /// <summary>Warning message disk space low</summary>
+        public const string WARNING_MSG_DISK_SPACE_LOW = "Low disk space warning";
+
+        /// <summary>Warning message deprecated feature</summary>
+        public const string WARNING_MSG_DEPRECATED_FEATURE = "Using deprecated feature";
+
+        /// <summary>Warning message unstable operation</summary>
+        public const string WARNING_MSG_UNSTABLE_OPERATION = "Operation may be unstable";
+
+        /// <summary>Warning message backup recommended</summary>
+        public const string WARNING_MSG_BACKUP_RECOMMENDED = "Backup recommended before proceeding";
+
+        /// <summary>Warning message compatibility issue</summary>
+        public const string WARNING_MSG_COMPATIBILITY_ISSUE = "Compatibility issue detected";
+
+        /// <summary>Warning message configuration mismatch</summary>
+        public const string WARNING_MSG_CONFIGURATION_MISMATCH = "Configuration mismatch detected";
+
+        /// <summary>Warning message resource limitation</summary>
+        public const string WARNING_MSG_RESOURCE_LIMITATION = "Resource limitation encountered";
+
+        /// <summary>Warning message temporary failure</summary>
+        public const string WARNING_MSG_TEMPORARY_FAILURE = "Temporary failure occurred";
+
+        // ===== INFORMATION MESSAGE CONSTANTS =====
+        /// <summary>Info message operation started</summary>
+        public const string INFO_MSG_OPERATION_STARTED = "Operation started";
+
+        /// <summary>Info message progress update</summary>
+        public const string INFO_MSG_PROGRESS_UPDATE = "Progress update available";
+
+        /// <summary>Info message status changed</summary>
+        public const string INFO_MSG_STATUS_CHANGED = "Status changed";
+
+        /// <summary>Info message new version available</summary>
+        public const string INFO_MSG_NEW_VERSION_AVAILABLE = "New version available";
+
+        /// <summary>Info message maintenance scheduled</summary>
+        public const string INFO_MSG_MAINTENANCE_SCHEDULED = "Maintenance scheduled";
+
+        /// <summary>Info message feature enabled</summary>
+        public const string INFO_MSG_FEATURE_ENABLED = "Feature enabled";
+
+        /// <summary>Info message feature disabled</summary>
+        public const string INFO_MSG_FEATURE_DISABLED = "Feature disabled";
+
+        /// <summary>Info message system ready</summary>
+        public const string INFO_MSG_SYSTEM_READY = "System ready";
+
+        /// <summary>Info message connection restored</summary>
+        public const string INFO_MSG_CONNECTION_RESTORED = "Connection restored";
+
+        /// <summary>Info message update available</summary>
+        public const string INFO_MSG_UPDATE_AVAILABLE = "Update available";
+
+        // ===== DELIMITER AND SEPARATOR CONSTANTS =====
+        /// <summary>Comma delimiter</summary>
+        public const string DELIMITER_COMMA = ",";
+
+        /// <summary>Semicolon delimiter</summary>
+        public const string DELIMITER_SEMICOLON = ";";
+
+        /// <summary>Pipe delimiter</summary>
+        public const string DELIMITER_PIPE = "|";
+
+        /// <summary>Tab delimiter</summary>
+        public const string DELIMITER_TAB = "\t";
+
+        /// <summary>Space delimiter</summary>
+        public const string DELIMITER_SPACE = " ";
+
+        /// <summary>Colon delimiter</summary>
+        public const string DELIMITER_COLON = ":";
+
+        /// <summary>Equals delimiter</summary>
+        public const string DELIMITER_EQUALS = "=";
+
+        /// <summary>Ampersand delimiter</summary>
+        public const string DELIMITER_AMPERSAND = "&";
+
+        /// <summary>Question mark delimiter</summary>
+        public const string DELIMITER_QUESTION_MARK = "?";
+
+        /// <summary>Hash delimiter</summary>
+        public const string DELIMITER_HASH = "#";
+
+        /// <summary>At symbol delimiter</summary>
+        public const string DELIMITER_AT_SYMBOL = "@";
+
+        /// <summary>Percent delimiter</summary>
+        public const string DELIMITER_PERCENT = "%";
+
+        /// <summary>Dollar delimiter</summary>
+        public const string DELIMITER_DOLLAR = "$";
+
+        /// <summary>Caret delimiter</summary>
+        public const string DELIMITER_CARET = "^";
+
+        /// <summary>Plus delimiter</summary>
+        public const string DELIMITER_PLUS = "+";
+
+        /// <summary>Minus delimiter</summary>
+        public const string DELIMITER_MINUS = "-";
+
+        /// <summary>Underscore delimiter</summary>
+        public const string DELIMITER_UNDERSCORE = "_";
+
+        /// <summary>Tilde delimiter</summary>
+        public const string DELIMITER_TILDE = "~";
+
+        /// <summary>Backtick delimiter</summary>
+        public const string DELIMITER_BACKTICK = "`";
+
+        /// <summary>Exclamation delimiter</summary>
+        public const string DELIMITER_EXCLAMATION = "!";
+
+        // ===== BRACKET AND PARENTHESIS CONSTANTS =====
+        /// <summary>Opening parenthesis</summary>
+        public const string BRACKET_OPEN_PAREN = "(";
+
+        /// <summary>Closing parenthesis</summary>
+        public const string BRACKET_CLOSE_PAREN = ")";
+
+        /// <summary>Opening square bracket</summary>
+        public const string BRACKET_OPEN_SQUARE = "[";
+
+        /// <summary>Closing square bracket</summary>
+        public const string BRACKET_CLOSE_SQUARE = "]";
+
+        /// <summary>Opening curly brace</summary>
+        public const string BRACKET_OPEN_CURLY = "{";
+
+        /// <summary>Closing curly brace</summary>
+        public const string BRACKET_CLOSE_CURLY = "}";
+
+        /// <summary>Opening angle bracket</summary>
+        public const string BRACKET_OPEN_ANGLE = "<";
+
+        /// <summary>Closing angle bracket</summary>
+        public const string BRACKET_CLOSE_ANGLE = ">";
+
+        // ===== QUOTE AND ESCAPE CONSTANTS =====
+        /// <summary>Single quote</summary>
+        public const string QUOTE_SINGLE = "'";
+
+        /// <summary>Double quote</summary>
+        public const string QUOTE_DOUBLE = "\"";
+
+        /// <summary>Backslash escape</summary>
+        public const string ESCAPE_BACKSLASH = "\\";
+
+        /// <summary>Forward slash</summary>
+        public const string ESCAPE_FORWARD_SLASH = "/";
+
+        /// <summary>Newline escape</summary>
+        public const string ESCAPE_NEWLINE = "\n";
+
+        /// <summary>Carriage return escape</summary>
+        public const string ESCAPE_CARRIAGE_RETURN = "\r";
+
+        /// <summary>Tab escape</summary>
+        public const string ESCAPE_TAB = "\t";
+
+        /// <summary>Vertical tab escape</summary>
+        public const string ESCAPE_VERTICAL_TAB = "\v";
+
+        /// <summary>Form feed escape</summary>
+        public const string ESCAPE_FORM_FEED = "\f";
+
+        /// <summary>Backspace escape</summary>
+        public const string ESCAPE_BACKSPACE = "\b";
+
+        /// <summary>Alert (bell) escape</summary>
+        public const string ESCAPE_ALERT = "\a";
+
+        /// <summary>Null character escape</summary>
+        public const string ESCAPE_NULL = "\0";
+
+        // ===== ENCODING CONSTANTS =====
+        /// <summary>UTF-8 encoding name</summary>
+        public const string ENCODING_UTF8 = "UTF-8";
+
+        /// <summary>UTF-16 encoding name</summary>
+        public const string ENCODING_UTF16 = "UTF-16";
+
+        /// <summary>UTF-32 encoding name</summary>
+        public const string ENCODING_UTF32 = "UTF-32";
+
+        /// <summary>ASCII encoding name</summary>
+        public const string ENCODING_ASCII = "ASCII";
+
+        /// <summary>ISO-8859-1 encoding name</summary>
+        public const string ENCODING_ISO_8859_1 = "ISO-8859-1";
+
+        /// <summary>Windows-1252 encoding name</summary>
+        public const string ENCODING_WINDOWS_1252 = "Windows-1252";
+
+        /// <summary>Base64 encoding name</summary>
+        public const string ENCODING_BASE64 = "Base64";
+
+        /// <summary>Hex encoding name</summary>
+        public const string ENCODING_HEX = "Hexadecimal";
+
+        // ===== CULTURE CONSTANTS =====
+        /// <summary>Invariant culture name</summary>
+        public const string CULTURE_INVARIANT = "";
+
+        /// <summary>English US culture</summary>
+        public const string CULTURE_EN_US = "en-US";
+
+        /// <summary>English UK culture</summary>
+        public const string CULTURE_EN_UK = "en-GB";
+
+        /// <summary>German culture</summary>
+        public const string CULTURE_DE_DE = "de-DE";
+
+        /// <summary>French culture</summary>
+        public const string CULTURE_FR_FR = "fr-FR";
+
+        /// <summary>Spanish culture</summary>
+        public const string CULTURE_ES_ES = "es-ES";
+
+        /// <summary>Italian culture</summary>
+        public const string CULTURE_IT_IT = "it-IT";
+
+        /// <summary>Japanese culture</summary>
+        public const string CULTURE_JA_JP = "ja-JP";
+
+        /// <summary>Chinese simplified culture</summary>
+        public const string CULTURE_ZH_CN = "zh-CN";
+
+        /// <summary>Chinese traditional culture</summary>
+        public const string CULTURE_ZH_TW = "zh-TW";
+
+        /// <summary>Korean culture</summary>
+        public const string CULTURE_KO_KR = "ko-KR";
+
+        /// <summary>Russian culture</summary>
+        public const string CULTURE_RU_RU = "ru-RU";
+
+        /// <summary>Portuguese Brazil culture</summary>
+        public const string CULTURE_PT_BR = "pt-BR";
+
+        /// <summary>Dutch culture</summary>
+        public const string CULTURE_NL_NL = "nl-NL";
+
+        /// <summary>Swedish culture</summary>
+        public const string CULTURE_SV_SE = "sv-SE";
+
+        /// <summary>Norwegian culture</summary>
+        public const string CULTURE_NO_NO = "no-NO";
+
+        /// <summary>Danish culture</summary>
+        public const string CULTURE_DA_DK = "da-DK";
+
+        /// <summary>Finnish culture</summary>
+        public const string CULTURE_FI_FI = "fi-FI";
+
+        /// <summary>Polish culture</summary>
+        public const string CULTURE_PL_PL = "pl-PL";
+
+        /// <summary>Turkish culture</summary>
+        public const string CULTURE_TR_TR = "tr-TR";
+
+        /// <summary>Arabic culture</summary>
+        public const string CULTURE_AR_SA = "ar-SA";
+
+        /// <summary>Hebrew culture</summary>
+        public const string CULTURE_HE_IL = "he-IL";
+
+        /// <summary>Hindi culture</summary>
+        public const string CULTURE_HI_IN = "hi-IN";
+
+        /// <summary>Thai culture</summary>
+        public const string CULTURE_TH_TH = "th-TH";
+
+        /// <summary>Vietnamese culture</summary>
+        public const string CULTURE_VI_VN = "vi-VN";
+
+        /// <summary>Indonesian culture</summary>
+        public const string CULTURE_ID_ID = "id-ID";
+
+        /// <summary>Malay culture</summary>
+        public const string CULTURE_MS_MY = "ms-MY";
+
+        /// <summary>Ukrainian culture</summary>
+        public const string CULTURE_UK_UA = "uk-UA";
+
+        /// <summary>Czech culture</summary>
+        public const string CULTURE_CS_CZ = "cs-CZ";
+
+        /// <summary>Hungarian culture</summary>
+        public const string CULTURE_HU_HU = "hu-HU";
+
+        /// <summary>Greek culture</summary>
+        public const string CULTURE_EL_GR = "el-GR";
+
+        /// <summary>Bulgarian culture</summary>
+        public const string CULTURE_BG_BG = "bg-BG";
+
+        /// <summary>Romanian culture</summary>
+        public const string CULTURE_RO_RO = "ro-RO";
+
+        /// <summary>Croatian culture</summary>
+        public const string CULTURE_HR_HR = "hr-HR";
+
+        /// <summary>Serbian culture</summary>
+        public const string CULTURE_SR_RS = "sr-RS";
+
+        /// <summary>Slovenian culture</summary>
+        public const string CULTURE_SL_SI = "sl-SI";
+
+        /// <summary>Slovak culture</summary>
+        public const string CULTURE_SK_SK = "sk-SK";
+
+        /// <summary>Estonian culture</summary>
+        public const string CULTURE_ET_EE = "et-EE";
+
+        /// <summary>Latvian culture</summary>
+        public const string CULTURE_LV_LV = "lv-LV";
+
+        /// <summary>Lithuanian culture</summary>
+        public const string CULTURE_LT_LT = "lt-LT";
     }
 }

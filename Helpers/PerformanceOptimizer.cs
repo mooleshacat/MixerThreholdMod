@@ -73,7 +73,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     _metricsHistory.Clear();
                     _performanceWarnings.Clear();
                     _lastOptimizationRun = DateTime.Now;
-                    _optimizationCycles = 0;
+                    _optimizationCycles = ZERO_INT;
 
                     _isInitialized = true;
                     Main.logger?.Msg(1, string.Format("{0} {1}: Performance optimizer initialized successfully", PERFORMANCE_OPTIMIZER_NAME, PERFORMANCE_OPTIMIZER_NAME));
@@ -191,7 +191,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                             GC.Collect();
                             var afterMemory = GC.GetTotalMemory(false) / MEMORY_THRESHOLD_BYTES;
                             
-                            if (beforeMemory - afterMemory > ONE_FLOAT) // Freed more than 1MB
+                            if (beforeMemory - afterMemory > MEMORY_FREED_LOG_THRESHOLD_MB) // Freed more than 1MB
                             {
                                 Main.logger?.Msg(1, string.Format("{0} Memory optimization: Freed {1:F1}MB ({2:F1}MB → {3:F1}MB)",
                                     PERFORMANCE_OPTIMIZER_NAME, beforeMemory - afterMemory, beforeMemory, afterMemory));
@@ -224,11 +224,11 @@ namespace MixerThreholdMod_1_0_0.Helpers
             {
                 var recentMetrics = _metricsHistory.Values.Where(m => (DateTime.Now - m.Timestamp).TotalMinutes < 5).ToList();
                 
-                if (recentMetrics.Count == 0) return;
+                if (recentMetrics.Count == EMPTY_COLLECTION_COUNT) return;
 
                 // Memory usage warnings
                 var avgMemory = recentMetrics.Average(m => m.MemoryUsageMB);
-                if (avgMemory > 512.0) // >512MB average
+                if (avgMemory > HIGH_MEMORY_THRESHOLD_MB) // >512MB average
                 {
                     var warning = string.Format("High memory usage detected: {0:F1}MB average", avgMemory);
                     if (!_performanceWarnings.Contains(warning))
@@ -240,7 +240,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
                 // Thread count warnings
                 var avgThreads = recentMetrics.Average(m => m.ActiveThreads);
-                if (avgThreads > 50) // >50 threads average
+                if (avgThreads > HIGH_THREAD_COUNT_THRESHOLD) // >50 threads average
                 {
                     var warning = string.Format("High thread count detected: {0:F0} threads average", avgThreads);
                     if (!_performanceWarnings.Contains(warning))
@@ -251,9 +251,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
                 }
 
                 // Clean old warnings
-                if (_performanceWarnings.Count > 20)
+                if (_performanceWarnings.Count > MAX_PERFORMANCE_WARNINGS)
                 {
-                    _performanceWarnings.RemoveRange(0, 10);
+                    _performanceWarnings.RemoveRange(ZERO_INT, PERFORMANCE_WARNINGS_CLEANUP_BATCH);
                 }
             }
             catch (Exception ex)
@@ -282,7 +282,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     Main.logger?.Msg(1, string.Format("{0} Optimization cycles: {1}", PERFORMANCE_OPTIMIZER_NAME, _optimizationCycles));
                     Main.logger?.Msg(1, string.Format("{0} Tracked contexts: {1}", PERFORMANCE_OPTIMIZER_NAME, _metricsHistory.Count));
 
-                    if (_metricsHistory.Count > 0)
+                    if (_metricsHistory.Count > EMPTY_COLLECTION_COUNT)
                     {
                         var avgMemory = _metricsHistory.Values.Average(m => m.MemoryUsageMB);
                         var avgThreads = _metricsHistory.Values.Average(m => m.ActiveThreads);
