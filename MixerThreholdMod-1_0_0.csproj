@@ -127,8 +127,8 @@
     <Compile Include="Helpers\MixerDataValidator.cs" />
     <Compile Include="Helpers\MixerDataWriter.cs" />
     <Compile Include="Helpers\SaveDirectoryResolver.cs" />
-    <Compile Include="Helpers\ThreadSafeFileReader.cs" />
-    <Compile Include="Helpers\ThreadSafeFileWriter.cs" />
+    <Compile Include="Threading\ThreadSafeFileReader.cs" />
+    <Compile Include="Threading\ThreadSafeFileWriter.cs" />
     <Compile Include="Helpers\UserDataDirectoryResolver.cs" />
     <Compile Include="Save\BackupSaveManager.cs" />
     <!-- Save System -->
