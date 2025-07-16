@@ -102,6 +102,8 @@
     <Compile Include="Core\GameExceptionMonitor.cs" />
     <Compile Include="Core\IL2CPPTypeResolver.cs" />
     <Compile Include="Core\Logger.cs" />
+    <Compile Include="Core\MainEntryPoint.cs" />
+    <Compile Include="Core\MainOrchestrator.cs" />
     <Compile Include="Core\MemoryMonitor.cs" />
     <Compile Include="Core\MixerConfigurationTracker.cs" />
     <Compile Include="Core\MixerIDManager.cs" />
