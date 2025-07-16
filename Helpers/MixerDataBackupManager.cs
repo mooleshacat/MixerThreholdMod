@@ -1,3 +1,7 @@
+﻿
+
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+
 ﻿using System;
 using System.IO;
 using System.Linq;
@@ -24,7 +28,7 @@ public static class MixerDataBackupManager
             if (!Directory.Exists(backupDir))
                 Directory.CreateDirectory(backupDir);
 
-            string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            string timestamp = DateTime.Now.ToString(FILENAME_DATETIME_FORMAT);
             string backupFile = Path.Combine(backupDir, string.Format("MixerThresholdSave_backup_{0}.json", timestamp));
 
             await Task.Run(() => File.Copy(sourceFile, backupFile, false), cancellationToken).ConfigureAwait(false);

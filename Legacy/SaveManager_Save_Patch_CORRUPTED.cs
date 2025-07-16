@@ -1,21 +1,14 @@
-using MelonLoader;
-using MixerThreholdMod_1_0_0.Core;
-using MixerThreholdMod_1_0_0.Save;
-using ScheduleOne.Persistence;
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
-// IL2CPP COMPATIBLE: Remove direct type references that cause TypeLoadException in IL2CPP builds
-// using ScheduleOne.Persistence;  // REMOVED: Use IL2CPPTypeResolver for safe type loading
 using System;
 using System.Collections;
 using System.IO;
-using System.Reflection;
-using UnityEngine;
-using Harmony;
-using HarmonyLib;
 using System.Linq;
+using System.Reflection;
+
+using MelonLoader;
+using UnityEngine;
+
+using MixerThreholdMod_1_0_0.Core;
+using MixerThreholdMod_1_0_0.Save;
 
 namespace MixerThreholdMod_1_0_0.Patches
 {

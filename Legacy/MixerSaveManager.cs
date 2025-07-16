@@ -1,3 +1,7 @@
+﻿
+
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+
 ﻿using MelonLoader;
 using MelonLoader.Utils;
 using Newtonsoft.Json;

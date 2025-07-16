@@ -1,3 +1,5 @@
+﻿
+
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -22,7 +24,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         /// <param name="data">Data to write</param>
         public static async Task<bool> WriteAsync(string filePath, byte[] data)
         {
-            string tempPath = filePath + ".tmp";
+            string tempPath = filePath + TEMP_FILE_EXTENSION;
             try
             {
                 // Write to temp file first

@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
-/// Tracks mixer configuration for MixerThreholdMod.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
+/// Tracks mixer configuration values in a thread-safe manner.
+/// ⚠️ THREAD SAFETY: All operations are thread-safe using ConcurrentDictionary and lock objects.
+/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
 /// </summary>
 internal static class MixerConfigurationTracker
 {

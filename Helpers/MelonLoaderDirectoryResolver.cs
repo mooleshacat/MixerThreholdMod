@@ -1,3 +1,7 @@
+﻿
+
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
+
 ﻿using System;
 using System.IO;
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
@@ -22,7 +26,7 @@ public static class MelonLoaderDirectoryResolver
             string gameRoot = MelonLoader.MelonEnvironment.GameRootDirectory;
             if (!string.IsNullOrEmpty(gameRoot))
             {
-                melonLoaderDirectory = Path.Combine(gameRoot, "MelonLoader");
+                melonLoaderDirectory = Path.Combine(gameRoot, MELONLOADER_ASSEMBLY);
                 if (Directory.Exists(melonLoaderDirectory))
                 {
                     string[] logFiles = { "Latest.log", "Console.log", "MelonLoader.log" };

@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+
+using MelonLoader;
+
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
-/// Processes mod console commands for MixerThreholdMod.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
+/// Processes console commands for the MixerThreholdMod.
+/// ⚠️ THREAD SAFETY: All operations are thread-safe using lock objects.
+/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
 /// </summary>
 internal class ModConsoleCommandProcessor
 {

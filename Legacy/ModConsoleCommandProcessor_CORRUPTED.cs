@@ -1,10 +1,12 @@
-using MelonLoader;
-using MelonLoader.Utils;
 using System;
 using System.IO;
 using System.Reflection;
+
+using MelonLoader;
+using MelonLoader.Utils;
 using UnityEngine;
 using UnityEngine.U2D;
+
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Core

@@ -1,5 +1,8 @@
-using MelonLoader;
 using System;
+
+using MelonLoader;
+
+using MixerThreholdMod_1_0_0.Core;
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Core
@@ -19,7 +22,7 @@ namespace MixerThreholdMod_1_0_0.Core
     /// ⚠️ COMPILER DIRECTIVE WARNING: Logging behavior is controlled by #if DEBUG. Changing build configuration
     /// will affect IsDebugEnabled and all non-error logging. Review this before modifying or deploying.
     /// 
-    /// .NET 4.8.1 Compatibility:
+    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses string.Format instead of string interpolation
     /// - Uses string.Format instead of string interpolation
     /// - Compatible with framework's threading model
     /// - Proper exception handling for crash prevention
