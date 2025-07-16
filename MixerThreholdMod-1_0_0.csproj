@@ -114,9 +114,12 @@
     <Compile Include="Core\StressTestManager.cs" />
     <Compile Include="Core\SystemInfoLogger.cs" />
     <Compile Include="Helpers\AtomicFileWriter.cs" />
+    <Compile Include="Helpers\GameDirectoryDetectionLogger.cs" />
     <Compile Include="Helpers\GameInstallDirectoryResolver.cs" />
+    <Compile Include="Helpers\MelonLoaderDirectoryResolver.cs" />
     <Compile Include="Helpers\MixerBackupManager.cs" />
     <Compile Include="Helpers\MixerDataValidator.cs" />
+    <Compile Include="Helpers\SaveDirectoryResolver.cs" />
     <Compile Include="Helpers\ThreadSafeFileReader.cs" />
     <Compile Include="Helpers\ThreadSafeFileWriter.cs" />
     <Compile Include="Helpers\UserDataDirectoryResolver.cs" />
@@ -138,6 +141,10 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Threading\ThreadSafeDictionary.cs" />
+    <Compile Include="Threading\ThreadSafeList.cs" />
+    <Compile Include="Threading\ThreadSafeQueue.cs" />
+    <Compile Include="Threading\ThreadSafeSet.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
