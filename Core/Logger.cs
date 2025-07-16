@@ -34,8 +34,8 @@ namespace MixerThreholdMod_1_0_0.Core
 #else
         public bool IsDebugEnabled = false; // Disable for production builds (disables all logging except errors)
 #endif
-        public int CurrentMsgLogLevel = 3;
-        public int CurrentWarnLogLevel = 2;
+        public int CurrentMsgLogLevel = LOG_LEVEL_VERBOSE;
+        public int CurrentWarnLogLevel = LOG_LEVEL_VERBOSE;
         public bool ShowLogLevelCalc = true;
 
         /// <summary>
@@ -51,10 +51,10 @@ namespace MixerThreholdMod_1_0_0.Core
             try
             {
                 // Validate log level range
-                if (msgLogLevel < 1 || msgLogLevel > 3)
+                if (msgLogLevel < LOG_LEVEL_CRITICAL || msgLogLevel > LOG_LEVEL_VERBOSE)
                 {
                     // Fallback for invalid log levels (should never hit this, but just in case)
-                    this.Err(string.Format("[ERROR] Invalid log level {0} for Msg method. Must be 1, 2, or 3.", msgLogLevel));
+                    this.Err(string.Format(INVALID_MSG_LEVEL_ERROR, msgLogLevel, LOG_LEVEL_CRITICAL, LOG_LEVEL_VERBOSE));
                     return;
                 }
 
@@ -98,10 +98,10 @@ namespace MixerThreholdMod_1_0_0.Core
             try
             {
                 // Validate warning level range
-                if (warnLogLevel < 1 || warnLogLevel > 2)
+                if (warnLogLevel < WARN_LEVEL_CRITICAL || warnLogLevel > WARN_LEVEL_VERBOSE)
                 {
                     // Fallback for invalid log levels (should never hit this, but just in case)
-                    this.Err(string.Format("[ERROR] Invalid log level {0} for Warn method. Must be 1 or 2.", warnLogLevel));
+                    this.Err(string.Format(INVALID_WARN_LEVEL_ERROR, warnLogLevel, WARN_LEVEL_CRITICAL, WARN_LEVEL_VERBOSE));
                     return;
                 }
 

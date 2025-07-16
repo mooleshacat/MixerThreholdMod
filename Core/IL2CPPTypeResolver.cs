@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 using UnityEngine;
 
@@ -73,11 +74,11 @@ namespace MixerThreholdMod_1_0_0.Core
                     _isIL2CPP = string.IsNullOrEmpty(location) || location.Contains("Il2Cpp");
                 }
 
-                logger.Msg(1, string.Format("[TYPE_RESOLVER] Build environment detected: {0}", _isIL2CPP ? "IL2CPP" : "MONO"));
+                logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[TYPE_RESOLVER] Build environment detected: {0}", _isIL2CPP ? IL2CPP_BUILD : MONO_BUILD));
             }
             catch (Exception ex)
             {
-                logger.Warn(1, string.Format("[TYPE_RESOLVER] Build detection failed, assuming MONO: {0}", ex.Message));
+                logger.Warn(LOG_LEVEL_CRITICAL, string.Format("[TYPE_RESOLVER] Build detection failed, assuming MONO: {0}", ex.Message));
                 _isIL2CPP = false;
             }
         }
@@ -114,7 +115,7 @@ namespace MixerThreholdMod_1_0_0.Core
                         {
                             stopwatch.Stop();
                             AdvancedSystemPerformanceMonitor.LogIL2CPPTypeLoadingPerformance(string.Format("MixingStationConfiguration ({0})", assembly.FullName), stopwatch.Elapsed.TotalMilliseconds, true);
-                            logger.Msg(3, string.Format("[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration found in assembly: {0}", assembly.FullName));
+                            logger.Msg(LOG_LEVEL_VERBOSE, string.Format("[TYPE_RESOLVER] IL2CPP: MixingStationConfiguration found in assembly: {0}", assembly.FullName));
                             return type;
                         }
                     }
@@ -292,16 +293,16 @@ namespace MixerThreholdMod_1_0_0.Core
         public static void LogTypeAvailability()
         {
             logger.Msg(1, "[TYPE_RESOLVER] === TYPE AVAILABILITY REPORT ===");
-            logger.Msg(1, string.Format("[TYPE_RESOLVER] Build Environment: {0}", IsIL2CPPBuild ? "IL2CPP" : "MONO"));
+            logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[TYPE_RESOLVER] Build Environment: {0}", IsIL2CPPBuild ? IL2CPP_BUILD : MONO_BUILD));
             
             var mixingStationType = GetMixingStationConfigurationType();
-            logger.Msg(1, string.Format("[TYPE_RESOLVER] MixingStationConfiguration: {0}", mixingStationType != null ? "AVAILABLE" : "NOT FOUND"));
+            logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[TYPE_RESOLVER] MixingStationConfiguration: {0}", mixingStationType != null ? AVAILABLE_STATUS : "NOT FOUND"));
             
             var saveManagerType = GetSaveManagerType();
-            logger.Msg(1, string.Format("[TYPE_RESOLVER] SaveManager: {0}", saveManagerType != null ? "AVAILABLE" : "NOT FOUND"));
+            logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[TYPE_RESOLVER] SaveManager: {0}", saveManagerType != null ? AVAILABLE_STATUS : "NOT FOUND"));
             
             var constructor = GetMixingStationConfigurationConstructor();
-            logger.Msg(1, string.Format("[TYPE_RESOLVER] MixingStationConfiguration Constructor: {0}", constructor != null ? "AVAILABLE" : "NOT FOUND"));
+            logger.Msg(LOG_LEVEL_CRITICAL, string.Format("[TYPE_RESOLVER] MixingStationConfiguration Constructor: {0}", constructor != null ? AVAILABLE_STATUS : "NOT FOUND"));
 
             // List available assemblies for debugging
             logger.Msg(2, "[TYPE_RESOLVER] Available Assemblies:");
