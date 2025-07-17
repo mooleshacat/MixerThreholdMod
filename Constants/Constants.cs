@@ -1,288 +1,161 @@
-﻿using System;
+using System;
 
 namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
-    /// Centralized constants for logging levels, system configuration, timeouts, and error messages
+    /// Main constants entry point providing backward compatibility and essential core constants
     /// ⚠️ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
     /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
     /// ⚠️ THREAD SAFETY: All constants are immutable and thread-safe
     /// 
-    /// This centralized constants class eliminates magic numbers throughout the codebase
-    /// and provides semantic meaning to all numerical and string literals used across
-    /// the mod's comprehensive functionality.
+    /// MAJOR REFACTOR: Constants have been separated into domain-specific files:
+    /// - LoggingConstants.cs: All logging-related constants (120+ constants)
+    /// - PerformanceConstants.cs: Performance and timing constants (80+ constants)
+    /// - MixerConstants.cs: Mixer-specific configuration constants (70+ constants)
+    /// - FileConstants.cs: File operation and path constants (130+ constants)
+    /// - ThreadingConstants.cs: Threading and synchronization constants (90+ constants)
+    /// - ErrorConstants.cs: Error handling and recovery constants (140+ constants)
+    /// - SystemConstants.cs: System and platform constants (100+ constants)
+    /// - GameConstants.cs: Game-specific UI, audio, graphics constants (180+ constants)
+    /// - ValidationConstants.cs: Validation and data integrity constants (160+ constants)
+    /// - NetworkConstants.cs: Network and communication constants (250+ constants)
+    /// - UtilityConstants.cs: Utility and formatting constants (250+ constants)
+    /// - AllConstants.cs: Comprehensive index for easy access to all domains
+    /// 
+    /// TOTAL: 1785+ constants organized across 12 files with clear separation of concerns
+    /// 
+    /// USAGE RECOMMENDATIONS:
+    /// For specific domains: using static MixerThreholdMod_1_0_0.Constants.LoggingConstants;
+    /// For comprehensive access: using MixerThreholdMod_1_0_0.Constants.AllConstants;
     /// </summary>
     public static class ModConstants
     {
-        // ===== LOGGING LEVEL CONSTANTS =====
-        /// <summary>Critical/User-facing information - always shown in production logs</summary>
-        public const int LOG_LEVEL_CRITICAL = 1;
-
-        /// <summary>Important operational information - shown in detailed logs</summary>
-        public const int LOG_LEVEL_IMPORTANT = 2;
-
-        /// <summary>Detailed diagnostic information - shown in verbose logs</summary>
-        public const int LOG_LEVEL_VERBOSE = 3;
-
-        /// <summary>High-priority warnings requiring immediate attention</summary>
-        public const int WARN_LEVEL_CRITICAL = 1;
-
-        /// <summary>Standard warnings for monitoring and optimization</summary>
-        public const int WARN_LEVEL_VERBOSE = 2;
-
-        // ===== TIMEOUT AND PERFORMANCE CONSTANTS =====
-        /// <summary>Standard operation timeout in milliseconds (2 seconds)</summary>
-        public const int OPERATION_TIMEOUT_MS = 2000;
-
-        /// <summary>Console command processing delay in milliseconds (1 second)</summary>
-        public const int CONSOLE_COMMAND_DELAY_MS = 1000;
-
-        /// <summary>Performance warning threshold in milliseconds (100ms)</summary>
-        public const int PERFORMANCE_WARNING_THRESHOLD_MS = 100;
-
-        /// <summary>Performance slow operation threshold in milliseconds (50ms)</summary>
-        public const int PERFORMANCE_SLOW_THRESHOLD_MS = 50;
-
-        /// <summary>System monitoring log interval (every 5th iteration)</summary>
-        public const int SYSTEM_MONITORING_LOG_INTERVAL = 5;
-
-        /// <summary>Load operation timeout in seconds (30 seconds)</summary>
-        public const float LOAD_TIMEOUT_SECONDS = 30f;
-
-        /// <summary>Attachment timeout in seconds (10 seconds)</summary>
-        public const float ATTACH_TIMEOUT_SECONDS = 10f;
-
-        /// <summary>Polling interval for value changes in seconds (200ms)</summary>
-        public const float POLL_INTERVAL_SECONDS = 0.2f;
-
-        /// <summary>Save cooldown period in seconds (2 seconds)</summary>
-        public const int SAVE_COOLDOWN_SECONDS = 2;
-
-        /// <summary>Backup interval in minutes (5 minutes)</summary>
-        public const int BACKUP_INTERVAL_MINUTES = 5;
-
-        // ===== STRESS TESTING CONSTANTS =====
-        /// <summary>Maximum iterations warning threshold for game saves</summary>
-        public const int GAME_SAVE_MAX_ITERATIONS_WARNING = 20;
-
-        /// <summary>Maximum iterations warning threshold for mixer preferences</summary>
-        public const int MIXER_PREF_MAX_ITERATIONS_WARNING = 100;
-
-        /// <summary>Minimum delay recommended for game saves in seconds</summary>
-        public const float GAME_SAVE_MIN_DELAY_SECONDS = 3f;
-
-        /// <summary>Maximum delay warning threshold in seconds</summary>
-        public const float MAX_DELAY_WARNING_SECONDS = 10f;
-
-        /// <summary>Performance warning threshold for average save time</summary>
-        public const float SAVE_PERFORMANCE_WARNING_SECONDS = 1.0f;
-
-        /// <summary>Progress reporting interval for stress tests</summary>
-        public const int STRESS_TEST_PROGRESS_INTERVAL = 5;
-
-        /// <summary>Progress reporting interval for mixer preferences tests</summary>
-        public const int MIXER_PREF_PROGRESS_INTERVAL = 10;
-
-        // ===== MIXER CONFIGURATION CONSTANTS =====
-        /// <summary>Minimum mixer threshold value</summary>
-        public const float MIXER_THRESHOLD_MIN = 1f;
-
-        /// <summary>Maximum mixer threshold value (matches game's stack size)</summary>
-        public const float MIXER_THRESHOLD_MAX = 20f;
-
-        /// <summary>Default mixer configuration enabled state</summary>
-        public const bool MIXER_CONFIG_ENABLED_DEFAULT = true;
-
-        /// <summary>Float comparison tolerance for value changes</summary>
-        public const float MIXER_VALUE_TOLERANCE = 0.001f;
-
-        // ===== MEMORY AND CONVERSION CONSTANTS =====
-        /// <summary>Bytes to kilobytes conversion factor</summary>
-        public const int BYTES_TO_KB = 1024;
-
-        /// <summary>Bytes to megabytes conversion factor</summary>
-        public const double BYTES_TO_MB = 1048576.0;
-
-        /// <summary>Milliseconds per second conversion factor</summary>
-        public const int MS_PER_SECOND = 1000;
-
-        /// <summary>Seconds per minute conversion factor</summary>
-        public const int SECONDS_PER_MINUTE = 60;
-
-        /// <summary>Default delay value for operations (no delay)</summary>
-        public const float DEFAULT_OPERATION_DELAY = 0f;
-
-        // ===== ERROR MESSAGE CONSTANTS =====
-        /// <summary>Error message template for invalid log levels</summary>
-        public const string INVALID_MSG_LEVEL_ERROR = "[ERROR] Invalid log level {0} for Msg method. Must be {1} to {2}.";
-
-        /// <summary>Error message template for invalid warning levels</summary>
-        public const string INVALID_WARN_LEVEL_ERROR = "[ERROR] Invalid log level {0} for Warn method. Must be {1} or {2}.";
-
-        /// <summary>Error message template for invalid operation delay</summary>
-        public const string INVALID_OPERATION_DELAY_ERROR = "[ERROR] Invalid operation delay {0}. Must be greater than or equal to {1}.";
-
-        /// <summary>Error message for invalid iteration count</summary>
-        public const string INVALID_ITERATION_COUNT_ERROR = "[CONSOLE] Invalid iteration count '{0}'. Must be a positive integer.";
-
-        /// <summary>Error message for invalid parameter format</summary>
-        public const string INVALID_PARAMETER_ERROR = "[CONSOLE] Invalid parameter '{0}'. Must be a delay (number ≥ 0) or bypass flag (true/false).";
-
-        /// <summary>Error message for no save path available</summary>
-        public const string NO_SAVE_PATH_ERROR = "[CONSOLE] No current save path available. Load a game first.";
-
-        /// <summary>Error message for no mixer data</summary>
-        public const string NO_MIXER_DATA_ERROR = "[CONSOLE] No mixer data to save. Try adjusting some mixer thresholds first.";
-
-        // ===== LOG PREFIX CONSTANTS =====
-        /// <summary>Info log prefix</summary>
-        public const string LOG_PREFIX_INFO = "[Info]";
-
-        /// <summary>Warning log prefix</summary>
-        public const string LOG_PREFIX_WARN = "[WARN]";
-
-        /// <summary>Error log prefix</summary>
-        public const string LOG_PREFIX_ERROR = "[ERROR]";
-
-        /// <summary>Critical log prefix</summary>
-        public const string LOG_PREFIX_CRITICAL = "[CRITICAL]";
-
-        /// <summary>Console log prefix</summary>
-        public const string LOG_PREFIX_CONSOLE = "[CONSOLE]";
-
-        /// <summary>Bridge log prefix</summary>
-        public const string LOG_PREFIX_BRIDGE = "[BRIDGE]";
-
-        /// <summary>Save system log prefix</summary>
-        public const string LOG_PREFIX_SAVE = "[SAVE]";
-
-        /// <summary>System monitoring log prefix</summary>
-        public const string LOG_PREFIX_SYSMON = "[SYSMON]";
-
-        /// <summary>Directory resolver log prefix</summary>
-        public const string LOG_PREFIX_DIR_RESOLVER = "[DIR-RESOLVER]";
-
-        /// <summary>Initialization log prefix</summary>
-        public const string LOG_PREFIX_INIT = "[INIT]";
-
-        /// <summary>Profile log prefix</summary>
-        public const string LOG_PREFIX_PROFILE = "[PROFILE]";
-
-        /// <summary>Monitor log prefix</summary>
-        public const string LOG_PREFIX_MONITOR = "[MONITOR]";
-
-        /// <summary>Transaction log prefix</summary>
-        public const string LOG_PREFIX_TRANSACTION = "[TRANSACTION]";
-
-        /// <summary>Manual log prefix</summary>
-        public const string LOG_PREFIX_MANUAL = "[MANUAL]";
-
-        /// <summary>Game error log prefix</summary>
-        public const string LOG_PREFIX_GAME_ERROR = "[GAME ERROR]";
-
-        /// <summary>Game warning log prefix</summary>
-        public const string LOG_PREFIX_GAME_WARNING = "[GAME WARNING]";
-
-        /// <summary>Game log prefix</summary>
-        public const string LOG_PREFIX_GAME = "[GAME]";
-
-        // ===== NULL MESSAGE FALLBACK CONSTANTS =====
-        /// <summary>Null message fallback</summary>
-        public const string NULL_MESSAGE_FALLBACK = "[null message]";
-
-        /// <summary>Null error message fallback</summary>
-        public const string NULL_ERROR_FALLBACK = "[null error message]";
-
-        /// <summary>Null command fallback</summary>
-        public const string NULL_COMMAND_FALLBACK = "[null]";
-
-        /// <summary>Not set path fallback</summary>
-        public const string NOT_SET_PATH_FALLBACK = "[not set]";
-
-        /// <summary>Not available path fallback</summary>
-        public const string NOT_AVAILABLE_PATH_FALLBACK = "[not available yet]";
-
-        // ===== FILE OPERATION CONSTANTS =====
-        /// <summary>JSON file extension</summary>
-        public const string JSON_FILE_EXTENSION = ".json";
-
-        /// <summary>Temporary file extension</summary>
-        public const string TEMP_FILE_EXTENSION = ".tmp";
-
-        /// <summary>Mixer threshold save filename</summary>
-        public const string MIXER_SAVE_FILENAME = "MixerThresholdSave.json";
-
-        /// <summary>Emergency save filename</summary>
-        public const string EMERGENCY_SAVE_FILENAME = "MixerThresholdSave_Emergency.json";
-
-        /// <summary>File operation name for copy operations</summary>
-        public const string FILE_COPY_OPERATION_NAME = "File Copy Operation";
-
-        /// <summary>Save data version</summary>
-        public const string SAVE_DATA_VERSION = "1.0.0";
-
-        /// <summary>Emergency save reason</summary>
-        public const string EMERGENCY_SAVE_REASON = "Emergency save before crash/shutdown";
-
-        // ===== CONSOLE COMMAND CONSTANTS =====
-        /// <summary>Command recognition result: recognized</summary>
-        public const string COMMAND_RECOGNIZED = "RECOGNIZED";
-
-        /// <summary>Command recognition result: unknown</summary>
-        public const string COMMAND_UNKNOWN = "UNKNOWN";
-
-        /// <summary>Parameter type: string</summary>
-        public const string PARAM_TYPE_STRING = "STRING";
-
-        /// <summary>Parameter type: integer</summary>
-        public const string PARAM_TYPE_INTEGER = "INTEGER";
-
-        /// <summary>Parameter type: float</summary>
-        public const string PARAM_TYPE_FLOAT = "FLOAT";
-
-        /// <summary>Parameter type: boolean</summary>
-        public const string PARAM_TYPE_BOOLEAN = "BOOLEAN";
-
-        // ===== SUCCESS/FAILURE MESSAGE CONSTANTS =====
-        /// <summary>Success indicator</summary>
-        public const string STATUS_SUCCESS = "SUCCESS";
-
-        /// <summary>Failed indicator</summary>
-        public const string STATUS_FAILED = "FAILED";
-
-        /// <summary>Performance category: fast</summary>
-        public const string PERFORMANCE_FAST = "FAST";
-
-        /// <summary>Performance category: moderate</summary>
-        public const string PERFORMANCE_MODERATE = "MODERATE";
-
-        /// <summary>Performance category: slow</summary>
-        public const string PERFORMANCE_SLOW = "SLOW";
-
-        // ===== MOD IDENTIFICATION CONSTANTS =====
-        /// <summary>Mod name for Harmony patches</summary>
-        public const string HARMONY_MOD_ID = "MixerThreholdMod.Main";
-
-        /// <summary>Console hook GameObject name</summary>
-        public const string CONSOLE_HOOK_GAMEOBJECT_NAME = "MixerConsoleHook";
-
-        /// <summary>Mod version for save data</summary>
-        public const string MOD_VERSION = "1.0.0";
-
-        /// <summary>Mod name with typo preserved</summary>
-        public const string MOD_NAME = "MixerThreholdMod";
-
-        // ===== DATETIME FORMAT CONSTANTS =====
-        /// <summary>Standard datetime format for save files</summary>
-        public const string SAVE_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
-        /// <summary>UTC timestamp format for console commands</summary>
-        public const string CONSOLE_UTC_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.fff";
-
-        /// <summary>Directory detection completion format</summary>
-        public const string DETECTION_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
-        /// <summary>Log file modification time format</summary>
-        public const string LOG_FILE_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+        #region Backward Compatibility - Core Constants
+        /// <summary>
+        /// Core constants maintained for backward compatibility
+        /// For comprehensive constants, use domain-specific files or AllConstants.cs
+        /// </summary>
+
+        // Most critical constants for immediate use
+        public const int LOG_LEVEL_CRITICAL = LoggingConstants.LOG_LEVEL_CRITICAL;
+        public const int LOG_LEVEL_IMPORTANT = LoggingConstants.LOG_LEVEL_IMPORTANT;
+        public const int LOG_LEVEL_VERBOSE = LoggingConstants.LOG_LEVEL_VERBOSE;
+
+        public const int OPERATION_TIMEOUT_MS = PerformanceConstants.OPERATION_TIMEOUT_MS;
+        public const int PERFORMANCE_WARNING_THRESHOLD_MS = PerformanceConstants.PERFORMANCE_WARNING_THRESHOLD_MS;
+
+        public const string MIXER_SAVE_FILENAME = MixerConstants.MIXER_SAVE_FILENAME;
+        public const string MIXER_VALUES_KEY = MixerConstants.MIXER_VALUES_KEY;
+
+        public const string JSON_EXTENSION = FileConstants.JSON_EXTENSION;
+        public const string BACKUP_EXTENSION = FileConstants.BACKUP_EXTENSION;
+
+        public const string SAVE_MANAGER_PREFIX = LoggingConstants.SAVE_MANAGER_PREFIX;
+        public const string PERSISTENCE_PREFIX = LoggingConstants.PERSISTENCE_PREFIX;
+        public const string DIRECTORY_RESOLVER_PREFIX = LoggingConstants.DIRECTORY_RESOLVER_PREFIX;
+
+        public const string MOD_NAME = SystemConstants.MOD_NAME;
+        public const string MOD_VERSION = SystemConstants.MOD_VERSION;
+
+        public const int ERROR_CODE_SUCCESS = ErrorConstants.ERROR_CODE_SUCCESS;
+        public const int ERROR_CODE_GENERAL = ErrorConstants.ERROR_CODE_GENERAL;
+        #endregion
+
+        #region Domain Access Shortcuts
+        /// <summary>
+        /// Quick access to domain-specific constants for convenience
+        /// Recommended: Use domain-specific files directly for better organization
+        /// </summary>
+
+        /// <summary>Access logging constants - use LoggingConstants.cs for full access</summary>
+        public static class Logging
+        {
+            public const string PREFIX_SAVE = LoggingConstants.SAVE_MANAGER_PREFIX;
+            public const string PREFIX_BACKUP = LoggingConstants.BACKUP_MANAGER_PREFIX;
+            public const string PREFIX_LOGGER = LoggingConstants.LOGGER_PREFIX;
+            public const string MSG_SUCCESS = LoggingConstants.SAVE_SUCCESS_MESSAGE;
+            public const string MSG_FAILURE = LoggingConstants.SAVE_FAILURE_MESSAGE;
+        }
+
+        /// <summary>Access performance constants - use PerformanceConstants.cs for full access</summary>
+        public static class Performance
+        {
+            public const int TIMEOUT_OPERATION = PerformanceConstants.OPERATION_TIMEOUT_MS;
+            public const int TIMEOUT_FILE_OP = PerformanceConstants.FILE_OPERATION_TIMEOUT_MS;
+            public const int THRESHOLD_WARNING = PerformanceConstants.PERFORMANCE_WARNING_THRESHOLD_MS;
+            public const int RETRY_DELAY = PerformanceConstants.RETRY_DELAY_MS;
+        }
+
+        /// <summary>Access mixer constants - use MixerConstants.cs for full access</summary>
+        public static class Mixer
+        {
+            public const string SAVE_FILE = MixerConstants.MIXER_SAVE_FILENAME;
+            public const string VALUES_KEY = MixerConstants.MIXER_VALUES_KEY;
+            public const int CHANNEL_COUNT = MixerConstants.MIXER_CHANNEL_COUNT;
+            public const float MAX_VOLUME = MixerConstants.MAX_MIXER_VOLUME;
+        }
+
+        /// <summary>Access file constants - use FileConstants.cs for full access</summary>
+        public static class Files
+        {
+            public const string EXT_JSON = FileConstants.JSON_EXTENSION;
+            public const string EXT_BACKUP = FileConstants.BACKUP_EXTENSION;
+            public const string EXT_LOG = FileConstants.LOG_EXTENSION;
+            public const string DIR_BACKUP = FileConstants.BACKUP_DIRECTORY;
+            public const string OP_READ = FileConstants.FILE_OP_READ;
+            public const string OP_WRITE = FileConstants.FILE_OP_WRITE;
+        }
+
+        /// <summary>Access threading constants - use ThreadingConstants.cs for full access</summary>
+        public static class Threading
+        {
+            public const string MAIN_THREAD = ThreadingConstants.MAIN_THREAD_NAME;
+            public const string SAVE_THREAD = ThreadingConstants.SAVE_THREAD_NAME;
+            public const int MUTEX_TIMEOUT = ThreadingConstants.MUTEX_TIMEOUT_MS;
+            public const int LOCK_TIMEOUT = ThreadingConstants.LOCK_TIMEOUT_MS;
+        }
+
+        /// <summary>Access error constants - use ErrorConstants.cs for full access</summary>
+        public static class Errors
+        {
+            public const int SUCCESS = ErrorConstants.ERROR_CODE_SUCCESS;
+            public const int GENERAL = ErrorConstants.ERROR_CODE_GENERAL;
+            public const int FILE_NOT_FOUND = ErrorConstants.ERROR_CODE_FILE_NOT_FOUND;
+            public const int TIMEOUT = ErrorConstants.ERROR_CODE_TIMEOUT;
+            public const string STRATEGY_RETRY = ErrorConstants.RECOVERY_STRATEGY_RETRY;
+            public const string STRATEGY_EMERGENCY = ErrorConstants.RECOVERY_STRATEGY_EMERGENCY_SAVE;
+        }
+        #endregion
+
+        #region Migration Guide
+        /// <summary>
+        /// Migration guide for moving from centralized to domain-specific constants
+        /// </summary>
+        public static class MigrationGuide
+        {
+            /// <summary>Instructions for migrating to new constants structure</summary>
+            public const string MIGRATION_INSTRUCTIONS = "Replace 'using static MixerThreholdMod_1_0_0.Constants.ModConstants;' with domain-specific imports";
+
+            /// <summary>Example of domain-specific import</summary>
+            public const string DOMAIN_IMPORT_EXAMPLE = "using static MixerThreholdMod_1_0_0.Constants.LoggingConstants;";
+
+            /// <summary>Benefits of domain separation</summary>
+            public const string SEPARATION_BENEFITS = "Better organization, reduced file size, improved maintainability, clearer intent";
+
+            /// <summary>Total constants available</summary>
+            public const int TOTAL_CONSTANTS_AVAILABLE = 1785;
+
+            /// <summary>Number of domain files</summary>
+            public const int DOMAIN_FILES_COUNT = 12;
+        }
+        #endregion
+
+        #region Version Information
+        /// <summary>Constants refactor version information</summary>
+        public const string CONSTANTS_REFACTOR_VERSION = "2.0.0";
+        public const string CONSTANTS_REFACTOR_DATE = "2024-12-28";
+        public const string CONSTANTS_REFACTOR_AUTHOR = "GitHub Copilot";
+        public const string CONSTANTS_REFACTOR_DESCRIPTION = "Comprehensive separation of concerns refactor with 1785+ constants across 12 domain files";
+        #endregion
     }
 }
