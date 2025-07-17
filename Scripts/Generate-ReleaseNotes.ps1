@@ -33,12 +33,12 @@ function Get-CurrentVersion {
             try {
                 $content = Get-Content -Path $constantsFile -Raw -ErrorAction Stop
                 if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
-                    Write-Host "   📋 Found version in $fileName`: $($matches[1])" -ForegroundColor Gray
+                    Write-Host "   📋 Found version in $fileName``: $($matches[1])" -ForegroundColor Gray
                     return $matches[1]
                 }
             }
             catch {
-                Write-Host "   ⚠️  Error reading $fileName`: $_" -ForegroundColor DarkYellow
+                Write-Host "   ⚠️  Error reading $fileName``: $_" -ForegroundColor DarkYellow
             }
         }
     }
@@ -213,7 +213,7 @@ if (-not (Test-GitRepository -path $ProjectRoot)) {
     Write-Host "❌ Not a git repository or git not available" -ForegroundColor Red
     Write-Host "This script requires git and must be run in a git repository" -ForegroundColor DarkYellow
     if ($IsInteractive -and -not $RunningFromScript) {
-        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Write-Host "``nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
         Read-Host
     }
     return
@@ -221,7 +221,7 @@ if (-not (Test-GitRepository -path $ProjectRoot)) {
 
 Push-Location $ProjectRoot
 
-Write-Host "`n📊 Analyzing release data..." -ForegroundColor DarkGray
+Write-Host "``n📊 Analyzing release data..." -ForegroundColor DarkGray
 
 # Get current version and tags
 $currentVersion = Get-CurrentVersion
@@ -242,14 +242,14 @@ if ($fromTag) {
 }
 
 # Get commits for this release
-Write-Host "`n🔍 Fetching commits..." -ForegroundColor DarkGray
+Write-Host "``n🔍 Fetching commits..." -ForegroundColor DarkGray
 $commits = Get-ReleaseCommits -fromTag $fromTag -toRef $toRef
 
 if ($commits.Count -eq 0) {
     Write-Host "❌ No commits found for release range" -ForegroundColor Red
     Pop-Location
     if ($IsInteractive -and -not $RunningFromScript) {
-        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Write-Host "``nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
         Read-Host
     }
     return
@@ -364,7 +364,8 @@ foreach ($categoryGroup in $categorizedCommits) {
     
     foreach ($commit in $categoryCommits | Sort-Object Date -Descending | Select-Object -First 10) {  # Limit for automation
         $formattedMessage = Format-CommitForRelease -commit $commit
-        $releaseNotes += "- $formattedMessage ([``$($commit.Hash)``](../../commit/$($commit.FullHash)))"
+        # FIXED: Use double backticks for PowerShell 5.1 compatibility
+        $releaseNotes += "- $formattedMessage ([````$($commit.Hash)````](../../commit/$($commit.FullHash)))"
     }
     
     if ($categoryCommits.Count -gt 10) {
@@ -391,11 +392,11 @@ if ($breakingCommits) {
     $releaseNotes += ""
     $releaseNotes += "1. **Backup your saves** before upgrading"
     $releaseNotes += "2. Download the new version"
-    $releaseNotes += "3. Replace the old DLL in your `Mods` folder"
+    $releaseNotes += "3. Replace the old DLL in your ````Mods```` folder"
     $releaseNotes += "4. **Test thoroughly** after upgrade"
 } else {
     $releaseNotes += "1. Download the DLL from the links above"
-    $releaseNotes += "2. Place in your `Mods` folder"
+    $releaseNotes += "2. Place in your ````Mods```` folder"
     $releaseNotes += "3. Restart Schedule 1"
 }
 $releaseNotes += ""
@@ -423,7 +424,7 @@ catch {
 
 Pop-Location
 
-Write-Host "`n=== RELEASE NOTES GENERATION REPORT ===" -ForegroundColor DarkCyan
+Write-Host "``n=== RELEASE NOTES GENERATION REPORT ===" -ForegroundColor DarkCyan
 Write-Host "🕐 Generation completed: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 
 if ($savedSuccessfully) {
@@ -438,7 +439,7 @@ Write-Host "📊 Total commits: $($commits.Count)" -ForegroundColor Gray
 Write-Host "🏷️  Version: $releaseVersion" -ForegroundColor Gray
 
 # Category breakdown (condensed)
-Write-Host "`n📋 Changes by Category:" -ForegroundColor DarkCyan
+Write-Host "``n📋 Changes by Category:" -ForegroundColor DarkCyan
 foreach ($category in $categorizedCommits | Sort-Object Count -Descending | Select-Object -First 5) {
     $color = switch ($category.Name) {
         "BREAKING" { "Red" }
@@ -460,7 +461,7 @@ foreach ($category in $categorizedCommits | Sort-Object Count -Descending | Sele
         "MAINTENANCE" { "Maintenance" }
         default { "Other Changes" }
     }
-    Write-Host "   $displayName`: $($category.Count) changes" -ForegroundColor $color
+    Write-Host "   $displayName``: $($category.Count) changes" -ForegroundColor $color
 }
 
 if ($categorizedCommits.Count -gt 5) {
@@ -472,16 +473,16 @@ $reportsDir = Join-Path $ProjectRoot "Reports"
 if (-not (Test-Path $reportsDir)) {
     try {
         New-Item -Path $reportsDir -ItemType Directory -Force | Out-Null
-        Write-Host "`n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
+        Write-Host "``n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
     }
     catch {
-        Write-Host "`n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
+        Write-Host "``n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
         $reportsDir = $ProjectRoot
     }
 }
 
 # Generate detailed release notes analysis report
-Write-Host "`n📝 Generating detailed release notes analysis report..." -ForegroundColor DarkGray
+Write-Host "``n📝 Generating detailed release notes analysis report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "RELEASE-NOTES-ANALYSIS-REPORT_$timestamp.md"
@@ -573,7 +574,7 @@ if ($categorizedCommits.Count -gt 0) {
         $reportContent += ""
         foreach ($commit in $breakingCommits | Select-Object -First 5) {
             $formattedMessage = Format-CommitForRelease -commit $commit
-            $reportContent += "- $formattedMessage ([`$($commit.Hash)`](../../commit/$($commit.FullHash)))"
+            $reportContent += "- $formattedMessage ([````$($commit.Hash)````](../../commit/$($commit.FullHash)))"
         }
         if ($breakingCommits.Count -gt 5) {
             $reportContent += "- ... and $($breakingCommits.Count - 5) more breaking changes"
@@ -642,8 +643,10 @@ $reportContent += ""
 if ($savedSuccessfully) {
     $reportContent += "### Release Notes"
     $reportContent += ""
-    $reportContent += "- **File**: `RELEASE-NOTES-v$releaseVersion.md`"
-    $reportContent += "- **Location**: Project root directory"
+    $reportContent += "- **File**: ````RELEASE-NOTES-v$releaseVersion.md````"
+    # FIXED: Use separate variable for safer string concatenation
+    $locationText = "- **Location**: Project root directory"
+    $reportContent += $locationText
     $reportContent += "- **Size**: $(if (Test-Path $outputPath) { "$([Math]::Round((Get-Item $outputPath).Length / 1KB, 1)) KB" } else { "Unknown" })"
     $reportContent += "- **Format**: GitHub-compatible markdown"
     $reportContent += ""
@@ -689,7 +692,9 @@ if ($savedSuccessfully) {
     $reportContent += ""
     $reportContent += "### 🚀 Publication Steps"
     $reportContent += ""
-    $reportContent += "1. **Create Git Tag**: `git tag v$releaseVersion && git push origin v$releaseVersion`"
+    # FIXED: Split git command to avoid && operator issue in PowerShell 5.1
+    $gitTagCommand = "1. **Create Git Tag**: ````git tag v$releaseVersion```` and ````git push origin v$releaseVersion````"
+    $reportContent += $gitTagCommand
     $reportContent += "2. **GitHub Release**: Create release on GitHub with generated notes"
     $reportContent += "3. **Upload Assets**: Attach compiled DLL and documentation"
     $reportContent += "4. **Announce**: Share release information with community"
@@ -738,7 +743,7 @@ catch {
 }
 
 # Quick recommendations
-Write-Host "`n💡 Recommendations:" -ForegroundColor DarkCyan
+Write-Host "``n💡 Recommendations:" -ForegroundColor DarkCyan
 if ($breakingCommits) {
     Write-Host "   🚨 CRITICAL: Review breaking changes in generated notes" -ForegroundColor Red
     Write-Host "   • Update migration documentation" -ForegroundColor Red
@@ -754,37 +759,37 @@ if ($savedSuccessfully) {
     Write-Host "   ❌ Fix file saving issues and regenerate" -ForegroundColor Red
 }
 
-Write-Host "`n🚀 Release notes generation complete!" -ForegroundColor Green
+Write-Host "``n🚀 Release notes generation complete!" -ForegroundColor Green
 
 # OUTPUT PATH AT THE END for easy finding
 if ($reportSaveSuccess) {
-    Write-Host "`n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
+    Write-Host "``n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
     Write-Host "   Location: $reportPath" -ForegroundColor Cyan
     Write-Host "   Size: $([Math]::Round((Get-Item $reportPath).Length / 1KB, 1)) KB" -ForegroundColor Gray
 } else {
-    Write-Host "`n⚠️ No detailed report generated" -ForegroundColor DarkYellow
+    Write-Host "``n⚠️ No detailed report generated" -ForegroundColor DarkYellow
 }
 
 # INTERACTIVE WORKFLOW LOOP (only when running standalone)
 if ($IsInteractive -and -not $RunningFromScript) {
     do {
-        Write-Host "`n🎯 What would you like to do next?" -ForegroundColor DarkCyan
+        Write-Host "``n🎯 What would you like to do next?" -ForegroundColor DarkCyan
         Write-Host "   D - Display report in console" -ForegroundColor Green
         Write-Host "   R - Re-run release notes generation" -ForegroundColor DarkYellow
         Write-Host "   X - Exit to DevOps menu" -ForegroundColor Gray
         
-        $choice = Read-Host "`nEnter choice (D/R/X)"
+        $choice = Read-Host "``nEnter choice (D/R/X)"
         $choice = $choice.ToUpper()
         
         switch ($choice) {
             'D' {
                 if ($reportSaveSuccess) {
-                    Write-Host "`n📋 DISPLAYING RELEASE NOTES ANALYSIS REPORT:" -ForegroundColor DarkCyan
+                    Write-Host "``n📋 DISPLAYING RELEASE NOTES ANALYSIS REPORT:" -ForegroundColor DarkCyan
                     Write-Host "===========================================" -ForegroundColor DarkCyan
                     try {
                         $reportDisplay = Get-Content -Path $reportPath -Raw
                         Write-Host $reportDisplay -ForegroundColor White
-                        Write-Host "`n===========================================" -ForegroundColor DarkCyan
+                        Write-Host "``n===========================================" -ForegroundColor DarkCyan
                         Write-Host "📋 END OF REPORT" -ForegroundColor DarkCyan
                     }
                     catch {
@@ -795,13 +800,13 @@ if ($IsInteractive -and -not $RunningFromScript) {
                 }
             }
             'R' {
-                Write-Host "`n🔄 RE-RUNNING RELEASE NOTES GENERATION..." -ForegroundColor DarkYellow
+                Write-Host "``n🔄 RE-RUNNING RELEASE NOTES GENERATION..." -ForegroundColor DarkYellow
                 Write-Host "=========================================" -ForegroundColor DarkYellow
                 & $MyInvocation.MyCommand.Path
                 return
             }
             'X' {
-                Write-Host "`n👋 Returning to DevOps menu..." -ForegroundColor Gray
+                Write-Host "``n👋 Returning to DevOps menu..." -ForegroundColor Gray
                 return
             }
             default {

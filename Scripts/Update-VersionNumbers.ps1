@@ -68,12 +68,12 @@ function Get-CurrentVersion {
             try {
                 $content = Get-Content -Path $constantsFile -Raw -ErrorAction Stop
                 if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
-                    Write-Host "   📋 Found version in $fileName`: $($matches[1])" -ForegroundColor Gray
+                    Write-Host "   📋 Found version in $fileName``: $($matches[1])" -ForegroundColor Gray
                     return $matches[1]
                 }
             }
             catch {
-                Write-Host "   ⚠️  Error reading $fileName`: $_" -ForegroundColor DarkYellow
+                Write-Host "   ⚠️  Error reading $fileName``: $_" -ForegroundColor DarkYellow
             }
         }
     }
@@ -170,11 +170,11 @@ function Find-VersionFiles {
 }
 
 # Main script execution
-Write-Host "`n=== VERSION NUMBER SYNCHRONIZATION REPORT ===" -ForegroundColor DarkCyan
+Write-Host "``n=== VERSION NUMBER SYNCHRONIZATION REPORT ===" -ForegroundColor DarkCyan
 Write-Host "🕐 Analysis completed: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 
 # Get current version
-Write-Host "`n📂 Detecting current version..." -ForegroundColor DarkGray
+Write-Host "``n📂 Detecting current version..." -ForegroundColor DarkGray
 $currentVersion = Get-CurrentVersion
 if ($currentVersion) {
     Write-Host "📊 Current version detected: $currentVersion" -ForegroundColor Gray
@@ -190,13 +190,13 @@ if ($currentVersion) {
 }
 
 # AUTOMATED: Always run in scan mode (dry run) for comprehensive report
-Write-Host "`n🔍 Running in scan mode - analyzing version consistency..." -ForegroundColor DarkCyan
+Write-Host "``n🔍 Running in scan mode - analyzing version consistency..." -ForegroundColor DarkCyan
 
 # Find all version-containing files
-Write-Host "`n📂 Scanning for version-containing files..." -ForegroundColor DarkGray
+Write-Host "``n📂 Scanning for version-containing files..." -ForegroundColor DarkGray
 $versionFiles = Find-VersionFiles
 
-Write-Host "`n📊 Found $($versionFiles.Count) files containing version information" -ForegroundColor Gray
+Write-Host "``n📊 Found $($versionFiles.Count) files containing version information" -ForegroundColor Gray
 
 if ($versionFiles.Count -eq 0) {
     Write-Host "⚠️  No version-containing files found" -ForegroundColor DarkYellow
@@ -235,7 +235,7 @@ if ($versionFiles.Count -eq 0) {
     }
     
     # Display top files with version info (limited for automation)
-    Write-Host "`n📋 Top Version-Containing Files:" -ForegroundColor DarkCyan
+    Write-Host "``n📋 Top Version-Containing Files:" -ForegroundColor DarkCyan
     
     $topFiles = $versionFiles | Select-Object -First 8  # Reduced for automation
     foreach ($versionFile in $topFiles) {
@@ -254,7 +254,7 @@ if ($versionFiles.Count -eq 0) {
     }
     
     # Version consistency analysis
-    Write-Host "`n📊 Version Consistency Analysis:" -ForegroundColor DarkCyan
+    Write-Host "``n📊 Version Consistency Analysis:" -ForegroundColor DarkCyan
     
     $uniqueVersions = $allVersions | Select-Object -Unique | Sort-Object
     Write-Host "   Unique versions found: $($uniqueVersions.Count)" -ForegroundColor Gray
@@ -263,23 +263,23 @@ if ($versionFiles.Count -eq 0) {
         $count = ($allVersions | Where-Object { $_ -eq $version }).Count
         $color = if ($version -eq $currentVersion) { "Green" } else { "DarkYellow" }
         $validIcon = if (Test-SemanticVersion $version) { "✅" } else { "⚠️" }
-        Write-Host "   $validIcon $version`: $count occurrences" -ForegroundColor $color
+        Write-Host "   $validIcon $version``: $count occurrences" -ForegroundColor $color
     }
     
     # Inconsistency warnings
     if ($versionInconsistencies.Count -gt 0) {
-        Write-Host "`n⚠️  Version Inconsistencies Detected:" -ForegroundColor DarkYellow
+        Write-Host "``n⚠️  Version Inconsistencies Detected:" -ForegroundColor DarkYellow
         foreach ($inconsistency in $versionInconsistencies) {
-            Write-Host "   • $($inconsistency.File)`: $($inconsistency.Issue)" -ForegroundColor Red
+            Write-Host "   • $($inconsistency.File)``: $($inconsistency.Issue)" -ForegroundColor Red
             Write-Host "     Versions: $($inconsistency.Versions -join ', ')" -ForegroundColor DarkGray
         }
     } else {
-        Write-Host "`n✅ No version inconsistencies detected within files" -ForegroundColor Green
+        Write-Host "``n✅ No version inconsistencies detected within files" -ForegroundColor Green
     }
     
     # Semantic versioning issues
     if ($semanticIssues.Count -gt 0) {
-        Write-Host "`n⚠️  Semantic Versioning Issues:" -ForegroundColor DarkYellow
+        Write-Host "``n⚠️  Semantic Versioning Issues:" -ForegroundColor DarkYellow
         $topSemanticIssues = $semanticIssues | Select-Object -First 5
         foreach ($issue in $topSemanticIssues) {
             Write-Host "   • $($issue.File): $($issue.Type) = '$($issue.Version)'" -ForegroundColor Red
@@ -291,16 +291,30 @@ if ($versionFiles.Count -eq 0) {
 }
 
 # Overall assessment
-Write-Host "`n🎯 Overall Assessment:" -ForegroundColor DarkCyan
+Write-Host "``n🎯 Overall Assessment:" -ForegroundColor DarkCyan
 
 $overallStatus = "Good"
 $criticalIssues = 0
+
+if ($overallStatus -eq "Critical") {
+    if ($currentVersion -eq "Unknown") {
+        Write-Host "   🚨 CRITICAL: No MOD_VERSION constant found" -ForegroundColor Red
+        $overallStatus = "Critical"
+        $criticalIssues++
+    }
+    
+    if ($versionFiles.Count -eq 0) {
+        Write-Host "   🚨 CRITICAL: No version-containing files found" -ForegroundColor Red
+        $overallStatus = "Critical"
+        $criticalIssues++
+    }
+} # FIXED: Added missing closing brace
 
 if ($currentVersion -eq "Unknown") {
     Write-Host "   🚨 CRITICAL: No MOD_VERSION constant found" -ForegroundColor Red
     $overallStatus = "Critical"
     $criticalIssues++
-}
+} # FIXED: Added missing closing brace
 
 if ($versionFiles.Count -eq 0) {
     Write-Host "   🚨 CRITICAL: No version-containing files found" -ForegroundColor Red
@@ -323,11 +337,13 @@ if ($criticalIssues -eq 0 -and $uniqueVersions.Count -le 1 -and $semanticIssues.
 }
 
 # Recommendations
-Write-Host "`n💡 Recommendations:" -ForegroundColor DarkCyan
+Write-Host "``n💡 Recommendations:" -ForegroundColor DarkCyan
 
 if ($currentVersion -eq "Unknown") {
     Write-Host "   🚨 CRITICAL: Add MOD_VERSION constant to a Constants file" -ForegroundColor Red
-    Write-Host "      Example: public const string MOD_VERSION = \"1.0.0\";" -ForegroundColor Gray
+    # FIXED: Use single backtick escaping for embedded double quotes
+    $exampleText = "      Example: public const string MOD_VERSION = `"1.0.0`";"
+    Write-Host $exampleText -ForegroundColor Gray
 } else {
     if (-not (Test-SemanticVersion -version $currentVersion)) {
         Write-Host "   ⚠️  WARNING: Current version '$currentVersion' is not semantic versioning compliant" -ForegroundColor DarkYellow
@@ -353,16 +369,16 @@ $reportsDir = Join-Path $ProjectRoot "Reports"
 if (-not (Test-Path $reportsDir)) {
     try {
         New-Item -Path $reportsDir -ItemType Directory -Force | Out-Null
-        Write-Host "`n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
+        Write-Host "``n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
     }
     catch {
-        Write-Host "`n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
+        Write-Host "``n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
         $reportsDir = $ProjectRoot
     }
 }
 
 # Generate detailed version synchronization report
-Write-Host "`n📝 Generating detailed version synchronization report..." -ForegroundColor DarkGray
+Write-Host "``n📝 Generating detailed version synchronization report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "VERSION-SYNCHRONIZATION-REPORT_$timestamp.md"
@@ -399,11 +415,11 @@ if ($overallStatus -eq "Critical") {
 $reportContent += ""
 $reportContent += "| Metric | Value | Status |"
 $reportContent += "|--------|-------|--------|"
-$reportContent += "| **Current Version** | $currentVersion | $(if ($currentVersion -eq "Unknown") { "🚨 Missing" } elseif (Test-SemanticVersion $currentVersion) { "✅ Valid" } else { "⚠️ Invalid Format" }) |"
-$reportContent += "| **Unique Versions** | $versionCount | $(if ($versionCount -eq 0) { "🚨 None Found" } elseif ($versionCount -eq 1) { "✅ Consistent" } else { "⚠️ Inconsistent" }) |"
-$reportContent += "| **Files with Versions** | $($versionFiles.Count) | $(if ($versionFiles.Count -eq 0) { "🚨 None" } elseif ($versionFiles.Count -lt 3) { "⚠️ Few" } else { "✅ Good Coverage" }) |"
-$reportContent += "| **Semantic Issues** | $($semanticIssues.Count) | $(if ($semanticIssues.Count -eq 0) { "✅ None" } elseif ($semanticIssues.Count -le 2) { "⚠️ Minor" } else { "🚨 Multiple" }) |"
-$reportContent += "| **Inconsistencies** | $($versionInconsistencies.Count) | $(if ($versionInconsistencies.Count -eq 0) { "✅ None" } else { "⚠️ Found" }) |"
+$reportContent += "| **Current Version** | $currentVersion | $(if ($currentVersion -eq `"Unknown`") { `"🚨 Missing`" } elseif (Test-SemanticVersion $currentVersion) { `"✅ Valid`" } else { `"⚠️ Invalid Format`" }) |"
+$reportContent += "| **Unique Versions** | $versionCount | $(if ($versionCount -eq 0) { `"🚨 None Found`" } elseif ($versionCount -eq 1) { `"✅ Consistent`" } else { `"⚠️ Inconsistent`" }) |"
+$reportContent += "| **Files with Versions** | $($versionFiles.Count) | $(if ($versionFiles.Count -eq 0) { `"🚨 None`" } elseif ($versionFiles.Count -lt 3) { `"⚠️ Few`" } else { `"✅ Good Coverage`" }) |"
+$reportContent += "| **Semantic Issues** | $($semanticIssues.Count) | $(if ($semanticIssues.Count -eq 0) { `"✅ None`" } elseif ($semanticIssues.Count -le 2) { `"⚠️ Minor`" } else { `"🚨 Multiple`" }) |"
+$reportContent += "| **Inconsistencies** | $($versionInconsistencies.Count) | $(if ($versionInconsistencies.Count -eq 0) { `"✅ None`" } else { `"⚠️ Found`" }) |"
 $reportContent += ""
 
 # Version Analysis
@@ -427,7 +443,7 @@ if ($versionFiles.Count -gt 0) {
                      elseif ($isValid) { "📝 Valid Format" }
                      else { "❌ Invalid Format" }
             
-            $reportContent += "| `$version` | $count | $(if ($isValid) { "✅ Yes" } else { "❌ No" }) | $status |"
+            $reportContent += "| ````$version```` | $count | $(if ($isValid) { `"✅ Yes`" } else { `"❌ No`" }) | $status |"
         }
         $reportContent += ""
     }
@@ -450,7 +466,7 @@ if ($versionFiles.Count -gt 0) {
             
             foreach ($foundVersion in $versionFile.FoundVersions) {
                 $validIcon = if ($foundVersion.Valid) { "✅" } else { "❌" }
-                $reportContent += "| $($foundVersion.Type) | `$($foundVersion.Version)` | $validIcon |"
+                $reportContent += "| $($foundVersion.Type) | ````$($foundVersion.Version)```` | $validIcon |"
             }
             $reportContent += ""
         }
@@ -486,7 +502,7 @@ if ($versionInconsistencies.Count -gt 0 -or $semanticIssues.Count -gt 0) {
         $reportContent += "|------|------|-----------------|-------|"
         
         foreach ($issue in $semanticIssues) {
-            $reportContent += "| `$($issue.File)` | $($issue.Type) | `$($issue.Version)` | $($issue.Issue) |"
+            $reportContent += "| ````$($issue.File)```` | $($issue.Type) | ````$($issue.Version)```` | $($issue.Issue) |"
         }
         $reportContent += ""
     }
@@ -506,10 +522,13 @@ if ($overallStatus -eq "Critical") {
         $reportContent += "**Priority**: CRITICAL"
         $reportContent += ""
         $reportContent += "1. **Add MOD_VERSION constant** to a Constants file:"
-        $reportContent += "   ```csharp"
-        $reportContent += "   public const string MOD_VERSION = \"1.0.0\";"
-        $reportContent += "   ```"
-        $reportContent += "2. **Choose semantic version** following MAJOR.MINOR.PATCH format"
+        $reportContent += "   ````````csharp"
+        # FIXED: Use single backtick escaping for embedded double quotes
+        $csharpExample = "   public const string MOD_VERSION = `"1.0.0`";"
+        $reportContent += $csharpExample
+        $reportContent += "   ````````"
+        $chooseVersionText = "2. **Choose semantic version** following MAJOR.MINOR.PATCH format"
+        $reportContent += $chooseVersionText
         $reportContent += "3. **Update all version references** to use this constant"
         $reportContent += ""
     }
@@ -547,7 +566,8 @@ if ($overallStatus -eq "Critical") {
         $reportContent += "**Action**: Convert versions to semantic versioning format"
         $reportContent += ""
         $reportContent += "1. **Review current versions** that don't follow MAJOR.MINOR.PATCH"
-        $reportContent += "2. **Convert to semantic format** (e.g., \"v1.0\" → \"1.0.0\")"
+        # FIXED: Use single backtick escaping for embedded double quotes
+        $reportContent += "2. **Convert to semantic format** (e.g., `"v1.0`" → `"1.0.0`")"
         $reportContent += "3. **Update all references** to use new format"
         $reportContent += ""
     }
@@ -576,10 +596,10 @@ $reportContent += ""
 $reportContent += "3. **Consistent Updates**: Update all version references simultaneously"
 $reportContent += ""
 $reportContent += "4. **Git Integration**: Tag releases with version numbers"
-$reportContent += "   ```bash"
+$reportContent += "   ````````bash"
 $reportContent += "   git tag v1.0.0"
 $reportContent += "   git push origin v1.0.0"
-$reportContent += "   ```"
+$reportContent += "   ````````"
 
 # Technical Details
 $reportContent += ""
@@ -589,9 +609,10 @@ $reportContent += "### Detection Patterns"
 $reportContent += ""
 $reportContent += "This analysis searches for versions using these patterns:"
 $reportContent += ""
-$reportContent += "- **MOD_VERSION**: `MOD_VERSION = \"version\"`"
-$reportContent += "- **Assembly Attributes**: `[AssemblyVersion(\"version\")]`"
-$reportContent += "- **JSON Fields**: `\"version\": \"version\"`"
+# FIXED: Use single backtick escaping for embedded double quotes
+$reportContent += "- **MOD_VERSION**: ````MOD_VERSION = `"version`"````"
+$reportContent += "- **Assembly Attributes**: ````[AssemblyVersion(`"version`")]````"
+$reportContent += "- **JSON Fields**: ````*version*: `"version`"````"
 $reportContent += "- **MelonModInfo**: Third parameter in MelonModInfo attribute"
 $reportContent += ""
 $reportContent += "### File Coverage"
@@ -617,37 +638,37 @@ catch {
     $saveSuccess = $false
 }
 
-Write-Host "`n🚀 Version synchronization scan complete!" -ForegroundColor Green
+Write-Host "``n🚀 Version synchronization scan complete!" -ForegroundColor Green
 
 # OUTPUT PATH AT THE END for easy finding
 if ($saveSuccess) {
-    Write-Host "`n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
+    Write-Host "``n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
     Write-Host "   Location: $reportPath" -ForegroundColor Cyan
     Write-Host "   Size: $([Math]::Round((Get-Item $reportPath).Length / 1KB, 1)) KB" -ForegroundColor Gray
 } else {
-    Write-Host "`n⚠️ No detailed report generated" -ForegroundColor DarkYellow
+    Write-Host "``n⚠️ No detailed report generated" -ForegroundColor DarkYellow
 }
 
 # INTERACTIVE WORKFLOW LOOP (only when running standalone)
 if ($IsInteractive -and -not $RunningFromScript) {
     do {
-        Write-Host "`n🎯 What would you like to do next?" -ForegroundColor DarkCyan
+        Write-Host "``n🎯 What would you like to do next?" -ForegroundColor DarkCyan
         Write-Host "   D - Display report in console" -ForegroundColor Green
         Write-Host "   R - Re-run version synchronization analysis" -ForegroundColor DarkYellow
         Write-Host "   X - Exit to DevOps menu" -ForegroundColor Gray
         
-        $choice = Read-Host "`nEnter choice (D/R/X)"
+        $choice = Read-Host "``nEnter choice (D/R/X)"
         $choice = $choice.ToUpper()
         
         switch ($choice) {
             'D' {
                 if ($saveSuccess) {
-                    Write-Host "`n📋 DISPLAYING VERSION SYNCHRONIZATION REPORT:" -ForegroundColor DarkCyan
+                    Write-Host "``n📋 DISPLAYING VERSION SYNCHRONIZATION REPORT:" -ForegroundColor DarkCyan
                     Write-Host "=============================================" -ForegroundColor DarkCyan
                     try {
                         $reportDisplay = Get-Content -Path $reportPath -Raw
                         Write-Host $reportDisplay -ForegroundColor White
-                        Write-Host "`n=============================================" -ForegroundColor DarkCyan
+                        Write-Host "``n=============================================" -ForegroundColor DarkCyan
                         Write-Host "📋 END OF REPORT" -ForegroundColor DarkCyan
                     }
                     catch {
@@ -658,13 +679,13 @@ if ($IsInteractive -and -not $RunningFromScript) {
                 }
             }
             'R' {
-                Write-Host "`n🔄 RE-RUNNING VERSION SYNCHRONIZATION ANALYSIS..." -ForegroundColor DarkYellow
+                Write-Host "``n🔄 RE-RUNNING VERSION SYNCHRONIZATION ANALYSIS..." -ForegroundColor DarkYellow
                 Write-Host "================================================" -ForegroundColor DarkYellow
                 & $MyInvocation.MyCommand.Path
                 return
             }
             'X' {
-                Write-Host "`n👋 Returning to DevOps menu..." -ForegroundColor Gray
+                Write-Host "``n👋 Returning to DevOps menu..." -ForegroundColor Gray
                 return
             }
             default {

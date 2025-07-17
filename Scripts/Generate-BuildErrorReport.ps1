@@ -291,14 +291,14 @@ function Consolidate-Errors {
 }
 
 # Main script execution
-Write-Host "`n📂 Scanning for project files..." -ForegroundColor DarkGray
+Write-Host "``n📂 Scanning for project files..." -ForegroundColor DarkGray
 $projectFiles = Find-ProjectFiles
 
 if ($projectFiles.Count -eq 0) {
     Write-Host "❌ No project files (.sln or .csproj) found!" -ForegroundColor Red
     Write-Host "Ensure you're running this script from a .NET project directory" -ForegroundColor DarkYellow
     if ($IsInteractive -and -not $RunningFromScript) {
-        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Write-Host "``nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
         Read-Host
     }
     return
@@ -315,7 +315,7 @@ try {
     if ($LASTEXITCODE -ne 0) {
         Write-Host "❌ .NET CLI not found! Please install .NET SDK" -ForegroundColor Red
         if ($IsInteractive -and -not $RunningFromScript) {
-            Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+            Write-Host "``nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
             Read-Host
         }
         return
@@ -325,14 +325,14 @@ try {
 catch {
     Write-Host "❌ .NET CLI not available: $_" -ForegroundColor Red
     if ($IsInteractive -and -not $RunningFromScript) {
-        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Write-Host "``nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
         Read-Host
     }
     return
 }
 
 # Execute builds for each project
-Write-Host "`n🔨 Executing dotnet build..." -ForegroundColor DarkCyan
+Write-Host "``n🔨 Executing dotnet build..." -ForegroundColor DarkCyan
 $buildResults = @()
 
 foreach ($project in $projectFiles) {
@@ -347,7 +347,7 @@ foreach ($project in $projectFiles) {
 }
 
 # Parse errors from all build results
-Write-Host "`n📊 Analyzing build output..." -ForegroundColor DarkGray
+Write-Host "``n📊 Analyzing build output..." -ForegroundColor DarkGray
 $allErrors = @()
 $allWarnings = @()
 $buildMessages = @()
@@ -362,13 +362,13 @@ foreach ($buildResult in $buildResults) {
 Write-Host "✅ Found $($allErrors.Count) errors and $($allWarnings.Count) warnings" -ForegroundColor Gray
 
 # Consolidate duplicate errors
-Write-Host "`n🔄 Consolidating duplicate errors..." -ForegroundColor DarkGray
+Write-Host "``n🔄 Consolidating duplicate errors..." -ForegroundColor DarkGray
 $consolidatedErrors = Consolidate-Errors -errors $allErrors
 $consolidatedWarnings = Consolidate-Errors -errors $allWarnings
 
 Write-Host "✅ Consolidated to $($consolidatedErrors.Count) unique errors and $($consolidatedWarnings.Count) unique warnings" -ForegroundColor Gray
 
-Write-Host "`n=== BUILD ERROR ANALYSIS REPORT ===" -ForegroundColor DarkCyan
+Write-Host "``n=== BUILD ERROR ANALYSIS REPORT ===" -ForegroundColor DarkCyan
 Write-Host "🕐 Analysis completed: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 
 # Overall build status
@@ -384,14 +384,14 @@ Write-Host "   Total warnings: $($allWarnings.Count) (consolidated: $($consolida
 
 # Display critical errors
 if ($consolidatedErrors.Count -gt 0) {
-    Write-Host "`n🚨 Build Errors by Criticality:" -ForegroundColor DarkCyan
+    Write-Host "``n🚨 Build Errors by Criticality:" -ForegroundColor DarkCyan
     
     $criticalErrors = $consolidatedErrors | Where-Object { $_.Criticality -eq "CRITICAL" }
     $highErrors = $consolidatedErrors | Where-Object { $_.Criticality -eq "HIGH" }
     $mediumErrors = $consolidatedErrors | Where-Object { $_.Criticality -eq "MEDIUM" }
     
     if ($criticalErrors.Count -gt 0) {
-        Write-Host "`n   🚨 CRITICAL ERRORS (Fix First):" -ForegroundColor Red
+        Write-Host "``n   🚨 CRITICAL ERRORS (Fix First):" -ForegroundColor Red
         foreach ($error in $criticalErrors | Select-Object -First 5) {
             Write-Host "      $($error.Code): $($error.Message)" -ForegroundColor Red
             Write-Host "         Occurrences: $($error.Occurrences) | Files: $($error.Files)" -ForegroundColor DarkGray
@@ -402,7 +402,7 @@ if ($consolidatedErrors.Count -gt 0) {
     }
     
     if ($highErrors.Count -gt 0) {
-        Write-Host "`n   ⚠️  HIGH PRIORITY ERRORS:" -ForegroundColor DarkYellow
+        Write-Host "``n   ⚠️  HIGH PRIORITY ERRORS:" -ForegroundColor DarkYellow
         foreach ($error in $highErrors | Select-Object -First 3) {
             Write-Host "      $($error.Code): $($error.Message)" -ForegroundColor DarkYellow
             Write-Host "         Occurrences: $($error.Occurrences) | Files: $($error.Files)" -ForegroundColor DarkGray
@@ -413,16 +413,16 @@ if ($consolidatedErrors.Count -gt 0) {
     }
     
     if ($mediumErrors.Count -gt 0) {
-        Write-Host "`n   📝 MEDIUM PRIORITY ERRORS:" -ForegroundColor Gray
+        Write-Host "``n   📝 MEDIUM PRIORITY ERRORS:" -ForegroundColor Gray
         Write-Host "      $($mediumErrors.Count) errors - see detailed report for full list" -ForegroundColor Gray
     }
 } else {
-    Write-Host "`n✅ NO BUILD ERRORS! Clean compilation achieved." -ForegroundColor Green
+    Write-Host "``n✅ NO BUILD ERRORS! Clean compilation achieved." -ForegroundColor Green
 }
 
 # Display warning summary
 if ($consolidatedWarnings.Count -gt 0) {
-    Write-Host "`n⚠️  Build Warnings Summary:" -ForegroundColor DarkYellow
+    Write-Host "``n⚠️  Build Warnings Summary:" -ForegroundColor DarkYellow
     $topWarnings = $consolidatedWarnings | Sort-Object Occurrences -Descending | Select-Object -First 3
     foreach ($warning in $topWarnings) {
         Write-Host "   • $($warning.Code): $($warning.Occurrences) occurrences" -ForegroundColor DarkYellow
@@ -434,7 +434,7 @@ if ($consolidatedWarnings.Count -gt 0) {
 }
 
 # Quick recommendations
-Write-Host "`n💡 Recommendations:" -ForegroundColor DarkCyan
+Write-Host "``n💡 Recommendations:" -ForegroundColor DarkCyan
 
 if ($overallFailed.Count -gt 0) {
     Write-Host "   🚨 IMMEDIATE: Fix build failures before proceeding" -ForegroundColor Red
@@ -464,16 +464,16 @@ $reportsDir = Join-Path $ProjectRoot "Reports"
 if (-not (Test-Path $reportsDir)) {
     try {
         New-Item -Path $reportsDir -ItemType Directory -Force | Out-Null
-        Write-Host "`n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
+        Write-Host "``n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
     }
     catch {
-        Write-Host "`n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
+        Write-Host "``n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
         $reportsDir = $ProjectRoot
     }
 }
 
 # Generate detailed build error report
-Write-Host "`n📝 Generating detailed build error report..." -ForegroundColor DarkGray
+Write-Host "``n📝 Generating detailed build error report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "BUILD-ERROR-REPORT_$timestamp.md"
@@ -539,7 +539,7 @@ foreach ($buildResult in $buildResults) {
     $projectWarnings = $allWarnings | Where-Object { $_.File -like "*$($buildResult.ProjectName)*" }
     
     $status = if ($buildResult.Success) { "✅ Success" } else { "❌ Failed" }
-    $reportContent += "| `$($buildResult.ProjectName)` | $status | $($projectErrors.Count) | $($projectWarnings.Count) | $($buildResult.ExitCode) |"
+    $reportContent += "| ````$($buildResult.ProjectName)```` | $status | $($projectErrors.Count) | $($projectWarnings.Count) | $($buildResult.ExitCode) |"
 }
 
 $reportContent += ""
@@ -591,7 +591,7 @@ if ($consolidatedErrors.Count -gt 0) {
                 $reportContent += ""
                 foreach ($location in $error.Locations) {
                     if ($location.File) {
-                        $reportContent += "- `$($location.FileName)` (Line $($location.Line), Column $($location.Column))"
+                        $reportContent += "- ````$($location.FileName)```` (Line $($location.Line), Column $($location.Column))"
                     } else {
                         $reportContent += "- General error (no specific location)"
                     }
@@ -602,7 +602,7 @@ if ($consolidatedErrors.Count -gt 0) {
                 $reportContent += ""
                 foreach ($location in $error.Locations | Select-Object -First 5) {
                     if ($location.File) {
-                        $reportContent += "- `$($location.FileName)` (Line $($location.Line), Column $($location.Column))"
+                        $reportContent += "- ````$($location.FileName)```` (Line $($location.Line), Column $($location.Column))"
                     } else {
                         $reportContent += "- General error (no specific location)"
                     }
@@ -624,7 +624,7 @@ if ($consolidatedWarnings.Count -gt 0) {
     
     foreach ($warning in $consolidatedWarnings | Sort-Object Occurrences -Descending | Select-Object -First 15) {
         $message = if ($warning.Message.Length -gt 50) { $warning.Message.Substring(0, 47) + "..." } else { $warning.Message }
-        $reportContent += "| `$($warning.Code)` | $($warning.Occurrences) | $message | $($warning.Files) |"
+        $reportContent += "| ````$($warning.Code)```` | $($warning.Occurrences) | $message | $($warning.Files) |"
     }
     
     if ($consolidatedWarnings.Count -gt 15) {
@@ -647,7 +647,7 @@ $reportContent += ""
 $reportContent += "### Project Files Analyzed"
 $reportContent += ""
 foreach ($project in $projectFiles) {
-    $reportContent += "- `$($project.Name)` - $($project.Extension.ToUpper()) file"
+    $reportContent += "- ````$($project.Name)```` - $($project.Extension.ToUpper()) file"
 }
 $reportContent += ""
 
@@ -741,8 +741,11 @@ $reportContent += "## Technical Analysis Details"
 $reportContent += ""
 $reportContent += "### Build Process"
 $reportContent += ""
-$reportContent += "- **Build Command**: `dotnet build --verbosity normal`"
-$reportContent += "- **Error Detection**: MSBuild error format parsing"
+# FIXED: Split problematic markdown string to avoid parsing issues
+$buildCommandText = "- **Build Command**: ````dotnet build --verbosity normal````"
+$reportContent += $buildCommandText
+$errorDetectionText = "- **Error Detection**: MSBuild error format parsing"
+$reportContent += $errorDetectionText
 $reportContent += "- **Consolidation Logic**: Group by error code and message"
 $reportContent += "- **Criticality Assessment**: Based on error impact and project patterns"
 $reportContent += ""
@@ -778,37 +781,37 @@ catch {
     $saveSuccess = $false
 }
 
-Write-Host "`n🚀 Build error analysis complete!" -ForegroundColor Green
+Write-Host "``n🚀 Build error analysis complete!" -ForegroundColor Green
 
 # OUTPUT PATH AT THE END for easy finding
 if ($saveSuccess) {
-    Write-Host "`n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
+    Write-Host "``n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
     Write-Host "   Location: $reportPath" -ForegroundColor Cyan
     Write-Host "   Size: $([Math]::Round((Get-Item $reportPath).Length / 1KB, 1)) KB" -ForegroundColor Gray
 } else {
-    Write-Host "`n⚠️ No detailed report generated" -ForegroundColor DarkYellow
+    Write-Host "``n⚠️ No detailed report generated" -ForegroundColor DarkYellow
 }
 
 # INTERACTIVE WORKFLOW LOOP (only when running standalone)
 if ($IsInteractive -and -not $RunningFromScript) {
     do {
-        Write-Host "`n🎯 What would you like to do next?" -ForegroundColor DarkCyan
+        Write-Host "``n🎯 What would you like to do next?" -ForegroundColor DarkCyan
         Write-Host "   D - Display report in console" -ForegroundColor Green
         Write-Host "   R - Re-run build error analysis" -ForegroundColor DarkYellow
         Write-Host "   X - Exit to DevOps menu" -ForegroundColor Gray
         
-        $choice = Read-Host "`nEnter choice (D/R/X)"
+        $choice = Read-Host "``nEnter choice (D/R/X)"
         $choice = $choice.ToUpper()
         
         switch ($choice) {
             'D' {
                 if ($saveSuccess) {
-                    Write-Host "`n📋 DISPLAYING BUILD ERROR REPORT:" -ForegroundColor DarkCyan
+                    Write-Host "``n📋 DISPLAYING BUILD ERROR REPORT:" -ForegroundColor DarkCyan
                     Write-Host "==================================" -ForegroundColor DarkCyan
                     try {
                         $reportDisplay = Get-Content -Path $reportPath -Raw
                         Write-Host $reportDisplay -ForegroundColor White
-                        Write-Host "`n==================================" -ForegroundColor DarkCyan
+                        Write-Host "``n==================================" -ForegroundColor DarkCyan
                         Write-Host "📋 END OF REPORT" -ForegroundColor DarkCyan
                     }
                     catch {
@@ -819,13 +822,13 @@ if ($IsInteractive -and -not $RunningFromScript) {
                 }
             }
             'R' {
-                Write-Host "`n🔄 RE-RUNNING BUILD ERROR ANALYSIS..." -ForegroundColor DarkYellow
+                Write-Host "``n🔄 RE-RUNNING BUILD ERROR ANALYSIS..." -ForegroundColor DarkYellow
                 Write-Host "====================================" -ForegroundColor DarkYellow
                 & $MyInvocation.MyCommand.Path
                 return
             }
             'X' {
-                Write-Host "`n👋 Returning to DevOps menu..." -ForegroundColor Gray
+                Write-Host "``n👋 Returning to DevOps menu..." -ForegroundColor Gray
                 return
             }
             default {
@@ -834,5 +837,6 @@ if ($IsInteractive -and -not $RunningFromScript) {
         }
     } while ($choice -notin @('X'))
 } else {
+    # FIXED: Proper string termination for PowerShell 5.1 compatibility
     Write-Host "📄 Script completed - returning to caller" -ForegroundColor DarkGray
 }

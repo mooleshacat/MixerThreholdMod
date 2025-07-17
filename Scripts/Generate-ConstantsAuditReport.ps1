@@ -291,19 +291,26 @@ if (-not (Test-Path $reportsDir)) {
     }
 }
 
-# Generate detailed constants audit report
+# Generate detailed constants audit report using PowerShell 5.1 safe approach
 Write-Host "`n📝 Generating detailed constants audit report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "CONSTANTS-AUDIT-REPORT_$timestamp.md"
 
+# Build report using separate variables for PowerShell 5.1 compatibility
+$reportTitle = "# Constants Audit Report"
+$reportGenerated = "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$reportTotalConstants = "**Total Constants**: $($constants.Count)"
+$reportFilesScanned = "**Files Scanned**: $(($constants | Select-Object -ExpandProperty File -Unique).Count)"
+$reportCodeFilesAnalyzed = "**Code Files Analyzed**: $scannedFilesCount"
+
 $reportContent = @()
-$reportContent += "# Constants Audit Report"
+$reportContent += $reportTitle
 $reportContent += ""
-$reportContent += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-$reportContent += "**Total Constants**: $($constants.Count)"
-$reportContent += "**Files Scanned**: $(($constants | Select-Object -ExpandProperty File -Unique).Count)"
-$reportContent += "**Code Files Analyzed**: $scannedFilesCount"
+$reportContent += $reportGenerated
+$reportContent += $reportTotalConstants
+$reportContent += $reportFilesScanned
+$reportContent += $reportCodeFilesAnalyzed
 $reportContent += ""
 
 # Executive Summary
@@ -461,8 +468,8 @@ if ($lowUsageFiles.Count -gt 0) {
     }
 }
 
-# Action Plan
-$reportContent += "## 🎯 Action Plan"
+# Action Plan - FIXED VARIABLE REFERENCE ISSUES
+$reportContent += "## Action Plan"
 $reportContent += ""
 
 if ($unusedNames.Count -eq 0 -and $duplicateNames.Count -eq 0) {
@@ -479,8 +486,10 @@ if ($unusedNames.Count -eq 0 -and $duplicateNames.Count -eq 0) {
     $reportContent += ""
     
     if ($unusedNames.Count -gt 0) {
-        $priority = if ($unusedNames.Count -gt 20) { "🚨 HIGH" } elseif ($unusedNames.Count -gt 10) { "⚠️ MEDIUM" } else { "📝 LOW" }
-        $reportContent += "#### $priority: Remove Unused Constants"
+        # FIXED: Separated priority variable creation for PowerShell 5.1 compatibility
+        $priorityLevel = if ($unusedNames.Count -gt 20) { "🚨 HIGH" } elseif ($unusedNames.Count -gt 10) { "⚠️ MEDIUM" } else { "📝 LOW" }
+        $prioritySection = "#### $priorityLevel - Remove Unused Constants"
+        $reportContent += $prioritySection
         $reportContent += ""
         $reportContent += "**$($unusedNames.Count) unused constants** should be reviewed for removal:"
         $reportContent += ""
@@ -492,8 +501,10 @@ if ($unusedNames.Count -eq 0 -and $duplicateNames.Count -eq 0) {
     }
     
     if ($duplicateNames.Count -gt 0) {
-        $priority = if ($duplicateNames.Count -gt 10) { "⚠️ MEDIUM" } else { "📝 LOW" }
-        $reportContent += "#### $priority: Consolidate Duplicate Constants"
+        # FIXED: Separated priority variable creation for PowerShell 5.1 compatibility
+        $priorityLevel = if ($duplicateNames.Count -gt 10) { "⚠️ MEDIUM" } else { "📝 LOW" }
+        $prioritySection = "#### $priorityLevel - Consolidate Duplicate Constants"
+        $reportContent += $prioritySection
         $reportContent += ""
         $reportContent += "**$($duplicateNames.Count) duplicate constant names** detected:"
         $reportContent += ""
@@ -527,15 +538,15 @@ $reportContent += ""
 $reportContent += "### Exclusions"
 $reportContent += ""
 $reportContent += "The following directories were excluded from analysis:"
-$reportContent += "- `ForCopilot/` - GitHub Copilot instruction files"
-$reportContent += "- `Scripts/` - DevOps and build scripts"
-$reportContent += "- `Legacy/` - Deprecated code"
+$reportContent += "- ForCopilot/ - GitHub Copilot instruction files"
+$reportContent += "- Scripts/ - DevOps and build scripts"
+$reportContent += "- Legacy/ - Deprecated code"
 $reportContent += ""
 $reportContent += "### Detection Patterns"
 $reportContent += ""
-$reportContent += "- **Constants**: `public const Type NAME = value;`"
-$reportContent += "- **Usage**: Word boundary matches in non-constant files"
-$reportContent += "- **Files**: Constants.cs and files in Constants/ directory"
+$reportContent += "- Constants: public const Type NAME = value"
+$reportContent += "- Usage: Word boundary matches in non-constant files"
+$reportContent += "- Files: Constants.cs and files in Constants/ directory"
 
 # Footer
 $reportContent += ""

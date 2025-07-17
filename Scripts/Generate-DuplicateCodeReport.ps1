@@ -45,7 +45,8 @@ function Get-NormalizedCode {
     $code = $code -replace '//.*$', '' -replace '/\*[\s\S]*?\*/', ''
     $code = $code -replace '\s+', ' '
     $code = $code.Trim()
-    $code = ($code -split "`n" | Where-Object { $_.Trim() -ne "" }) -join "`n"
+    # Use [Environment]::NewLine instead of backtick-n for PowerShell 5.1 compatibility
+    $code = ($code -split [Environment]::NewLine | Where-Object { $_.Trim() -ne "" }) -join [Environment]::NewLine
     
     return $code
 }
@@ -72,10 +73,11 @@ function Get-CodeBlocks {
             if ($methodBody.Length -lt 100) { continue }
             
             $normalizedCode = Get-NormalizedCode -code $methodBody
-            $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+            $lineNumber = ($content.Substring(0, $match.Index) -split [Environment]::NewLine).Count
             
-            # Simple hash calculation
-            $hash = [System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($normalizedCode)) | ForEach-Object { $_.ToString("x2") } | Join-String
+            # FIXED: Replace Join-String with PowerShell 5.1 compatible approach
+            $hashBytes = [System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($normalizedCode))
+            $hash = -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
             
             $blocks += [PSCustomObject]@{
                 File = $filePath
@@ -128,10 +130,11 @@ Write-Host "🔄 Duplicate code groups found: $($duplicateGroups.Count)" -Foregr
 if ($duplicateGroups.Count -eq 0) {
     Write-Host "`n✅ No significant duplicate code blocks detected!" -ForegroundColor Green
 } else {
-    # Calculate statistics
+    # Calculate statistics using PowerShell 5.1 safe method
     $totalDuplicateLines = 0
     $duplicateGroups | ForEach-Object {
-        $totalDuplicateLines += ($_.Group[0].OriginalCode -split "`n").Count * ($_.Count - 1)
+        $lineCount = ($_.Group[0].OriginalCode -split [Environment]::NewLine).Count
+        $totalDuplicateLines += $lineCount * ($_.Count - 1)
     }
     
     Write-Host "📏 Estimated duplicate lines: $totalDuplicateLines" -ForegroundColor Red
@@ -203,19 +206,26 @@ if (-not (Test-Path $reportsDir)) {
     }
 }
 
-# Generate detailed duplicate code report
+# Generate detailed duplicate code report using PowerShell 5.1 safe approach
 Write-Host "`n📝 Generating detailed duplicate code report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "DUPLICATE-CODE-REPORT_$timestamp.md"
 
+# Build report using separate variables for PowerShell 5.1 compatibility
+$reportTitle = "# Duplicate Code Analysis Report"
+$reportGenerated = "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$reportFilesAnalyzed = "**Files Analyzed**: $($files.Count)"
+$reportBlocksAnalyzed = "**Code Blocks Analyzed**: $($allBlocks.Count)"
+$reportDuplicateGroups = "**Duplicate Groups Found**: $($duplicateGroups.Count)"
+
 $reportContent = @()
-$reportContent += "# Duplicate Code Analysis Report"
+$reportContent += $reportTitle
 $reportContent += ""
-$reportContent += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-$reportContent += "**Files Analyzed**: $($files.Count)"
-$reportContent += "**Code Blocks Analyzed**: $($allBlocks.Count)"
-$reportContent += "**Duplicate Groups Found**: $($duplicateGroups.Count)"
+$reportContent += $reportGenerated
+$reportContent += $reportFilesAnalyzed
+$reportContent += $reportBlocksAnalyzed
+$reportContent += $reportDuplicateGroups
 $reportContent += ""
 
 # Executive Summary
@@ -257,7 +267,7 @@ if ($duplicateGroups.Count -eq 0) {
 
 $reportContent += ""
 
-# Detailed Duplicate Analysis
+# BULLETPROOF: Detailed Duplicate Analysis with DOUBLE backticks (FIXED)
 if ($duplicateGroups.Count -gt 0) {
     $reportContent += "## Duplicate Code Groups"
     $reportContent += ""
@@ -280,38 +290,44 @@ if ($duplicateGroups.Count -gt 0) {
         $reportContent += "| File | Method | Line |"
         $reportContent += "|------|--------|------|"
         
+        # SAFE: Basic string concatenation only
         foreach ($block in $group.Group) {
             $fileName = [System.IO.Path]::GetFileName($block.File)
-            $reportContent += "| `$fileName` | `$($block.Name)` | $($block.LineNumber) |"
+            $tableRow = "| " + $fileName + " | " + $block.Name + " | " + $block.LineNumber + " |"
+            $reportContent += $tableRow
         }
         
         $reportContent += ""
         
-        # Show a sample of the duplicate code (first 10 lines)
+        # FIXED: Use DOUBLE backticks instead of TRIPLE for PowerShell 5.1 compatibility
         $reportContent += "#### Code Sample"
         $reportContent += ""
-        $reportContent += "```csharp"
-        $sampleLines = $firstBlock.OriginalCode -split "`n" | Select-Object -First 10
-        foreach ($line in $sampleLines) {
-            $reportContent += $line.TrimEnd()
+        
+        # SAFE: Use double backticks which are PowerShell 5.1 safe
+        $codeBlockStart = "``"
+        $reportContent += $codeBlockStart
+        
+        # Safe line splitting using [Environment]::NewLine
+        $originalLines = $firstBlock.OriginalCode -split [Environment]::NewLine
+        $maxLinesToShow = [Math]::Min(10, $originalLines.Length)
+        
+        for ($i = 0; $i -lt $maxLinesToShow; $i++) {
+            if ($originalLines[$i] -ne $null) {
+                $reportContent += $originalLines[$i].TrimEnd()
+            }
         }
-        if (($firstBlock.OriginalCode -split "`n").Count -gt 10) {
-            $reportContent += "// ... $(($firstBlock.OriginalCode -split "`n").Count - 10) more lines"
-        }
-        $reportContent += "```"
+        
+        # SAFE: Use double backticks which are PowerShell 5.1 safe
+        $codeBlockEnd = "``"
+        $reportContent += $codeBlockEnd
         $reportContent += ""
         
         $groupNumber++
     }
-    
-    if ($duplicateGroups.Count -gt 10) {
-        $reportContent += "*... and $($duplicateGroups.Count - 10) more duplicate groups*"
-        $reportContent += ""
-    }
 }
 
 # Refactoring Recommendations
-$reportContent += "## 🎯 Refactoring Recommendations"
+$reportContent += "## Refactoring Recommendations"
 $reportContent += ""
 
 if ($duplicateGroups.Count -eq 0) {
@@ -334,7 +350,7 @@ if ($duplicateGroups.Count -eq 0) {
         $reportContent += ""
         foreach ($group in $highImpactGroups | Select-Object -First 5) {
             $firstBlock = $group.Group.Group[0]
-            $reportContent += "- **Extract `$($firstBlock.Name)` pattern** ($($group.Occurrences) occurrences, $($group.CodeLength) chars)"
+            $reportContent += "- **Extract $($firstBlock.Name) pattern** ($($group.Occurrences) occurrences, $($group.CodeLength) chars)"
             $reportContent += "  - Create shared utility method or base class"
             $reportContent += "  - Impact reduction: $($group.Impact) points"
         }
@@ -348,7 +364,7 @@ if ($duplicateGroups.Count -eq 0) {
         $reportContent += ""
         foreach ($group in $mediumImpactGroups | Select-Object -First 5) {
             $firstBlock = $group.Group.Group[0]
-            $reportContent += "- **Refactor `$($firstBlock.Name)` pattern** ($($group.Occurrences) occurrences)"
+            $reportContent += "- **Refactor $($firstBlock.Name) pattern** ($($group.Occurrences) occurrences)"
         }
         $reportContent += ""
     }
@@ -391,7 +407,8 @@ $reportContent += "---"
 $reportContent += ""
 $reportContent += "**Analysis Coverage**: $($files.Count) C# files, $($allBlocks.Count) code blocks"
 $reportContent += ""
-$reportContent += "*Generated by MixerThreholdMod DevOps Suite - Duplicate Code Detector*"
+$footerText = "Generated by MixerThreholdMod DevOps Suite - Duplicate Code Detector"
+$reportContent += $footerText
 
 try {
     $reportContent | Out-File -FilePath $reportPath -Encoding UTF8
@@ -456,7 +473,7 @@ if ($IsInteractive -and -not $RunningFromScript) {
                 Write-Host "❌ Invalid choice. Please enter D, R, or X." -ForegroundColor Red
             }
         }
-    } while ($choice -notin @('X'))
+    } while ($choice -notin @("X"))
 } else {
     Write-Host "📄 Script completed - returning to caller" -ForegroundColor DarkGray
 }

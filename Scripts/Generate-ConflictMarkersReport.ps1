@@ -303,19 +303,19 @@ if ($realConflicts.Count -gt 0) {
         $reportContent += "|------|------|---------|"
         
         foreach ($conflict in $fileGroup.Group | Sort-Object LineNumber) {
-            $reportContent += "| $($conflict.LineNumber) | $($conflict.MarkerType) | `$($conflict.Line)` |"
+            $reportContent += "| $($conflict.LineNumber) | $($conflict.MarkerType) | ``$($conflict.Line)`` |"
         }
         $reportContent += ""
     }
     
     $reportContent += "### Resolution Steps"
     $reportContent += ""
-    $reportContent += "1. **Check Git Status**: `git status` to see all conflicted files"
+    $reportContent += "1. **Check Git Status**: Run git status to see all conflicted files"
     $reportContent += "2. **Open Each File**: Review conflict markers and choose correct content"
-    $reportContent += "3. **Remove Markers**: Delete `<<<<<<<`, `=======`, and `>>>>>>>` lines"
+    $reportContent += "3. **Remove Markers**: Delete conflict markers and resolve differences"
     $reportContent += "4. **Test Changes**: Ensure code compiles and works correctly"
-    $reportContent += "5. **Stage Files**: `git add <filename>` for each resolved file"
-    $reportContent += "6. **Commit Resolution**: `git commit -m \"Resolve merge conflicts\"`"
+    $reportContent += "5. **Stage Files**: Add resolved files to git staging area"
+    $reportContent += "6. **Commit Resolution**: Commit the merge conflict resolution"
     $reportContent += ""
 }
 
@@ -336,7 +336,7 @@ if ($falsePositives.Count -gt 0) {
         $reportContent += "|------|------|------|---------|"
         
         foreach ($marker in $suspiciousMarkers | Sort-Object RelativePath, LineNumber) {
-            $reportContent += "| `$($marker.RelativePath)` | $($marker.LineNumber) | $($marker.MarkerType) | `$($marker.Line)` |"
+            $reportContent += "| ``$($marker.RelativePath)`` | $($marker.LineNumber) | $($marker.MarkerType) | ``$($marker.Line)`` |"
         }
         $reportContent += ""
         
@@ -358,7 +358,7 @@ if ($falsePositives.Count -gt 0) {
             $reportContent += ""
             
             foreach ($marker in $contextGroup.Group | Select-Object -First 10) {
-                $reportContent += "- **$($marker.FileName)** (Line $($marker.LineNumber)): `$($marker.Line)`"
+                $reportContent += "- **$($marker.FileName)** (Line $($marker.LineNumber)): ``$($marker.Line)``"
             }
             
             if ($contextGroup.Group.Count -gt 10) {
@@ -390,17 +390,17 @@ foreach ($extGroup in $filesByExtension) {
         ".config" { "Configuration files" }
         default { "Other files" }
     }
-    $reportContent += "| `$($extGroup.Name)` | $($extGroup.Count) | $description |"
+    $reportContent += "| ``$($extGroup.Name)`` | $($extGroup.Count) | $description |"
 }
 
 $reportContent += ""
 $reportContent += "### Directory Exclusions"
 $reportContent += ""
 $reportContent += "The following directories were excluded from scanning:"
-$reportContent += "- `ForCopilot/` - GitHub Copilot instruction files"
-$reportContent += "- `Scripts/` - DevOps and build scripts"
-$reportContent += "- `Legacy/` - Deprecated code"
-$reportContent += "- `.git/` - Git repository metadata"
+$reportContent += "- ForCopilot - GitHub Copilot instruction files"
+$reportContent += "- Scripts - DevOps and build scripts"
+$reportContent += "- Legacy - Deprecated code"
+$reportContent += "- .git - Git repository metadata"
 
 # Best Practices
 $reportContent += ""
@@ -416,13 +416,7 @@ $reportContent += ""
 $reportContent += "### Conflict Resolution Tools"
 $reportContent += ""
 $reportContent += "1. **Git Mergetool**: Configure a visual merge tool"
-$reportContent += "   ```bash"
-$reportContent += "   git config merge.tool vscode"
-$reportContent += "   git mergetool"
-$reportContent += "   ```"
-$reportContent += ""
-$reportContent += "2. **IDE Integration**: Use Visual Studio's merge conflict resolution"
-$reportContent += ""
+$reportContent += "2. **IDE Integration**: Use Visual Studio merge conflict resolution"
 $reportContent += "3. **Manual Resolution**: For simple conflicts, edit files directly"
 $reportContent += ""
 $reportContent += "### Regular Scanning"
@@ -440,7 +434,7 @@ $reportContent += "### Detection Patterns"
 $reportContent += ""
 $reportContent += "This analysis uses the following detection patterns:"
 $reportContent += ""
-$reportContent += "- **Real Conflicts**: Complete pattern `<<<<<<< → ======= → >>>>>>>`"
+$reportContent += "- **Real Conflicts**: Complete merge conflict pattern sequence"
 $reportContent += "- **Orphaned Markers**: Standalone markers not in complete pattern"
 $reportContent += "- **Context Analysis**: Identifies markers in strings, comments, etc."
 $reportContent += ""
@@ -454,7 +448,7 @@ $reportContent += "- **FALSE_POSITIVE**: Markers in strings, comments, or docume
 $reportContent += ""
 $reportContent += "---"
 $reportContent += ""
-$reportContent += "**Git Commands**: `git status`, `git mergetool`, `git add`, `git commit`"
+$reportContent += "**Git Commands**: git status, git mergetool, git add, git commit"
 $reportContent += ""
 $reportContent += "*Generated by MixerThreholdMod DevOps Suite - Conflict Markers Scanner*"
 

@@ -33,12 +33,12 @@ function Get-CurrentVersion {
             try {
                 $content = Get-Content -Path $constantsFile -Raw -ErrorAction Stop
                 if ($content -match 'MOD_VERSION\s*=\s*"([^"]+)"') {
-                    Write-Host "   📋 Found version in $fileName`: $($matches[1])" -ForegroundColor Gray
+                    Write-Host "   📋 Found version in $fileName``: $($matches[1])" -ForegroundColor Gray
                     return $matches[1]
                 }
             }
             catch {
-                Write-Host "   ⚠️  Error reading $fileName`: $_" -ForegroundColor DarkYellow
+                Write-Host "   ⚠️  Error reading $fileName``: $_" -ForegroundColor DarkYellow
             }
         }
     }
@@ -270,7 +270,7 @@ if (-not (Test-GitRepository -path $ProjectRoot)) {
     Write-Host "❌ Not a git repository or git not available" -ForegroundColor Red
     Write-Host "This script requires git and must be run in a git repository" -ForegroundColor DarkYellow
     if ($IsInteractive -and -not $RunningFromScript) {
-        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Write-Host "``nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
         Read-Host
     }
     return
@@ -278,7 +278,7 @@ if (-not (Test-GitRepository -path $ProjectRoot)) {
 
 Push-Location $ProjectRoot
 
-Write-Host "`n📊 Analyzing project history..." -ForegroundColor DarkGray
+Write-Host "``n📊 Analyzing project history..." -ForegroundColor DarkGray
 
 # Get current version and tags
 $currentVersion = Get-CurrentVersion
@@ -288,14 +288,14 @@ Write-Host "📋 Current version: $currentVersion" -ForegroundColor Gray
 Write-Host "📋 Available tags: $($tags.Count)" -ForegroundColor Gray
 
 # Get all commits
-Write-Host "`n🔍 Fetching commit history..." -ForegroundColor DarkGray
+Write-Host "``n🔍 Fetching commit history..." -ForegroundColor DarkGray
 $allCommits = Get-AllCommits
 
 if ($allCommits.Count -eq 0) {
     Write-Host "❌ No commits found in repository" -ForegroundColor Red
     Pop-Location
     if ($IsInteractive -and -not $RunningFromScript) {
-        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Write-Host "``nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
         Read-Host
     }
     return
@@ -304,7 +304,7 @@ if ($allCommits.Count -eq 0) {
 Write-Host "✅ Found $($allCommits.Count) commits in history" -ForegroundColor Gray
 
 # Group commits by version
-Write-Host "`n📋 Organizing commits by version..." -ForegroundColor DarkGray
+Write-Host "``n📋 Organizing commits by version..." -ForegroundColor DarkGray
 $versionGroups = Group-CommitsByVersion -commits $allCommits -tags $tags
 
 Write-Host "✅ Organized into $($versionGroups.Count) version groups" -ForegroundColor Gray
@@ -369,7 +369,8 @@ foreach ($versionGroup in $versionGroups) {
         
         foreach ($commit in $categoryCommits | Select-Object -First $maxCommitsPerCategory) {
             $formattedMessage = Format-CommitForChangelog -commit $commit
-            $changelog += "- $formattedMessage ([``$($commit.Hash)``](../../commit/$($commit.FullHash)))"
+            # FIXED: Use double backticks for PowerShell 5.1 compatibility
+            $changelog += "- $formattedMessage ([````$($commit.Hash)````](../../commit/$($commit.FullHash)))"
         }
         
         if ($categoryCommits.Count -gt $maxCommitsPerCategory) {
@@ -418,7 +419,7 @@ catch {
 
 Pop-Location
 
-Write-Host "`n=== CHANGELOG GENERATION REPORT ===" -ForegroundColor DarkCyan
+Write-Host "``n=== CHANGELOG GENERATION REPORT ===" -ForegroundColor DarkCyan
 Write-Host "🕐 Generation completed: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 
 if ($savedSuccessfully) {
@@ -434,7 +435,7 @@ Write-Host "🏷️  Current version: $currentVersion" -ForegroundColor Gray
 
 # Category breakdown (condensed for automation)
 $allCategorizedCommits = $allCommits | Group-Object Category
-Write-Host "`n📋 Overall Changes by Category:" -ForegroundColor DarkCyan
+Write-Host "``n📋 Overall Changes by Category:" -ForegroundColor DarkCyan
 foreach ($category in $allCategorizedCommits | Sort-Object Count -Descending | Select-Object -First 6) {
     $color = switch ($category.Name) {
         "BREAKING" { "Red" }
@@ -454,7 +455,7 @@ foreach ($category in $allCategorizedCommits | Sort-Object Count -Descending | S
         "DOCS" { "Documentation" }
         default { "Other Changes" }
     }
-    Write-Host "   $displayName`: $($category.Count) changes" -ForegroundColor $color
+    Write-Host "   $displayName``: $($category.Count) changes" -ForegroundColor $color
 }
 
 if ($allCategorizedCommits.Count -gt 6) {
@@ -466,16 +467,16 @@ $reportsDir = Join-Path $ProjectRoot "Reports"
 if (-not (Test-Path $reportsDir)) {
     try {
         New-Item -Path $reportsDir -ItemType Directory -Force | Out-Null
-        Write-Host "`n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
+        Write-Host "``n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
     }
     catch {
-        Write-Host "`n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
+        Write-Host "``n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
         $reportsDir = $ProjectRoot
     }
 }
 
 # Generate detailed changelog analysis report
-Write-Host "`n📝 Generating detailed changelog analysis report..." -ForegroundColor DarkGray
+Write-Host "``n📝 Generating detailed changelog analysis report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "CHANGELOG-ANALYSIS-REPORT_$timestamp.md"
@@ -546,7 +547,7 @@ if ($versionGroups.Count -gt 0) {
                     "DOCS" { "📝 Documentation" }
                     default { "📌 Other" }
                 }
-                $reportContent += "- $displayName`: $($cat.Count) changes"
+                $reportContent += "- $displayName``: $($cat.Count) changes"
             }
             $reportContent += ""
         }
@@ -623,17 +624,17 @@ $reportContent += "- **Output Format**: Keep a Changelog compatible"
 $reportContent += ""
 $reportContent += "### File Locations"
 $reportContent += ""
-$reportContent += "- **Primary Output**: `CHANGELOG.md` (project root)"
-$reportContent += "- **Analysis Report**: `$($reportPath -replace [regex]::Escape($ProjectRoot), '.')` (Reports directory)"
+$reportContent += "- **Primary Output**: ````CHANGELOG.md```` (project root)"
+$reportContent += "- **Analysis Report**: ````$($reportPath -replace [regex]::Escape($ProjectRoot), '.')```` (Reports directory)"
 $reportContent += ""
 $reportContent += "### Categorization Logic"
 $reportContent += ""
 $reportContent += "Commits are automatically categorized based on conventional commit patterns:"
 $reportContent += ""
-$reportContent += "- `feat:` → ✨ Added"
-$reportContent += "- `fix:` → 🐛 Fixed"
-$reportContent += "- `docs:` → 📝 Documentation"
-$reportContent += "- `chore:` → 🔄 Changed"
+$reportContent += "- ````feat:```` → ✨ Added"
+$reportContent += "- ````fix:```` → 🐛 Fixed"
+$reportContent += "- ````docs:```` → 📝 Documentation"
+$reportContent += "- ````chore:```` → 🔄 Changed"
 $reportContent += "- Keywords like 'breaking' → ⚠️ Breaking Changes"
 $reportContent += "- Security keywords → 🔒 Security"
 
@@ -647,9 +648,10 @@ if ($tags.Count -eq 0) {
     $reportContent += ""
     $reportContent += "**No git tags found** - Consider implementing version tagging:"
     $reportContent += ""
-    $reportContent += "1. **Create initial tag**: `git tag v$currentVersion`"
-    $reportContent += "2. **Tag future releases**: `git tag v<VERSION>` before releases"
-    $reportContent += "3. **Push tags**: `git push origin --tags`"
+    $reportContent += "1. **Create initial tag**: ````git tag v$currentVersion````"
+    # FIXED: Use double backticks for PowerShell 5.1 compatibility
+    $reportContent += "2. **Tag future releases**: ````git tag v<VERSION>```` before releases"
+    $reportContent += "3. **Push tags**: ````git push origin --tags````"
     $reportContent += ""
 }
 
@@ -689,7 +691,7 @@ catch {
 }
 
 # Quick recommendations
-Write-Host "`n💡 Recommendations:" -ForegroundColor DarkCyan
+Write-Host "``n💡 Recommendations:" -ForegroundColor DarkCyan
 
 if ($tags.Count -eq 0) {
     Write-Host "   📝 Consider adding git tags for better version tracking" -ForegroundColor DarkYellow
@@ -711,37 +713,37 @@ if ($savedSuccessfully) {
 Write-Host "   • Review generated content for accuracy" -ForegroundColor Gray
 Write-Host "   • Update changelog manually for important releases" -ForegroundColor Gray
 
-Write-Host "`n🚀 Changelog generation complete!" -ForegroundColor Green
+Write-Host "``n🚀 Changelog generation complete!" -ForegroundColor Green
 
 # OUTPUT PATH AT THE END for easy finding
 if ($reportSaveSuccess) {
-    Write-Host "`n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
+    Write-Host "``n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
     Write-Host "   Location: $reportPath" -ForegroundColor Cyan
     Write-Host "   Size: $([Math]::Round((Get-Item $reportPath).Length / 1KB, 1)) KB" -ForegroundColor Gray
 } else {
-    Write-Host "`n⚠️ No detailed report generated" -ForegroundColor DarkYellow
+    Write-Host "``n⚠️ No detailed report generated" -ForegroundColor DarkYellow
 }
 
 # INTERACTIVE WORKFLOW LOOP (only when running standalone)
 if ($IsInteractive -and -not $RunningFromScript) {
     do {
-        Write-Host "`n🎯 What would you like to do next?" -ForegroundColor DarkCyan
+        Write-Host "``n🎯 What would you like to do next?" -ForegroundColor DarkCyan
         Write-Host "   D - Display report in console" -ForegroundColor Green
         Write-Host "   R - Re-run changelog generation" -ForegroundColor DarkYellow
         Write-Host "   X - Exit to DevOps menu" -ForegroundColor Gray
         
-        $choice = Read-Host "`nEnter choice (D/R/X)"
+        $choice = Read-Host "``nEnter choice (D/R/X)"
         $choice = $choice.ToUpper()
         
         switch ($choice) {
             'D' {
                 if ($reportSaveSuccess) {
-                    Write-Host "`n📋 DISPLAYING CHANGELOG ANALYSIS REPORT:" -ForegroundColor DarkCyan
+                    Write-Host "``n📋 DISPLAYING CHANGELOG ANALYSIS REPORT:" -ForegroundColor DarkCyan
                     Write-Host "=======================================" -ForegroundColor DarkCyan
                     try {
                         $reportDisplay = Get-Content -Path $reportPath -Raw
                         Write-Host $reportDisplay -ForegroundColor White
-                        Write-Host "`n=======================================" -ForegroundColor DarkCyan
+                        Write-Host "``n=======================================" -ForegroundColor DarkCyan
                         Write-Host "📋 END OF REPORT" -ForegroundColor DarkCyan
                     }
                     catch {
@@ -752,13 +754,13 @@ if ($IsInteractive -and -not $RunningFromScript) {
                 }
             }
             'R' {
-                Write-Host "`n🔄 RE-RUNNING CHANGELOG GENERATION..." -ForegroundColor DarkYellow
+                Write-Host "``n🔄 RE-RUNNING CHANGELOG GENERATION..." -ForegroundColor DarkYellow
                 Write-Host "====================================" -ForegroundColor DarkYellow
                 & $MyInvocation.MyCommand.Path
                 return
             }
             'X' {
-                Write-Host "`n👋 Returning to DevOps menu..." -ForegroundColor Gray
+                Write-Host "``n👋 Returning to DevOps menu..." -ForegroundColor Gray
                 return
             }
             default {

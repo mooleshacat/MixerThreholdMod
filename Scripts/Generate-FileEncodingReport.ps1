@@ -359,11 +359,12 @@ if ($criticalIssues.Count -gt 0) {
     }
 }
 
-# Display high priority issues
+# Display high priority issues - FIXED LINE 366
 if ($highIssues.Count -gt 0) {
     Write-Host "`n⚠️  HIGH PRIORITY ISSUES:" -ForegroundColor DarkYellow
     foreach ($issue in $highIssues | Select-Object -First 5) {
-        Write-Host "   • $($issue.FileName) - $($issue.Encoding)$(if ($issue.BOM) { " (BOM)" } else { "" })" -ForegroundColor DarkYellow
+        $bomText = if ($issue.BOM) { " (BOM)" } else { "" }
+        Write-Host "   • $($issue.FileName) - $($issue.Encoding)$bomText" -ForegroundColor DarkYellow
         if ($issue.Issues.Count -gt 0) {
             Write-Host "     └─ $($issue.Issues -join ', ')" -ForegroundColor DarkGray
         }
@@ -633,9 +634,9 @@ $reportContent += "   - Default to UTF-8 encoding"
 $reportContent += "   - Show line ending types"
 $reportContent += "   - Highlight encoding issues"
 $reportContent += ""
-$reportContent += "4. **Git Configuration**: Set up `.gitattributes` for line ending handling"
+$reportContent += "4. **Git Configuration**: Set up .gitattributes for line ending handling"
 $reportContent += "   ```"
-$reportContent += "   * text=auto"
+$reportContent += "   # text=auto"  # FIXED LINE 638 - Changed * to # to avoid multiplication operator
 $reportContent += "   *.cs text eol=crlf"
 $reportContent += "   *.md text eol=lf"
 $reportContent += "   ```"

@@ -246,7 +246,7 @@ $allDevOpsScripts = @(
     },
     @{
         Name = "Copilot Compliance Check"
-        Script = "Analyze-CopilotCompliance.ps1"
+        Script = "Generate-CopilotComplianceReport.ps1"
         Description = "Verifying adherence to GitHub Copilot instructions"
         Category = "Compliance"
         TimeIntensive = $true

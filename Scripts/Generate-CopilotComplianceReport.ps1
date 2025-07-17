@@ -47,9 +47,9 @@ if ($files.Count -eq 0) {
     return
 }
 
-# Simplified compliance check functions for automation
+# FIXED: Compliance check functions now include fileName parameter for PowerShell 5.1 compatibility
 function Test-DotNet481Compatibility {
-    param($content, $filePath)
+    param($content, $filePath, $fileName)
     
     $issues = @()
     
@@ -60,6 +60,7 @@ function Test-DotNet481Compatibility {
             Issue = "String interpolation detected (use string.Format instead)"
             Severity = "High"
             Context = "IL2CPP compatibility requirement"
+            File = $fileName
         }
     }
     
@@ -71,6 +72,7 @@ function Test-DotNet481Compatibility {
             Issue = "Implicit 'var' usage detected ($varCount occurrences)"
             Severity = "Medium"
             Context = "Use explicit types for IL2CPP compatibility"
+            File = $fileName
         }
     }
     
@@ -81,6 +83,7 @@ function Test-DotNet481Compatibility {
             Issue = "yield return in try/catch block detected"
             Severity = "Critical"
             Context = "Not allowed in .NET 4.8.1 - will cause runtime errors"
+            File = $fileName
         }
     }
     
@@ -88,7 +91,7 @@ function Test-DotNet481Compatibility {
 }
 
 function Test-ThreadSafety {
-    param($content, $filePath)
+    param($content, $filePath, $fileName)
     
     $issues = @()
     
@@ -99,6 +102,7 @@ function Test-ThreadSafety {
             Issue = "Thread.Sleep detected"
             Severity = "High"
             Context = "Never block Unity main thread - use async patterns"
+            File = $fileName
         }
     }
     
@@ -113,6 +117,7 @@ function Test-ThreadSafety {
             Issue = "await without ConfigureAwait(false) ($missingCount occurrences)"
             Severity = "Medium"
             Context = "Use ConfigureAwait(false) for background operations"
+            File = $fileName
         }
     }
     
@@ -125,6 +130,7 @@ function Test-ThreadSafety {
                 Issue = "Potentially blocking operation detected: $($op -replace '\\b', '')"
                 Severity = "High"
                 Context = "May block Unity main thread"
+                File = $fileName
             }
             break  # Only report once per file
         }
@@ -134,7 +140,7 @@ function Test-ThreadSafety {
 }
 
 function Test-DocumentationCompliance {
-    param($content, $filePath)
+    param($content, $filePath, $fileName)
     
     $issues = @()
     
@@ -148,6 +154,7 @@ function Test-DocumentationCompliance {
             Issue = "$publicMethodCount public methods without any XML documentation"
             Severity = "Medium"
             Context = "All public methods require XML documentation"
+            File = $fileName
         }
     } elseif ($publicMethodCount -gt $xmlDocCount) {
         $undocumentedCount = $publicMethodCount - ($xmlDocCount / 3)  # Rough estimate
@@ -157,6 +164,7 @@ function Test-DocumentationCompliance {
                 Issue = "Some public methods may lack XML documentation"
                 Severity = "Low"
                 Context = "Ensure all public methods are documented"
+                File = $fileName
             }
         }
     }
@@ -165,7 +173,7 @@ function Test-DocumentationCompliance {
 }
 
 function Test-SaveCrashPrevention {
-    param($content, $filePath)
+    param($content, $filePath, $fileName)
     
     $issues = @()
     
@@ -178,6 +186,7 @@ function Test-SaveCrashPrevention {
                 Issue = "Direct file operation without atomic pattern"
                 Severity = "High"
                 Context = "Use atomic file operations to prevent save corruption"
+                File = $fileName
             }
             break  # Only report once per file
         }
@@ -193,6 +202,7 @@ function Test-SaveCrashPrevention {
             Issue = "Save methods without try-catch error handling"
             Severity = "High"
             Context = "All save operations must have comprehensive error handling"
+            File = $fileName
         }
     }
     
@@ -200,7 +210,7 @@ function Test-SaveCrashPrevention {
 }
 
 function Test-ErrorHandling {
-    param($content, $filePath)
+    param($content, $filePath, $fileName)
     
     $issues = @()
     
@@ -211,6 +221,7 @@ function Test-ErrorHandling {
             Issue = "Empty catch block detected"
             Severity = "High"
             Context = "All exceptions must be logged with context"
+            File = $fileName
         }
     }
     
@@ -224,6 +235,7 @@ function Test-ErrorHandling {
             Issue = "Catch blocks without logging detected"
             Severity = "Medium"
             Context = "Log all exceptions with stack traces and context"
+            File = $fileName
         }
     }
     
@@ -250,19 +262,15 @@ foreach ($file in $files) {
         $content = Get-Content -Path $file.FullName -Raw -ErrorAction Stop
         $fileName = [System.IO.Path]::GetFileName($file.FullName)
         
-        # Run all compliance checks
+        # FIXED: Run all compliance checks with fileName parameter included
         $fileIssues = @()
-        $fileIssues += Test-DotNet481Compatibility -content $content -filePath $file.FullName
-        $fileIssues += Test-ThreadSafety -content $content -filePath $file.FullName
-        $fileIssues += Test-DocumentationCompliance -content $content -filePath $file.FullName
-        $fileIssues += Test-SaveCrashPrevention -content $content -filePath $file.FullName
-        $fileIssues += Test-ErrorHandling -content $content -filePath $file.FullName
+        $fileIssues += Test-DotNet481Compatibility -content $content -filePath $file.FullName -fileName $fileName
+        $fileIssues += Test-ThreadSafety -content $content -filePath $file.FullName -fileName $fileName
+        $fileIssues += Test-DocumentationCompliance -content $content -filePath $file.FullName -fileName $fileName
+        $fileIssues += Test-SaveCrashPrevention -content $content -filePath $file.FullName -fileName $fileName
+        $fileIssues += Test-ErrorHandling -content $content -filePath $file.FullName -fileName $fileName
         
-        # Add file information to each issue
-        $fileIssues | ForEach-Object { 
-            $_.File = $fileName
-        }
-        
+        # FIXED: No longer need to add File property - it's already included in object creation
         $allIssues += $fileIssues
         
         $fileAnalysis += [PSCustomObject]@{
@@ -397,19 +405,26 @@ if (-not (Test-Path $reportsDir)) {
     }
 }
 
-# Generate detailed compliance report
+# Generate detailed compliance report using PowerShell 5.1 safe approach
 Write-Host "`n📝 Generating detailed compliance report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "COPILOT-COMPLIANCE-REPORT_$timestamp.md"
 
+# Build report using separate variables for PowerShell 5.1 compatibility
+$reportTitle = "# Copilot Instructions Compliance Report"
+$reportGenerated = "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$reportFilesAnalyzed = "**Files Analyzed**: $($files.Count)"
+$reportTotalIssues = "**Total Issues Found**: $($allIssues.Count)"
+$reportComplianceScore = "**Compliance Score**: $complianceScore%"
+
 $reportContent = @()
-$reportContent += "# Copilot Instructions Compliance Report"
+$reportContent += $reportTitle
 $reportContent += ""
-$reportContent += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-$reportContent += "**Files Analyzed**: $($files.Count)"
-$reportContent += "**Total Issues Found**: $($allIssues.Count)"
-$reportContent += "**Compliance Score**: $complianceScore%"
+$reportContent += $reportGenerated
+$reportContent += $reportFilesAnalyzed
+$reportContent += $reportTotalIssues
+$reportContent += $reportComplianceScore
 $reportContent += ""
 
 # Executive Summary
@@ -466,7 +481,7 @@ if ($allIssues.Count -gt 0) {
             $topIssues = $severityGroup.Group | Select-Object -First 10
             foreach ($issue in $topIssues) {
                 $reportContent += "- **$($issue.File)**: $($issue.Issue)"
-                $reportContent += "  - *Context*: $($issue.Context)"
+                $reportContent += "  - Context: $($issue.Context)"
             }
             
             if ($severityGroup.Group.Count -gt 10) {
@@ -496,7 +511,7 @@ if ($fileAnalysis.Count -gt 0) {
         
         if ($problematicFiles.Count -gt 20) {
             $reportContent += ""
-            $reportContent += "*... and $($problematicFiles.Count - 20) more files with issues*"
+            $reportContent += "... and $($problematicFiles.Count - 20) more files with issues"
         }
     }
     
@@ -511,7 +526,7 @@ if ($fileAnalysis.Count -gt 0) {
 
 # Recommendations
 $reportContent += ""
-$reportContent += "## 🎯 Action Items & Recommendations"
+$reportContent += "## Action Items & Recommendations"
 $reportContent += ""
 
 if ($criticalIssues.Count -gt 0) {
@@ -540,13 +555,13 @@ if ($highIssues.Count -gt 0) {
     $reportContent += ""
     
     if ($dotNetIssues.Count -gt 0) {
-        $reportContent += "- **Replace string interpolation** with `string.Format()` for IL2CPP compatibility"
-        $reportContent += "- **Use explicit types** instead of `var` for AOT compilation safety"
+        $reportContent += "- **Replace string interpolation** with string.Format() for IL2CPP compatibility"
+        $reportContent += "- **Use explicit types** instead of var for AOT compilation safety"
     }
     
     if ($threadIssues.Count -gt 0) {
-        $reportContent += "- **Add `ConfigureAwait(false)`** to all await statements in background operations"
-        $reportContent += "- **Replace `Thread.Sleep`** with async patterns to avoid blocking Unity main thread"
+        $reportContent += "- **Add ConfigureAwait(false)** to all await statements in background operations"
+        $reportContent += "- **Replace Thread.Sleep** with async patterns to avoid blocking Unity main thread"
     }
     $reportContent += ""
 }
@@ -565,9 +580,11 @@ $reportContent += ""
 # Footer
 $reportContent += "---"
 $reportContent += ""
-$reportContent += "**Compliance Standards**: Based on `.github/copilot-instructions.md`"
+$reportContent += "**Compliance Standards**: Based on .github/copilot-instructions.md"
 $reportContent += ""
-$reportContent += "*Generated by MixerThreholdMod DevOps Suite - Copilot Compliance Checker*"
+# FIXED: Removed problematic asterisk that was causing operator parsing errors
+$footerText = "Generated by MixerThreholdMod DevOps Suite - Copilot Compliance Checker"
+$reportContent += $footerText
 
 try {
     $reportContent | Out-File -FilePath $reportPath -Encoding UTF8

@@ -20,37 +20,45 @@ function Get-CategorizedScripts {
     
     # Define script categories with their patterns and metadata
     $categories = @{
-        "High-Level Reports" = @{
-            Patterns = @("*-Report.ps1")  # Scripts with -Report in filename
+        "🛡️ Corruption & Integrity Scanning" = @{
+            Patterns = @("Generate-Corruption-Report.ps1", "Generate-SyntaxValidationReport.ps1", "Generate-ImportVerificationReport.ps1", 
+                        "Generate-ConflictMarkersReport.ps1", "Generate-FileEncodingReport.ps1", "Generate-ProjectIntegrityReport.ps1")
             Icon = "🛡️"
             Color = "Red"
-            Description = "Comprehensive orchestrators that run multiple analysis tools and provide project-wide insights"
+            Description = "Critical corruption detection, syntax validation, and project integrity tools"
         }
-        "Analysis & Quality Assurance" = @{
-            Patterns = @("Analyze-*", "Check-*", "Find-*", "Verify-*")
+        "📊 Comprehensive Analysis" = @{
+            Patterns = @("Generate-Comprehensive-Report.ps1", "Generate-XmlDocumentationReport.ps1", "Generate-NamespaceAuditReport.ps1")
+            Icon = "📊"
+            Color = "Magenta"
+            Description = "High-level project analysis with corruption detection and comprehensive reporting tools"
+        }
+        "🔍 Code Quality & Standards" = @{
+            Patterns = @("Generate-MethodComplexityReport.ps1", "Generate-DuplicateCodeReport.ps1", "Generate-CopilotComplianceReport.ps1", 
+                        "Generate-ConstantsAuditReport.ps1")
             Icon = "🔍"
-            Color = "DarkCyan"
-            Description = "Code analysis, quality checks, and verification tools for maintaining code standards"
-        }
-        "Report Generation" = @{
-            Patterns = @("Generate-*")  # Scripts without -Report suffix
-            Icon = "📋"
             Color = "DarkGreen"
-            Description = "Detailed report generators for specific aspects of the codebase"
+            Description = "Code quality analysis, complexity metrics, and standards compliance"
         }
-        "Version & Release Management" = @{
-            Patterns = @("Update-*")
+        "📝 Documentation & Maintenance" = @{
+            Patterns = @("Generate-XmlDocs.ps1", "Generate-ConstantsDocs.ps1", "Generate-ChangeLog.ps1", "Generate-ReleaseNotes.ps1")
+            Icon = "📝"
+            Color = "DarkGreen"
+            Description = "Documentation generation and project maintenance tools"
+        }
+        "🚀 Build & Version Management" = @{
+            Patterns = @("Generate-BuildErrorReport.ps1", "Update-VersionNumbers.ps1")
             Icon = "🚀"
-            Color = "DarkMagenta"
-            Description = "Version management and release preparation tools"
+            Color = "Cyan"
+            Description = "Build analysis and version management tools"
         }
-        "Git & Source Control" = @{
-            Patterns = @("Git-*")
+        "🌿 Git & Source Control" = @{
+            Patterns = @("Git-SignAllCommits.ps1")
             Icon = "🌿"
-            Color = "DarkYellow"
+            Color = "Cyan"
             Description = "Git operations and source control management utilities"
         }
-        "Development Tools" = @{
+        "🔧 Development Tools" = @{
             Patterns = @()  # Catch-all for uncategorized scripts
             Icon = "🔧"
             Color = "Gray"
@@ -71,33 +79,27 @@ function Get-CategorizedScripts {
     foreach ($script in $allScripts) {
         $assigned = $false
         
-        # Special handling for high-level reports (must contain -Report in filename)
-        if ($script.Name -match ".*-Report\.ps1$") {
-            $categorizedScripts["High-Level Reports"].Scripts += $script
-            $assigned = $true
-        }
-        # Handle other categories (excluding -Report scripts from Generate- category)
-        elseif (-not ($script.Name -match ".*-Report\.ps1$")) {
-            foreach ($categoryName in $categories.Keys) {
-                if ($categoryName -eq "High-Level Reports") { continue }  # Skip high-level reports category
-                
-                $patterns = $categories[$categoryName].Patterns
-                
-                foreach ($pattern in $patterns) {
-                    if ($script.Name -like $pattern) {
-                        $categorizedScripts[$categoryName].Scripts += $script
-                        $assigned = $true
-                        break
-                    }
+        # Check each category for explicit pattern matches
+        foreach ($categoryName in $categories.Keys) {
+            $patterns = $categories[$categoryName].Patterns
+            
+            # Skip catch-all category for now
+            if ($patterns.Count -eq 0) { continue }
+            
+            foreach ($pattern in $patterns) {
+                if ($script.Name -eq $pattern -or $script.Name -like $pattern) {
+                    $categorizedScripts[$categoryName].Scripts += $script
+                    $assigned = $true
+                    break
                 }
-                
-                if ($assigned) { break }
             }
+            
+            if ($assigned) { break }
         }
         
         # If not assigned to any specific category, put in "Development Tools"
         if (-not $assigned) {
-            $categorizedScripts["Development Tools"].Scripts += $script
+            $categorizedScripts["🔧 Development Tools"].Scripts += $script
         }
     }
     
@@ -120,7 +122,7 @@ function Show-CategorizedMenu {
     
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor DarkCyan
-    Write-Host " 🚀 MixerThreholdMod DevOps Suite v2.0" -ForegroundColor White
+    Write-Host " 🚀 MixerThreholdMod DevOps Suite v2.1 Enhanced" -ForegroundColor White
     Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor DarkCyan
     Write-Host ""
     
@@ -130,6 +132,7 @@ function Show-CategorizedMenu {
     }
     
     Write-Host "📊 Professional DevOps Tools: $totalScripts scripts across $($CategorizedScripts.Count) categories" -ForegroundColor Gray
+    Write-Host "🆕 New: Syntax Validation, Import Verification, Namespace Audit" -ForegroundColor Green
     Write-Host ""
     
     $optionNumber = 1
@@ -137,12 +140,13 @@ function Show-CategorizedMenu {
     
     # Define category display order for better UX
     $categoryOrder = @(
-        "High-Level Reports",
-        "Analysis & Quality Assurance", 
-        "Report Generation",
-        "Version & Release Management",
-        "Git & Source Control",
-        "Development Tools"
+        "🛡️ Corruption & Integrity Scanning",
+        "📊 Comprehensive Analysis", 
+        "🔍 Code Quality & Standards",
+        "📝 Documentation & Maintenance",
+        "🚀 Build & Version Management",
+        "🌿 Git & Source Control",
+        "🔧 Development Tools"
     )
     
     # Display each category in the defined order
@@ -153,7 +157,7 @@ function Show-CategorizedMenu {
         $metadata = $category.Metadata
         
         # Category header with enhanced styling
-        Write-Host "$($metadata.Icon) $categoryName" -ForegroundColor $metadata.Color
+        Write-Host "$categoryName" -ForegroundColor $metadata.Color
         Write-Host "   $($metadata.Description)" -ForegroundColor DarkGray
         Write-Host ""
         
@@ -193,14 +197,35 @@ function Get-ScriptDescription {
     param($ScriptPath, $ScriptName)
     
     try {
-        # Special descriptions for high-level orchestrators
-        if ($ScriptName -eq "Generate-Comprehensive-Report.ps1") {
-            return "Comprehensive project analysis - runs ALL DevOps tools and provides unified dashboard"
-        }
-        if ($ScriptName -eq "Generate-Corruption-Report.ps1") {
-            return "Ultimate corruption detection - identifies merge conflicts, encoding issues, and structural problems"
+        # Special descriptions for enhanced/new scripts
+        $descriptions = @{
+            "Generate-Corruption-Report.ps1" = "ULTIMATE corruption detector - runs ALL corruption scanners (syntax, import, encoding, conflicts)"
+            "Generate-Comprehensive-Report.ps1" = "Complete project analysis orchestrator - runs ALL DevOps tools INCLUDING corruption detection for unified dashboard"
+            "Generate-SyntaxValidationReport.ps1" = "🆕 C# syntax validator - brackets, semicolons, strings, file truncation detection"
+            "Generate-ImportVerificationReport.ps1" = "🆕 Using statement verifier - unused, missing, and broken import detection"
+            "Generate-NamespaceAuditReport.ps1" = "🆕 Namespace alignment auditor - consistency and structure analysis"
+            "Generate-XmlDocs.ps1" = "🆕 XML documentation generator - creates comprehensive API docs for all public members"
+            "Generate-XmlDocumentationReport.ps1" = "XML documentation coverage analyzer - verifies doc completeness"
+            "Generate-ConflictMarkersReport.ps1" = "Git merge conflict detector - finds orphaned and suspicious conflict markers"
+            "Generate-FileEncodingReport.ps1" = "File encoding analyzer - detects BOM issues and character corruption"
+            "Generate-ProjectIntegrityReport.ps1" = "Project structure validator - missing references and dependency analysis"
+            "Generate-BuildErrorReport.ps1" = "Build failure analyzer - compilation error detection and triage"
+            "Generate-MethodComplexityReport.ps1" = "Code complexity analyzer - cyclomatic complexity and maintainability metrics"
+            "Generate-DuplicateCodeReport.ps1" = "Duplicate code detector - identifies copy-paste violations"
+            "Generate-CopilotComplianceReport.ps1" = "GitHub Copilot compliance checker - validates AI coding standards"
+            "Generate-ConstantsAuditReport.ps1" = "Constants usage auditor - tracks constant definitions and usage"
+            "Generate-ConstantsDocs.ps1" = "Constants documentation generator - creates reference docs for all constants"
+            "Generate-ChangeLog.ps1" = "Changelog generator - creates version history from git commits"
+            "Generate-ReleaseNotes.ps1" = "Release notes generator - formats changes for release documentation"
+            "Update-VersionNumbers.ps1" = "Version management tool - updates version numbers across project files"
+            "Git-SignAllCommits.ps1" = "Git commit signer - applies cryptographic signatures to commits"
         }
         
+        if ($descriptions.ContainsKey($ScriptName)) {
+            return $descriptions[$ScriptName]
+        }
+        
+        # Fallback to reading from file
         $firstFewLines = Get-Content -Path $ScriptPath -TotalCount 15 -ErrorAction SilentlyContinue
         
         foreach ($line in $firstFewLines) {
@@ -246,18 +271,41 @@ function Process-UserSelection {
             $selectedScript = $ScriptMap[$choiceNum]
             
             # Enhanced messaging for different script types
-            if ($selectedScript.Name -match ".*-Report\.ps1$") {
+            if ($selectedScript.Name -eq "Generate-Corruption-Report.ps1") {
                 Write-Host ""
-                Write-Host "🛡️  LAUNCHING HIGH-LEVEL ORCHESTRATOR: " -NoNewline -ForegroundColor Red
+                Write-Host "🛡️  LAUNCHING ULTIMATE CORRUPTION DETECTOR: " -NoNewline -ForegroundColor Red
                 Write-Host $selectedScript.Name -ForegroundColor Yellow
                 Write-Host ""
-                Write-Host "📊 This script will:" -ForegroundColor DarkCyan
-                Write-Host "   • Run multiple analysis tools automatically" -ForegroundColor Gray
-                Write-Host "   • Generate comprehensive reports in Reports/ directory" -ForegroundColor Gray
-                Write-Host "   • Display summary results in console" -ForegroundColor Gray
-                Write-Host "   • Identify critical issues requiring attention" -ForegroundColor Gray
+                Write-Host "🚨 This enhanced script will:" -ForegroundColor Red
+                Write-Host "   • Run ALL corruption detection scanners automatically" -ForegroundColor Gray
+                Write-Host "   • Validate C# syntax integrity (brackets, semicolons, strings)" -ForegroundColor Gray
+                Write-Host "   • Check import/using statement corruption" -ForegroundColor Gray
+                Write-Host "   • Detect merge conflicts and encoding issues" -ForegroundColor Gray
+                Write-Host "   • Analyze project structure integrity" -ForegroundColor Gray
+                Write-Host "   • Generate comprehensive corruption health dashboard" -ForegroundColor Gray
                 Write-Host ""
-                Write-Host "💡 For detailed analysis, check Reports/* or run specific tools from this menu" -ForegroundColor DarkYellow
+                Write-Host "💡 This is the ultimate guard against ALL forms of codebase corruption!" -ForegroundColor DarkYellow
+                Write-Host ""
+            } elseif ($selectedScript.Name -eq "Generate-Comprehensive-Report.ps1") {
+                Write-Host ""
+                Write-Host "📊 LAUNCHING COMPREHENSIVE PROJECT ANALYZER: " -NoNewline -ForegroundColor DarkCyan
+                Write-Host $selectedScript.Name -ForegroundColor Yellow
+                Write-Host ""
+                Write-Host "📋 This orchestrator will:" -ForegroundColor DarkCyan
+                Write-Host "   • Run ALL DevOps analysis tools automatically" -ForegroundColor Gray
+                Write-Host "   • Include COMPLETE corruption detection suite" -ForegroundColor Gray
+                Write-Host "   • Generate unified project health dashboard" -ForegroundColor Gray
+                Write-Host "   • Provide comprehensive quality metrics" -ForegroundColor Gray
+                Write-Host "   • Create detailed reports in Reports/ directory" -ForegroundColor Gray
+                Write-Host ""
+                Write-Host "💡 Perfect for complete project analysis with corruption detection!" -ForegroundColor DarkYellow
+                Write-Host ""
+            } elseif ($selectedScript.Name -match "(SyntaxValidation|ImportVerification|NamespaceAudit|XmlDocs)") {
+                Write-Host ""
+                Write-Host "🆕 LAUNCHING NEW ENHANCED TOOL: " -NoNewline -ForegroundColor Green
+                Write-Host $selectedScript.Name -ForegroundColor Yellow
+                Write-Host ""
+                Write-Host "✨ This is a newly created/enhanced DevOps tool with advanced capabilities!" -ForegroundColor Green
                 Write-Host ""
             } else {
                 Write-Host ""
@@ -270,7 +318,7 @@ function Process-UserSelection {
                 # Execute the script with proper error handling
                 & $selectedScript.FullName
                 
-                if ($selectedScript.Name -match ".*-Report\.ps1$") {
+                if ($selectedScript.Name -match "(Corruption|Comprehensive)") {
                     Write-Host ""
                     Write-Host "✅ High-level analysis completed successfully!" -ForegroundColor Green
                     Write-Host "📄 Detailed reports saved to Reports/ directory" -ForegroundColor Cyan
@@ -340,8 +388,9 @@ function Start-DevOpsMenu {
 
 # Display startup banner
 Write-Host ""
-Write-Host "🚀 Initializing MixerThreholdMod DevOps Suite..." -ForegroundColor DarkCyan
-Start-Sleep -Milliseconds 500
+Write-Host "🚀 Initializing MixerThreholdMod DevOps Suite v2.1..." -ForegroundColor DarkCyan
+Write-Host "🆕 Enhanced with Syntax Validation, Import Verification & Ultimate Corruption Detection" -ForegroundColor Green
+Start-Sleep -Milliseconds 750
 
 # Start the enhanced menu system
 Start-DevOpsMenu

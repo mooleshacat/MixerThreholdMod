@@ -226,23 +226,30 @@ if (-not (Test-Path $reportsDir)) {
     }
 }
 
-# Generate detailed XML documentation report
+# Generate detailed XML documentation report using PowerShell 5.1 safe approach
 Write-Host "`n📝 Generating detailed XML documentation report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "XML-DOCUMENTATION-REPORT_$timestamp.md"
 
-$reportContent = @()
-$reportContent += "# XML Documentation Coverage Report"
-$reportContent += ""
-$reportContent += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-$reportContent += "**Files Analyzed**: $($files.Count)"
-$reportContent += "**Public Members Analyzed**: $($allMembers.Count)"
-$reportContent += "**Overall Coverage**: $coveragePercent%"
-$reportContent += ""
+# Build report using separate variables for PowerShell 5.1 compatibility
+$reportTitle = "# XML Documentation Coverage Report"
+$reportGenerated = "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$reportFilesAnalyzed = "**Files Analyzed**: $($files.Count)"
+$reportMembersAnalyzed = "**Public Members Analyzed**: $($allMembers.Count)"
+$reportOverallCoverage = "**Overall Coverage**: $coveragePercent%"
 
-# Executive Summary
-$reportContent += "## Executive Summary"
+$reportSummaryTitle = "## Executive Summary"
+
+$reportContent = @()
+$reportContent += $reportTitle
+$reportContent += ""
+$reportContent += $reportGenerated
+$reportContent += $reportFilesAnalyzed
+$reportContent += $reportMembersAnalyzed
+$reportContent += $reportOverallCoverage
+$reportContent += ""
+$reportContent += $reportSummaryTitle
 $reportContent += ""
 
 if ($allMembers.Count -eq 0) {
@@ -374,7 +381,7 @@ if ($documented.Count -gt 0) {
 }
 
 # Action Plan
-$reportContent += "## 🎯 Documentation Action Plan"
+$reportContent += "## Documentation Action Plan"
 $reportContent += ""
 
 if ($undocumented.Count -eq 0) {
@@ -425,7 +432,7 @@ if ($undocumented.Count -eq 0) {
         $reportContent += ""
     }
     
-    # Documentation standards
+    # Documentation standards - COMPLETELY SAFE APPROACH
     $reportContent += "### Documentation Standards for MixerThreholdMod"
     $reportContent += ""
     $reportContent += "Include these elements in XML documentation:"
@@ -438,24 +445,19 @@ if ($undocumented.Count -eq 0) {
     $reportContent += "6. **Compatibility**: Note .NET 4.8.1 or IL2CPP specific requirements"
     $reportContent += ""
     
-    # Example documentation
-    $reportContent += "### Example Documentation Template"
+    # REMOVED COMPLEX XML DOCUMENTATION EXAMPLE ENTIRELY
+    $reportContent += "### Documentation Guidelines"
     $reportContent += ""
-    $reportContent += "```csharp"
-    $reportContent += "/// <summary>"
-    $reportContent += "/// Manages mixer data persistence with thread-safe atomic operations."
-    $reportContent += "/// </summary>"
-    $reportContent += "/// <param name=\"data\">The mixer data to persist (cannot be null)</param>"
-    $reportContent += "/// <param name=\"cancellationToken\">Cancellation token for async operation</param>"
-    $reportContent += "/// <returns>True if data was persisted successfully, false otherwise</returns>"
-    $reportContent += "/// <exception cref=\"ArgumentNullException\">Thrown when data is null</exception>"
-    $reportContent += "/// <remarks>"
-    $reportContent += "/// Thread-safe: Can be called from any thread with ConfigureAwait(false)."
-    $reportContent += "/// .NET 4.8.1 Compatible: Uses explicit types and string.Format()."
-    $reportContent += "/// Never blocks Unity main thread - uses async/await patterns."
-    $reportContent += "/// </remarks>"
-    $reportContent += "public async Task<bool> PersistMixerDataAsync(MixerData data, CancellationToken cancellationToken = default(CancellationToken))"
-    $reportContent += "```"
+    $reportContent += "**Best Practices for MixerThreholdMod XML Documentation:**"
+    $reportContent += ""
+    $reportContent += "- Use summary tags to describe the purpose of each member"
+    $reportContent += "- Document all parameters with param tags including type constraints"
+    $reportContent += "- Include returns tags for methods that return values"
+    $reportContent += "- Add exception tags for potential exceptions"
+    $reportContent += "- Use remarks tags for thread safety and compatibility notes"
+    $reportContent += "- Always specify .NET 4.8.1 compatibility requirements"
+    $reportContent += "- Include Unity main thread warnings where applicable"
+    $reportContent += ""
 }
 
 # Technical Details
@@ -466,9 +468,9 @@ $reportContent += "### Detection Patterns"
 $reportContent += ""
 $reportContent += "This analysis detected the following member types:"
 $reportContent += ""
-$reportContent += "- **Classes**: `public class ClassName`"
-$reportContent += "- **Methods**: `public ReturnType MethodName(parameters)`"
-$reportContent += "- **Properties**: `public Type PropertyName { get; set; }`"
+$reportContent += "- Classes: public class ClassName"
+$reportContent += "- Methods: public ReturnType MethodName(parameters)"
+$reportContent += "- Properties: public Type PropertyName { get; set; }"
 $reportContent += ""
 $reportContent += "### Exclusions"
 $reportContent += ""
@@ -552,5 +554,5 @@ if ($IsInteractive -and -not $RunningFromScript) {
         }
     } while ($choice -notin @('X'))
 } else {
-    Write-Host "📄 Script completed - returning to caller" -ForegroundColor DarkGray
+    Write-Host "XML documentation analysis completed successfully" -ForegroundColor DarkGray
 }

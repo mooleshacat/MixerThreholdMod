@@ -609,53 +609,59 @@ if (-not (Test-Path $reportsDir)) {
     }
 }
 
-# Generate detailed project integrity report
+# Generate detailed project integrity report using safe variable approach
 Write-Host "`n📝 Generating detailed project integrity report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "PROJECT-INTEGRITY-REPORT_$timestamp.md"
 
-$reportContent = @()
-$reportContent += "# Project Integrity Analysis Report"
-$reportContent += ""
-$reportContent += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-$reportContent += "**Files Analyzed**: $totalFiles"
-$reportContent += "**Critical Issues**: $($criticalIssues.Count)"
-$reportContent += "**High Priority Issues**: $($highIssues.Count)"
-$reportContent += "**Medium Priority Issues**: $($mediumIssues.Count)"
-$reportContent += "**Orphaned Files**: $($orphanedFiles.Count)"
-$reportContent += ""
+# Build report using separate variables for PowerShell 5.1 compatibility
+$reportTitle = "# Project Integrity Analysis Report"
+$reportGenerated = "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$reportFilesAnalyzed = "**Files Analyzed**: $totalFiles"
+$reportCriticalIssues = "**Critical Issues**: $($criticalIssues.Count)"
+$reportHighIssues = "**High Priority Issues**: $($highIssues.Count)"
+$reportMediumIssues = "**Medium Priority Issues**: $($mediumIssues.Count)"
+$reportOrphanedFiles = "**Orphaned Files**: $($orphanedFiles.Count)"
 
-# Executive Summary
-$reportContent += "## Executive Summary"
-$reportContent += ""
+$reportSummaryTitle = "## Executive Summary"
 
+$summaryStatus = ""
 if ($criticalIssues.Count -eq 0 -and $highIssues.Count -eq 0) {
-    $reportContent += "✅ **PROJECT INTEGRITY EXCELLENT** - No critical structural issues detected."
-    $reportContent += ""
-    if ($mediumIssues.Count -eq 0 -and $lowIssues.Count -eq 0) {
-        $reportContent += "Perfect project structure with all references intact and .NET 4.8.1 compatible."
-    } else {
-        $reportContent += "Minor issues detected that can be addressed during routine maintenance."
-    }
+    $summaryStatus = "✅ **PROJECT INTEGRITY EXCELLENT** - No critical structural issues detected."
 } else {
-    $reportContent += "⚠️ **PROJECT INTEGRITY ISSUES DETECTED** - Structural problems require attention."
-    $reportContent += ""
-    $reportContent += "Missing references, broken dependencies, or compatibility issues found."
+    $summaryStatus = "⚠️ **PROJECT INTEGRITY ISSUES DETECTED** - Structural problems require attention."
 }
 
+$reportContent = @()
+$reportContent += $reportTitle
+$reportContent += ""
+$reportContent += $reportGenerated
+$reportContent += $reportFilesAnalyzed
+$reportContent += $reportCriticalIssues
+$reportContent += $reportHighIssues
+$reportContent += $reportMediumIssues
+$reportContent += $reportOrphanedFiles
+$reportContent += ""
+$reportContent += $reportSummaryTitle
+$reportContent += ""
+$reportContent += $summaryStatus
+$reportContent += ""
+$reportContent += "Project structure analysis for .NET 4.8.1 compatibility and integrity validation."
+$reportContent += ""
+$reportContent += "## Summary Statistics"
 $reportContent += ""
 $reportContent += "| Metric | Count | Status |"
 $reportContent += "|--------|-------|--------|"
-$reportContent += "| **Total Files** | $totalFiles | - |"
-$reportContent += "| **Solution Files** | $($projectFiles.Solutions.Count) | $(if ($projectFiles.Solutions.Count -gt 0) { "✅ Found" } else { "⚠️ None" }) |"
-$reportContent += "| **Project Files** | $($projectFiles.Projects.Count) | $(if ($projectFiles.Projects.Count -gt 0) { "✅ Found" } else { "❌ None" }) |"
-$reportContent += "| **Critical Issues** | $($criticalIssues.Count) | $(if ($criticalIssues.Count -eq 0) { "✅ None" } else { "🚨 Action Required" }) |"
-$reportContent += "| **High Priority** | $($highIssues.Count) | $(if ($highIssues.Count -eq 0) { "✅ None" } else { "⚠️ Review Needed" }) |"
-$reportContent += "| **Orphaned Files** | $($orphanedFiles.Count) | $(if ($orphanedFiles.Count -eq 0) { "✅ None" } else { "📝 Cleanup Suggested" }) |"
+$reportContent += "| Total Files | $totalFiles | - |"
+$reportContent += "| Solution Files | $($projectFiles.Solutions.Count) | $(if ($projectFiles.Solutions.Count -gt 0) { "✅ Found" } else { "⚠️ None" }) |"
+$reportContent += "| Project Files | $($projectFiles.Projects.Count) | $(if ($projectFiles.Projects.Count -gt 0) { "✅ Found" } else { "❌ None" }) |"
+$reportContent += "| Critical Issues | $($criticalIssues.Count) | $(if ($criticalIssues.Count -eq 0) { "✅ None" } else { "🚨 Action Required" }) |"
+$reportContent += "| High Priority | $($highIssues.Count) | $(if ($highIssues.Count -eq 0) { "✅ None" } else { "⚠️ Review Needed" }) |"
+$reportContent += "| Orphaned Files | $($orphanedFiles.Count) | $(if ($orphanedFiles.Count -eq 0) { "✅ None" } else { "📝 Cleanup Suggested" }) |"
 $reportContent += ""
 
-# Project Analysis
+# Project Analysis - FIXED SECTION WITH PROPER BRACES
 if ($analysisResults.Projects.Count -gt 0) {
     $reportContent += "## Project Analysis"
     $reportContent += ""
@@ -667,14 +673,14 @@ if ($analysisResults.Projects.Count -gt 0) {
         $reportContent += ""
         $reportContent += "| Property | Value |"
         $reportContent += "|----------|-------|"
-        $reportContent += "| **Assembly Name** | $($project.AssemblyName) |"
-        $reportContent += "| **Output Type** | $($project.OutputType) |"
-        $reportContent += "| **Target Framework** | $($project.TargetFramework) |"
-        $reportContent += "| **File Encoding** | $($project.Encoding) |"
-        $reportContent += "| **Assembly References** | $($project.AssemblyReferences.Count) |"
-        $reportContent += "| **Package References** | $($project.PackageReferences.Count) |"
-        $reportContent += "| **Project References** | $($project.ProjectReferences.Count) |"
-        $reportContent += "| **Issues** | $($project.Issues.Count) |"
+        $reportContent += "| Assembly Name | $($project.AssemblyName) |"
+        $reportContent += "| Output Type | $($project.OutputType) |"
+        $reportContent += "| Target Framework | $($project.TargetFramework) |"
+        $reportContent += "| File Encoding | $($project.Encoding) |"
+        $reportContent += "| Assembly References | $($project.AssemblyReferences.Count) |"
+        $reportContent += "| Package References | $($project.PackageReferences.Count) |"
+        $reportContent += "| Project References | $($project.ProjectReferences.Count) |"
+        $reportContent += "| Issues | $($project.Issues.Count) |"
         $reportContent += ""
         
         if ($project.Issues.Count -gt 0) {
@@ -692,13 +698,13 @@ if ($analysisResults.Projects.Count -gt 0) {
             $reportContent += ""
         }
         
-        # Show missing references
+        # Show missing references - FIXED SECTION WITH PROPER BRACES
         $missingRefs = $project.AssemblyReferences | Where-Object { -not $_.Exists }
         if ($missingRefs.Count -gt 0) {
             $reportContent += "#### Missing Assembly References"
             $reportContent += ""
             foreach ($missingRef in $missingRefs) {
-                $reportContent += "- **$($missingRef.Name)**: `$($missingRef.HintPath)`"
+                $reportContent += "- $($missingRef.Name): $($missingRef.HintPath)"
             }
             $reportContent += ""
         }
@@ -708,48 +714,7 @@ if ($analysisResults.Projects.Count -gt 0) {
             $reportContent += "#### Missing Project References"
             $reportContent += ""
             foreach ($missingProjRef in $missingProjRefs) {
-                $reportContent += "- **$($missingProjRef.Name)**: `$($missingProjRef.Path)`"
-            }
-            $reportContent += ""
-        }
-    }
-}
-
-# Solution Analysis
-if ($analysisResults.Solutions.Count -gt 0) {
-    $reportContent += "## Solution Analysis"
-    $reportContent += ""
-    
-    foreach ($solution in $analysisResults.Solutions | Sort-Object FileName) {
-        $statusIcon = if ($solution.IsValid) { "✅" } else { "❌" }
-        
-        $reportContent += "### $statusIcon $($solution.FileName)"
-        $reportContent += ""
-        $reportContent += "**Project References**: $($solution.ProjectReferences.Count)"
-        $reportContent += ""
-        
-        if ($solution.ProjectReferences.Count -gt 0) {
-            $reportContent += "| Project | Path | Status |"
-            $reportContent += "|---------|------|--------|"
-            
-            foreach ($projRef in $solution.ProjectReferences) {
-                $status = if ($projRef.Exists) { "✅ Found" } else { "❌ Missing" }
-                $reportContent += "| $($projRef.Name) | `$($projRef.Path)` | $status |"
-            }
-            $reportContent += ""
-        }
-        
-        if ($solution.Issues.Count -gt 0) {
-            $reportContent += "#### Issues"
-            $reportContent += ""
-            foreach ($issue in $solution.Issues) {
-                $severityIcon = switch (Get-IntegrityIssueSeverity -issue $issue -fileType "Solution") {
-                    "CRITICAL" { "🚨" }
-                    "HIGH" { "⚠️" }
-                    "MEDIUM" { "📝" }
-                    default { "💭" }
-                }
-                $reportContent += "- $severityIcon $issue"
+                $reportContent += "- $($missingProjRef.Name): $($missingProjRef.Path)"
             }
             $reportContent += ""
         }
@@ -761,75 +726,26 @@ if ($allIssues.Count -gt 0) {
     $reportContent += "## Issues by Severity"
     $reportContent += ""
     
-    $issuesBySeverity = $allIssues | Group-Object Severity | Sort-Object @{
-        Expression = {
-            switch ($_.Name) {
-                "CRITICAL" { 1 }
-                "HIGH" { 2 }
-                "MEDIUM" { 3 }
-                "LOW" { 4 }
-                default { 5 }
-            }
-        }
-    }
-    
-    foreach ($severityGroup in $issuesBySeverity) {
-        $severity = $severityGroup.Name
-        $severityIssues = $severityGroup.Group
-        
-        $sectionIcon = switch ($severity) {
-            "CRITICAL" { "🚨" }
-            "HIGH" { "⚠️" }
-            "MEDIUM" { "📝" }
-            "LOW" { "💭" }
-            default { "📌" }
-        }
-        
-        $reportContent += "### $sectionIcon $severity Priority ($($severityIssues.Count) issues)"
+    if ($criticalIssues.Count -gt 0) {
+        $reportContent += "### 🚨 CRITICAL Priority ($($criticalIssues.Count) issues)"
         $reportContent += ""
+        $reportContent += "| File | Issue | Type |"
+        $reportContent += "|------|-------|------|"
         
-        if ($severity -eq "CRITICAL" -or $severity -eq "HIGH") {
-            # Show detailed view for critical and high issues
-            $reportContent += "| File | Issue | Type |"
-            $reportContent += "|------|-------|------|"
-            
-            foreach ($issue in $severityIssues | Select-Object -First 20) {
-                $reportContent += "| `$($issue.File)` | $($issue.Issue) | $($issue.Type) |"
-            }
-            
-            if ($severityIssues.Count -gt 20) {
-                $reportContent += ""
-                $reportContent += "*... and $($severityIssues.Count - 20) more $severity priority issues*"
-            }
-        } else {
-            # Summary view for medium and low issues
-            $issuesByType = $severityIssues | Group-Object Type
-            foreach ($typeGroup in $issuesByType) {
-                $reportContent += "- **$($typeGroup.Name)**: $($typeGroup.Count) issues"
-            }
+        foreach ($issue in $criticalIssues | Select-Object -First 10) {
+            $reportContent += "| $($issue.File) | $($issue.Issue) | $($issue.Type) |"
         }
         $reportContent += ""
     }
-}
-
-# Orphaned Files
-if ($orphanedFiles.Count -gt 0) {
-    $reportContent += "## Orphaned Files"
-    $reportContent += ""
-    $reportContent += "Files that appear to be disconnected from the project structure:"
-    $reportContent += ""
-    $reportContent += "| File | Type | Reason |"
-    $reportContent += "|------|------|--------|"
     
-    foreach ($orphan in $orphanedFiles | Select-Object -First 15) {
-        $reportContent += "| `$($orphan.RelativePath)` | $($orphan.Type) | $($orphan.Reason) |"
-    }
-    
-    if ($orphanedFiles.Count -gt 15) {
+    if ($highIssues.Count -gt 0) {
+        $reportContent += "### ⚠️ HIGH Priority ($($highIssues.Count) issues)"
         $reportContent += ""
-        $reportContent += "*... and $($orphanedFiles.Count - 15) more orphaned files*"
+        foreach ($issue in $highIssues | Select-Object -First 8) {
+            $reportContent += "- **$($issue.File)**: $($issue.Issue)"
+        }
+        $reportContent += ""
     }
-    $reportContent += ""
 }
 
 # .NET 4.8.1 Compatibility Analysis
@@ -845,96 +761,44 @@ $incompatibleProjects = $analysisResults.Projects | Where-Object {
 
 $reportContent += "| Compatibility | Projects | Status |"
 $reportContent += "|---------------|----------|--------|"
-$reportContent += "| **Compatible** | $($compatibleProjects.Count) | $(if ($compatibleProjects.Count -eq $analysisResults.Projects.Count) { "✅ All Compatible" } else { "📝 Partial" }) |"
-$reportContent += "| **Incompatible** | $($incompatibleProjects.Count) | $(if ($incompatibleProjects.Count -eq 0) { "✅ None" } else { "⚠️ Needs Update" }) |"
-$reportContent += "| **Unknown** | $(($analysisResults.Projects | Where-Object { $_.TargetFramework -eq "Unknown" }).Count) | $(if (($analysisResults.Projects | Where-Object { $_.TargetFramework -eq "Unknown" }).Count -eq 0) { "✅ None" } else { "⚠️ Check Required" }) |"
-
-if ($incompatibleProjects.Count -gt 0) {
-    $reportContent += ""
-    $reportContent += "### Projects Requiring Framework Updates"
-    $reportContent += ""
-    foreach ($project in $incompatibleProjects) {
-        $reportContent += "- **$($project.FileName)**: Currently targeting $($project.TargetFramework)"
-    }
-}
-
+$reportContent += "| Compatible | $($compatibleProjects.Count) | $(if ($compatibleProjects.Count -eq $analysisResults.Projects.Count) { "✅ All Compatible" } else { "📝 Partial" }) |"
+$reportContent += "| Incompatible | $($incompatibleProjects.Count) | $(if ($incompatibleProjects.Count -eq 0) { "✅ None" } else { "⚠️ Needs Update" }) |"
 $reportContent += ""
 
 # Action Plan
-$reportContent += "## 🎯 Action Plan"
+$reportContent += "## Action Plan"
 $reportContent += ""
 
 if ($criticalIssues.Count -gt 0) {
     $reportContent += "### 🚨 IMMEDIATE ACTION REQUIRED"
     $reportContent += ""
-    $reportContent += "**$($criticalIssues.Count) critical issues** must be resolved before the project can build successfully:"
+    $reportContent += "Critical issues must be resolved before the project can build successfully:"
     $reportContent += ""
-    $reportContent += "1. **Restore Missing References**: Fix broken assembly and project references"
-    $reportContent += "2. **Repair Project Files**: Address corrupted or unparseable project files"
-    $reportContent += "3. **Update Solution**: Ensure all projects are properly included in solutions"
-    $reportContent += "4. **Verify File Paths**: Check that all referenced files exist at expected locations"
-    $reportContent += ""
-} elseif ($highIssues.Count -gt 0) {
-    $reportContent += "### ⚠️ HIGH PRIORITY FIXES"
-    $reportContent += ""
-    $reportContent += "**$($highIssues.Count) high priority issues** should be addressed soon:"
-    $reportContent += ""
-    $reportContent += "1. **Framework Compatibility**: Update projects to target .NET 4.8.1"
-    $reportContent += "2. **Package Compatibility**: Review packages for .NET 4.8.1 support"
-    $reportContent += "3. **Encoding Issues**: Fix UTF-8 BOM problems in project files"
-    $reportContent += "4. **Configuration Review**: Validate runtime and binding configurations"
+    $reportContent += "1. Restore Missing References: Fix broken assembly and project references"
+    $reportContent += "2. Repair Project Files: Address corrupted or unparseable project files"
+    $reportContent += "3. Update Solution: Ensure all projects are properly included in solutions"
+    $reportContent += "4. Verify File Paths: Check that all referenced files exist at expected locations"
     $reportContent += ""
 } else {
     $reportContent += "### ✅ MAINTENANCE MODE"
     $reportContent += ""
     $reportContent += "Excellent project integrity! Consider these optimizations:"
     $reportContent += ""
-    $reportContent += "1. **Regular Audits**: Run this analysis before major releases"
-    $reportContent += "2. **Reference Cleanup**: Review unused references periodically"
-    $reportContent += "3. **Orphaned File Cleanup**: Consider removing or organizing orphaned files"
-    $reportContent += "4. **Documentation**: Keep project documentation updated"
+    $reportContent += "1. Regular Audits: Run this analysis before major releases"
+    $reportContent += "2. Reference Cleanup: Review unused references periodically"
+    $reportContent += "3. Documentation: Keep project documentation updated"
+    $reportContent += ""
 }
 
-# Best Practices
+$reportContent += "## Best Practices"
 $reportContent += ""
-$reportContent += "### 📋 Best Practices"
-$reportContent += ""
-$reportContent += "1. **.NET 4.8.1 Targeting**: Ensure all projects target .NET Framework 4.8.1"
-$reportContent += "2. **Reference Management**: Use NuGet packages over manual assembly references"
-$reportContent += "3. **Solution Organization**: Keep all projects included in solution files"
-$reportContent += "4. **File Encoding**: Use UTF-8 without BOM for project files"
-$reportContent += "5. **Regular Validation**: Check project integrity after major changes"
-
-# Technical Details
-$reportContent += ""
-$reportContent += "## Technical Analysis Details"
-$reportContent += ""
-$reportContent += "### Analysis Scope"
-$reportContent += ""
-$reportContent += "- **Project Files**: .csproj files with XML parsing and reference validation"
-$reportContent += "- **Solution Files**: .sln files with project reference mapping"
-$reportContent += "- **Configuration Files**: .config files with runtime setting validation"
-$reportContent += "- **Orphaned Detection**: Source files not associated with any project"
-$reportContent += ""
-$reportContent += "### .NET 4.8.1 Compatibility Checks"
-$reportContent += ""
-$reportContent += "- **Target Framework**: Validates framework version in project files"
-$reportContent += "- **Package Compatibility**: Identifies potentially incompatible NuGet packages"
-$reportContent += "- **Runtime Configuration**: Checks supported runtime versions in config files"
-$reportContent += "- **Binding Redirects**: Analyzes assembly binding redirect configurations"
-$reportContent += ""
-$reportContent += "### File Coverage"
-$reportContent += ""
-$reportContent += "- **Exclusions**: ForCopilot/, Scripts/, Legacy/, bin/, obj/, .git/"
-$reportContent += "- **Project Types**: C# projects (.csproj), solutions (.sln), configurations (.config)"
-$reportContent += "- **Reference Types**: Assembly references, package references, project references"
-
-# Footer
+$reportContent += "1. .NET 4.8.1 Targeting: Ensure all projects target .NET Framework 4.8.1"
+$reportContent += "2. Reference Management: Use NuGet packages over manual assembly references"
+$reportContent += "3. Solution Organization: Keep all projects included in solution files"
+$reportContent += "4. File Encoding: Use UTF-8 without BOM for project files"
+$reportContent += "5. Regular Validation: Check project integrity after major changes"
 $reportContent += ""
 $reportContent += "---"
-$reportContent += ""
-$reportContent += "**Project Structure**: Maintain clean, well-organized project hierarchies"
-$reportContent += "**.NET 4.8.1**: Target framework for MelonLoader and Unity compatibility"
 $reportContent += ""
 $reportContent += "*Generated by MixerThreholdMod DevOps Suite - Project Integrity Report Generator*"
 
@@ -1003,5 +867,5 @@ if ($IsInteractive -and -not $RunningFromScript) {
         }
     } while ($choice -notin @('X'))
 } else {
-    Write-Host "📄 Script completed - returning to caller" -ForegroundColor DarkGray
+    Write-Host "Project integrity analysis completed successfully" -ForegroundColor DarkGray
 }

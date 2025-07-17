@@ -124,7 +124,7 @@ function Get-ConstantUsages {
         foreach ($file in $files) {
             $content = Get-Content -Path $file.FullName -Raw -ErrorAction SilentlyContinue
             if ($content -and $content -match "\b$constantName\b") {
-                $lines = $content -split "`n"
+                $lines = $content -split "``n"
                 for ($i = 0; $i -lt $lines.Count; $i++) {
                     if ($lines[$i] -match "\b$constantName\b" -and $lines[$i] -notmatch "public\s+const") {
                         $usages += [PSCustomObject]@{
@@ -147,7 +147,7 @@ function Get-ConstantUsages {
     }
 }
 
-Write-Host "`n📂 Scanning for constants..." -ForegroundColor DarkGray
+Write-Host "``n📂 Scanning for constants..." -ForegroundColor DarkGray
 $constants = Get-ConstantDeclarations -Path $ProjectRoot
 
 Write-Host "📊 Found $($constants.Count) constants in $(($constants | Select-Object -ExpandProperty File -Unique).Count) files" -ForegroundColor Gray
@@ -155,7 +155,7 @@ Write-Host "📊 Found $($constants.Count) constants in $(($constants | Select-O
 if ($constants.Count -eq 0) {
     Write-Host "⚠️  No constants found for documentation" -ForegroundColor DarkYellow
     if ($IsInteractive -and -not $RunningFromScript) {
-        Write-Host "`nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
+        Write-Host "``nPress ENTER to continue..." -ForegroundColor Gray -NoNewline
         Read-Host
     }
     return
@@ -180,24 +180,24 @@ $categories = $constants | Select-Object -ExpandProperty Category -Unique | Sort
 
 foreach ($category in $categories) {
     $categoryConstants = $constants | Where-Object { $_.Category -eq $category }
-    $markdown += "- [$category Constants](#$($category.ToLower())-constants) ($($categoryConstants.Count) constants)`n"
+    $markdown += "- [$category Constants](#$($category.ToLower())-constants) ($($categoryConstants.Count) constants)``n"
 }
 
-$markdown += "`n---`n"
+$markdown += "``n---``n"
 
 # Generate sections for each category
 foreach ($category in $categories) {
     $categoryConstants = $constants | Where-Object { $_.Category -eq $category } | Sort-Object Name
     
-    $markdown += "`n## $category Constants`n`n"
+    $markdown += "``n## $category Constants``n``n"
     
     # Group by file within category
     $fileGroups = $categoryConstants | Group-Object FileName
     
     foreach ($fileGroup in $fileGroups) {
-        $markdown += "### $($fileGroup.Name)`n`n"
-        $markdown += "| Constant | Type | Value | Description |`n"
-        $markdown += "|----------|------|-------|-------------|`n"
+        $markdown += "### $($fileGroup.Name)``n``n"
+        $markdown += "| Constant | Type | Value | Description |``n"
+        $markdown += "|----------|------|-------|-------------|``n"
         
         foreach ($const in $fileGroup.Group) {
             $value = $const.Value
@@ -211,31 +211,31 @@ foreach ($category in $categories) {
             
             $description = if ($const.Documentation) { $const.Documentation } else { "_No description_" }
             
-            $markdown += "| ``$($const.Name)`` | $($const.Type) | ``$value`` | $description |`n"
+            $markdown += "| ````$($const.Name)```` | $($const.Type) | ````$value```` | $description |``n"
         }
         
-        $markdown += "`n"
+        $markdown += "``n"
     }
 }
 
 # Add usage statistics section (simplified)
-$markdown += "`n## Usage Statistics`n`n"
+$markdown += "``n## Usage Statistics``n``n"
 
 # Constants by type
-$markdown += "### Constants by Type`n`n"
-$markdown += "| Type | Count | Percentage |`n"
-$markdown += "|------|-------|------------|`n"
+$markdown += "### Constants by Type``n``n"
+$markdown += "| Type | Count | Percentage |``n"
+$markdown += "|------|-------|------------|``n"
 
 $typeStats = $constants | Group-Object Type | Sort-Object Count -Descending
 
 foreach ($type in $typeStats) {
     $percentage = [Math]::Round(($type.Count / $constants.Count) * 100, 1)
-    $markdown += "| $($type.Name) | $($type.Count) | $percentage% |`n"
+    $markdown += "| $($type.Name) | $($type.Count) | $percentage% |``n"
 }
 
 # Add usage examples for important constants (limited for automation)
-$markdown += "`n## Usage Examples`n`n"
-$markdown += "Below are examples of how some key constants are used in the codebase:`n`n"
+$markdown += "``n## Usage Examples``n``n"
+$markdown += "Below are examples of how some key constants are used in the codebase:``n``n"
 
 # Select a few important constants to show usage
 $importantConstants = $constants | Where-Object { 
@@ -247,31 +247,31 @@ foreach ($const in $importantConstants) {
     $usages = Get-ConstantUsages -constantName $const.Name -Path $ProjectRoot
     
     if ($usages.Count -gt 0) {
-        $markdown += "### $($const.Name)`n`n"
-        $markdown += "**Definition**: ``$($const.Type) $($const.Name) = $($const.Value)```n`n"
-        $markdown += "**Usage Examples**:`n" + '```' + "`n"
+        $markdown += "### $($const.Name)``n``n"
+        $markdown += "**Definition**: ````$($const.Type) $($const.Name) = $($const.Value)````n``n"
+        $markdown += "**Usage Examples**:``n" + '````````' + "``n"
         
         foreach ($usage in $usages) {
-            $markdown += "// $($usage.File):$($usage.LineNumber)`n"
-            $markdown += "$($usage.Context)`n`n"
+            $markdown += "// $($usage.File):$($usage.LineNumber)``n"
+            $markdown += "$($usage.Context)``n``n"
         }
-        $markdown += '```' + "`n`n"
+        $markdown += '````````' + "``n``n"
     }
 }
 
 # Add footer
-$markdown += "`n---`n`n"
-$markdown += "_This documentation was auto-generated by Generate-ConstantsDoc.ps1 on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')_`n"
+$markdown += "``n---``n``n"
+$markdown += "_This documentation was auto-generated by Generate-ConstantsDoc.ps1 on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')_``n"
 
 # Create Reports directory if it doesn't exist
 $reportsDir = Join-Path $ProjectRoot "Reports"
 if (-not (Test-Path $reportsDir)) {
     try {
         New-Item -Path $reportsDir -ItemType Directory -Force | Out-Null
-        Write-Host "`n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
+        Write-Host "``n📁 Created Reports directory: $reportsDir" -ForegroundColor Green
     }
     catch {
-        Write-Host "`n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
+        Write-Host "``n⚠️ Could not create Reports directory, using project root" -ForegroundColor DarkYellow
         $reportsDir = $ProjectRoot
     }
 }
@@ -289,7 +289,7 @@ catch {
 }
 
 # Generate detailed constants analysis report
-Write-Host "`n📝 Generating detailed constants analysis report..." -ForegroundColor DarkGray
+Write-Host "``n📝 Generating detailed constants analysis report..." -ForegroundColor DarkGray
 
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $reportPath = Join-Path $reportsDir "CONSTANTS-DOCUMENTATION-REPORT_$timestamp.md"
@@ -388,7 +388,7 @@ if ($constantsWithoutDocs.Count -gt 0) {
         $reportContent += ""
         
         foreach ($const in $categoryGroup.Group | Sort-Object Name) {
-            $reportContent += "- **$($const.Name)** ($($const.Type)) in `$($const.FileName)` (Line $($const.LineNumber))"
+            $reportContent += "- **$($const.Name)** ($($const.Type)) in ````$($const.FileName)```` (Line $($const.LineNumber))"
         }
         $reportContent += ""
     }
@@ -410,10 +410,11 @@ if ($constantsWithDocs.Count -gt 0) {
         foreach ($const in $wellDocumented) {
             $reportContent += "#### $($const.Name)"
             $reportContent += ""
-            $reportContent += "```csharp"
+            $reportContent += "````````csharp"
             $reportContent += "// $($const.Documentation)"
-            $reportContent += "public const $($const.Type) $($const.Name) = $($const.Value);"
-            $reportContent += "```"
+            $constantDeclaration = "public const $($const.Type) $($const.Name) = $($const.Value);"
+            $reportContent += $constantDeclaration
+            $reportContent += "````````"
             $reportContent += ""
         }
     }
@@ -492,16 +493,16 @@ if ($constantsWithoutDocs.Count -eq 0) {
     $reportContent += ""
     $reportContent += "Use these guidelines when documenting constants:"
     $reportContent += ""
-    $reportContent += "```csharp"
+    $reportContent += "````````csharp"
     $reportContent += "/// <summary>"
     $reportContent += "/// Brief description of what this constant represents"
     $reportContent += "/// </summary>"
-    $reportContent += "public const string CONSTANT_NAME = \"value\";"
+    $reportContent += "public const string CONSTANT_NAME = " + '"value";'
     $reportContent += ""
     $reportContent += "// Or using single-line comment for simple constants"
     $reportContent += "// Description of the constant's purpose"
     $reportContent += "public const int SIMPLE_CONSTANT = 42;"
-    $reportContent += "```"
+    $reportContent += "````````"
 }
 
 # Technical Details
@@ -511,14 +512,14 @@ $reportContent += ""
 $reportContent += "### Detection Patterns"
 $reportContent += ""
 $reportContent += "This analysis detected constants using the pattern:"
-$reportContent += "- `public const Type NAME = value;`"
+$reportContent += "- ````public const Type NAME = value;````"
 $reportContent += ""
 $reportContent += "### Documentation Sources"
 $reportContent += ""
 $reportContent += "Documentation was extracted from:"
-$reportContent += "- XML documentation comments (`/// <summary>`)"
-$reportContent += "- Single-line comments above constants (`// comment`)"
-$reportContent += "- Multi-line comments (`/* comment */`)"
+$reportContent += "- XML documentation comments (````/// <summary>````)"
+$reportContent += "- Single-line comments above constants (````// comment````)"
+$reportContent += "- Multi-line comments (````/* comment */````)"
 $reportContent += ""
 $reportContent += "### File Coverage"
 $reportContent += ""
@@ -547,7 +548,7 @@ catch {
     $reportSaveSuccess = $false
 }
 
-Write-Host "`n=== CONSTANTS DOCUMENTATION REPORT ===" -ForegroundColor DarkCyan
+Write-Host "``n=== CONSTANTS DOCUMENTATION REPORT ===" -ForegroundColor DarkCyan
 Write-Host "🕐 Generation completed: $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Gray
 
 if ($savedSuccessfully) {
@@ -560,7 +561,7 @@ if ($savedSuccessfully) {
 Write-Host "📊 Documented $($constants.Count) constants across $($categories.Count) categories" -ForegroundColor Gray
 
 # Summary (condensed for automation)
-Write-Host "`n📋 Summary:" -ForegroundColor DarkCyan
+Write-Host "``n📋 Summary:" -ForegroundColor DarkCyan
 Write-Host "   Total constants: $($constants.Count)" -ForegroundColor Gray
 Write-Host "   Categories: $($categories -join ', ')" -ForegroundColor Gray
 Write-Host "   Files processed: $(($constants | Select-Object -ExpandProperty File -Unique).Count)" -ForegroundColor Gray
@@ -571,7 +572,7 @@ if ($constantsWithoutDocs.Count -gt 0) {
 }
 
 # Quick recommendations
-Write-Host "`n💡 Recommendations:" -ForegroundColor DarkCyan
+Write-Host "``n💡 Recommendations:" -ForegroundColor DarkCyan
 if ($constantsWithoutDocs.Count -gt 0) {
     $percentage = [Math]::Round(($constantsWithoutDocs.Count / $constants.Count) * 100, 1)
     Write-Host "   ⚠️  $percentage% of constants lack documentation" -ForegroundColor DarkYellow
@@ -583,37 +584,37 @@ if ($constantsWithoutDocs.Count -gt 0) {
 Write-Host "   • Review generated documentation for accuracy" -ForegroundColor Gray
 Write-Host "   • Update constant values and descriptions as needed" -ForegroundColor Gray
 
-Write-Host "`n🚀 Constants documentation generation complete!" -ForegroundColor Green
+Write-Host "``n🚀 Constants documentation generation complete!" -ForegroundColor Green
 
 # OUTPUT PATH AT THE END for easy finding
 if ($reportSaveSuccess) {
-    Write-Host "`n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
+    Write-Host "``n📄 DETAILED REPORT SAVED:" -ForegroundColor Green
     Write-Host "   Location: $reportPath" -ForegroundColor Cyan
     Write-Host "   Size: $([Math]::Round((Get-Item $reportPath).Length / 1KB, 1)) KB" -ForegroundColor Gray
 } else {
-    Write-Host "`n⚠️ No detailed report generated" -ForegroundColor DarkYellow
+    Write-Host "``n⚠️ No detailed report generated" -ForegroundColor DarkYellow
 }
 
 # INTERACTIVE WORKFLOW LOOP (only when running standalone)
 if ($IsInteractive -and -not $RunningFromScript) {
     do {
-        Write-Host "`n🎯 What would you like to do next?" -ForegroundColor DarkCyan
+        Write-Host "``n🎯 What would you like to do next?" -ForegroundColor DarkCyan
         Write-Host "   D - Display report in console" -ForegroundColor Green
         Write-Host "   R - Re-run constants documentation generation" -ForegroundColor DarkYellow
         Write-Host "   X - Exit to DevOps menu" -ForegroundColor Gray
         
-        $choice = Read-Host "`nEnter choice (D/R/X)"
+        $choice = Read-Host "``nEnter choice (D/R/X)"
         $choice = $choice.ToUpper()
         
         switch ($choice) {
             'D' {
                 if ($reportSaveSuccess) {
-                    Write-Host "`n📋 DISPLAYING CONSTANTS DOCUMENTATION REPORT:" -ForegroundColor DarkCyan
+                    Write-Host "``n📋 DISPLAYING CONSTANTS DOCUMENTATION REPORT:" -ForegroundColor DarkCyan
                     Write-Host "=============================================" -ForegroundColor DarkCyan
                     try {
                         $reportDisplay = Get-Content -Path $reportPath -Raw
                         Write-Host $reportDisplay -ForegroundColor White
-                        Write-Host "`n=============================================" -ForegroundColor DarkCyan
+                        Write-Host "``n=============================================" -ForegroundColor DarkCyan
                         Write-Host "📋 END OF REPORT" -ForegroundColor DarkCyan
                     }
                     catch {
@@ -624,13 +625,13 @@ if ($IsInteractive -and -not $RunningFromScript) {
                 }
             }
             'R' {
-                Write-Host "`n🔄 RE-RUNNING CONSTANTS DOCUMENTATION GENERATION..." -ForegroundColor DarkYellow
+                Write-Host "``n🔄 RE-RUNNING CONSTANTS DOCUMENTATION GENERATION..." -ForegroundColor DarkYellow
                 Write-Host "=================================================" -ForegroundColor DarkYellow
                 & $MyInvocation.MyCommand.Path
                 return
             }
             'X' {
-                Write-Host "`n👋 Returning to DevOps menu..." -ForegroundColor Gray
+                Write-Host "``n👋 Returning to DevOps menu..." -ForegroundColor Gray
                 return
             }
             default {
