@@ -1,6 +1,6 @@
-﻿
 
-﻿using ScheduleOne.Management;
+
+using ScheduleOne.Management;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// <summary>
     /// Represents a tracked mixer configuration with metadata.
     /// 
-    /// ⚠️ THREAD SAFETY: This class is designed to be used with thread-safe collections.
+    /// âš ï¸ THREAD SAFETY: This class is designed to be used with thread-safe collections.
     /// Individual property access is not synchronized - use appropriate locking when accessing.
     /// 
     /// .NET 4.8.1 Compatibility:
@@ -24,19 +24,19 @@ namespace MixerThreholdMod_1_0_0.Helpers
     {
         /// <summary>
         /// The actual mixer configuration instance from the game
-        /// ⚠️ THREAD SAFETY: Access to this property should be synchronized with the containing collection
+        /// âš ï¸ THREAD SAFETY: Access to this property should be synchronized with the containing collection
         /// </summary>
         public MixingStationConfiguration ConfigInstance { get; set; }
 
         /// <summary>
         /// Unique stable ID for this mixer instance
-        /// ⚠️ THREAD SAFETY: This ID should remain constant once assigned
+        /// âš ï¸ THREAD SAFETY: This ID should remain constant once assigned
         /// </summary>
         public int MixerInstanceID { get; set; }
 
         /// <summary>
         /// Tracks whether event listeners have been attached to this mixer
-        /// ⚠️ THREAD SAFETY: This flag should be set atomically to prevent double-attachment
+        /// âš ï¸ THREAD SAFETY: This flag should be set atomically to prevent double-attachment
         /// </summary>
         public bool ListenerAdded { get; set; } = false;
     }
@@ -45,10 +45,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// Thread-safe collection manager for tracked mixer instances.
     /// Provides async and sync access patterns for .NET 4.8.1 compatibility.
     /// 
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe using AsyncLocker.
+    /// âš ï¸ THREAD SAFETY: All operations are thread-safe using AsyncLocker.
     /// Safe to call from any thread including Unity background threads.
     /// 
-    /// ⚠️ MAIN THREAD WARNING: Synchronous methods can block the calling thread.
+    /// âš ï¸ MAIN THREAD WARNING: Synchronous methods can block the calling thread.
     /// Prefer async methods when called from Unity's main thread.
     /// 
     /// .NET 4.8.1 Compatibility:
@@ -63,7 +63,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Get a read-only snapshot of all tracked mixers
-        /// ⚠️ THREAD SAFETY: Returns a snapshot copy, safe for iteration
+        /// âš ï¸ THREAD SAFETY: Returns a snapshot copy, safe for iteration
         /// </summary>
         /// <returns>Read-only list of tracked mixers</returns>
         public static async Task<IReadOnlyList<TrackedMixer>> GetAllAsync()
@@ -102,7 +102,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Add a new mixer to tracking
-        /// ⚠️ THREAD SAFETY: Thread-safe addition with null checking
+        /// âš ï¸ THREAD SAFETY: Thread-safe addition with null checking
         /// </summary>
         /// <param name="mixer">Mixer to add</param>
         public static async Task AddAsync(TrackedMixer mixer)
@@ -138,7 +138,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Remove a mixer by its configuration instance
-        /// ⚠️ THREAD SAFETY: Thread-safe removal with comprehensive error handling
+        /// âš ï¸ THREAD SAFETY: Thread-safe removal with comprehensive error handling
         /// </summary>
         /// <param name="configInstance">Configuration instance to remove</param>
         /// <returns>True if mixer was found and removed</returns>
@@ -182,7 +182,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Remove all mixers matching the predicate
-        /// ⚠️ THREAD SAFETY: Thread-safe bulk removal with individual error handling
+        /// âš ï¸ THREAD SAFETY: Thread-safe bulk removal with individual error handling
         /// </summary>
         /// <param name="predicate">Predicate to match mixers for removal</param>
         public static async Task RemoveAllAsync(Func<TrackedMixer, bool> predicate)
@@ -259,7 +259,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Clear all tracked mixers
-        /// ⚠️ THREAD SAFETY: Thread-safe clearing operation
+        /// âš ï¸ THREAD SAFETY: Thread-safe clearing operation
         /// </summary>
         public static async Task ClearAsync()
         {
@@ -289,7 +289,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Get a list copy of all tracked mixers
-        /// ⚠️ THREAD SAFETY: Returns a snapshot copy, safe for iteration
+        /// âš ï¸ THREAD SAFETY: Returns a snapshot copy, safe for iteration
         /// </summary>
         /// <returns>List copy of tracked mixers</returns>
         public static async Task<List<TrackedMixer>> ToListAsync()
@@ -321,7 +321,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// LINQ-style Select operation
-        /// ⚠️ THREAD SAFETY: Thread-safe projection with error handling
+        /// âš ï¸ THREAD SAFETY: Thread-safe projection with error handling
         /// </summary>
         /// <typeparam name="TResult">Result type</typeparam>
         /// <param name="selector">Selection function</param>
@@ -361,7 +361,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Count mixers matching predicate
-        /// ⚠️ THREAD SAFETY: Thread-safe counting with error handling
+        /// âš ï¸ THREAD SAFETY: Thread-safe counting with error handling
         /// </summary>
         /// <param name="predicate">Predicate to match</param>
         /// <returns>Count of matching mixers</returns>
@@ -392,7 +392,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Find first mixer matching predicate
-        /// ⚠️ THREAD SAFETY: Thread-safe search with error handling
+        /// âš ï¸ THREAD SAFETY: Thread-safe search with error handling
         /// </summary>
         /// <param name="predicate">Predicate to match</param>
         /// <returns>First matching mixer or null</returns>
@@ -423,7 +423,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Check if any mixer matches predicate
-        /// ⚠️ THREAD SAFETY: Thread-safe existence check with error handling
+        /// âš ï¸ THREAD SAFETY: Thread-safe existence check with error handling
         /// </summary>
         /// <param name="predicate">Predicate to match</param>
         /// <returns>True if any mixer matches</returns>
@@ -456,7 +456,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Synchronous count operation for compatibility
-        /// ⚠️ MAIN THREAD WARNING: Can block calling thread - prefer async version
+        /// âš ï¸ MAIN THREAD WARNING: Can block calling thread - prefer async version
         /// </summary>
         public static int Count(Func<TrackedMixer, bool> predicate)
         {
@@ -475,7 +475,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Synchronous existence check for compatibility
-        /// ⚠️ MAIN THREAD WARNING: Can block calling thread - prefer async version
+        /// âš ï¸ MAIN THREAD WARNING: Can block calling thread - prefer async version
         /// </summary>
         public static bool Any(Func<TrackedMixer, bool> predicate)
         {
@@ -494,7 +494,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Synchronous add operation for compatibility
-        /// ⚠️ MAIN THREAD WARNING: Can block calling thread - prefer async version
+        /// âš ï¸ MAIN THREAD WARNING: Can block calling thread - prefer async version
         /// </summary>
         public static void Add(TrackedMixer mixer)
         {
@@ -511,7 +511,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Synchronous bulk removal for compatibility
-        /// ⚠️ MAIN THREAD WARNING: Can block calling thread - prefer async version
+        /// âš ï¸ MAIN THREAD WARNING: Can block calling thread - prefer async version
         /// </summary>
         public static void RemoveAll(Func<TrackedMixer, bool> predicate)
         {
@@ -530,7 +530,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// <summary>
     /// Async locking mechanism for .NET 4.8.1 compatibility
     /// 
-    /// ⚠️ THREAD SAFETY: This class provides async-compatible locking using SemaphoreSlim.
+    /// âš ï¸ THREAD SAFETY: This class provides async-compatible locking using SemaphoreSlim.
     /// Safe to use across different thread contexts including Unity background threads.
     /// 
     /// .NET 4.8.1 Compatibility:
@@ -544,7 +544,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Acquire an async lock
-        /// ⚠️ THREAD SAFETY: Thread-safe lock acquisition with cancellation support
+        /// âš ï¸ THREAD SAFETY: Thread-safe lock acquisition with cancellation support
         /// </summary>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Disposable lock releaser</returns>
@@ -556,7 +556,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Lock releaser for proper resource cleanup
-        /// ⚠️ THREAD SAFETY: Thread-safe release mechanism
+        /// âš ï¸ THREAD SAFETY: Thread-safe release mechanism
         /// </summary>
         private class Releaser : IDisposable
         {

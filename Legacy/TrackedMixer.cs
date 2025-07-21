@@ -1,6 +1,6 @@
-﻿
 
-﻿using MixerThreholdMod_0_0_1;
+
+using MixerThreholdMod_0_0_1;
 using ScheduleOne.Management;
 using System;
 using System.Collections.Generic;

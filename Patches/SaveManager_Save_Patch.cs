@@ -10,9 +10,9 @@ namespace MixerThreholdMod_1_0_0.Patches
     /// <summary>
     /// Patch for SaveManager.Save to intercept and enhance save operations.
     /// Implements proper separation of concerns by delegating to specialized helper classes.
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe.
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
-    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread - uses async background processing.
+    /// âš ï¸ THREAD SAFETY: All operations are thread-safe.
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread - uses async background processing.
     /// </summary>
     public static class SaveManager_Save_Patch
     {
@@ -20,8 +20,8 @@ namespace MixerThreholdMod_1_0_0.Patches
 
         /// <summary>
         /// Initializes the SaveManager_Save_Patch with Harmony.
-        /// ⚠️ THREAD SAFETY: Safe to call from any thread
-        /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit error handling
+        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
+        /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit error handling
         /// </summary>
         public static void Initialize()
         {
@@ -43,8 +43,8 @@ namespace MixerThreholdMod_1_0_0.Patches
         /// PATCH TARGET: SaveManager.Save (verified with dnSpy)
         /// Intercepts SaveManager.Save and delegates to specialized helpers.
         /// Implements separation of concerns: validation, backup, integrity tracking, performance monitoring.
-        /// ⚠️ THREAD SAFETY: All helper operations are thread-safe and async
-        /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and string.Format
+        /// âš ï¸ THREAD SAFETY: All helper operations are thread-safe and async
+        /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and string.Format
         /// </summary>
         /// <param name="saveData">The save data being processed by the game</param>
         public static void Prefix(SaveDataType saveData)
@@ -84,7 +84,7 @@ namespace MixerThreholdMod_1_0_0.Patches
 
         /// <summary>
         /// Validates save data using the dedicated MixerDataValidator.
-        /// ⚠️ THREAD SAFETY: Safe to call from any thread
+        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
         /// </summary>
         /// <param name="saveData">Save data to validate</param>
         /// <returns>True if validation passes, false otherwise</returns>
@@ -113,7 +113,7 @@ namespace MixerThreholdMod_1_0_0.Patches
 
         /// <summary>
         /// Performs backup operations using dedicated backup managers.
-        /// ⚠️ THREAD SAFETY: Uses async background processing to avoid blocking Unity main thread
+        /// âš ï¸ THREAD SAFETY: Uses async background processing to avoid blocking Unity main thread
         /// </summary>
         /// <param name="saveData">Save data to backup</param>
         private static void PerformBackupOperations(SaveDataType saveData)
@@ -145,7 +145,7 @@ namespace MixerThreholdMod_1_0_0.Patches
 
         /// <summary>
         /// Records integrity information using dedicated integrity tracker.
-        /// ⚠️ THREAD SAFETY: Safe to call from any thread
+        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
         /// </summary>
         /// <param name="saveData">Save data to track</param>
         private static void RecordIntegrityInformation(SaveDataType saveData)
@@ -165,7 +165,7 @@ namespace MixerThreholdMod_1_0_0.Patches
 
         /// <summary>
         /// Processes additional custom save logic specific to mixer threshold modifications.
-        /// ⚠️ THREAD SAFETY: Safe to call from any thread
+        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
         /// </summary>
         /// <param name="saveData">Save data to process</param>
         private static void ProcessCustomSaveLogic(SaveDataType saveData)

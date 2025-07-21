@@ -1,10 +1,10 @@
-﻿
+
 
 using static MixerThreholdMod_1_0_0.Constants.LoggingConstants;
 using static MixerThreholdMod_1_0_0.Constants.FileConstants;
 using static MixerThreholdMod_1_0_0.Constants.ErrorConstants;
 
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using MixerThreholdMod_1_0_0.Core;
@@ -14,9 +14,9 @@ namespace MixerThreholdMod_1_0_0.Save
 {
     /// <summary>
     /// Handles emergency save operations for mixer data to prevent data loss during crashes.
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe and async.
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
-    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
+    /// âš ï¸ THREAD SAFETY: All operations are thread-safe and async.
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
     public static class EmergencySaveManager
     {

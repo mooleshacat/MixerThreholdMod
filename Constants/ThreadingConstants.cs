@@ -4,10 +4,10 @@ namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
     /// Threading and synchronization constants for async operations and thread safety
-    /// ⚠️ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// ⚠️ THREAD SAFETY: All constants are immutable and thread-safe
-    /// ⚠️ MAIN THREAD WARNING: These constants help prevent blocking Unity main thread
+    /// âš ï¸ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
+    /// âš ï¸ MAIN THREAD WARNING: These constants help prevent blocking Unity main thread
     /// </summary>
     public static class ThreadingConstants
     {

@@ -1,10 +1,10 @@
-﻿
+
 
 using MelonLoader;
 
 using MixerThreholdMod_1_0_0.Core;
 
-﻿using MelonLoader;
+using MelonLoader;
 using System;
 using System.Collections.Generic;
 using System.Linq;

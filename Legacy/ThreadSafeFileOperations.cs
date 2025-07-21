@@ -1,6 +1,6 @@
-﻿
 
-﻿using System;
+
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +11,8 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// Thread-safe file operations for .NET 4.8.1 compatibility.
     /// Provides atomic file operations with proper error handling.
     /// 
-    /// ⚠️ THREAD SAFETY: All file operations are thread-safe and use proper locking.
-    /// ⚠️ MAIN THREAD WARNING: These operations should not be called from Unity's main thread.
+    /// âš ï¸ THREAD SAFETY: All file operations are thread-safe and use proper locking.
+    /// âš ï¸ MAIN THREAD WARNING: These operations should not be called from Unity's main thread.
     /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses Task.Run instead of newer async patterns

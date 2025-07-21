@@ -1,8 +1,8 @@
-﻿
+
 
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
-﻿using MelonLoader;
+using MelonLoader;
 using MelonLoader.Utils;
 using Newtonsoft.Json;
 using System;
@@ -14,7 +14,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using MixerThreholdMod_1_0_0.Constants;    // ✅ ESSENTIAL - Keep this! Our constants!
+using MixerThreholdMod_1_0_0.Constants;    // âœ… ESSENTIAL - Keep this! Our constants!
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 namespace MixerThreholdMod_1_0_0.Utils
@@ -23,13 +23,13 @@ namespace MixerThreholdMod_1_0_0.Utils
     /// Comprehensive mixer save/load management system with crash prevention focus.
     /// Handles mixer value persistence, backup management, and event attachment.
     /// 
-    /// ⚠️ CRASH PREVENTION FOCUS: This system is specifically designed to prevent 
+    /// âš ï¸ CRASH PREVENTION FOCUS: This system is specifically designed to prevent 
     /// save corruption and data loss during crashes, repeated saves, and extended gameplay.
     /// 
-    /// ⚠️ THREAD SAFETY: All save operations are thread-safe with proper locking mechanisms.
+    /// âš ï¸ THREAD SAFETY: All save operations are thread-safe with proper locking mechanisms.
     /// Coroutines are used to prevent blocking Unity's main thread during file operations.
     /// 
-    /// ⚠️ MAIN THREAD WARNING: Emergency save methods are designed for crash scenarios and 
+    /// âš ï¸ MAIN THREAD WARNING: Emergency save methods are designed for crash scenarios and 
     /// use blocking I/O. Regular save operations use coroutines to avoid main thread blocking.
     /// 
     /// .NET 4.8.1 Compatibility:

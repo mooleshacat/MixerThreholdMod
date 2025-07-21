@@ -1,8 +1,8 @@
-﻿
+
 
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
@@ -11,9 +11,9 @@ namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
     /// Centralizes Harmony patch initialization for MixerThreholdMod.
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe and use async patterns.
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
-    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread; all patching is async.
+    /// âš ï¸ THREAD SAFETY: All operations are thread-safe and use async patterns.
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
+    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread; all patching is async.
     /// </summary>
     internal class PatchInitializer
     {

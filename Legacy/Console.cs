@@ -1,8 +1,8 @@
-﻿
+
 
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
-﻿using MelonLoader.Utils;
+using MelonLoader.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;

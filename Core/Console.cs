@@ -4,8 +4,8 @@ using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
 /// Thread-safe console wrapper for MixerThreholdMod.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe using lock objects.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
+/// âš ï¸ THREAD SAFETY: All operations are thread-safe using lock objects.
+/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
 /// </summary>
 internal static class Console
 {

@@ -4,9 +4,9 @@ namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
     /// Utility constants for common operations, string manipulations, mathematical calculations, and formatting
-    /// ⚠️ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// ⚠️ THREAD SAFETY: All constants are immutable and thread-safe
+    /// âš ï¸ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
     /// </summary>
     public static class UtilityConstants
     {
@@ -88,13 +88,13 @@ namespace MixerThreholdMod_1_0_0.Constants
         /// <summary>Radians to degrees conversion factor</summary>
         public const double RADIANS_TO_DEGREES = 180.0 / PI;
 
-        /// <summary>Gravitational acceleration (m/s²)</summary>
+        /// <summary>Gravitational acceleration (m/sÂ²)</summary>
         public const double GRAVITY_ACCELERATION = 9.80665;
 
         /// <summary>Speed of light in vacuum (m/s)</summary>
         public const double SPEED_OF_LIGHT = 299792458.0;
 
-        /// <summary>Planck constant (J⋅s)</summary>
+        /// <summary>Planck constant (Jâ‹…s)</summary>
         public const double PLANCK_CONSTANT = 6.62607015e-34;
         #endregion
 

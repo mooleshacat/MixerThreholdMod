@@ -15,9 +15,9 @@ namespace MixerThreholdMod_1_0_0.Core
     /// IL2CPP COMPATIBLE: Simplified console integration for debugging and user commands.
     /// Provides essential console commands for save management and debugging with AOT-safe patterns.
     /// 
-    /// ⚠️ THREAD SAFETY: All console operations are designed to be thread-safe with proper error handling.
-    /// ⚠️ IL2CPP COMPATIBLE: Uses compile-time safe patterns, minimal reflection, AOT-friendly operations.
-    /// ⚠️ MEMORY LEAK PREVENTION: Proper cleanup and disposal patterns prevent console-related memory leaks.
+    /// âš ï¸ THREAD SAFETY: All console operations are designed to be thread-safe with proper error handling.
+    /// âš ï¸ IL2CPP COMPATIBLE: Uses compile-time safe patterns, minimal reflection, AOT-friendly operations.
+    /// âš ï¸ MEMORY LEAK PREVENTION: Proper cleanup and disposal patterns prevent console-related memory leaks.
     /// 
     /// IL2CPP Compatibility Features:
     /// - Minimal reflection usage with compile-time known types only
@@ -109,7 +109,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
             /// <summary>
             /// Handle console command input
-            /// ⚠️ COMPREHENSIVE LOGGING: Logs full command details including all parameters, system context, and error information
+            /// âš ï¸ COMPREHENSIVE LOGGING: Logs full command details including all parameters, system context, and error information
             /// Enhanced with system monitoring integration and complete command breakdown
             /// </summary>
             public void OnConsoleCommand(string command)
@@ -424,7 +424,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
             /// <summary>
             /// Show help for specific command when parameters are missing
-            /// ⚠️ THREAD SAFETY: Safe logging operations with comprehensive error handling
+            /// âš ï¸ THREAD SAFETY: Safe logging operations with comprehensive error handling
             /// </summary>
             private void ShowCommandHelp(string commandName)
             {
@@ -441,7 +441,7 @@ namespace MixerThreholdMod_1_0_0.Core
                             Main.logger?.Msg(1, "[CONSOLE]   count - Number of save iterations (positive integer)");
                             Main.logger?.Msg(1, "[CONSOLE] ");
                             Main.logger?.Msg(1, "[CONSOLE] Optional (auto-detected order):");
-                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number ≥ 0, default: 0)");
+                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number â‰¥ 0, default: 0)");
                             Main.logger?.Msg(1, "[CONSOLE]   bypass_cooldown - Skip save cooldown (true/false, default: true)");
                             Main.logger?.Msg(1, "[CONSOLE] ");
                             Main.logger?.Msg(1, "[CONSOLE] Examples:");
@@ -459,7 +459,7 @@ namespace MixerThreholdMod_1_0_0.Core
                             Main.logger?.Msg(1, "[CONSOLE]   count - Number of save iterations (positive integer)");
                             Main.logger?.Msg(1, "[CONSOLE] ");
                             Main.logger?.Msg(1, "[CONSOLE] Optional (auto-detected order):");
-                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number ≥ 0, default: 0)");
+                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number â‰¥ 0, default: 0)");
                             Main.logger?.Msg(1, "[CONSOLE]   bypass_cooldown - Skip save cooldown (true/false, default: true)");
                             Main.logger?.Msg(1, "[CONSOLE] ");
                             Main.logger?.Msg(1, "[CONSOLE] Examples:");
@@ -477,7 +477,7 @@ namespace MixerThreholdMod_1_0_0.Core
                             Main.logger?.Msg(1, "[CONSOLE]   count - Number of save iterations (positive integer)");
                             Main.logger?.Msg(1, "[CONSOLE] ");
                             Main.logger?.Msg(1, "[CONSOLE] Optional (auto-detected order):");
-                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number ≥ 0, default: 0)");
+                            Main.logger?.Msg(1, "[CONSOLE]   delay_seconds - Delay between saves (number â‰¥ 0, default: 0)");
                             Main.logger?.Msg(1, "[CONSOLE]   bypass_cooldown - Skip save cooldown (true/false, default: true)");
                             Main.logger?.Msg(1, "[CONSOLE] ");
                             Main.logger?.Msg(1, "[CONSOLE] Features: Multi-method validation, comprehensive monitoring");
@@ -598,7 +598,7 @@ namespace MixerThreholdMod_1_0_0.Core
             // Add this method to the MixerConsoleHook class:
             /// <summary>
             /// Handle directory detection command
-            /// ⚠️ THREAD SAFETY: Safe directory detection with comprehensive error handling
+            /// âš ï¸ THREAD SAFETY: Safe directory detection with comprehensive error handling
             /// </summary>
             private void HandleDirectoryDetectionCommand()
             {
@@ -607,7 +607,7 @@ namespace MixerThreholdMod_1_0_0.Core
                 {
                     Main.logger?.Msg(1, "[CONSOLE] Starting directory detection command...");
 
-                    // ⚠️ ASYNC JUSTIFICATION: Directory detection can take 100-500ms using game APIs
+                    // âš ï¸ ASYNC JUSTIFICATION: Directory detection can take 100-500ms using game APIs
                     // Task.Run prevents Unity main thread blocking during game API access
                     Task.Run(async () =>
                     {
@@ -620,32 +620,32 @@ namespace MixerThreholdMod_1_0_0.Core
 
                             if (directoryInfo.GameDirectoryFound)
                             {
-                                Main.logger?.Msg(1, string.Format("[CONSOLE] 🎮 Game Directory: {0}", directoryInfo.GameInstallDirectory));
+                                Main.logger?.Msg(1, string.Format("[CONSOLE] ðŸŽ® Game Directory: {0}", directoryInfo.GameInstallDirectory));
                             }
 
                             if (directoryInfo.UserDataDirectoryFound)
                             {
-                                Main.logger?.Msg(1, string.Format("[CONSOLE] 👤 User Data: {0}", directoryInfo.UserDataDirectory));
+                                Main.logger?.Msg(1, string.Format("[CONSOLE] ðŸ‘¤ User Data: {0}", directoryInfo.UserDataDirectory));
                             }
 
                             if (directoryInfo.SavesDirectoryFound)
                             {
-                                Main.logger?.Msg(1, string.Format("[CONSOLE] 💾 Saves Directory: {0}", directoryInfo.SavesDirectory));
+                                Main.logger?.Msg(1, string.Format("[CONSOLE] ðŸ’¾ Saves Directory: {0}", directoryInfo.SavesDirectory));
 
                                 if (!string.IsNullOrEmpty(directoryInfo.IndividualSavesPath))
                                 {
-                                    Main.logger?.Msg(1, string.Format("[CONSOLE] 💾 Individual Saves: {0}", directoryInfo.IndividualSavesPath));
+                                    Main.logger?.Msg(1, string.Format("[CONSOLE] ðŸ’¾ Individual Saves: {0}", directoryInfo.IndividualSavesPath));
                                 }
 
                                 if (!string.IsNullOrEmpty(directoryInfo.CurrentSavePath))
                                 {
-                                    Main.logger?.Msg(1, string.Format("[CONSOLE] 💾 Current Save: {0}", directoryInfo.CurrentSavePath));
+                                    Main.logger?.Msg(1, string.Format("[CONSOLE] ðŸ’¾ Current Save: {0}", directoryInfo.CurrentSavePath));
                                 }
                             }
 
                             if (directoryInfo.MelonLoaderLogFound)
                             {
-                                Main.logger?.Msg(1, string.Format("[CONSOLE] 🍈 MelonLoader Log: {0}", directoryInfo.MelonLoaderLogFile));
+                                Main.logger?.Msg(1, string.Format("[CONSOLE] ðŸˆ MelonLoader Log: {0}", directoryInfo.MelonLoaderLogFile));
 
                                 try
                                 {
@@ -680,7 +680,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
             /// <summary>
             /// Handle single-type logging commands (msg, warn, err)
-            /// ⚠️ THREAD SAFETY: Safe logging operations with comprehensive error handling
+            /// âš ï¸ THREAD SAFETY: Safe logging operations with comprehensive error handling
             /// Direct logging commands without type specification
             /// </summary>
             /// <param name="logType">Type of log message (msg, warn, err)</param>
@@ -761,7 +761,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
             /// <summary>
             /// Process the actual logging based on message type
-            /// ⚠️ THREAD SAFETY: Thread-safe logging operations
+            /// âš ï¸ THREAD SAFETY: Thread-safe logging operations
             /// </summary>
             /// <param name="logType">Type of log message (msg, warn, err)</param>
             /// <param name="message">Message content to log</param>
@@ -856,7 +856,7 @@ namespace MixerThreholdMod_1_0_0.Core
                             }
                             else
                             {
-                                Main.logger?.Err(string.Format("[CONSOLE] Invalid parameter '{0}'. Must be a delay (number ≥ 0) or bypass flag (true/false).", param));
+                                Main.logger?.Err(string.Format("[CONSOLE] Invalid parameter '{0}'. Must be a delay (number â‰¥ 0) or bypass flag (true/false).", param));
                                 return;
                             }
                         }
@@ -1070,7 +1070,7 @@ namespace MixerThreholdMod_1_0_0.Core
                             }
                             else
                             {
-                                Main.logger?.Err(string.Format("[CONSOLE] Invalid parameter '{0}'. Must be a delay (number ≥ 0) or bypass flag (true/false).", param));
+                                Main.logger?.Err(string.Format("[CONSOLE] Invalid parameter '{0}'. Must be a delay (number â‰¥ 0) or bypass flag (true/false).", param));
                                 return;
                             }
                         }
@@ -1229,7 +1229,7 @@ namespace MixerThreholdMod_1_0_0.Core
 
         /// <summary>
         /// Test console commands to verify they work properly
-        /// ⚠️ THREAD SAFETY: Safe testing with comprehensive error handling
+        /// âš ï¸ THREAD SAFETY: Safe testing with comprehensive error handling
         /// </summary>
         private static void TestConsoleCommands(MixerConsoleHook hookInstance)
         {

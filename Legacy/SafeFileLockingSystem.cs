@@ -1,6 +1,6 @@
-﻿
 
-﻿using System;
+
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,10 +11,10 @@ namespace MixerThreholdMod_1_0_0.Helpers
     /// Thread-safe file locking helper for .NET 4.8.1 compatibility.
     /// Provides exclusive and shared locking mechanisms to prevent file corruption.
     /// 
-    /// ⚠️ THREAD SAFETY: This class is thread-safe and can be used across multiple threads.
+    /// âš ï¸ THREAD SAFETY: This class is thread-safe and can be used across multiple threads.
     /// All lock operations are atomic and protected against race conditions.
     /// 
-    /// ⚠️ MAIN THREAD WARNING: Synchronous lock methods (AcquireSharedLock, AcquireExclusiveLock) 
+    /// âš ï¸ MAIN THREAD WARNING: Synchronous lock methods (AcquireSharedLock, AcquireExclusiveLock) 
     /// use Thread.Sleep and blocking operations. Do NOT call from Unity's main thread as they 
     /// can cause UI freezes and deadlocks. Use async alternatives when possible.
     /// 
@@ -63,7 +63,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         /// <summary>
         /// Attempts to acquire a shared (read) lock with timeout.
         /// 
-        /// ⚠️ MAIN THREAD WARNING: This method uses Thread.Sleep and blocks the calling thread.
+        /// âš ï¸ MAIN THREAD WARNING: This method uses Thread.Sleep and blocks the calling thread.
         /// Do NOT call from main thread. Use AcquireSharedLockAsync() for main thread safety.
         /// 
         /// Thread Safety: Uses proper locking mechanisms but blocks calling thread during retries.
@@ -145,7 +145,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
         /// <summary>
         /// Attempts to acquire an exclusive (write) lock with timeout.
         /// 
-        /// ⚠️ MAIN THREAD WARNING: This method uses Thread.Sleep and blocks the calling thread.
+        /// âš ï¸ MAIN THREAD WARNING: This method uses Thread.Sleep and blocks the calling thread.
         /// Do NOT call from main thread. Use AcquireExclusiveLockAsync() for main thread safety.
         /// 
         /// Thread Safety: Uses proper locking mechanisms but blocks calling thread during retries.

@@ -7,9 +7,9 @@ namespace MixerThreholdMod_1_0_0.Patches
 {
     /// <summary>
     /// Patch for EntityConfiguration.Destroy to intercept and enhance destroy operations.
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe.
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
-    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
+    /// âš ï¸ THREAD SAFETY: All operations are thread-safe.
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
     public static class EntityConfiguration_Destroy_Patch
     {
@@ -17,8 +17,8 @@ namespace MixerThreholdMod_1_0_0.Patches
 
         /// <summary>
         /// Initializes the EntityConfiguration_Destroy_Patch with Harmony.
-        /// ⚠️ THREAD SAFETY: Safe to call from any thread
-        /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit error handling
+        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
+        /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit error handling
         /// </summary>
         public static void Initialize()
         {

@@ -1,4 +1,4 @@
-﻿
+
 
 using System;
 
@@ -6,9 +6,9 @@ namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
     /// Centralized constants for logging levels, system configuration, timeouts, and error messages
-    /// ⚠️ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// ⚠️ THREAD SAFETY: All constants are immutable and thread-safe
+    /// âš ï¸ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
     /// 
     /// This centralized constants class eliminates magic numbers throughout the codebase
     /// and provides semantic meaning to all numerical and string literals used across
@@ -494,7 +494,7 @@ namespace MixerThreholdMod_1_0_0.Constants
         public const string ASSEMBLY_FILE_VERSION = "1.0.0.0";
 
         /// <summary>Assembly copyright string</summary>
-        public const string ASSEMBLY_COPYRIGHT = "Copyright ©  2025 mooleshacat";
+        public const string ASSEMBLY_COPYRIGHT = "Copyright Â©  2025 mooleshacat";
 
         /// <summary>Assembly title string</summary>
         public const string ASSEMBLY_TITLE = "MixerThreholdMod-1_0_0";
@@ -694,7 +694,7 @@ namespace MixerThreholdMod_1_0_0.Constants
         public const string CONSOLE_INVALID_COUNT_ERROR = "[CONSOLE] Invalid iteration count '{0}'. Must be a positive integer.";
 
         /// <summary>Console delay parameter description</summary>
-        public const string CONSOLE_DELAY_PARAM_DESC = "[CONSOLE]   delay_seconds - Delay between saves (number ≥ 0, default: 0)";
+        public const string CONSOLE_DELAY_PARAM_DESC = "[CONSOLE]   delay_seconds - Delay between saves (number â‰¥ 0, default: 0)";
 
         /// <summary>Console count parameter description</summary>
         public const string CONSOLE_COUNT_PARAM_DESC = "[CONSOLE]   count - Number of save iterations (positive integer)";
@@ -790,7 +790,7 @@ namespace MixerThreholdMod_1_0_0.Constants
 
         // ===== BACKUP OPERATION MESSAGES =====
         /// <summary>Backup succeeded message template</summary>
-        public const string BACKUP_SUCCESS_MSG = "BackupAsync succeeded for {0} → {1}";
+        public const string BACKUP_SUCCESS_MSG = "BackupAsync succeeded for {0} â†’ {1}";
 
         /// <summary>Backup failed message template</summary>
         public const string BACKUP_FAILED_MSG = "BackupAsync failed for {0}: {1}\nStack Trace: {2}";
@@ -1304,7 +1304,7 @@ namespace MixerThreholdMod_1_0_0.Constants
         public const string ASSEMBLY_COMPANY_EMPTY = "";
 
         /// <summary>Assembly copyright notice</summary>
-        public const string ASSEMBLY_COPYRIGHT = "Copyright ©  2025 mooleshacat";
+        public const string ASSEMBLY_COPYRIGHT = "Copyright Â©  2025 mooleshacat";
 
         /// <summary>Assembly trademark empty value</summary>
         public const string ASSEMBLY_TRADEMARK_EMPTY = "";

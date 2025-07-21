@@ -4,9 +4,9 @@ namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
     /// Performance-related constants including timeouts, thresholds, and monitoring intervals
-    /// ⚠️ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// ⚠️ THREAD SAFETY: All constants are immutable and thread-safe
+    /// âš ï¸ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
     /// </summary>
     public static class PerformanceConstants
     {

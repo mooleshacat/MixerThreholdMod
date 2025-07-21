@@ -1,6 +1,6 @@
-﻿
 
-﻿using System;
+
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using MixerThreholdMod_1_0_0.Core;
@@ -9,9 +9,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
     /// Manages atomic backup of mixer data files.
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe and async.
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
-    /// ⚠️ MAIN THREAD WARNING: Never blocks Unity main thread.
+    /// âš ï¸ THREAD SAFETY: All operations are thread-safe and async.
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
     public static class MixerDataBackupManager
     {
@@ -57,7 +57,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
                     await fs.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
                 }
 
-                logger.Msg(1, string.Format("BackupAsync succeeded for {0} → {1}", filePath, backupPath));
+                logger.Msg(1, string.Format("BackupAsync succeeded for {0} â†’ {1}", filePath, backupPath));
                 return true;
             }
             catch (ArgumentNullException ex)

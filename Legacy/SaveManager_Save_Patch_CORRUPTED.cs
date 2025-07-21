@@ -16,13 +16,13 @@ namespace MixerThreholdMod_1_0_0.Patches
     /// Harmony patch for SaveManager.Save to capture save folder path and trigger mixer data persistence.
     /// This patch is critical for the save crash prevention system.
     /// 
-    /// ⚠️ CRASH PREVENTION FOCUS: This patch intercepts save operations to ensure mixer data 
+    /// âš ï¸ CRASH PREVENTION FOCUS: This patch intercepts save operations to ensure mixer data 
     /// is properly saved before the game saves, preventing data loss during crashes.
     /// 
-    /// ⚠️ THREAD SAFETY: All operations use thread-safe methods and don't block the main thread.
+    /// âš ï¸ THREAD SAFETY: All operations use thread-safe methods and don't block the main thread.
     /// Error handling prevents patch failures from crashing the save process.
     /// 
-    /// ⚠️ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
+    /// âš ï¸ IL2CPP COMPATIBLE: Uses dynamic type loading to avoid TypeLoadException in IL2CPP builds.
     /// 
     /// .NET 4.8.1 Compatibility:
     /// - Uses string.Format instead of string interpolation

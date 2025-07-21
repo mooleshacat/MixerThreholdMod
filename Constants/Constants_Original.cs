@@ -1,16 +1,16 @@
-﻿
+
 
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
-﻿using System;
+using System;
 
 namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
     /// Centralized constants for logging levels, system configuration, timeouts, and error messages
-    /// ⚠️ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// ⚠️ THREAD SAFETY: All constants are immutable and thread-safe
+    /// âš ï¸ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
     /// 
     /// This centralized constants class eliminates magic numbers throughout the codebase
     /// and provides semantic meaning to all numerical and string literals used across
@@ -130,7 +130,7 @@ namespace MixerThreholdMod_1_0_0.Constants
         public const string INVALID_ITERATION_COUNT_ERROR = "[CONSOLE] Invalid iteration count '{0}'. Must be a positive integer.";
 
         /// <summary>Error message for invalid parameter format</summary>
-        public const string INVALID_PARAMETER_ERROR = "[CONSOLE] Invalid parameter '{0}'. Must be a delay (number ≥ 0) or bypass flag (true/false).";
+        public const string INVALID_PARAMETER_ERROR = "[CONSOLE] Invalid parameter '{0}'. Must be a delay (number â‰¥ 0) or bypass flag (true/false).";
 
         /// <summary>Error message for no save path available</summary>
         public const string NO_SAVE_PATH_ERROR = "[CONSOLE] No current save path available. Load a game first.";

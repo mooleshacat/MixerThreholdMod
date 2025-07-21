@@ -4,9 +4,9 @@ namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
     /// Game-specific constants for UI, graphics, audio, physics, and gameplay elements
-    /// ⚠️ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// ⚠️ THREAD SAFETY: All constants are immutable and thread-safe
+    /// âš ï¸ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
     /// </summary>
     public static class GameConstants
     {
@@ -136,7 +136,7 @@ namespace MixerThreholdMod_1_0_0.Constants
         #endregion
 
         #region Physics Constants
-        /// <summary>Gravity value (m/s²)</summary>
+        /// <summary>Gravity value (m/sÂ²)</summary>
         public const float PHYSICS_GRAVITY = -9.81f;
 
         /// <summary>Fixed timestep for physics (seconds)</summary>

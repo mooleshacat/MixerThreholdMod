@@ -1,8 +1,8 @@
-﻿
+
 
 using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,8 +11,8 @@ using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
 /// Manages backup and restore operations for mixer data.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe and async.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses Task.Run, string.Format, and proper cancellation tokens.
+/// âš ï¸ THREAD SAFETY: All operations are thread-safe and async.
+/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses Task.Run, string.Format, and proper cancellation tokens.
 /// </summary>
 public static class MixerDataBackupManager
 {

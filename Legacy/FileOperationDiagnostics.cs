@@ -1,6 +1,6 @@
-﻿
 
-﻿using System;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,9 +8,9 @@ using System.Linq;
 namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
-    /// ⚠️ FILE OPERATION DIAGNOSTICS: Comprehensive monitoring class for file I/O operations
-    /// ⚠️ THREAD SAFETY: All operations are thread-safe for concurrent diagnostics
-    /// ⚠️ .NET 4.8.1 COMPATIBLE: Uses framework-safe timing and logging patterns
+    /// âš ï¸ FILE OPERATION DIAGNOSTICS: Comprehensive monitoring class for file I/O operations
+    /// âš ï¸ THREAD SAFETY: All operations are thread-safe for concurrent diagnostics
+    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses framework-safe timing and logging patterns
     /// 
     /// Features:
     /// - Tracks file operation timing with millisecond precision

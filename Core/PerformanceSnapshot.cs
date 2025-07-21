@@ -1,4 +1,4 @@
-﻿
+
 
 using System;
 using System.Diagnostics;
@@ -6,8 +6,8 @@ using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
 /// Captures and stores performance metrics for MixerThreholdMod.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
+/// âš ï¸ THREAD SAFETY: All operations are thread-safe.
+/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
 /// </summary>
 internal class PerformanceSnapshot
 {

@@ -1,13 +1,13 @@
-﻿
 
-﻿using System;
+
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
 /// <summary>
 /// Provides thread-safe set operations for MixerThreholdMod.
-/// ⚠️ THREAD SAFETY: All operations are thread-safe.
-/// ⚠️ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
+/// âš ï¸ THREAD SAFETY: All operations are thread-safe.
+/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
 /// </summary>
 public class ThreadSafeSet<T>
 {

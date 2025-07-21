@@ -1,13 +1,13 @@
-﻿
 
-﻿using System;
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Async locker for .NET 4.8.1 compatibility.
 /// Provides async-safe locking mechanisms to prevent deadlocks in async/await patterns.
-/// ⚠️ THREAD SAFETY: Prevents deadlocks in async operations.
+/// âš ï¸ THREAD SAFETY: Prevents deadlocks in async operations.
 /// </summary>
 public class AsyncLocker
 {
