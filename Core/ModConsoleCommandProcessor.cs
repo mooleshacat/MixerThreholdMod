@@ -7,8 +7,8 @@ using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
 /// Processes console commands for the MixerThreholdMod.
-/// âš ï¸ THREAD SAFETY: All operations are thread-safe using lock objects.
-/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
+///  THREAD SAFETY: All operations are thread-safe using lock objects.
+///  .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
 /// </summary>
 internal class ModConsoleCommandProcessor
 {

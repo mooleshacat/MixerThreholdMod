@@ -155,8 +155,11 @@
     <Compile Include="Patches\SaveManager_Save_Patch.cs" />
     <!-- Constants -->
     <!-- Main entry point and configuration -->
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Main.cs" />
+    <Compile Remove="GlobalSuppressions.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Remove="Legacy\**" />
+    <Compile Remove="ForCopilot\**" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Threading\ThreadSafeDictionary.cs" />
     <Compile Include="Threading\ThreadSafeList.cs" />
@@ -165,11 +168,24 @@
     <Compile Include="Threading\AsyncLocker.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Helpers\PerformanceOptimizer\**" />
+    <None Include="Reports\**" />
+    <None Include="Scripts\**" />
+    <None Include="Legacy\**" />
+    <None Include="ForCopilot\**" />
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
     <None Include="LICENSE.md" />
     <None Include="packages.config" />
     <None Include="README.md" />
+    <None Include="CHANGELOG.md" />
+    <None Include="Constants-Reference.md" />
+    <None Include="DevOps-ScriptLauncher.bat" />
+    <None Include="GlobalSuppressions.cs" />
+    <None Include="MixerThreholdMod-API-Documentation.md" />
+    <None Include="MixerThreholdMod-API-Documentation.xml" />
+    <None Include="PROJECT-HEALTH-REPORT.md" />
+    <None Include="RELEASE-NOTES-v1.0.0.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ForCopilot\" />

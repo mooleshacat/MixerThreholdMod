@@ -11,18 +11,18 @@ namespace MixerThreholdMod_1_0_0.Core
     /// Centralized logging system with configurable verbosity levels.
     /// Thread-safe logging for .NET 4.8.1 compatibility.
     /// 
-    /// âš ï¸ THREAD SAFETY: This class is thread-safe and can be called from any thread.
+    ///  THREAD SAFETY: This class is thread-safe and can be called from any thread.
     /// All methods are designed to prevent exceptions and provide fallback behavior.
     /// 
-    /// âš ï¸ MODIFICATION WARNING: This logging helper is critical for crash prevention and debugging.
+    ///  MODIFICATION WARNING: This logging helper is critical for crash prevention and debugging.
     /// Be extremely careful when modifying this class as it provides fallback logging when other
     /// systems fail. Recent issues occurred when Copilot accidentally inverted the logging logic,
     /// causing no output. Always test logging functionality after modifications.
     /// 
-    /// âš ï¸ COMPILER DIRECTIVE WARNING: Logging behavior is controlled by #if DEBUG. Changing build configuration
+    ///  COMPILER DIRECTIVE WARNING: Logging behavior is controlled by #if DEBUG. Changing build configuration
     /// will affect IsDebugEnabled and all non-error logging. Review this before modifying or deploying.
     /// 
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses string.Format instead of string interpolation
+    ///  .NET 4.8.1 COMPATIBLE: Uses string.Format instead of string interpolation
     /// - Uses string.Format instead of string interpolation
     /// - Compatible with framework's threading model
     /// - Proper exception handling for crash prevention
@@ -42,7 +42,7 @@ namespace MixerThreholdMod_1_0_0.Core
         /// Info (Msg) logging with level filtering.
         /// Each call requires the log level of submitted message to be specified (1, 2, or 3).
         /// Only logs when debug mode is enabled and the message level is within current thresholds.
-        /// âš ï¸ THREAD SAFETY: Thread-safe method with comprehensive exception handling
+        ///  THREAD SAFETY: Thread-safe method with comprehensive exception handling
         /// </summary>
         /// <param name="msgLogLevel">Log level for this message (1-3, where 1 is highest priority)</param>
         /// <param name="message">Message to log</param>
@@ -89,7 +89,7 @@ namespace MixerThreholdMod_1_0_0.Core
         /// Warning (Warn) logging with level filtering.
         /// Each call requires the log level of submitted warning to be specified (1 or 2).
         /// Only logs when debug mode is enabled and the warning level is within current thresholds.
-        /// âš ï¸ THREAD SAFETY: Thread-safe method with comprehensive exception handling
+        ///  THREAD SAFETY: Thread-safe method with comprehensive exception handling
         /// </summary>
         /// <param name="warnLogLevel">Warning level for this message (1-2, where 1 is highest priority)</param>
         /// <param name="warningMessage">Warning message to log</param>
@@ -135,7 +135,7 @@ namespace MixerThreholdMod_1_0_0.Core
         /// <summary>
         /// Error logging (always active, highest priority).
         /// Logs error messages regardless of debug mode or log level settings.
-        /// âš ï¸ THREAD SAFETY: Thread-safe method with comprehensive exception handling
+        ///  THREAD SAFETY: Thread-safe method with comprehensive exception handling
         /// </summary>
         /// <param name="errorMessage">Error message to log</param>
         public void Err(string errorMessage)

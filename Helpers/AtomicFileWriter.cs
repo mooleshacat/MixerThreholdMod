@@ -9,9 +9,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
     /// Atomic file writer for safe, crash-resistant save operations.
-    /// âš ï¸ THREAD SAFETY: All operations are thread-safe and async.
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
-    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread.
+    ///  THREAD SAFETY: All operations are thread-safe and async.
+    ///  .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
+    ///  MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
     public static class AtomicFileWriter
     {

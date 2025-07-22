@@ -4,8 +4,8 @@ using MixerThreholdMod_1_0_0.Core;
 
 /// <summary>
 /// Coordinates patch initialization, mixer management, scene handling, and stress tests for MixerThreholdMod.
-/// âš ï¸ THREAD SAFETY: All operations are thread-safe and async.
-/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
+/// THREAD SAFETY: All operations are thread-safe and async.
+/// .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
 /// </summary>
 public class MainOrchestrator
 {

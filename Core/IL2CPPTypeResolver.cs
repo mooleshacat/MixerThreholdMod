@@ -8,9 +8,9 @@ namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
     /// IL2CPP COMPATIBLE: Safe type resolution for both MONO and IL2CPP build environments
-    /// âš ï¸ THREAD SAFETY: All operations are thread-safe and designed for concurrent access
-    /// âš ï¸ .NET 4.8.1 Compatible: Uses compatible reflection patterns and error handling
-    /// âš ï¸ IL2CPP COMPATIBLE: Uses string-based type loading safe for AOT compilation
+    ///  THREAD SAFETY: All operations are thread-safe and designed for concurrent access
+    ///  .NET 4.8.1 Compatible: Uses compatible reflection patterns and error handling
+    ///  IL2CPP COMPATIBLE: Uses string-based type loading safe for AOT compilation
     /// 
     /// Type Loading Strategy:
     /// - MONO builds: Direct type references work normally

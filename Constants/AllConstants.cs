@@ -5,9 +5,9 @@ namespace MixerThreholdMod_1_0_0.Constants
     /// <summary>
     /// Comprehensive constants index providing access to all domain-specific constants
     /// This class serves as a centralized entry point for all constants across the application
-    /// âš ï¸ IL2CPP COMPATIBLE: All imported constants are compile-time safe for AOT compilation
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
+    ///  IL2CPP COMPATIBLE: All imported constants are compile-time safe for AOT compilation
+    ///  .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    ///  THREAD SAFETY: All constants are immutable and thread-safe
     /// 
     /// DOMAIN COVERAGE:
     /// - LoggingConstants: 120+ logging-related constants

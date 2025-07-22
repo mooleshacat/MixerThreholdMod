@@ -10,9 +10,9 @@ namespace MixerThreholdMod_1_0_0.Patches
 {
     /// <summary>
     /// Patch for LoadManager.LoadedGameFolderPath to intercept and enhance folder path loading.
-    /// âš ï¸ THREAD SAFETY: All operations are thread-safe.
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
-    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread.
+    ///  THREAD SAFETY: All operations are thread-safe.
+    ///  .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    ///  MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
     public static class LoadManager_LoadedGameFolderPath_Patch
     {
@@ -20,8 +20,8 @@ namespace MixerThreholdMod_1_0_0.Patches
 
         /// <summary>
         /// Initializes the LoadManager_LoadedGameFolderPath_Patch with Harmony.
-        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
-        /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit error handling
+        ///  THREAD SAFETY: Safe to call from any thread
+        ///  .NET 4.8.1 COMPATIBLE: Uses explicit error handling
         /// </summary>
         public static void Initialize()
         {

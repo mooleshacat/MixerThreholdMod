@@ -9,8 +9,8 @@ using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
 /// Manages mixer instance IDs for MixerThreholdMod.
-/// âš ï¸ THREAD SAFETY: All operations are thread-safe.
-/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
+///  THREAD SAFETY: All operations are thread-safe.
+///  .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
 /// </summary>
 internal static class MixerIDManager
 {

@@ -8,9 +8,9 @@ namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
     /// Centralized constants for logging levels, system configuration, timeouts, and error messages
-    /// âš ï¸ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
+    ///  IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
+    ///  .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    ///  THREAD SAFETY: All constants are immutable and thread-safe
     /// 
     /// This centralized constants class eliminates magic numbers throughout the codebase
     /// and provides semantic meaning to all numerical and string literals used across

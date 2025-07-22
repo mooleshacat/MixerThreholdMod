@@ -1,18 +1,13 @@
 
-
 using MelonLoader;
-
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
-
-ï»¿using MelonLoader;
-using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 using MixerThreholdMod_1_0_0.Core;
+using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
 /// Entry point for MixerThreholdMod.
-/// âš ï¸ THREAD SAFETY: All operations are thread-safe and use async patterns.
-/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
-/// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread; all heavy operations are async.
+/// THREAD SAFETY: All operations are thread-safe and use async patterns.
+/// .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
+/// MAIN THREAD WARNING: Never blocks Unity main thread; all heavy operations are async.
 /// </summary>
 public class MainEntryPoint : MelonMod
 {

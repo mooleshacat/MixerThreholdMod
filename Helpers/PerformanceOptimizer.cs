@@ -12,9 +12,9 @@ using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
-    /// âš ï¸ THREAD SAFETY: All performance optimization operations are thread-safe and designed for concurrent access
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses framework-safe patterns and IL2CPP-compatible optimization strategies
-    /// âš ï¸ MAIN THREAD WARNING: Performance monitoring runs on background threads to prevent Unity blocking
+    ///  THREAD SAFETY: All performance optimization operations are thread-safe and designed for concurrent access
+    ///  .NET 4.8.1 COMPATIBLE: Uses framework-safe patterns and IL2CPP-compatible optimization strategies
+    ///  MAIN THREAD WARNING: Performance monitoring runs on background threads to prevent Unity blocking
     /// 
     /// Advanced performance optimization utilities for Schedule I game mod operations.
     /// Provides comprehensive performance monitoring, optimization, and resource management.
@@ -53,7 +53,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Initialize the performance optimizer system
-        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
+        ///  THREAD SAFETY: Safe to call from any thread
         /// </summary>
         public static void Initialize()
         {
@@ -88,7 +88,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Monitor current performance metrics
-        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
+        ///  THREAD SAFETY: Safe to call from any thread
         /// </summary>
         public static async Task<PerformanceMetrics> MonitorPerformanceAsync(string operationContext = "General", CancellationToken ct = default(CancellationToken))
         {
@@ -160,7 +160,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Optimize performance based on current metrics
-        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
+        ///  THREAD SAFETY: Safe to call from any thread
         /// </summary>
         public static async Task OptimizePerformanceAsync(CancellationToken ct = default(CancellationToken))
         {
@@ -216,7 +216,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Detect and report performance issues
-        /// âš ï¸ THREAD SAFETY: Must be called within _optimizationLock
+        ///  THREAD SAFETY: Must be called within _optimizationLock
         /// </summary>
         private static void DetectPerformanceIssues()
         {
@@ -264,7 +264,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Get performance summary report
-        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
+        ///  THREAD SAFETY: Safe to call from any thread
         /// </summary>
         public static void LogPerformanceSummary()
         {
@@ -304,7 +304,7 @@ namespace MixerThreholdMod_1_0_0.Helpers
 
         /// <summary>
         /// Cleanup and shutdown performance optimizer
-        /// âš ï¸ THREAD SAFETY: Safe to call from any thread
+        ///  THREAD SAFETY: Safe to call from any thread
         /// </summary>
         public static void Shutdown()
         {

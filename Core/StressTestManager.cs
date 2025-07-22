@@ -12,9 +12,9 @@ namespace MixerThreholdMod_1_0_0.Core
 {
     /// <summary>
     /// Orchestrates stress test operations for MixerThreholdMod.
-    /// âš ï¸ THREAD SAFETY: All operations are thread-safe and use async patterns.
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper cancellation tokens.
-    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread; all I/O and heavy operations are async.
+    ///  THREAD SAFETY: All operations are thread-safe and use async patterns.
+    ///  .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper cancellation tokens.
+    ///  MAIN THREAD WARNING: Never blocks Unity main thread; all I/O and heavy operations are async.
     /// </summary>
     internal class StressTestManager
     {

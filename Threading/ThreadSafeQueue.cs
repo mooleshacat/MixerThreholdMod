@@ -6,8 +6,8 @@ using System.Threading;
 
 /// <summary>
 /// Provides thread-safe queue operations for MixerThreholdMod.
-/// âš ï¸ THREAD SAFETY: All operations are thread-safe.
-/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
+///  THREAD SAFETY: All operations are thread-safe.
+///  .NET 4.8.1 COMPATIBLE: Uses explicit types and proper error handling.
 /// </summary>
 public class ThreadSafeQueue<T>
 {

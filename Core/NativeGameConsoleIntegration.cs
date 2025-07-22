@@ -7,8 +7,8 @@ using static MixerThreholdMod_1_0_0.Constants.ModConstants;
 
 /// <summary>
 /// Integrates with the native game console for MixerThreholdMod.
-/// âš ï¸ THREAD SAFETY: All operations are thread-safe.
-/// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
+///  THREAD SAFETY: All operations are thread-safe.
+///  .NET 4.8.1 COMPATIBLE: Uses explicit types, string.Format, and proper error handling.
 /// </summary>
 internal static class NativeGameConsoleIntegration
 {

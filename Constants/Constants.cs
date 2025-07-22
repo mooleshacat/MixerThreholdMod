@@ -4,9 +4,9 @@ namespace MixerThreholdMod_1_0_0.Constants
 {
     /// <summary>
     /// Main constants entry point providing backward compatibility and essential core constants
-    /// âš ï¸ IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
-    /// âš ï¸ THREAD SAFETY: All constants are immutable and thread-safe
+    ///  IL2CPP COMPATIBLE: Compile-time constants safe for AOT compilation
+    ///  .NET 4.8.1 COMPATIBLE: Uses explicit const declarations for maximum compatibility
+    ///  THREAD SAFETY: All constants are immutable and thread-safe
     /// 
     /// MAJOR REFACTOR: Constants have been separated into domain-specific files:
     /// - LoggingConstants.cs: All logging-related constants (120+ constants)

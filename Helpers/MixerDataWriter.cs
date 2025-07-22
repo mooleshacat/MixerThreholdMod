@@ -11,9 +11,9 @@ namespace MixerThreholdMod_1_0_0.Helpers
 {
     /// <summary>
     /// Robust, thread-safe writer for mixer data files.
-    /// âš ï¸ THREAD SAFETY: All operations are thread-safe and async.
-    /// âš ï¸ .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
-    /// âš ï¸ MAIN THREAD WARNING: Never blocks Unity main thread.
+    ///  THREAD SAFETY: All operations are thread-safe and async.
+    ///  .NET 4.8.1 COMPATIBLE: Uses explicit types and error handling.
+    ///  MAIN THREAD WARNING: Never blocks Unity main thread.
     /// </summary>
     public static class MixerDataWriter
     {
