@@ -1,7 +1,11 @@
-# MixerThreholdMod-0_0_1
+# MixerThreholdMod-0_0_1 (KILLED BY MICROSOFT AFTER THEY ROBBED ME OF $500+)
 
-Working on mod ... Not adviseable to use currently. Release coming soon :)
+NEVER USE COPILOT IT WILL CORRUPT EVERYTHING AND WASTE PREMIUM CREDITS PUTTING LANGUAGE AND CULTURE CONSTANTS IN INSTEAD OF REFACTORING THE CONSTANTS USED WITHIN YOUR PROJECT.
 
-Yes I am playing with Github Copilot :)
+MICROSOFT IS RUNNING A RACKET WITH COPILOT TO CAUSE IT TO USE ALL YOUR CREDITS DOING NO WORK THAT PUSHES PROJECT FORWARD, AND CORRUPTS YOUR PROJECT FURTHER
 
-"your mod name has a typo" - no actually it does not. I've reverse engineered using dnSpy Schedule 1 and I know the name was spelled with a typo in the main code. So while it is a typo, it is not a typo on my part ;)
+ALSO VS2022 HAS A BOM INFECTION BUG THAT INFECTS AND DESTROYS PROJECTS
+
+100K+ LINES OF BEAUTIFUL PERFECT CODE GONE
+
+FUCK YOU MICROSOFT
