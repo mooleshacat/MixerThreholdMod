@@ -2,17 +2,17 @@
 
 ## Core Development Rules (Limit: 6)
 
-1. **🎯 .NET 4.8.1 Compatibility**: Always use IL2CPP compatible & .NET 4.8.1 compatible syntax. Use `string.Format()` instead of string interpolation, explicit type declarations, and `default(CancellationToken)` instead of `default`. Never use yield return in try/catch blocks.
+1. **🚨 PRIORITY: Recent PR Comments**: Always prioritize and follow the most recent PR comment instructions unless explicitly told otherwise. Recent commit context takes precedence over historical instructions.
 
-2. **🛡️ Thread Safety First**: All operations must be thread-safe. Never block Unity's main thread with synchronous file I/O or Thread.Sleep. Use async/await patterns with `ConfigureAwait(false)` and proper cancellation tokens.
+2. **🎯 .NET 4.8.1 Compatibility**: Use MONO, IL2CPP & .NET 4.8.1 compatible syntax. Use `string.Format()` over interpolation, explicit types, `default(CancellationToken)`, never yield return in try/catch blocks.
 
-3. **🚨 Extreme Verbose Debugging**: Include comprehensive logging with detailed error messages, stack traces, and operation context. Use try-catch blocks around all operations with specific error handling and recovery strategies.
+3. **🛡️ Thread Safety & Performance**: All operations thread-safe, never block Unity main thread. Use async/await with `ConfigureAwait(false)`, proper cancellation tokens, no Thread.Sleep.
 
-4. **💾 Save Crash Prevention Focus**: All code must prevent save corruption and crashes during repeated saves or extended gameplay. Use atomic file operations, backup strategies, and emergency fallback mechanisms.
+4. **🚨 Extreme Verbose Debugging**: Comprehensive logging with detailed errors, stack traces, operation context. Try-catch all operations with specific error handling and recovery strategies.
 
-5. **📝 Class-Level Documentation**: Every class must include thread safety warnings, .NET 4.8.1 compatibility notes, and main thread blocking warnings in XML documentation comments.
+5. **💾 Save Crash Prevention**: Prevent corruption during repeated saves/extended gameplay. Use atomic file operations, backup strategies, emergency fallback mechanisms.
 
-6. **🔄 Workflow Compliance**: Work on feature/fix branches → merge to development → merge to master. Development and master branches are protected. Follow proper Git flow and ensure all changes are tested before merging.
+6. **📝 Documentation & Workflow**: Include thread safety warnings, .NET 4.8.1 notes, main thread warnings in XML docs. Follow Git flow: feature/fix → development → master.
 
 ## Additional Context
 

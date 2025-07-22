@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net481</TargetFramework>
+    <RootNamespace>MixerThresholdDevKit</RootNamespace>
+    <AssemblyName>MixerThresholdDevKit</AssemblyName>
+  </PropertyGroup>
+
+</Project>

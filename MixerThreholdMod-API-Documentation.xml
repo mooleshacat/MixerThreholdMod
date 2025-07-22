@@ -1,0 +1,2113 @@
+﻿<?xml version=``1.0`` encoding=``utf-8``?>
+<doc>
+  <assembly>
+    <name>MixerThreholdMod</name>
+  </assembly>
+  <members>
+
+    <!-- Namespace: MixerThreholdMod_1_0_0.Constants -->
+    <!-- File: AllConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.AllConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Errors``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Files``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Game``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Logging``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Mixer``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Network``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Performance``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Summary``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.System``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Threading``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Utility``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Validation``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: Constants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Errors``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Files``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Logging``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.MigrationGuide``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Mixer``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.ModConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Performance``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.Threading``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: Constants_LargeOriginal.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.ModConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: Constants_Original.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.ModConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: ErrorConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.ErrorConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: FileConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.FileConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: GameConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.GameConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: LoggingConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.LoggingConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.MixerConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: NetworkConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.NetworkConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: PerformanceConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.PerformanceConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: SystemConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.SystemConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: ThreadingConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.ThreadingConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: UtilityConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.UtilityConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``F:MixerThreholdMod_1_0_0.Constants.[ClassName].DEFAULT_TRIM_CHARS``>
+      /// <summary>
+      /// [Describe field purpose and usage].
+      /// </summary>
+    </member>
+
+    <member name=``F:MixerThreholdMod_1_0_0.Constants.[ClassName].WHITESPACE_CHARS``>
+      /// <summary>
+      /// [Describe field purpose and usage].
+      /// </summary>
+    </member>
+
+    <!-- File: ValidationConstants.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Constants.ValidationConstants``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- Namespace: MixerThreholdMod_1_0_0.Core -->
+    <!-- File: IL2CPPTypeResolver.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Core.IL2CPPTypeResolver``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``typeName``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``typeName``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Core.[ClassName].IsIL2CPPBuild``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <!-- File: Logger.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Core.Logger``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``warnLogLevel``>[Describe parameter purpose]</param>
+      /// <param name=``warningMessage``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``msgLogLevel``>[Describe parameter purpose]</param>
+      /// <param name=``message``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``errorMessage``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``F:MixerThreholdMod_1_0_0.Core.[ClassName].CurrentMsgLogLevel``>
+      /// <summary>
+      /// [Describe field purpose and usage].
+      /// </summary>
+    </member>
+
+    <member name=``F:MixerThreholdMod_1_0_0.Core.[ClassName].CurrentWarnLogLevel``>
+      /// <summary>
+      /// [Describe field purpose and usage].
+      /// </summary>
+    </member>
+
+    <member name=``F:MixerThreholdMod_1_0_0.Core.[ClassName].IsDebugEnabled``>
+      /// <summary>
+      /// [Describe field purpose and usage].
+      /// </summary>
+    </member>
+
+    <member name=``F:MixerThreholdMod_1_0_0.Core.[ClassName].IsDebugEnabled``>
+      /// <summary>
+      /// [Describe field purpose and usage].
+      /// </summary>
+    </member>
+
+    <member name=``F:MixerThreholdMod_1_0_0.Core.[ClassName].ShowLogLevelCalc``>
+      /// <summary>
+      /// [Describe field purpose and usage].
+      /// </summary>
+    </member>
+
+    <!-- File: MixerManager.cs -->
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``mixerId``>[Describe parameter purpose]</param>
+      /// <param name=``value``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``mixerId``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``mixerId``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: PatchInitializer.cs -->
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: StressTestManager.cs -->
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Core.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``iterations``>[Describe parameter purpose]</param>
+      /// <param name=``delaySeconds``>[Describe parameter purpose]</param>
+      /// <param name=``bypassCooldown``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- Namespace: MixerThreholdMod_1_0_0.Helpers -->
+    <!-- File: AtomicFileWriter.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.AtomicFileWriter``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``filePath``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerBackupManager.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.MixerDataBackupManager``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``filePath``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerDataIntegrityTracker.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.MixerDataIntegrityTracker``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerDataPerformanceMetrics.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.MixerDataPerformanceMetrics``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``operationName``>[Describe parameter purpose]</param>
+      /// <param name=``action``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``metricName``>[Describe parameter purpose]</param>
+      /// <param name=``value``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerDataPersistenceManager.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.MixerDataPersistenceManager``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``path``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``path``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``path``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerDataReader.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.MixerDataReader``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``filePath``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerDataValidator.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.MixerDataValidator``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerDataWriter.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.MixerDataWriter``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``filePath``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: PerformanceOptimizer.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.PerformanceMetrics``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``T:MixerThreholdMod_1_0_0.Helpers.PerformanceOptimizer``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``ct``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``operationContext``>[Describe parameter purpose]</param>
+      /// <param name=``ct``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Helpers.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Helpers.[ClassName].ActiveThreads``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Helpers.[ClassName].CpuUsagePercent``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Helpers.[ClassName].FrameRate``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Helpers.[ClassName].IoOperationsPerSecond``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Helpers.[ClassName].IsOptimized``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Helpers.[ClassName].MemoryUsageMB``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Helpers.[ClassName].OperationContext``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:MixerThreholdMod_1_0_0.Helpers.[ClassName].Timestamp``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <!-- Namespace: MixerThreholdMod_1_0_0.Patches -->
+    <!-- File: EntityConfiguration_Destroy_Patch.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Patches.EntityConfiguration_Destroy_Patch``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Patches.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Patches.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``entity``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: LoadManager_LoadedGameFolderPath_Patch.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Patches.LoadManager_LoadedGameFolderPath_Patch``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Patches.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Patches.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``folderPath``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: SaveManager_Save_Patch.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Patches.SaveManager_Save_Patch``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Patches.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Patches.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``saveData``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- Namespace: MixerThreholdMod_1_0_0.Save -->
+    <!-- File: BackupSaveManager.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Save.BackupSaveManager``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Save.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: EmergencySaveManager.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Save.EmergencySaveManager``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Save.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``filePath``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- Namespace: MixerThreholdMod_1_0_0.Threading -->
+    <!-- File: ThreadSafeFileReader.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Threading.ThreadSafeFileReader``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Threading.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``filePath``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: ThreadSafeFileWriter.cs -->
+    <member name=``T:MixerThreholdMod_1_0_0.Threading.ThreadSafeFileWriter``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:MixerThreholdMod_1_0_0.Threading.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``filePath``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- Namespace: Unknown -->
+    <!-- File: AsyncLocker.cs -->
+    <member name=``T:Unknown.AsyncLocker``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``ct``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: Console.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``message``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: CpuMonitor.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: GameDirectoryDetectionLogger.cs -->
+    <member name=``T:Unknown.GameDirectoryDetectionLogger``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``gameInstallDir``>[Describe parameter purpose]</param>
+      /// <param name=``userDataDir``>[Describe parameter purpose]</param>
+      /// <param name=``saveDir``>[Describe parameter purpose]</param>
+      /// <param name=``melonLoaderDir``>[Describe parameter purpose]</param>
+      /// <param name=``melonLoaderLog``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: GameExceptionMonitor.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``ex``>[Describe parameter purpose]</param>
+      /// <param name=``context``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``ex``>[Describe parameter purpose]</param>
+      /// <param name=``context``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: GameInstallDirectoryResolver.cs -->
+    <member name=``T:Unknown.GameInstallDirectoryResolver``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: Main.cs -->
+    <member name=``T:Unknown.Main``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MainEntryPoint.cs -->
+    <member name=``T:Unknown.MainEntryPoint``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``buildIndex``>[Describe parameter purpose]</param>
+      /// <param name=``sceneName``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``F:Unknown.[ClassName].logger``>
+      /// <summary>
+      /// [Describe field purpose and usage].
+      /// </summary>
+    </member>
+
+    <!-- File: MainOrchestrator.cs -->
+    <member name=``T:Unknown.MainOrchestrator``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``mixerId``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``mixerId``>[Describe parameter purpose]</param>
+      /// <param name=``value``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``buildIndex``>[Describe parameter purpose]</param>
+      /// <param name=``sceneName``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``iterations``>[Describe parameter purpose]</param>
+      /// <param name=``delaySeconds``>[Describe parameter purpose]</param>
+      /// <param name=``bypassCooldown``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MelonLoaderDirectoryResolver.cs -->
+    <member name=``T:Unknown.MelonLoaderDirectoryResolver``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MemoryMonitor.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerConfigurationTracker.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``mixerId``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``mixerId``>[Describe parameter purpose]</param>
+      /// <param name=``configValue``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``mixerId``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerDataBackupManager.cs -->
+    <member name=``T:Unknown.MixerDataBackupManager``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``sourceFile``>[Describe parameter purpose]</param>
+      /// <param name=``backupDir``>[Describe parameter purpose]</param>
+      /// <param name=``cancellationToken``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``backupDir``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: MixerIDManager.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``instanceID``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: ModConsoleCommandProcessor.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``commandLine``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``command``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: NativeGameConsoleIntegration.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``message``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: PerformanceSnapshot.cs -->
+    <member name=``P:Unknown.[ClassName].CpuUsagePercent``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:Unknown.[ClassName].MemoryUsageBytes``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:Unknown.[ClassName].ThreadCount``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <member name=``P:Unknown.[ClassName].Timestamp``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <!-- File: SaveDirectoryResolver.cs -->
+    <member name=``T:Unknown.SaveDirectoryResolver``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``userDataDirectory``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: SystemInfoLogger.cs -->
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <!-- File: ThreadSafeDictionary.cs -->
+    <member name=``T:Unknown.ThreadSafeDictionary<TKey``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``key``>[Describe parameter purpose]</param>
+      /// <param name=``value``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``key``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``key``>[Describe parameter purpose]</param>
+      /// <param name=``value``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``P:Unknown.[ClassName].Count``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <!-- File: ThreadSafeList.cs -->
+    <member name=``T:Unknown.ThreadSafeList<T>``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``item``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``item``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``index``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``P:Unknown.[ClassName].Count``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <!-- File: ThreadSafeQueue.cs -->
+    <member name=``T:Unknown.ThreadSafeQueue<T>``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``item``>[Describe parameter purpose]</param>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``item``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``P:Unknown.[ClassName].Count``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <!-- File: ThreadSafeSet.cs -->
+    <member name=``T:Unknown.ThreadSafeSet<T>``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``item``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``item``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <param name=``item``>[Describe parameter purpose]</param>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``P:Unknown.[ClassName].Count``>
+      /// <summary>
+      /// Gets or sets [describe property purpose].
+      /// </summary>
+      /// <value>[Describe the property value and constraints]</value>
+    </member>
+
+    <!-- File: UserDataDirectoryResolver.cs -->
+    <member name=``T:Unknown.UserDataDirectoryResolver``>
+      /// <summary>
+      /// Provides functionality for [describe purpose].
+      /// </summary>
+      /// <remarks>
+      /// Thread Safety: [Specify thread safety requirements]
+      /// .NET 4.8.1 Compatibility: [Note any specific requirements]
+      /// Unity Integration: [Describe Unity main thread considerations]
+      /// </remarks>
+    </member>
+
+    <member name=``M:Unknown.[ClassName].``>
+      /// <summary>
+      /// [Describe what this method does]
+      /// </summary>
+      /// <returns>[Describe return value]</returns>
+      /// <remarks>
+      /// Thread Safety: [Safe/Unsafe - specify requirements]
+      /// Performance: [Any performance considerations]
+      /// </remarks>
+    </member>
+
+  </members>
+</doc>
